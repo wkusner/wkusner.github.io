@@ -1,0 +1,333 @@
+---
+layout: cv
+permalink: /CV/
+title: "Your name - Curriculum Vitae"
+shorttitle: CV
+headerdata:
+    url: http://this.site/
+    email: your.name@your.domain
+    contacturl: http://this.site/contact/
+    department: Cool place
+    institution: Cool University
+    institutionaddr: Fun City, Civilized Country
+    pictureurl: /assets/images/picture-of-you.jpg
+degrees:
+    - 
+        degree: Ph.D.
+        year: XXX
+        month: 6
+        subject: Something smart
+        institution: Nice Place
+        notes: 
+            - "Dissertation: Problems in generic combinatorial rigidity: sparsity, sliders, and emergence of components"
+            - "Advisor: Ileana Streinu"
+academicpositions:
+    -
+        title: Somebody Important
+        institution: Whereever
+        institutioncity: City
+        institutionurl: http://xxx
+        department: Department
+        departmenturl: http://yyy
+        start: then
+        end: now
+        notes:
+            - etc.
+            - etc.
+industrypositions:
+    -
+        title: Title
+        employer: Company
+        employercity: City
+        start: then
+        end: now
+courses:
+    -
+        title: Underwater basket weaving
+        credits: 5
+        institution: Someplace
+        comment: core undergrad course
+        term: Fall 1972
+seminars:
+    - 
+        title: Readings in Underwater basket weaving
+        hours: 2
+        institution: 
+        comment: undergraduate ProSeminar
+        term: Summer 2014
+dissertationcommittees:
+    -
+        student: Excellent Student
+        institution: Place
+        department: Department
+        thesistitle: Title
+        year: 1234
+bachelortheses:
+    -
+        student: Excellent Student
+        institution: Place
+        thesistitle: Alternating-sign matrices, square ice, and the Yang-Baxter equation
+        subject: Mathematics
+        myrole: 2nd examiner
+        year: 2014
+
+departmentalservice:
+    -
+        note: Something
+        department: Department
+        institution: Someplace
+        year: ab–bis
+conferenceorganization:
+    -
+        event: Special session on Something Cool
+        month: 1
+        year: 2345
+        myrole: Co-organizer
+journalrefereeing:
+    - Advances in Whatev.
+conferencerefereeing:
+    - Symposium on Stuff
+funding:
+    -
+        instrument: Francy grant
+        award: 12345
+        year: 6789
+        notes: 
+            - C.R.E.A.M.
+---
+
+<h1>Curriculum vitae: Louis Theran</h1>
+<div class="cv-header">
+    <img alt="Picture of Louis" class="picture" src="{{page.headerdata.pictureurl}}">
+    <div class="address">
+        <div class="department">{{page.headerdata.department}}</div>
+        <div class="inst">{{page.headerdata.institution}}</div>
+        <div class="instaddr">{{page.headerdata.institutionaddr}}</div>
+    </div>
+    <div class="contacts">
+        <div class="email"><a href="mailto:{{page.headerdata.email}}">{{page.headerdata.email}}</a></div>
+        <div class="homepage"><a href="{{page.headerdata.url}}">{{page.headerdata.url}}</a></div>
+        <div class="contacturl"><a href="{{page.headerdata.contacturl}}">All contact data</a></div>
+    </div>
+</div>
+
+<div class="cv-main">
+<h2>Research interests</h2>
+<div class="research-interests">
+Things I do.
+</div>
+
+<h2>Education</h2>
+<div class="education">
+    {% for deg in page.degrees %}
+        <div class="deg">
+            <span class="deg-date">{% if deg.month %}{{deg.month}}.{% endif %}{{deg.year}}</span>:
+            <span class="deg-title">{{deg.degree}}</span>,
+            <span class="deg-subject">{{deg.subject}}</span>,
+            <span class="deg-inst">{{deg.institution}}</span>.
+            <div class="deg-note-wrapper">
+                {% if deg.notes %}
+                    {% for note in deg.notes %}
+                        <div class="deg-note">{{note}}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<h2>Academic positions</h2>
+<div class="academic-positions">
+    {% for pos in page.academicpositions %}
+        <div class="position">
+                <div class="pos-yearplace">
+                    <span class="pos-year">{{pos.start}}–{% if pos.end %}{{pos.end}}{% else %}present{% endif %}:</span>
+                    <span class="pos-title">{{pos.title}}</span>, 
+                    <span class="pos-inst">{% if pos.institutionurl %}<a href="{{pos.institutionurl}}">{{pos.institution}}</a>{% else %}{{pos.institution}}{% endif %}{% if pos.institutioncity %} <span class="pos-instcity">({{pos.institutioncity}})</span>{% endif %}
+                </div>
+                <div class="pos-dept">
+                    {% if pos.departmenturl %}
+                       <a href="{{pos.departmenturl}}">{{pos.department}}</a>
+                    {% else %}
+                        {{pos.department}}
+                    {% endif %}
+                </div>
+                {% if pos.notes %}
+                    {% for note in pos.notes %}
+                        <div class="pos-note">{{note}}</div>
+                    {% endfor %}
+                {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<h2>Industry positions</h2>
+<div class="industry-positions">
+    {% for pos in page.industrypositions %}
+        <div class="position">
+                <div class="pos-yearplace">
+                    <span class="pos-year">{{pos.start}}–{% if pos.end %}{{pos.end}}{% else %}present{% endif %}:</span>
+                    <span class="pos-title">{{pos.title}}</span>, 
+                    <span class="pos-empl">{% if pos.employerurl %}<a href="{{pos.employerurl}}">{{pos.employer}}</a>{% else %}{{pos.employer}}{% endif %}{% if pos.employercity %}<span class="pos-emplcity"> ({{pos.employercity}})</span>{% endif %}
+                </div>
+                <!-- Right now this is dead code, don't run it-->
+                <!-- {% if pos.notes %}
+                    {% for note in pos.notes %}
+                        <div class="pos-note">{{note}}</div>
+                    {% endfor %}
+                {% endif %} -->
+        </div>
+    {% endfor %}
+</div>
+
+<h2>Funding</h2>
+<div class="funding-wrapper">
+    {% for f in page.funding %}
+        <div class="funding-item">
+            <div class="instrument-year">
+                <span class="funding-year">{{f.year}}:</span>
+                <span class="instrument">{{f.instrument}}</span>
+                {% if f.title %}<span class="funding-title">{{f.title}}</span>{% endif %}
+                {% if f.award %}({{f.award}}){% endif %}
+            </div>
+            <div class="funding-item-notes">
+                {% for note in f.notes %}
+                    <div class="funding-note">
+                        {{note}}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<h2>Publications</h2>
+<div class="publications">
+    {% include journalpapers.html %}
+    {% include conferencepapers.html %}
+    {% include preprints.html %}
+</div>
+
+<h2>Teaching</h2>
+<div class="teaching">
+    <h2>Courses</h2>
+    <div class="courses-wrapper">
+        {% for course in page.courses %}
+            <div class="course">
+                <div class="course-yearname">
+                    <span class="course-term">{{course.term}}:</span>
+                    <span class="course-title">{{course.title}}</span>
+                    {% if course.credits %}<span class="course-crhr">({{course.credits}} cr)</span>{% elsif course.hours %}<span class="course-crhr">({{course.hours}} hr)</span>{% endif %}
+                </div>
+                <div class="course-instcomment">
+                    <span class="course-inst">{{course.institution}}</span>{% if course.comment %}, <span class="course-comment">{{course.comment}}</span>{% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <h2>Seminars</h2>
+    <div class="seminars-wrapper">
+        {% for sem in page.seminars %}
+            <div class="seminar">
+                <div class="seminar-yearname">
+                    <span class="seminar-term">{{sem.term}}:</span>
+                    <span class="seminar-title">{{sem.title}}</span>
+                    {% if sem.credits %}<span class="seminar-crhr">({{sem.credits}} cr)</span>{% elsif sem.hours %}<span class="seminar-crhr">({{sem.hours}} hr)</span>{% endif %}
+                </div>
+                <div class="seminar-instcomment">
+                    <span class="seminar-inst">{{sem.institution}}</span>{% if sem.comment %}, <span class="seminar-comment">{{sem.comment}}</span>{% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<h2>Service</h2>
+<div class="service">
+    <h2>Dissertation committees</h2>
+    <div class="disscomm-wrapper">
+        {% for comm in page.dissertationcommittees %}
+            <div class="disscomm">
+                <div class="disscomm-yearname">
+                    <span class="disscomm-year">{{comm.year}}:</span>
+                    <span class="disscomm-student">{{comm.student}}</span>,
+                    <span class="disscomm-inst">{{comm.institution}}</span>,
+                                            <span class=discom-dept>{{comm.department}}</span>
+                </div>
+                <div class="disscomm-title">
+                    Thesis title: <span class="thesis-title">{{comm.thesistitle}}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+        
+    <h2>Bachelor theses and projects</h2>
+    <div class="bachelortheses-wrapper">
+        {% for bt in page.bachelortheses %}
+            <div class="bachelorthesis">
+                <div class="bt-yearname">
+                    <span class="bt-year">{{bt.year}}:</span>
+                    <span class="bt-student">{{bt.student}}</span>,
+                    <span class="bt-inst">{{bt.institution}}</span>,
+                                            <span class=bt-subject>{{bt.subject}}</span>
+                </div>
+                <div class="bt-titletopic">
+                    {% if bt.thesistitle %}
+                        Thesis title: <span class="bt-title">{{bt.thesistitle}}</span>
+                    {% elsif bt.topic %}
+                        Project topic: <span class="bt-topic">{{bt.topic}}</span>
+                    {% endif %}
+                </div>
+                <div class="bt-myrole">
+                    My role: <span class="bt-role">{{bt.myrole}}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+        
+    <h2>Conference organization</h2>
+    <div class="conforg-wrapper">
+        {% for conf in page.conferenceorganization %}
+            <div class="conference">
+                <div class="conf-yearevent">
+                    <span class="conf-year">{% if conf.month %}{{conf.month}}.{% endif %}{{conf.year}}:</span>
+                    <span class="conf-event">{{conf.event}}</span>
+                </div>
+                <div class="conf-myrole">
+                    <span class="conf-role">{{conf.myrole}}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <h2>Departmental service</h2>
+    <div class="deptservice-wrapper">
+        {% for svc in page.departmentalservice %}
+            <div class="service">
+                <span class="service-year">{{svc.year}}:</span>
+                <span class="service-note">{{svc.note}}</span>,
+                <span class="service-dept">{{svc.department}}</span>,
+                <span class="service-inst">{{svc.institution}}</span>
+            </div>
+        {% endfor %}
+    </div>
+        
+    <h2>Refereeing</h2>
+    <div class="refereeing-wrapper">
+        <div class="ref-journals">
+            <h2>Journals</h2>
+            {% for journal in page.journalrefereeing %} 
+                <span class="ref-journal">{{journal}}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="ref-conferences">
+            <h2>Conferences</h2>
+            {% for conference in page.conferencerefereeing %} 
+                <span class="ref-conference">{{conference}}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</div> <!-- end of cv-main -->
