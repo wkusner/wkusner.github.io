@@ -3,7 +3,7 @@ title: Wöden Kusner
 email: wkusner@gmail.com
 # description: > # this means to ignore newlines until "baseurl:"
 baseurl: "" # the subpath of your site, e.g. /blog/
-url: "http://yoursite" # the base hostname & protocol for your site
+url: http://wkusner.github.io # the base hostname & protocol for your site
 github_username:  githubaccount
 twitter_username: twitteraccount
 
