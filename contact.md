@@ -6,29 +6,30 @@ permalink: /contact/
 ---
 ## Electronic 
 email
-: XXX
+: wkusner@gmail.com
+: wkusner@tugraz.at
 
 phone
-: +YYY
+: +
 
 skype
-: ZZZ
+: 
 
-whatsapp
-: +AAA
 
-threema
-: ABCDEFGHI
+
+
 
 ## Visiting
-AScI
-: Google maps link
+TU Graz
+: [Map](https://www.google.com/maps/place/Steyrergasse+30,+Graz+University+of+Technology,+Steyrerg.+30,+8010+Graz,+Austria/@47.0643095,15.4527626,20z/data=!3m1!5s0x476e4a85d4711fb9:0x1b6106826f735a80!4m2!3m1!1s0x476e4a85d381ee0f:0x32658b065eae639e)
 
-ICS
-: Google maps link
 
 ## Mailing Address
-Your name \\
-Your address \\
-COUNTRY
+Wöden Kusner\\
+Technische Universität Graz\\
+Institut für Analysis und Computational Number Theory\\
+Steyrergasse 30/II\\
+8010 Graz\\
+AUSTRIA
+
 {:class="contact-info-mailing-address"}
