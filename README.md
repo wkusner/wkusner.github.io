@@ -1,9 +1,9 @@
-# Louis's Home Page
+## Louis's Home Page
 
 ## About 
 
-This repo is the [Jekyll][jekyll] source to Louis Theran's 
-home page template.
+This repo is a modified version of the [Jekyll][jekyll] source to Louis Theran's 
+home page template.  As such, this README is an annotated version of that found [here.](https://github.com/theran/theran.github.io)
 
 ## License
 
@@ -44,7 +44,7 @@ pages: 291–331
 ~~~~~~~~~~~~~~
 
 The body is the abstract.  
-See this site for conferernce and preprint examples.  Authors conferences and journals 
+See this site for conference and preprint examples.  Authors conferences and journals 
 are listed in `_data/authors.yml`, `_data/conferences.yml`, and `_data/journals.yml`.
 This is enough to automatically generate your bibliography.
 
