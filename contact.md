@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Contact information
-shorttitle: Contact
+title: Contact Information
+shorttitle:
 permalink: /contact/
 ---
 ## Electronic 
@@ -10,13 +10,7 @@ email
 : wkusner@tugraz.at
 
 phone
-: +
-
-skype
-: 
-
-
-
+: +43 ... ... ....
 
 
 ## Visiting
@@ -27,7 +21,7 @@ TU Graz
 ## Mailing Address
 Wöden Kusner\\
 Technische Universität Graz\\
-Institut für Analysis und Computational Number Theory\\
+Institute for Analysis and Computational Number Theory\\
 Steyrergasse 30/II\\
 8010 Graz\\
 AUSTRIA

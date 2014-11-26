@@ -1,11 +1,10 @@
 ---
 layout: page
 permalink: /SD/
-title: Spherical Designs
-shorttitle: SD
+title: Spherical Discrepancy
+shorttitle:
 ---
 
-## Research projects
-Stuff about what I do.
 
-List of Spherical Discrepancies and pictures
+##Discrepancy of point sets on the sphere
+
