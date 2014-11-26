@@ -1,9 +1,9 @@
-## Louis's Home Page
+## Branch of Louis's Home Page
 
 ## About 
 
 This repo is a modified version of the [Jekyll][jekyll] source to Louis Theran's 
-home page template.  As such, this README is an annotated version of that found [here.](https://github.com/theran/theran.github.io)
+home page template.  As such, this README is an annotated version of that found [here.](https://github.com/theran/theran.github.io/tree/template)
 
 ## License
 
