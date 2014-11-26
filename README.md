@@ -20,9 +20,17 @@ inside the Liquid templates.
 
 Below is a quick guide to some of the features.
 
+
+### Editing
+Edit the `_includes/aboutme.md` file to change the main page body content.
+Edit the `_includes/picture.html` to pull a picture from the `_assets` folder and also change title and affiliations.  
+The `_index.html` file in the main folder should be used to collate other pieces.
+The `_includes/footer.html` file can be edited to remove the github and twitter links etc.
+The `_layouts` has various templates for collections/.md files. 
+
 ### Papers
 
-These are part of the collection `_papers`.  A typical journal article 
+These are part of the collection `_papers`.  (This folder should be added.)  A typical journal article 
 frontmatter looks like this:
 
 ~~~~~~~~~~~~~~
@@ -54,6 +62,6 @@ See `CV.html` for a semi-automated CV generator, that should be somewhat updatab
 
 ### Styling
 
-This is derived pretty closely from the Jekyll default.  I've tried to make 
+This is derived pretty closely from the Jekyll default.  I've (Louis) tried to make 
 things even a little more modular, but I only noticed how SCSS mixins work
 recently, so more can be done.
