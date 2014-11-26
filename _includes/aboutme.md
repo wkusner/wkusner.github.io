@@ -1,30 +1,23 @@
-I am an [Aalto Science Fellow][ascifellow] and a member of the Department of [Information
-and Computer Science][ics] at [Aalto University][aalto]. I'm also the PI of the thematic
-program [Challenges in Large Geometric Structures and Big Data][largestructures] at
-[AScI][asci]. I organize an associated [seminar][seminar].
+I am an FWF Postdoctoral Researcher at the [Institute for Analysis and Computational Number Theory][ACNT] at Technische Universität Graz.
+[I am also currently checking a series of instructions for building a website hosted on GitHub. ][louis]
 
-In Fall 2014, I am teaching a [computational geometry class][cg14].
 
-I like to work on problems that feature an interaction between geometry, combinatorics,
-and algorithmic considerations. I also like theoretical problems that arise out of
-concrete, applied scenarios.
+
+Because of this, consider the site to be under construction.  Briefly, I am interested problems of Discrete Geometry 
+that are approachable by synthetic and analytic means, or those that are becoming tractable to brute force computation.
+I am also interested in more esoteric projects like editing and auditing papers and instructions 
+for things like how to build and host a site on GitHub.
 
 My main projects right now center around:
 
-- The rigidity and flexibility of frameworks
-- Algebraic and combinatorial approaches to machine learning and data analysis
+- Critical density in packings of anisotropic objects
+- The quality of point sets
 
-For more detail, see the list of publications below, the 
-[short overview][bio] or my [full CV][cv]. To find me, 
-see my [contact information][contact].
+For more detail, you will need to go somewhere else, as this site is mainly here to test a template.  Otherwise, you would be able to check below for a 
+for a short overview, or even find my CV elsewhere on this site. For more info, search elsewhere for now.  
+Google is pretty good at finding me these days.
 
-[aalto]: http://aalto.fi/
-[asci]: http://asci.aalto.fi/
-[ascifellow]: http://asci.aalto.fi/en/science-fellows/
-[largestructures]: http://asci.aalto.fi/en/project_funding/
-[ics]: http://ics.aalto.fi/
-[seminar]: /largestructures-seminar/
-[cg14]: https://noppa.aalto.fi/noppa/kurssi/t-79.7001/
-[cv]: /CV/
-[bio]: bio
-[contact]: /contact/
+
+
+[ACNT]: http://finanz.math.tugraz.at/
+[louis]: http://theran.lt/2014/11/12/about-this-site.html
