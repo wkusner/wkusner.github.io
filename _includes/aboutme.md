@@ -16,7 +16,7 @@ Right now I am thinking about:
 <!---For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
 for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.-->
 
-For more information about me, you can check my [CV]({{ site.url }}/assets/KusnerCV.pdf) or [Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
+For more information, you can check my [2014 CV]({{ site.url }}/assets/KusnerCV.pdf) or [2014 Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
 [ACNT]: http://finanz.math.tugraz.at/
 [louis]: http://theran.lt/2014/11/12/about-this-site.html
