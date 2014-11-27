@@ -18,6 +18,8 @@ for a short overview, or even find a link to a more recent copy my [CV]({{ site.
 
 For more information, you can check my [2014 CV]({{ site.url }}/assets/KusnerCV.pdf) or [2014 Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
+For search purposes, it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
+
 [ACNT]: http://finanz.math.tugraz.at/
 [louis]: http://theran.lt/2014/11/12/about-this-site.html
  
