@@ -3,7 +3,7 @@ I am an FWF Postdoctoral Researcher at the [Institute for Analysis and Computati
 
 
 
-Because of this, consider the site to be under construction.  Briefly, I am interested problems of Discrete Geometry 
+<!---Because of this, consider the site to be under construction.  Briefly, -->I am interested problems of Discrete Geometry 
 that are approachable by synthetic and analytic means and those where brute force computation is becoming tractable.
 I am also interested in more esoteric projects like editing and auditing papers and instructions for things like how 
 to build and host a site on GitHub.
@@ -13,10 +13,10 @@ Right now I am thinking about:
 - Critical density in packings of anisotropic objects
 - The quality of point sets on the sphere
 
-For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
-for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.
+<!---For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
+for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.-->
 
-
+For more information about me, you can check my [CV]({{ site.url }}/assets/KusnerCV.pdf) or [Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
 [ACNT]: http://finanz.math.tugraz.at/
 [louis]: http://theran.lt/2014/11/12/about-this-site.html
