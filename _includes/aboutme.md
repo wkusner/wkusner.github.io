@@ -3,8 +3,8 @@ I am an FWF Postdoctoral Researcher at the [Institute for Analysis and Computati
 
 
 
-<!---Because of this, consider the site to be under construction.  Briefly, -->I am interested problems of discrete geometry 
-that are approachable by synthetic and analytic means and those where brute force computation is becoming tractable.
+<!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry 
+that are approachable by synthetic or analytic means and those where brute force computation is becoming tractable.
 I am also interested in more esoteric projects like editing and auditing papers and instructions for things like how 
 to build and host a site on GitHub.
 
