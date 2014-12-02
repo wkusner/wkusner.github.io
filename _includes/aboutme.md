@@ -19,6 +19,7 @@ for a short overview, or even find a link to a more recent copy my [CV]({{ site.
 More information can be found in my [2014 CV]({{ site.url }}/assets/KusnerCV.pdf) or [2014 Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
 For search purposes it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
+
 A template for this site and instructions can be found [here.][louis]
 
 [ACNT]: http://finanz.math.tugraz.at/
