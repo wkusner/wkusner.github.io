@@ -1,0 +1,406 @@
+
+update gems?
+http://stackoverflow.com/questions/11462367/cant-install-jekyll-on-mac-trying-to-set-up-github-blog
+
+need to sudo….
+
+
+bozo@Io:~$ gem install jekyll
+Fetching: liquid-2.6.1.gem (100%)
+ERROR:  While executing gem ... (Gem::FilePermissionError)
+    You don't have write permissions for the /Library/Ruby/Gems/2.0.0 directory.
+bozo@Io:~$ brew install jekyll
+Error: No available formula for jekyll 
+Searching formulae...
+Searching taps...
+bozo@Io:~$ ruby -v
+ruby 2.0.0p481 (2014-05-08 revision 45883) [universal.x86_64-darwin13]
+bozo@Io:~$ 
+
+
+
+
+gem install jekyll --user-install 
+https://wiki.archlinux.org/index.php/ruby#Installing_gems_per-user_or_system-wide
+
+(*NEW RUN….*)
+
+
+bozo@Io:~$ gem install jekyll
+Fetching: liquid-2.6.1.gem (100%)
+ERROR:  While executing gem ... (Gem::FilePermissionError)
+    You don't have write permissions for the /Library/Ruby/Gems/2.0.0 directory.
+bozo@Io:~$ brew install jekyll
+Error: No available formula for jekyll 
+Searching formulae...
+Searching taps...
+bozo@Io:~$ ruby -v
+ruby 2.0.0p481 (2014-05-08 revision 45883) [universal.x86_64-darwin13]
+bozo@Io:~$ gem update
+Updating installed gems
+Updating CFPropertyList
+Fetching: CFPropertyList-2.2.8.gem (100%)
+ERROR:  While executing gem ... (Gem::FilePermissionError)
+    You don't have write permissions for the /Library/Ruby/Gems/2.0.0 directory.
+bozo@Io:~$ sudo gem update --system
+Password:
+Updating rubygems-update
+Fetching: rubygems-update-2.4.4.gem (100%)
+Successfully installed rubygems-update-2.4.4
+Parsing documentation for rubygems-update-2.4.4
+Installing ri documentation for rubygems-update-2.4.4
+Installing darkfish documentation for rubygems-update-2.4.4
+Installing RubyGems 2.4.4
+RubyGems 2.4.4 installed
+Parsing documentation for rubygems-2.4.4
+Installing ri documentation for rubygems-2.4.4
+
+=== 2.4.4 / 2014-11-12
+
+Bug fixes:
+
+* Add alternate Root CA for upcoming certificate change. Fixes #1050 by
+  Protosac
+
+=== 2.4.3 / 2014-11-10
+
+Bug fixes:
+
+* Fix redefine MirrorCommand issue. Pull request #1044 by @akr.
+* Fix typo in platform= docs.  Pull request #1048 by @jasonrclark
+* Add root SSL certificates for upcoming certificate change.  Fixes #1050 by
+  Protosac
+
+=== 2.4.2 / 2014-10-01
+
+This release was sponsored by Ruby Central.
+
+Bug fixes:
+
+* RubyGems now correctly matches wildcard no_proxy hosts.  Issue #997 by
+  voelzemo.
+* Added support for missing git_source method in the gem dependencies API.
+* Fixed handling of git gems with an alternate install directory.
+* Lockfiles will no longer be truncated upon resolution errors.
+* Fixed messaging for `gem owner -a`.  Issue #1004 by Aaron Patterson, Ryan
+  Davis.
+* Removed meaningless ensure.  Pull request #1003 by gogotanaka.
+* Improved wording of --source option help.  Pull request #989 by Jason Clark.
+* Empty build_info files are now ignored.  Issue #903 by Adan Alvarado.
+* Gem::Installer ignores dependency checks when installing development
+  dependencies.  Issue #994 by Jens Willie.
+* `gem update` now continues after dependency errors.  Issue #993 by aaronchi.
+* RubyGems no longer warns about semantic version dependencies for the 0.x
+  range.  Issue #987 by Jeff Felchner, pull request #1006 by Hsing-Hui Hsu.
+* Added minimal lock to allow multithread installation of gems.  Issue #982
+  and pull request #1005 by Yorick Peterse
+* RubyGems now considers prerelease dependencies as it did in earlier versions
+  when --prerelease is given.  Issue #990 by Jeremy Tryba.
+* Updated capitalization in README.  Issue #1010 by Ben Bodenmiller.
+* Fixed activating gems from a Gemfile for default gems.  Issue #991 by khoan.
+* Fixed windows stub script generation for Cygwin.  Issue #1000 by Brett
+  DiFrischia.
+* Allow gem bindir and ruby.exe to live in separate diretories.  Pull request
+  #942 by Ian Flynn.
+* Fixed handling of gemspec in gem dependencies files to match Bundler
+  behavior.  Issue #1020 by Michal Papis.
+* Fixed `gem update` when updating to prereleases.  Issue #1028 by Santiago
+  Pastorino.
+* RubyGems now fails immediately when a git reference cannot be found instead
+  of spewing git errors.  Issue #1031 by Michal Papis
+
+=== 2.4.1 / 2014-07-17
+
+Bug fixes:
+
+* RubyGems can now be updated on Ruby implementations that do not support
+  vendordir in RbConfig::CONFIG.  Issue #974 by net1957.
+
+=== 2.4.0 / 2014-07-16
+
+Minor enhancements:
+
+* The contents command now supports a --show-install-dir option that shows
+  only the directory the gem is installed in.  Feature request #966 by Akinori
+  MUSHA.
+* Added a --build-root option to the install command for packagers.  Pull
+  request #965 by Marcus Rückert.
+* Added vendor gem support to RubyGems.  Package managers may now install gems
+  in Gem.vendor_dir with the --vendor option to gem install.  Issue #943 by
+  Marcus Rückert.
+
+Bug fixes:
+
+* Kernel#gem now respects the prerelease flag when activating gems.
+  Previously this behavior was undefined which could lead to bugs when a
+  prerelease version was unintentionally activated.  Bug #938 by Joe Ferris.
+* RubyGems now prefers gems from git over installed gems.  This allows gems
+  from git to override an installed gem with the same name and version.  Bug
+  #944 by Thomas Kriechbaumer.
+* Fixed handling of git gems in a lockfile with unversioned dependencies.  Bug
+  #940 by Michael Kaiser-Nyman.
+* The ruby directive in a gem dependencies file is ignored when installing.
+  Bug #941 by Michael Kaiser-Nyman.
+* Added open to list of builtin commands (`gem open` now works).  Reported by
+  Espen Antonsen.
+* `gem open` now works with command-line editors.  Pull request #962 by Tim
+  Pope.
+* `gem install -g` now respects `--conservative`.  Pull request #950 by Jeremy
+  Evans.
+* RubyGems releases announcements now now include checksums.  Bug #939 by
+  Alexander E. Fischer.
+* RubyGems now expands ~ in $PATH when checking if installed executables will
+  be runnable.  Pull request #945 by Alex Talker.
+* Fixed `gem install -g --explain`.  Issue #947 by Luis Lavena.  Patch by
+  Hsing-Hui Hsu.
+* RubyGems locks less during gem activation.  Pull request #951 by Aaron
+  Patterson and Justin Searls, #969 by Jeremy Tryba.
+* Kernel#gem is now thread-safe.  Pull request #967 by Aaron Patterson.
+* RubyGems now handles spaces in directory names for some parts of extension
+  building.  Pull request #949 by Tristan Hill.
+* RubyGems no longer defines an empty Date class.  Pull Request #948 by Benoit
+  Daloze.
+* RubyGems respects --document options for `gem update` again.  Bug 946 by
+  jonforums.  Patch by Hsing-Hui Hsu.
+* RubyGems generates documentation again with --ignore-dependencies.  Bug #961
+  by Pulfer.
+* RubyGems can install extensions across partitions now.  Pull request #970 by
+  Michael Scherer.
+* `-s` is now short for `--source` which resolves an ambiguity with
+  --no-suggestions.  Pull request #955 by Alexander Kahn.
+* Added extra test for ~> for 0.0.X versions.  Pull request #958 by Mark
+  Lorenz.
+* Fixed typo in gem updated help.  Pull request #952 by Per Modin.
+* Clarified that the gem description should not be excessively long.  Part of
+  bug #956 by Renier Morales.
+* Hid documentation of outdated test_files related methods in Specification.
+  Guides issue #90 by Emil Soman.
+* RubyGems now falls back to the old index if the rubygems.org API fails
+  during gem resolution.
+
+
+
+------------------------------------------------------------------------------
+
+RubyGems installed the following executables:
+	/System/Library/Frameworks/Ruby.framework/Versions/2.0/usr/bin/gem
+
+Ruby Interactive (ri) documentation was installed. ri is kind of like man 
+pages for ruby libraries. You may access it like this:
+  ri Classname
+  ri Classname.class_method
+  ri Classname#instance_method
+If you do not wish to install this documentation in the future, use the
+--no-document flag, or set it as the default in your ~/.gemrc file. See
+'gem help env' for details.
+
+RubyGems system software updated
+bozo@Io:~$ ruby update
+ruby: No such file or directory -- update (LoadError)
+bozo@Io:~$ ruby -v
+ruby 2.0.0p481 (2014-05-08 revision 45883) [universal.x86_64-darwin13]
+bozo@Io:~$ sudo gem install jekyll
+Fetching: fast-stemmer-1.0.2.gem (100%)
+Building native extensions.  This could take a while...
+Successfully installed fast-stemmer-1.0.2
+Fetching: classifier-reborn-2.0.2.gem (100%)
+Successfully installed classifier-reborn-2.0.2
+Fetching: ffi-1.9.6.gem (100%)
+Building native extensions.  This could take a while...
+Successfully installed ffi-1.9.6
+Fetching: rb-inotify-0.9.5.gem (100%)
+Successfully installed rb-inotify-0.9.5
+Fetching: rb-fsevent-0.9.4.gem (100%)
+Successfully installed rb-fsevent-0.9.4
+Fetching: hitimes-1.2.2.gem (100%)
+Building native extensions.  This could take a while...
+Successfully installed hitimes-1.2.2
+Fetching: timers-4.0.1.gem (100%)
+Successfully installed timers-4.0.1
+Fetching: celluloid-0.16.0.gem (100%)
+Successfully installed celluloid-0.16.0
+Fetching: listen-2.8.0.gem (100%)
+Successfully installed listen-2.8.0
+Fetching: jekyll-watch-1.1.2.gem (100%)
+Successfully installed jekyll-watch-1.1.2
+Fetching: sass-3.4.8.gem (100%)
+Successfully installed sass-3.4.8
+Fetching: jekyll-sass-converter-1.2.1.gem (100%)
+Successfully installed jekyll-sass-converter-1.2.1
+Fetching: coffee-script-source-1.8.0.gem (100%)
+Successfully installed coffee-script-source-1.8.0
+Fetching: execjs-2.2.2.gem (100%)
+Successfully installed execjs-2.2.2
+Fetching: coffee-script-2.3.0.gem (100%)
+Successfully installed coffee-script-2.3.0
+Fetching: jekyll-coffeescript-1.0.1.gem (100%)
+Successfully installed jekyll-coffeescript-1.0.1
+Fetching: jekyll-gist-1.1.0.gem (100%)
+Successfully installed jekyll-gist-1.1.0
+Fetching: jekyll-paginate-1.1.0.gem (100%)
+Successfully installed jekyll-paginate-1.1.0
+Fetching: blankslate-2.1.2.4.gem (100%)
+Successfully installed blankslate-2.1.2.4
+Fetching: parslet-1.5.0.gem (100%)
+Successfully installed parslet-1.5.0
+Fetching: toml-0.1.2.gem (100%)
+Successfully installed toml-0.1.2
+Fetching: redcarpet-3.2.0.gem (100%)
+Building native extensions.  This could take a while...
+Successfully installed redcarpet-3.2.0
+Fetching: yajl-ruby-1.1.0.gem (100%)
+Building native extensions.  This could take a while...
+Successfully installed yajl-ruby-1.1.0
+Fetching: posix-spawn-0.3.9.gem (100%)
+Building native extensions.  This could take a while...
+Successfully installed posix-spawn-0.3.9
+Fetching: pygments.rb-0.6.0.gem (100%)
+Successfully installed pygments.rb-0.6.0
+Fetching: colorator-0.1.gem (100%)
+Successfully installed colorator-0.1
+Fetching: safe_yaml-1.0.4.gem (100%)
+Successfully installed safe_yaml-1.0.4
+Fetching: mercenary-0.3.5.gem (100%)
+Successfully installed mercenary-0.3.5
+Fetching: kramdown-1.5.0.gem (100%)
+Successfully installed kramdown-1.5.0
+Fetching: liquid-2.6.1.gem (100%)
+Successfully installed liquid-2.6.1
+Fetching: jekyll-2.5.1.gem (100%)
+Successfully installed jekyll-2.5.1
+Parsing documentation for fast-stemmer-1.0.2
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for /Library/Ruby/Gems/2.0.0/extensions/universal-darwin-13/2.0.0/fast-stemmer-1.0.2/stemmer.bundle, skipping
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for lib/stemmer.bundle, skipping
+Installing ri documentation for fast-stemmer-1.0.2
+Parsing documentation for classifier-reborn-2.0.2
+Installing ri documentation for classifier-reborn-2.0.2
+Parsing documentation for ffi-1.9.6
+Installing ri documentation for ffi-1.9.6
+Parsing documentation for rb-inotify-0.9.5
+Installing ri documentation for rb-inotify-0.9.5
+Parsing documentation for rb-fsevent-0.9.4
+Installing ri documentation for rb-fsevent-0.9.4
+Parsing documentation for hitimes-1.2.2
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for /Library/Ruby/Gems/2.0.0/extensions/universal-darwin-13/2.0.0/hitimes-1.2.2/hitimes/2.0/hitimes.bundle, skipping
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for lib/hitimes/2.0/hitimes.bundle, skipping
+Installing ri documentation for hitimes-1.2.2
+Parsing documentation for timers-4.0.1
+Installing ri documentation for timers-4.0.1
+Parsing documentation for celluloid-0.16.0
+Installing ri documentation for celluloid-0.16.0
+Parsing documentation for listen-2.8.0
+Installing ri documentation for listen-2.8.0
+Parsing documentation for jekyll-watch-1.1.2
+Installing ri documentation for jekyll-watch-1.1.2
+Parsing documentation for sass-3.4.8
+Installing ri documentation for sass-3.4.8
+Parsing documentation for jekyll-sass-converter-1.2.1
+Installing ri documentation for jekyll-sass-converter-1.2.1
+Parsing documentation for coffee-script-source-1.8.0
+Installing ri documentation for coffee-script-source-1.8.0
+Parsing documentation for execjs-2.2.2
+Installing ri documentation for execjs-2.2.2
+Parsing documentation for coffee-script-2.3.0
+Installing ri documentation for coffee-script-2.3.0
+Parsing documentation for jekyll-coffeescript-1.0.1
+Installing ri documentation for jekyll-coffeescript-1.0.1
+Parsing documentation for jekyll-gist-1.1.0
+Installing ri documentation for jekyll-gist-1.1.0
+Parsing documentation for jekyll-paginate-1.1.0
+Installing ri documentation for jekyll-paginate-1.1.0
+Parsing documentation for blankslate-2.1.2.4
+Installing ri documentation for blankslate-2.1.2.4
+Parsing documentation for parslet-1.5.0
+Installing ri documentation for parslet-1.5.0
+Parsing documentation for toml-0.1.2
+Installing ri documentation for toml-0.1.2
+Parsing documentation for redcarpet-3.2.0
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for /Library/Ruby/Gems/2.0.0/extensions/universal-darwin-13/2.0.0/redcarpet-3.2.0/redcarpet.bundle, skipping
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for lib/redcarpet.bundle, skipping
+Installing ri documentation for redcarpet-3.2.0
+Parsing documentation for yajl-ruby-1.1.0
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for /Library/Ruby/Gems/2.0.0/extensions/universal-darwin-13/2.0.0/yajl-ruby-1.1.0/yajl/yajl.bundle, skipping
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for lib/yajl/yajl.bundle, skipping
+Installing ri documentation for yajl-ruby-1.1.0
+Parsing documentation for posix-spawn-0.3.9
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for /Library/Ruby/Gems/2.0.0/extensions/universal-darwin-13/2.0.0/posix-spawn-0.3.9/posix_spawn_ext.bundle, skipping
+unable to convert "\xCA" from ASCII-8BIT to UTF-8 for lib/posix_spawn_ext.bundle, skipping
+Installing ri documentation for posix-spawn-0.3.9
+Parsing documentation for pygments.rb-0.6.0
+Installing ri documentation for pygments.rb-0.6.0
+Parsing documentation for colorator-0.1
+Installing ri documentation for colorator-0.1
+Parsing documentation for safe_yaml-1.0.4
+Installing ri documentation for safe_yaml-1.0.4
+Parsing documentation for mercenary-0.3.5
+Installing ri documentation for mercenary-0.3.5
+Parsing documentation for kramdown-1.5.0
+Installing ri documentation for kramdown-1.5.0
+Parsing documentation for liquid-2.6.1
+Installing ri documentation for liquid-2.6.1
+Parsing documentation for jekyll-2.5.1
+Installing ri documentation for jekyll-2.5.1
+31 gems installed
+bozo@Io:~$ 
+
+
+
+
+
+
+
+
+
+(*Making the repository*)
+
+
+Unclear, REPO needs to be a repository?
+
+
+git pull https://github.com/theran/theran.github.io.git --branch template --single-branch
+error: unknown option `branch'
+usage: git fetch [<options>] [<repository> [<refspec>...]]
+   or: git fetch [<options>] <group>
+   or: git fetch --multiple [<options>] [(<repository> | <group>)...]
+   or: git fetch --all [<options>]
+
+    -v, --verbose         be more verbose
+    -q, --quiet           be more quiet
+    --all                 fetch from all remotes
+    -a, --append          append to .git/FETCH_HEAD instead of overwriting
+    --upload-pack <path>  path to upload pack on remote end
+    -f, --force           force overwrite of local branch
+    -m, --multiple        fetch from multiple remotes
+    -t, --tags            fetch all tags and associated objects
+    -n                    do not fetch all tags (--no-tags)
+    -p, --prune           prune remote-tracking branches no longer on remote
+    --recurse-submodules[=<on-demand>]
+                          control recursive fetching of submodules
+    --dry-run             dry run
+    -k, --keep            keep downloaded pack
+    -u, --update-head-ok  allow updating of HEAD ref
+    --progress            force progress reporting
+    --depth <depth>       deepen history of shallow clone
+    --unshallow           convert to a complete repository
+    --update-shallow      accept refs that update .git/shallow
+
+
+
+something wrong with the pull —branch as written
+
+
+
+
+cloned repo….  named theran.github.io, maybe make a new directory username….?
+
+
+jekyll serve
+Configuration file: none
+            Source: /Users/bozo/REPO
+       Destination: /Users/bozo/REPO/_site
+      Generating... 
+     Build Warning: Layout 'page' requested in theran.github.io/404.md does not exist.
+  Liquid Exception: Included file '_includes/journalpapers.html' not found in theran.github.io/CV.html
+jekyll 2.5.1 | Error:  Included file '_includes/journalpapers.html' not found
+
+
