@@ -6,7 +6,7 @@ doi: 10.1007/s00454-014-9593-6
 journal: dcg
 authors:
     - wöden
-title: Upper Bounds on Packing Density for Circular Cylinders with High Aspect Ratio
+title: Upper bounds on packing density for circular cylinders with high aspect ratio
 year: 2014
 volume: 52
 issue: 4
