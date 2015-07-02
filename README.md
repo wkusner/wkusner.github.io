@@ -22,6 +22,8 @@ Below is a quick guide to some of the features.
 
 
 ### Editing
+To have posts added to link bar at top of page, add a shorttitle in their md file
+
 Edit the `_includes/aboutme.md` file to change the main page body content.
 Edit the `_includes/picture.html` to pull a picture from the `_assets` folder and also change title and affiliations.  
 The `_index.html` file in the main folder should be used to collate other pieces.
