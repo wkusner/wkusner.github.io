@@ -1,5 +1,5 @@
 I am an FWF Postdoctoral Researcher at the [Institute for Analysis and Computational Number Theory][ACNT] at Technische Universität Graz.
-]In the Fall of 2014, I was a visitor at the [ESI][ESI]. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  
+In the Fall of 2014, I was a visitor at the [ESI][ESI]. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  
 
 
 
