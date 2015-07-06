@@ -6,7 +6,7 @@ In the fall of 2014, I was a visitor at the [ESI][ESI]. In the spring of 2015, I
 <!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry and geometric optimization
 that are approachable by synthetic or analytic means and those where brute force computation is becoming tractable.
 I am also interested in more esoteric projects like editing and auditing papers and instructions for things like how 
-to build and host a site on GitHub.  
+to build and host this site on GitHub.  
 
 Right now I am thinking about:
 
