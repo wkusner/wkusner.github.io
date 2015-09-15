@@ -5,8 +5,7 @@ In the fall of 2014, I was a visitor at the [ESI][ESI]. In the spring of 2015, I
 
 <!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry and geometric optimization
 that are approachable by synthetic or analytic means and those where brute force computation is becoming tractable.
-I am also interested in more esoteric projects like editing and auditing papers and instructions for things like how 
-to build and host this site on GitHub.  
+I am also interested in more esoteric projects like building physical models of configuration spaces.
 
 Right now I am thinking about:
 
@@ -21,7 +20,7 @@ More information can be found in my [2014 CV]({{ site.url }}/assets/KusnerCV.pdf
 
 For search purposes it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
 
-A template for this site and instructions can be found [here.][louis]
+A template for this site and instructions can be found [here.][louis]  
 
 [ACNT]: http://finanz.math.tugraz.at/
 [ESI]: http://www.esi.ac.at/
