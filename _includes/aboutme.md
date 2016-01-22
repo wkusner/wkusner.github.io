@@ -1,4 +1,4 @@
-I am an FWF Postdoctoral Researcher at the [Institute for Analysis and Computational Number Theory][ACNT] at Technische Universität Graz.
+I am an FWF Postdoctoral Researcher at the [Institute for Analysis and Number Theory][ANT] at Technische Universität Graz.
 In the fall of 2014, I was a visitor at the [ESI][ESI]. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  
 
 
@@ -22,7 +22,7 @@ For search purposes it may be helpful to consider my name as Woden Kusner or Woe
 
 A template for this site and instructions can be found [here.][louis]  
 
-[ACNT]: http://finanz.math.tugraz.at/
+[ANT]: http://finanz.math.tugraz.at/
 [ESI]: http://www.esi.ac.at/
 [ICERM]: http://icerm.brown.edu/
 [louis]: http://theran.lt/2014/11/12/about-this-site.html
