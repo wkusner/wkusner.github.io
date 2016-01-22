@@ -21,7 +21,7 @@ TU Graz
 ## Mailing Address
 Wöden Kusner\\
 Technische Universität Graz\\
-Institute for Analysis and Computational Number Theory\\
+Institute for Analysis and Number Theory\\
 Steyrergasse 30/II\\
 8010 Graz\\
 AUSTRIA
