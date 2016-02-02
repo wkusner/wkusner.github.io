@@ -7,7 +7,7 @@ journal: dcg
 authors:
     - wöden
 title: On the densest packing of polycylinders in any dimension
-year: 2016
+year: To appear in 2016
 volume:
 issue: 
 pages:
