@@ -25,4 +25,4 @@ sitemap:
 
 
 
-exclude: [assets/_dep/, papers/dep/]
+exclude: [assets/_dep/, papers/_dep/]
