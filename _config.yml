@@ -20,4 +20,7 @@ collections:
 # Build settings
 markdown: kramdown
 
+gems:
+  - jekyll-sitemap
+
 exclude: _dep
