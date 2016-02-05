@@ -1,7 +1,7 @@
 ---
 layout: page
-permalink: /Posts/
-title: Posts
+permalink: /posts/
+title: posts
 shorttitle:
 ---
 
