@@ -1,6 +1,6 @@
 ---
 layout: page
-permalink: /Puzzles/
+permalink: /puzzles/
 title: Puzzles
 shorttitle:
 ---

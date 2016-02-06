@@ -1,6 +1,6 @@
 ---
 layout: page
-permalink: /Packing/
+permalink: /packing/
 title: Packing Problems
 shorttitle:
 ---
