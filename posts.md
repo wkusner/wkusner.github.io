@@ -5,13 +5,12 @@ title: posts
 shorttitle:
 ---
 
-There is currently duplication and some form of case sensitive issue between /posts/ and /Posts/
-
+<h2>recent and not so recent posts</h2>
 
 <ul>
 {% for post in site.posts %}
 <li>
-<a href="{{ post.url }}">{{ post.title }}</a>
+ <a href="{{ post.url }}">{{ post.title }}</a> ({{ post.date | date_to_long_string }})
 </li>
 {% endfor %}
 </ul>
