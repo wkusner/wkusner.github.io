@@ -5,6 +5,9 @@ title: posts
 shorttitle:
 ---
 
+There is currently duplication and some form of case sensitive issue between /posts/ and /Posts/
+
+
 <ul>
 {% for post in site.posts %}
 <li>
