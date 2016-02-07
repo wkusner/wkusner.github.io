@@ -7,6 +7,9 @@ shorttitle:
 
 <h2>recent and not so recent posts</h2>
 
+Welcome to my secret list of posts, supposedly not linked elsewhere! 
+
+
 <ul>
 {% for post in site.posts %}
 <li>
