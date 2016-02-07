@@ -1,9 +1,11 @@
 ---
 layout: post
-title:  "pandoc, latex and markdown"
-date:   2016-02-07 18:52:00
+title:  pandoc latex and markdown
+date:   2016-02-06 19:59:20
 categories: projects
 ---
+
+
 An important element of some of these posts will be converting a typographic language I know to markdown.
 
 I discovered [pandoc][pandoc], but it does not seem to display mathematics very well in any form. It seems 
