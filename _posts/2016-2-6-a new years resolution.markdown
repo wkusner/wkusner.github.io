@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "a new years resolution"
-date:   2016-02-05 23:56:20
+date:   2016-02-06 23:56:20
 categories: projects
 ---
 
