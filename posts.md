@@ -9,6 +9,8 @@ shorttitle:
 
 Welcome to my secret list of posts, supposedly not linked elsewhere! 
 
+Post are time sensitive and my forgetting GMT+1 doesn't match so well with the "standard" GMT-5
+
 
 <ul>
 {% for post in site.posts %}
@@ -18,10 +20,3 @@ Welcome to my secret list of posts, supposedly not linked elsewhere!
 {% endfor %}
 </ul>
 
-<ul>
-{% for post in site.posts %}
-<li class="post">
-<h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
-</li>
-{% endfor %}
-</ul>
