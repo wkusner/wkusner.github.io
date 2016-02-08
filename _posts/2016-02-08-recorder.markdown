@@ -1,0 +1,19 @@
+---
+layout: post
+title:  recorder
+date:   2016-02-08 01:59:20
+categories: projects
+---
+
+
+I have been working on a Moeck Tuju soprano recorder that I found at a thrift store for €4? and since it was art day, half of that. It has some damage, but I have been able to [remove the block][pb], oil it and fill a crack with cyanoacrylate (superglue!) and it is looking alright.  It also (maybe) sounds ok, despite my messing around with it.
+
+
+
+![Moeck Tuju](/assets/placeholde.jpg "Moeck Tuju")
+
+
+
+[placeholder]: /assets/tuju.jpg "placeholder title in quotes"
+
+[pb]: http://www.flute-a-bec.com/entretcanalgb.html
