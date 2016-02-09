@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  recorder
-date:   2016-02-08 01:59:20
+date:   2016-02-08
 categories: projects
 ---
 

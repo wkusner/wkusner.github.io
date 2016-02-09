@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  pandoc latex and markdown
-date:   2016-02-06 19:59:20
+date:   2016-02-06
 categories: projects
 ---
 
