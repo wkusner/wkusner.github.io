@@ -10,10 +10,10 @@ I have been working on a Moeck Tuju soprano recorder that I found at a thrift st
 
 
 
-![Moeck Tuju](/assets/placeholde.jpg "Moeck Tuju")
+![Moeck Tuju](/assets/tuju.jpg "Moeck Tuju")
 
 
 
-[placeholder]: /assets/tuju.jpg "placeholder title in quotes"
+[tuju]: /assets/tuju.jpg "placeholder title in quotes"
 
 [pb]: http://www.flute-a-bec.com/entretcanalgb.html
