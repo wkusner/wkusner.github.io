@@ -1,7 +1,7 @@
 ---
 layout: paper
 type: preprint
-arxiv:1602.07220
+arxiv: 
 doi: 
 journal:
 authors:
