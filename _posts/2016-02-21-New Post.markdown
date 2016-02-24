@@ -1,0 +1,100 @@
+---
+layout: post
+title: new post
+date:   2016-02-21
+categories: journal, food, projects
+---
+
+
+Ideas for this post
+
+plants project:  A few? weeks ago, we bought some herbs from OBI to see if the green thumbs 
+were back.  Also, hopefully they will mitgate some of the humidity or at least provide some 
+fresh mint (latin name), rosemary (latin name), thyme(latin name) and sage (latin name).
+
+[plants]
+
+Warning, mint is grows like crazy, but this one seems sick and wilted.  I think it may have 
+been damaged by the cold at the hardware store.  The herbs were all outside.   Nope it is aphids
+I'm going to clean it off for the next few days with soap and water.  Hopefully they dont move to the other herbs.
+
+
+The 
+
+
+There is also a plant in my office that seems to be doing well [office plant] and we were talking about getting
+a new plant for our new office, which faces north :X   I saw venus fly traps at obi, maybe part of this project
+will become making a terarium out of a big old bottle!  one problem is feeding I guess.  I would need to bring live
+flies to work.  Maybe it would be worth it?  
+
+
+
+Recipies:
+
+I usually use sage for sausage
+
+rosemary is good for
+
+thyme is good for
+
+
+the mint is my wifes :)  but I might make julips if it recovers enough to harvest
+
+
+Also, here in austria, it seems hard to get pots with holes in them. [pots]  I was planning on repotting,
+but I will need a watering can, since the water will have to be carefully monitored
+
+
+
+
+making models
+
+repair something
+
+math?
+
+coffee reviews?
+
+food reviews?
+
+pub quiz record?
+
+life in austria?  old photos? 
+
+old blog post migration?
+
+
+Clark Derivative theorem and germs
+
+
+
+---
+
+I have been thinking about content creation, and how I still want to write every day. 
+There is a certain trade off that I can't quite get around.  If I want to write consistantly
+with a certain minimum standard of quality, I need to dedicate more time to doing
+interesting things and also more time to writing. 
+
+If I stick to certain themes, perhaps I can meet my goal of writing every day and creating
+content for a post every week.  
+
+Now that I think about it, the post format supports this as well, since I can date content for future
+publication.  
+
+
+Some categories to get started with:  journal, projects, reviews, math, code, photos, videos
+
+---
+---
+
+Goal: Write every day with a content update on the weekends.
+
+
+---
+---
+
+
+
+
+
+
