@@ -2,7 +2,7 @@
 layout: paper
 type: journal
 arxiv: 1405.0497
-doi: 
+doi: 10.1007/s00454-016-9766-6
 journal: dcg
 authors:
     - wöden
