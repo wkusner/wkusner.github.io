@@ -16,7 +16,7 @@ Right now I am thinking about:
 <!---For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
 for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.-->
 
-More information can be found in my [2015 CV]({{ site.url }}/assets/KusnerCV.pdf) or [2015 Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
+More information can be found in my [~2015+ CV]({{ site.url }}/assets/KusnerCV.pdf) or [~2015+ Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
 For search purposes it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
 
