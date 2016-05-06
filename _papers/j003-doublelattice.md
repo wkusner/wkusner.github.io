@@ -1,14 +1,14 @@
 ---
 layout: paper
-type: preprint
+type: journal
 arxiv: 1509.02241
 doi: 
-journal:
+journal:dcg
 authors:
     - yoav 
     - wöden
 title: The local optimality of the double lattice packing
-year: 2015
+year: 2016
 volume: 
 issue: 
 pages: 
