@@ -1,14 +1,14 @@
 ---
 layout: paper
 type: preprint
-arxiv:
+arxiv: 
 doi: 
-journal:
+journal: 
 authors:
     - rob
     - wöden
-    -jeff
-    senya
+    - jeff
+    - senya
 title: The twelve spheres problem
 year: 2016
 volume: 

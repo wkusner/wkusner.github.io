@@ -3,7 +3,7 @@ layout: paper
 type: journal
 arxiv: 1509.02241
 doi: 
-journal:dcg
+journal: dcg
 authors:
     - yoav 
     - wöden
