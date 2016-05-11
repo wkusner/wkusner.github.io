@@ -13,6 +13,8 @@ volume:
 issue: 
 pages: 
 ---
+### Abstract:
+
   We show that every packing of regular pentagons in the Euclidean plane has
 density less than 0.9611. Our proof is computer-assisted. We also give a
 detailed strategy for proving the Kuperberg-Kuperberg conjecture, which

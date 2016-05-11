@@ -12,5 +12,11 @@ volume: 55
 issue: 3
 pages: 638-641
 ---
+### Abstract:
+
 Using transversality and a dimension reduction argument, a result of A. Bezdek and W. Kuperberg is applied to polycylinders, showing that the optimal packing density of $\mathbb{D}^2\times \mathbb{R}^n$ equals $\pi/\sqrt{12}$ for all $n \ge 0$.
+
+### Comments and Corrigenda:
+
+This paper was split before publication.  In the published version, the second sentence "The closed unit interval is denoted by $\mathbb{I}$." is extraneous.  
 
