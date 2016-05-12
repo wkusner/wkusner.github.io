@@ -1,5 +1,6 @@
 ---
 layout: paper
+use_math : true
 type: journal
 arxiv: 1405.0497
 doi: 10.1007/s00454-016-9766-6

@@ -18,6 +18,9 @@
 
   ga('create', 'UA-64741002-1', 'auto');
   ga('send', 'pageview');
-
+  
 </script>
+    {% if page.use_math %}
+      {% include mathjax_support.html %}
+    {% endif %}
 </head>

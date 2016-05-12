@@ -19,7 +19,6 @@ collections:
 
 # Build settings
 markdown: kramdown
-
 sitemap:
     file: "/sitemap.xml"
 

@@ -1,5 +1,6 @@
 ---
 layout: paper
+use_math : true
 type: preprint
 arxiv: "1602.07220"
 doi: 
