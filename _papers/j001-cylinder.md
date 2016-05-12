@@ -19,11 +19,14 @@ In the early 1990s, A. Bezdek and W. Kuperberg used a relatively simple argument
 
 ### Comments and Corrigenda:
 
+ - Section 1.4, paragraph 1: The only existing bound**s** for circular cylinders and capped cylinders of finite length are ...
+ 
+ - Section 1.4 paragraph 2: ... both very close to where the bounds of Fejes Tóth and Kuperberg flatten<del>**s**</del> out.
+
  - Figure 3 displays the incorrect conjectured lower bound. It should appear as 
 
    ![Figure 3](figures/errataj001plot2.jpeg)
    
- - Section 3, paragraph 2:  Define the Dirichlet slice $d_x$ **to** be the set...
- - Section 1.4, paragraph 1: The only existing bound**s** for circular cylinders and capped cylinders of finite length are...
- - Section 1.4 paragraph 1: ...both very close to where the bounds of Fejes Tóth and Kuperberg flatten<del>**s**</del> out.
- - References: Wilker, J.B.: [1987] Problem II. Intuitive Geometry (Siófok, 1985), Colloq. Math. Soc. János Bolyai, vol. 48. North-Holland, Amsterdam New York, p.700
+ - Section 3, paragraph 2:  Define the Dirichlet slice $d_x$ **to** be the set ...
+
+ - References: Wilker, J.B.: $\[$1987$\]$ Problem II. Intuitive Geometry $\($Siófok, 1985$\)$, Colloq. Math. Soc. János Bolyai, vol. 48. North-Holland, Amsterdam New York, p.700
