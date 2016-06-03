@@ -3,7 +3,7 @@ layout: paper
 use_math : true
 type: journal
 arxiv: 1509.02241
-doi: 
+doi: 10.1007/s00454-016-9792-4
 journal: dcg
 authors:
     - yoav 
@@ -12,7 +12,7 @@ title: The local optimality of the double lattice packing
 year: 2016
 volume: 
 issue: 
-pages: 
+pages:
 ---
 ### Abstract:
 
