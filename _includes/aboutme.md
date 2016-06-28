@@ -1,5 +1,5 @@
 I am an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology.
-In the fall of 2014, I was a visitor at the [ESI][ESI] at the University of Vienna. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  
+In the fall of 2014, I was a visitor at the [ESI][ESI] at the University of Vienna. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  In the summer of 2016, I will be a summer researcher at [MSRI][MSRI].
 
 
 
@@ -12,6 +12,7 @@ Right now I am thinking about:
 - Critical density in packings of anisotropic objects
 - The quality of point sets on the sphere
 - Configuration spaces of hard disks
+- Hyperuniform structures in the compact setting
 
 <!---For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
 for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.-->
@@ -26,4 +27,5 @@ A template for this site and instructions can be found [here.][louis]
 [ESI]: http://www.esi.ac.at/
 [ICERM]: http://icerm.brown.edu/
 [louis]: http://theran.lt/2014/11/12/about-this-site.html
+[MSRI]: http://www.msri.org/
  
