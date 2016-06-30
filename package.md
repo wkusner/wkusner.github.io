@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Package
+title: M Pack
 permalink: /package/
 ---
 
