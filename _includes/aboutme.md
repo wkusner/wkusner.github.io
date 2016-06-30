@@ -23,6 +23,8 @@ For search purposes it may be helpful to consider my name as Woden Kusner or Woe
 
 A template for this site and instructions can be found [here.][louis]  
 
+A cobbled together Mathmatica package with some interesting functions can be found [here.]({{ site.url }}/assets/Ws)
+
 [ANT]: http://finanz.math.tugraz.at/
 [ESI]: http://www.esi.ac.at/
 [ICERM]: http://icerm.brown.edu/
