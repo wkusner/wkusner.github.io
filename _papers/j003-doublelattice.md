@@ -12,7 +12,7 @@ title: The local optimality of the double lattice packing
 year: 2016
 volume: 56
 issue: 2
-pages:449-471
+pages: 449-471
 ---
 ### Abstract:
 
