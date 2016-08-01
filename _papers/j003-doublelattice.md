@@ -10,9 +10,9 @@ authors:
     - wöden
 title: The local optimality of the double lattice packing
 year: 2016
-volume: 
-issue: 
-pages:
+volume: 56
+issue: 2
+pages:449-471
 ---
 ### Abstract:
 

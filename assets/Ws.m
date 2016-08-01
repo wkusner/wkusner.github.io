@@ -212,6 +212,21 @@ TammesPoints[N_]:=
 
 
 
+TetPoints[th_]:= Module[{},
+
+z[t_]:=Sqrt[1-t^2];
+
+{
+{0,th,z[th]},
+{0,-th,z[th]},
+{th,0,-z[th]},
+{-th,0,-z[th]}
+}
+
+]
+
+
+
 (*Spherical Point Sets:Transformations & Flows*)
 
 DiscreteRadiusFlow[X_,ep_,del_]:=
@@ -263,6 +278,101 @@ ShowMeContactGraph[X_,epsilon_:0,linecolor_:Black]:=
 
 
 (*the colored graphs from peter and johann*)
+
+
+
+
+
+
+
+(*Functions*)
+
+Discrepancy[XX_]:=
+Module[{},
+NMSQ[u_]:=u.u;
+NM[u_]:=Sqrt[u.u] ;
+NTups[X_,n_]:=Subsets[X,{n}];
+
+(*Triples*)
+CRS[u_,v_]:={u[[2]]v[[3]]-u[[3]]v[[2]], u[[3]]v[[1]]-u[[1]]v[[3]],u[[1]]v[[2]]-v[[1]]u[[2]]};
+CRS::usage="CRS[u, v] computes the cross product of u and v";
+
+VNMal[u_,v_,w_]:=CRS[u-w,v-w]/NM[CRS[u-w,v-w]];
+VNMal::usage="VNMal[u, v, w] computes a unit normal vector to the plane defined by the points u, v and w.";
+
+DiracCounter31[x_,u_,v_,w_]:=If[Dot[VNMal[u,v,w],u]<Dot[VNMal[u,v,w],x], 1,0];
+DiracCounter31::usage="DiracCounter31[x, u, v, w] assigns a value of 1 to a point x if it falls within the OPEN cap defined by u, v and w and the choice of unit normal, 0 otherwise.";
+
+DiracCounter32[x_,u_,v_,w_]:=If[Dot[VNMal[u,v,w],u]<=Dot[VNMal[u,v,w],x], 1,0];
+DiracCounter32::usage="DiracCounter32[x, u, v, w] assigns a value of 1 to a point x if it falls within the CLOSED cap defined by u, v and w and the choice of unit normal, 0 otherwise.";
+
+SigmaCounter31[u_,v_,w_] :=(1-Dot[VNMal[u,v,w],u])/2;
+SigmaCounter31::usage="SigmaCounter31[x, u, v, w] computes the normalized area of the cap defined by u, v and w and the choice of unit normal.";
+
+LocalDis31[X_,u_,v_,w_]:=
+Abs[NMSQ[Map[DiracCounter31[#,u,v,w]&,X]]/Length[X]-SigmaCounter31[u,v,w]];
+LocalDis31::usage="LocalDis31[X, u, v, w] computes the discrepancy of a point set X with respect to the OPEN cap defined by u, v and w and the choice of unit normal.";
+
+LocalDis32[X_,u_,v_,w_]:=
+Abs[NMSQ[Map[DiracCounter32[#,u,v,w]&,X]]/Length[X]-SigmaCounter31[u,v,w]];
+LocalDis32::usage="LocalDis32[X, u, v, w] computes the discrepancy of a point set X with respect to the CLOSED cap defined by u, v and w and the choice of unit normal.";
+
+Dis31[X_]:=Map[LocalDis31[X,#[[1]],#[[2]],#[[3]]]&,NTups[X,3]];
+Dis31::usage="Dis31[X] computes the discrepancy of a point set X with respect to all OPEN caps defined by triples of points in X and a choice of unit normal.";
+
+Dis32[X_]:=Map[LocalDis32[X,#[[1]],#[[2]],#[[3]]]&,NTups[X,3]];
+Dis32::usage="Dis32[X] computes the discrepancy of a point set X with respect to all CLOSED caps defined by triples of points in X and a choice of unit normal.";
+
+
+Dis33[X_]:= {Max[Map[
+Max[
+LocalDis31[X,#[[1]],#[[2]],#[[3]]],
+LocalDis32[X,#[[1]],#[[2]],#[[3]]]
+]&,
+NTups[X,3]
+]]};
+
+(*Pairs*)
+LNMal[u_,v_]:=(u+v)/NM[u+v];
+VNMal::usage="VNMal[u, v] computes a unit normal vector to the plane defined by the points u, v when they are diametrically opposed in a cap.";
+
+DiracCounter21[x_,u_,v_]:=If[NM[u+v]==0,0,If[Dot[LNMal[u,v],u]<Dot[LNMal[u,v],x], 1,0]];
+DiracCounter21::usage="DiracCounter21[x, u, v] assigns a value of 1 to a point x if it falls within the OPEN cap defined by u and v being diametrically opposed and the choice of unit normal, 0 otherwise.";
+
+DiracCounter22[x_,u_,v_]:=If[NM[u+v]==0,0,If[Dot[LNMal[u,v],u]<=Dot[LNMal[u,v],x], 1,0]];
+DiracCounter22::usage="DiracCounter22[x, u, v] assigns a value of 1 to a point x if it falls within the CLOSED cap defined by u and v being diametrically opposed and the choice of unit normal, 0 otherwise.";
+
+SigmaCounter21[u_,v_] :=If[NM[u+v]==0,0,(1-Dot[LNMal[u,v],u])/2];
+SigmaCounter21::usage=
+"SigmaCounter21[x, u, v] computes the normalized area of the cap defined by u and v being diametrically opposed and the choice of unit normal.";
+
+LocalDis21[X_,u_,v_]:=
+Abs[NMSQ[Map[DiracCounter21[#,u,v]&,X]]/Length[X]-SigmaCounter21[u,v]];
+LocalDis21::usage="LocalDis21[X, u, v] computes the discrepancy of a point set X with respect to the OPEN cap defined by u and v being diametrically opposed and the choice of unit normal.";
+
+LocalDis22[X_,u_,v_]:=
+Abs[NMSQ[Map[DiracCounter22[#,u,v]&,X]]/Length[X]-SigmaCounter21[u,v]];
+LocalDis22::usage="LocalDis22[X, u, v] computes the discrepancy of a point set X with respect to the CLOSED cap defined by u and v being diametrically opposed and the choice of unit normal.";
+
+Dis21[X_]:=Map[LocalDis21[X,#[[1]],#[[2]]]&,NTups[X,2]];
+Dis21::usage="Dis21[X] computes the discrepancy of a point set X with respect to all OPEN caps defined by diametrically opposed pairs of points in X and a choice of unit normal.";
+
+
+Dis22[X_]:=Map[LocalDis22[X,#[[1]],#[[2]]]&,NTups[X,2]];
+Dis22::usage="Dis21[X] computes the discrepancy of a point set X with respect to all CLOSED caps defined by diametrically opposed pairs of points in X and a choice of unit normal.";
+
+S2InftyDisInit[X_]:=Max[Join[Dis22[X],Dis21[X],Dis31[X],Dis32[X],{1/Length[X]}]];
+S2InftyDis[X_]:=Max[Join[Dis22[X],Dis21[X],Dis33[X],{1/Length[X]}]];
+S2InftyDis::usage="SwInftyDis[X] computes the maximum discrepancy of the point set X with respect to the caps that are anchored by triples, pairs and singltons in X.  This equal to the S2 L-Infinity discrepancy of the set X.";
+S2InftyDisN[X_]:=Max[Join[Dis22[N[X]],Dis21[N[X]],Dis31[N[X]],Dis32[N[X]],{1/Length[N[X]]}]];
+
+S2InftyDisN[XX]
+
+]
+
+
+
+
 
 
 
