@@ -10,7 +10,7 @@ authors:
     - wöden
     - jeff
     - senya
-title: 
+title: The twelve spheres problem
 year: 2016
 volume: 
 issue: 
