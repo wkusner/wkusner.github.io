@@ -1,5 +1,6 @@
-I am an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology.
-In the fall of 2014, I was a visitor at the [ESI][ESI] at the University of Vienna. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  In the summer of 2016, I will be a summer researcher at [MSRI][MSRI].
+I am currently an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology.
+In the fall of 2014, I was a visitor at the [ESI][ESI] at the University of Vienna. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  In the summer of 2016, I was a summer researcher at [MSRI][MSRI].
+
 
 
 
@@ -17,7 +18,7 @@ Right now I am thinking about:
 <!---For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
 for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.-->
 
-More information can be found in my [~2015+ CV]({{ site.url }}/assets/KusnerCV.pdf) or [~2015+ Research Statement]({{ site.url }}/assets/KusnerResearchStatement.pdf).
+More information can be found in my [CV (~2016)]({{ site.url }}/assets/KusnerCV.pdf) or [Research Statement ~2015()]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
 For search purposes it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
 
