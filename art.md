@@ -2,7 +2,23 @@
 layout: page
 title: Art
 permalink: /art/
+
 ---
+### A One Item Gallery
+
+
+<p align="center">
+<img 
+    alt="Placeholder!" class="picture" src="/assets/placeholder.jpg" width="50%"
+    onmouseover="this.src='/assets/placeholder.jpg'"
+    onmouseout="this.src='/assets/placeholder.jpg'" 
+    >
+</p>
+
+
+
+### Other Materials
+
 
 [partial collection of .stl files.][3dprinted]
 
