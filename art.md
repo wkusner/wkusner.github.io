@@ -10,8 +10,9 @@ permalink: /art/
 <p align="center">
 <img 
     alt="Exhibit One!" class="picture" src="/assets/exhibit1.jpg" width="50%"
-    onmouseover="this.src='/assets/placeholder.jpg'"
+<!---    onmouseover="this.src='/assets/placeholder.jpg'"
     onmouseout="this.src='/assets/placeholder.jpg'" 
+    -->
     >
 </p>
 
