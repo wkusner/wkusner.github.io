@@ -9,7 +9,7 @@ permalink: /art/
 
 <p align="center">
 <img 
-    alt="Placeholder!" class="picture" src="/assets/placeholder.jpg" width="50%"
+    alt="Exhibit One!" class="picture" src="/assets/exhibit1.jpg" width="50%"
     onmouseover="this.src='/assets/placeholder.jpg'"
     onmouseout="this.src='/assets/placeholder.jpg'" 
     >
