@@ -17,11 +17,23 @@ permalink: /art/
 </p>
     -->
 
+
+
+<p align="center">
+<img 
+    alt="Exhibit Two!" class="picture" src="/assets/exhibit2.jpg" width="50%"
+  >
+</p>
+
+
+
+<!--- 
 <p align="center">
 <img 
     alt="Exhibit One!" class="picture" src="/assets/exhibit1.jpg" width="50%"
   >
 </p>
+    -->
 
 ### Other Materials
 
