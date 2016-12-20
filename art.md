@@ -4,7 +4,7 @@ title: Art
 permalink: /art/
 
 ---
-### A One Item Gallery
+### A One Item Gallery:  Lonely (2015)
 
 <!--- 
 <p align="center">
