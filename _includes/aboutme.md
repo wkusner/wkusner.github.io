@@ -1,9 +1,11 @@
 I am currently an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology. In the fall of 2014, I was a visitor at the [ESI][ESI] at the University of Vienna. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  In the summer of 2016, I was a summer researcher at [MSRI][MSRI].
 
+I was a student at Haverford College and the University of Pittsburgh.
+
+Over the years, my research has been partially supported by these institutions, the FWF, and the NSF in a variety of forms.
 
 <!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry and geometric optimization
 that are approachable by synthetic or analytic means and those where brute force computation is becoming tractable.
-I am also interested in more esoteric projects like building physical models of configuration spaces.
 
 #### Right now I am thinking about:
 
@@ -11,14 +13,18 @@ I am also interested in more esoteric projects like building physical models of 
 - The quality of point sets on the sphere
 - Configuration spaces of hard disks
 - Hyperuniform structures in the compact setting
+- Topologically sweeping rope
+
+I am also interested in building physical models of some of these things.
+
 
 <!---For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
 for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.-->
 
 #### News for 2017:
-- In the summer of 2017, I will visit the [Aspen Center for Physics][ASPEN].  
+- In the summer of 2017, I am at the [Aspen Center for Physics][ASPEN].  
 - Starting in the fall semester of 2017, I will be at [Vanderbilt University][VANDERBILT].
-- [Pentagons in Die Presse.]({{ site.url }}/assets/DiePresse2017422.pdf)
+- [Pentagons appear in Die Presse.]({{ site.url }}/assets/DiePresse2017422.pdf)
 
 More information can be found in my [CV (~2017)]({{ site.url }}/assets/KusnerCV.pdf) or [Research Statement (~2017)]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
