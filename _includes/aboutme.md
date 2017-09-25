@@ -34,7 +34,7 @@ A template for this site and instructions can be found [here.][louis]
 
 <!---A cobbled together Mathmatica package with some interesting functions can be found [here.]({{ site.url }}/package)-->
 
-[ANT]: http://finanz.math.tugraz.at/
+[ANT]: http://www.tugraz.at/institute/azt/home/
 [ESI]: http://www.esi.ac.at/
 [ICERM]: http://icerm.brown.edu/
 [louis]: http://theran.lt/2014/11/12/about-this-site.html
