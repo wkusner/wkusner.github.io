@@ -3,7 +3,7 @@ layout: paper
 use_math : true
 type: journal
 arxiv: 1709.02613
-doi: 
+doi: 10.1007/s00365-018-9432-8
 journal: ca
 authors:
     - johann
