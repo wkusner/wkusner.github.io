@@ -1,0 +1,23 @@
+---
+layout: post
+title: what dog
+date:   2016-02-12
+categories: journal
+---
+
+Aside from photos of actual dogs, I suspect that the first thing anyone does at [What Dog?][wd]
+is enter a picture of a person.  I don't get particularly consistent results, so I'll just limit 
+this entry to what the dog-identifying AI thinks of the picture on my website and the traits 
+it associates with me.
+
+---
+---
+
+
+![What Dog?][whatdog]
+
+
+
+[wd]: https://www.what-dog.net/
+[whatdog]: /assets/whatdog.jpg "What Dog?"
+

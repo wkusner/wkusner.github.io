@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "projects init"
+date:   2016-2-5
+categories: projects
+---
+dodalalala
+
+This is the initial post for the projects category
+
+But how do I find this page!?!
+
+
+
