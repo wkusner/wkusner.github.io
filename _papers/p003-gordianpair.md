@@ -6,9 +6,9 @@ arxiv:
 doi: 
 journal:
 authors:
-	-woden
-	-rob
-	-buck
+    - buck
+    - rob
+    - wöden
 title: A Length-trading Gordian pair
 
 year: 2018
