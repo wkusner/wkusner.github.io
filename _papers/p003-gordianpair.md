@@ -10,7 +10,6 @@ authors:
     - rob
     - wöden
 title: A Length-trading Gordian pair
-
 year: 2018
 volume: 
 issue: 
