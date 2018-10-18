@@ -2,7 +2,7 @@
 layout: post
 title: old post
 date:   2016-02-21
-categories: journal, food, projects
+categories: journal
 ---
 
 

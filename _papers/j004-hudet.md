@@ -9,7 +9,7 @@ authors:
     - johann
     - peter
     - wöden
-title: Hyperuniform point sets on the sphere&#58; deterministic constructions
+title: Hyperuniform point sets on the sphere&#58; deterministic aspects
 year: 2018
 volume: 
 issue: 

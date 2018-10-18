@@ -10,8 +10,6 @@ twitter_username: twitteraccount
 # exclude from generating co-authors
 my_authortag: wöden
 
-# collections
-collections:
     papers:
         output: true
     posts:

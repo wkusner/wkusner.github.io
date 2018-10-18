@@ -23,6 +23,9 @@ I am also interested in building physical models of some of these things.
 <!---For more detail, you will need to go somewhere else, as this site (as of 2014) is here to test a template.  Otherwise, you would be able to check below for a 
 for a short overview, or even find a link to a more recent copy my [CV]({{ site.url }}/assets/KusnerCV.pdf). For more info, search elsewhere. Google is pretty good at finding me these days.-->
 
+#### News for 2018: 
+- 
+
 #### News for 2017: 
 - [Pentagons appear in Die Presse.]({{ site.url }}/assets/DiePresse2017422.pdf)
 
