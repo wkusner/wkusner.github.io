@@ -17,4 +17,4 @@ pages:
 ---
 ### Abstract:
 
-We study a generalisation of the concept of hyperuniformity to spheres of arbitrary dimension. It is shown that QMC-designs (and especially spherical designs) are hyperuniform in our sense.
+We study a generalisation of the concept of hyperuniformity to spheres of arbitrary dimension. It is shown that QMC-designs \(and especially spherical designs\) are hyperuniform in our sense.

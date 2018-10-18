@@ -6,7 +6,9 @@ arxiv:
 doi: 
 journal:
 authors:
-
+	-woden
+	-rob
+	-buck
 title: A Length-trading Gordian pair
 
 year: 2018
