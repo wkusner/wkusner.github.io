@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  26 FEB 2019 19:36
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  5 APR 2019 20:52
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -518,46 +518,97 @@ Underfull \hbox (badness 10000) in paragraph at lines 266--268
 [1
 
 {/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (7.30763pt too wide) in paragraph at lines 386--387
+Underfull \hbox (badness 10000) in paragraph at lines 342--344
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 344--346
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 346--348
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 348--351
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 351--354
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 354--357
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 357--361
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 361--365
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 365--369
+
+ []
+
+
+Overfull \hbox (7.30763pt too wide) in paragraph at lines 393--394
 []\OT1/cmr/m/n/10 Zahlentheoretisches Kol-lo-quium, TU Graz: \OT1/cmr/m/it/10 P
 rob-lems with pack-ing pe-ri-od-ic-ity. \OT1/cmr/m/n/10 12/11/15 
  []
 
 [2]
-Overfull \hbox (13.02794pt too wide) in paragraph at lines 392--393
+Overfull \hbox (13.02794pt too wide) in paragraph at lines 399--400
 []\OT1/cmr/m/n/10 Large Struc-tures Sem-i-nar, Aalto: \OT1/cmr/m/it/10 Pack-ing
  den-sity bounds in higher di-men-sions. \OT1/cmr/m/n/10 11/22/14 
+ []
+
+
+Overfull \hbox (8.87852pt too wide) in paragraph at lines 412--413
+[]\OT1/cmr/m/n/10 Topological Dy-nam-ics Work-shop, New-ton In-sti-tute: \OT1/c
+mr/m/it/10 Pack-ing cir-cu-lar cylin-ders. \OT1/cmr/m/n/10 11/*/12 
  []
 
 [3] 
 AED: lastpage setting LastPage
 
-Overfull \hbox (5.93246pt too wide) in paragraph at lines 788--907
+Overfull \hbox (5.93246pt too wide) in paragraph at lines 796--915
 [] 
  []
 
 [4]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 907.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 907.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 915.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 915.
  (./KusnerCV.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 907.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 907.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 915.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 915.
 Package rerunfilecheck Info: File `KusnerCV.out' has not changed.
-(rerunfilecheck)             Checksum: 1A7F8C14BDF5F1E62E4E9411AB178BB5;680.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 907.
+(rerunfilecheck)             Checksum: 81B18808B7DA82CC1945B95B841546D2;726.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 915.
  )
 (\end occurred inside a group at level 1)
 
-### simple group (level 1) entered at line 708 ({)
+### simple group (level 1) entered at line 716 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 7966 strings out of 493089
- 110154 string characters out of 6134842
- 215722 words of memory out of 5000000
- 11320 multiletter control sequences out of 15000+600000
+ 7968 strings out of 493089
+ 110178 string characters out of 6134842
+ 216722 words of memory out of 5000000
+ 11321 multiletter control sequences out of 15000+600000
  7815 words of font info for 31 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 29i,13n,43p,258b,416s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 29i,13n,43p,256b,509s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts
 /cm/cmbx10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmbx12.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/c
@@ -567,10 +618,10 @@ cmr7.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cms
 y10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmti
 10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/marvosym/marvosym
 .pfb>
-Output written on KusnerCV.pdf (4 pages, 119050 bytes).
+Output written on KusnerCV.pdf (4 pages, 119395 bytes).
 PDF statistics:
- 144 PDF objects out of 1000 (max. 8388607)
- 128 compressed objects within 2 object streams
- 18 named destinations out of 1000 (max. 500000)
- 105 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 150 PDF objects out of 1000 (max. 8388607)
+ 134 compressed objects within 2 object streams
+ 19 named destinations out of 1000 (max. 500000)
+ 113 words of extra memory for PDF output out of 10000 (max. 10000000)
 

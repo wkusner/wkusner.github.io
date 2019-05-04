@@ -2,9 +2,11 @@ Starting in the fall semester of 2017, I am at [Vanderbilt University][VANDERBIL
 
 I was previously an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology. In the fall of 2014, I was a visitor at the [ESI][ESI] at the University of Vienna. In the spring of 2015, I was a visitor at [ICERM][ICERM] at Brown University.  In the summer of 2016, I was a summer researcher at [MSRI][MSRI]. - In the summer of 2017, I was at the [Aspen Center for Physics][ASPEN]. 
 
-I studied at Haverford College and the University of Pittsburgh.
+I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][PITT].
 
 Over the years, my research has been partially supported by these institutions, the FWF, and the NSF in a variety of forms.
+
+Recently, I have been studying and teaching a great deal of probability and statistics. 
 
 <!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry and geometric optimization
 that are approachable by synthetic or analytic means and those where brute force computation is becoming tractable.
@@ -16,6 +18,7 @@ that are approachable by synthetic or analytic means and those where brute force
 - Configuration spaces of hard disks
 - Hyperuniform structures in the compact setting
 - Topologically sweeping rope
+- 
 
 I am also interested in building physical models of some of these things.
 
@@ -29,7 +32,7 @@ for a short overview, or even find a link to a more recent copy my [CV]({{ site.
 #### Snow from yesterday: 
 - [Pentagons appear in Die Presse.]({{ site.url }}/assets/DiePresse2017422.pdf)
 
-More information can be found in my [CV (~2019)]({{ site.url }}/assets/KusnerCV.pdf) or [Research Statement (~2017)]({{ site.url }}/assets/KusnerResearchStatement.pdf).
+Other information may be found in my [CV (~2019)]({{ site.url }}/assets/KusnerCV.pdf) or [Research Statement (~2017)]({{ site.url }}/assets/KusnerResearchStatement.pdf).
 
 For search purposes it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
 
@@ -44,4 +47,6 @@ A template for this site and instructions can be found [here.][louis]
 [MSRI]: http://www.msri.org/
 [ASPEN]: http://aspenphys.org/
 [VANDERBILT]: https://as.vanderbilt.edu/math/
+[HAVERFORD]: https://www.haverford.edu/
+[PITT]: https://www.pitt.edu/
  
