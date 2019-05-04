@@ -4,7 +4,7 @@ title: Art
 permalink: /art/
 
 ---
-### A One Item Gallery:  Lonely (2015)
+### A One Item Gallery:  Apartment Blocks
 
 <!--- 
 <p align="center">
@@ -19,12 +19,25 @@ permalink: /art/
 
 
 
+
+
+<p align="center">
+<img 
+    alt="Exhibit Three!" class="picture" src="/assets/exhibit3.jpg" width="50%"
+  >
+</p>
+
+
+
+
+
+<!---
 <p align="center">
 <img 
     alt="Exhibit Two!" class="picture" src="/assets/exhibit2.jpg" width="50%"
   >
 </p>
-
+	-->
 
 
 <!--- 
