@@ -18,4 +18,4 @@ pages:
 ---
 ### Abstract:
 
-In this paper we propose a tensorial measure of chi- rality for curves — or more generally for 1-dimensional sets of locally-finite length — in 3-dimensional Euclidean space R3. 
+In this paper we propose a tensorial measure of chirality for curves or more generally for 1-dimensional sets of locally-finite length in 3-dimensional Euclidean space. 
