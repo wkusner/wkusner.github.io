@@ -12,14 +12,12 @@ shorttitle:
 #### Vanderbilt 
 
 Fall 2019
-
-  *Math2410 - Methods of Linear Algebra
+* Math2410 - Methods of Linear Algebra
   
 Spring 2019
-
-  *Math 3641 - Mathematical Statistics
+* Math 3641 - Mathematical Statistics
   
-  *Math 5641 -  Mathematical Statistics (Master)
+  * Math 5641 -  Mathematical Statistics (Master)
   
 Fall 2018  
 
