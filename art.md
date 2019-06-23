@@ -4,7 +4,7 @@ title: Art
 permalink: /art/
 
 ---
-### A One Item Gallery:  Apartment Blocks
+### Gallery:  Apartment Blocks
 
 <!--- 
 <p align="center">
