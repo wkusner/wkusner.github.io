@@ -1,10 +1,10 @@
 ---
 layout: page
-title: Art
-permalink: /art/
+title: Other Things
+permalink: /other/
 
 ---
-### Gallery:  Apartment Blocks
+### Art Gallery:  Apartment Blocks
 
 <!--- 
 <p align="center">
@@ -48,7 +48,7 @@ permalink: /art/
 </p>
     -->
 
-### Other Materials
+### 3D Printer
 
 
 [partial collection of .stl files.][3dprinted]

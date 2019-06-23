@@ -30,7 +30,7 @@ shorttitle:
  
 #### Graz 
 
-##### Spring 2016
+##### Summer 2016
 * [MATH670: Packings, Lattices and Configurations (Master's)]({{ site.url }}/MAT670/)
 
 
