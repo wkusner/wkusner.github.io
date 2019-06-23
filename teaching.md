@@ -10,7 +10,7 @@ shorttitle:
 #### Vanderbilt 
 
 ##### Fall 2019
-* Math2410 - Methods of Linear Algebra
+* Math 2410 - Methods of Linear Algebra
   
 ##### Spring 2019
 * Math 3641 - Mathematical Statistics
@@ -22,7 +22,7 @@ shorttitle:
  
 ##### Spring 2018
 * Math 3641 - Mathematical Statistics
-* Math 5641 - Mathematical Statistics (Master)
+* Math 5641 - Mathematical Statistics (Master's)
  
 ##### Fall 2017
 * Math 1011 - Probability and Statistical Inference 
@@ -31,6 +31,6 @@ shorttitle:
 #### Graz 
 
 ##### Spring 2016
-* [MATH670: Packings, Lattices and Configurations]({{ site.url }}/MAT670/)
+* [MATH670: Packings, Lattices and Configurations (Master's)]({{ site.url }}/MAT670/)
 
 
