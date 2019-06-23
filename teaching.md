@@ -13,7 +13,6 @@ shorttitle:
 
 Fall 2019
   *Math2410 - Methods of Linear Algebra
-
 Spring 2019
   *Math 3641 - Mathematical Statistics
   *Math 5641 -  Mathematical Statistics (Master)
