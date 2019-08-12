@@ -6,7 +6,6 @@ arxiv:
 doi: 
 journal:
 authors:
-    - buck
     - rob
     - wöden
 title: A Length-trading Gordian pair
