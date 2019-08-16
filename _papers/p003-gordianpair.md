@@ -2,13 +2,13 @@
 layout: paper
 use_math : true
 type: preprint
-arxiv: 
+arxiv: "/1908.05610"
 doi: 
 journal:
 authors:
     - rob
     - wöden
-title: A Length-trading Gordian pair
+title: A Gordian Pair of Links
 year: 2018
 volume: 
 issue: 
