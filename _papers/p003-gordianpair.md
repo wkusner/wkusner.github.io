@@ -2,7 +2,7 @@
 layout: paper
 use_math : true
 type: preprint
-arxiv: "/1908.05610"
+arxiv: "1908.05610"
 doi: 
 journal:
 authors:

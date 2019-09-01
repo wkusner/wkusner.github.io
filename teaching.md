@@ -10,7 +10,8 @@ shorttitle:
 #### Vanderbilt 
 
 ##### Fall 2019
-* [Math 2410 - Methods of Linear Algebra]({{ site.url }}/MATH2410/)
+* [Math 2300 - Multivariable Calculus]({{ site.url }}/MATH2300/)
+* ~~[Math 2410 - Methods of Linear Algebra]({{ site.url }}/MATH2410/)~~
   
 ##### Spring 2019
 * [Math 3641 - Mathematical Statistics]({{ site.url }}/2019MATH3641/)
