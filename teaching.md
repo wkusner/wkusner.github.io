@@ -27,7 +27,7 @@ shorttitle:
 * [Math 1011 - Probability and Statistical Inference]({{ site.url }}/2018MATH1011/)
  
 ##### Fall 2017
-* [Math 1010 - Probability and Statistical Inference](({{ site.url }}/2017MATH1010/))
+* [Math 1010 - Probability and Statistical Inference]({{ site.url }}/2017MATH1010/)
  
 #### Graz 
 
