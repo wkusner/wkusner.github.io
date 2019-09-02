@@ -4,6 +4,8 @@ title: Research
 permalink: /research/
 
 ---
+Information about my current research may be found in my research statements and journal articles.
+
 ### Packing
 
 ### Discrepancy
@@ -12,5 +14,5 @@ permalink: /research/
 
 ### Rope
 
-### Low Temperture
+### Low Temperature
 

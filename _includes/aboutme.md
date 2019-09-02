@@ -20,7 +20,6 @@ that are approachable by synthetic or analytic means and those where brute force
 - Configuration spaces of hard disks
 - Hyperuniform structures in the compact setting
 - Topologically sweeping rope
-- 
 
 I am also interested in building physical models of some of these things.
 
