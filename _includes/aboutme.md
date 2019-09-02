@@ -8,7 +8,8 @@ I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][P
 
 Over the years, my research has been partially supported by these institutions, the FWF, and the NSF in a variety of forms.
 
-Recently, I have been studying and teaching a great deal of probability and statistics. 
+Recently, I have been studying and teaching a great deal of probability and statistics.
+If you are would like a reason why a mathematician would do that, I refer you to Mumford's "The Dawning of the Age of Stochasticity".
 
 <!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry and geometric optimization
 that are approachable by synthetic or analytic means and those where brute force computation is becoming tractable.
