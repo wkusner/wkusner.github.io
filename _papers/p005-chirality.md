@@ -6,11 +6,12 @@ arxiv:
 doi: 
 journal:
 authors:
+    - gio
     - rob
     - wöden
     - eric
     - piotr
-    - gio
+
 title: Chirality for crooked curves
 year: 2020
 volume: 
