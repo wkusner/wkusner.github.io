@@ -10,12 +10,13 @@ authors:
     - wöden
     - eric
     - piotr
+    - gio
 title: Chirality for crooked curves
-year: 2018
+year: 2020
 volume: 
 issue: 
 pages: 
 ---
 ### Abstract:
 
-In this paper we propose a tensorial measure of chirality for curves or more generally for 1-dimensional sets of locally-finite length in 3-dimensional Euclidean space. 
+Chiral objects rotate when placed in a collimated flow or wind. We exploit this hydrodynamic intuition to construct a tensorial chirality measure for rigid filaments and curves. This tensor is trace-free, so if a curve has a right-handed twist about some axis, there is a perpendicular axis about which the twist is left-handed. Our measure places minimal requirements on the smoothness of the curve, hence it can be readily used to quantify chirality for biomolecules and polymers, polygonal and rectifiable curves, and other discrete geometrical structures.
