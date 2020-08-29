@@ -13,3 +13,7 @@ ca:
 bsms:
     title: "Bolyai Society Mathematical Studies"    
     url: https://www.springer.com/series/4706
+    
+mhm:
+    title: "Monatshefte für Mathematik"    
+    url: https://www.springer.com/journal/605

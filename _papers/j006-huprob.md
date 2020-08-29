@@ -4,7 +4,7 @@ use_math : true
 type: journal
 arxiv: "1809.02645"
 doi: ‎10.1007/s00605-020-01439-y
-journal: Monatshefte für Mathematik
+journal: mhm
 authors:
     - johann
     - peter
