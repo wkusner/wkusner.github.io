@@ -4,6 +4,11 @@ title: Code
 permalink: /code/
 
 ---
+
+
+
+
+<--
 ### Summer 2019 Undergraduate Research
 
 Kevin Hu, Aviril Somani, Eugene Park
@@ -16,7 +21,7 @@ Kevin Hu, Aviril Somani, Eugene Park
 
 
 
-### Surfaces
+### Surfaces-->
 
 
 [3dprinted]:https://github.com/wkusner/3DPrinter

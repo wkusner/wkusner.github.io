@@ -7,9 +7,13 @@ shorttitle:
 
 ### Courses
 
+#### Georgia
+
+* My current course materials can be found on eLC.
+
 #### Vanderbilt 
 
-* Information about my current Vanderbilt courses can be found on Brightspace
+* If you are a former student seeking a letter of recommendation, or just want to chat, please contact me at my new institutional address.  If you are looking for old course materials or records, please contact the Vanderbilt Department of Mathematics.
 
 #### Graz 
 
