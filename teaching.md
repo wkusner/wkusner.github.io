@@ -5,6 +5,8 @@ title: Teaching
 shorttitle:
 ---
 
+For a number of bureaucratic and legal reasons, I now try to keep most of my teaching confined to "university sanctioned" platforms.
+
 ### Courses
 
 #### Georgia
