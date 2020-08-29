@@ -3,7 +3,7 @@ layout: paper
 use_math : true
 type: journal
 arxiv: "1611.10297"
-doi: 
+doi: 10.1007/978-3-662-57413-3_10
 journal: bsms
 authors:
     - rob
