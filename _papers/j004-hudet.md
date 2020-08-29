@@ -10,10 +10,10 @@ authors:
     - peter
     - wöden
 title: Hyperuniform point sets on the sphere&#58; deterministic aspects
-year: 2018
-volume: 
-issue: 
-pages: 
+year: 2019
+volume: 50
+issue: 1
+pages: 45-61
 ---
 ### Abstract:
 

@@ -1,20 +1,20 @@
 ---
 layout: paper
 use_math : true
-type: preprint
+type: journal
 arxiv: "1809.02645"
-doi: 
-journal:
+doi: ‎10.1007/s00605-020-01439-y
+journal:Monatshefte für Mathematik
 authors:
     - johann
     - peter
     - wöden
     - jonas
 title: Hyperuniform point sets on the sphere&#58; probabilistic aspects
-year: 2018
-volume: 
-issue: 
-pages: 
+year: 2020
+volume: 192
+issue: 4
+pages: 763-781
 ---
 ### Abstract:
 
