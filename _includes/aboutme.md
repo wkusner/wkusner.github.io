@@ -1,7 +1,7 @@
 
 I am currently on the job market.
 
-For the fall of 2020, I have am at The [University of Georgia][UGA].
+For the fall of 2020, I am at the [University of Georgia][UGA].
 Previously I was at [Vanderbilt University][VANDERBILT] from 2017, and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. I was also a visitor at the [ESI][ESI] at the University of Vienna and  [ICERM][ICERM] at Brown University, and a summer researcher at [MSRI][MSRI] and the [Aspen Center for Physics][ASPEN].   I will be a visitor at the [Fields Institute][FIELDS] in 2021.
 
 I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][PITT].
