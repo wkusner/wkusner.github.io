@@ -2,7 +2,7 @@
 I am currently on the job market.
 
 I am on leave but still at the [University of Georgia][UGA] for the spring of 2022.
-Previously I was at [Vanderbilt University][VANDERBILT] from 2017, and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. I was also a visitor at the [ESI][ESI] at the University of Vienna and  [ICERM][ICERM] at Brown University, and a summer researcher at [MSRI][MSRI] and the [Aspen Center for Physics][ASPEN].   I will be a visitor at the [Fields Institute][FIELDS] in 2021.
+Previously I was at [Vanderbilt University][VANDERBILT] from 2017, and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. I was also a visitor at the [ESI][ESI] at the University of Vienna and  [ICERM][ICERM] at Brown University, and a summer researcher at [MSRI][MSRI] and the [Aspen Center for Physics][ASPEN]. Due to the COVID-19 lockdown, I was a remote visitor at the [Fields Institute][FIELDS] in 2021 and the ESI in 2022.
 
 I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][PITT].
 
@@ -35,7 +35,7 @@ for a short overview, or even find a link to a more recent copy my [CV]({{ site.
 
 - [Pentagons appear in Die Presse.]({{ site.url }}/assets/DiePresse2017422.pdf)
 
-Other information may be found in my [CV (~2020)]({{ site.url }}/assets/KusnerCV.pdf) or my short [Research Statement (~2020)]({{ site.url }}/assets/KusnerRS.pdf).
+Other information may be found in my [CV (~2022)]({{ site.url }}/assets/KusnerCV.pdf) or my short [Research Statement (~2020)]({{ site.url }}/assets/KusnerRS.pdf).
 
 For search purposes it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
 
