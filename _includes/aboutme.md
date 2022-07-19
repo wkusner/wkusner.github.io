@@ -1,7 +1,7 @@
 
 I am currently on the job market.
 
-For the fall of 2020, I am at the [University of Georgia][UGA].
+I am on leave but still at the [University of Georgia][UGA] for the spring of 2022.
 Previously I was at [Vanderbilt University][VANDERBILT] from 2017, and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. I was also a visitor at the [ESI][ESI] at the University of Vienna and  [ICERM][ICERM] at Brown University, and a summer researcher at [MSRI][MSRI] and the [Aspen Center for Physics][ASPEN].   I will be a visitor at the [Fields Institute][FIELDS] in 2021.
 
 I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][PITT].
@@ -31,6 +31,8 @@ for a short overview, or even find a link to a more recent copy my [CV]({{ site.
 - -->
 
 #### Snow from yesterday: 
+- Packing problems are in the news! [Viazovska is awarded the Fields Medal for her solution to the 8 dimensional sphere packing problem.][viazovska] See also her work on t-designs....
+
 - [Pentagons appear in Die Presse.]({{ site.url }}/assets/DiePresse2017422.pdf)
 
 Other information may be found in my [CV (~2020)]({{ site.url }}/assets/KusnerCV.pdf) or my short [Research Statement (~2020)]({{ site.url }}/assets/KusnerRS.pdf).
@@ -41,6 +43,7 @@ A template for this site and instructions can be found [here.][louis]
 
 <!---A cobbled together Mathmatica package with some interesting functions can be found [here.]({{ site.url }}/package)-->
 
+[viazovska]:https://arxiv.org/pdf/2207.06913.pdf
 [UGA]:https://www.uga.edu/
 [FIELDS]:https://www.fields.utoronto.ca/
 [ANT]: https://www.tugraz.at/institute/azt/home/
