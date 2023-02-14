@@ -1,15 +1,15 @@
 ---
 layout: paper
 use_math : true
-type: preprint
+type: journal
 arxiv: "1908.05610"
 doi: 
-journal:
+journal:Geometriae Dedicata
 authors:
     - rob
     - wöden
 title: A Gordian Pair of Links
-year: 2018
+year: 2023
 volume: 
 issue: 
 pages: 
