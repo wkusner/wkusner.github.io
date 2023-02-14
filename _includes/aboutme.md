@@ -1,7 +1,7 @@
 
 I am currently on the job market.
 
-I am on leave but still at the [University of Georgia][UGA] for the spring of 2022.
+I was at the [University of Georgia][UGA] through the spring of 2022.
 Previously I was at [Vanderbilt University][VANDERBILT] from 2017, and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. I was also a visitor at the [ESI][ESI] at the University of Vienna and  [ICERM][ICERM] at Brown University, and a summer researcher at [MSRI][MSRI] and the [Aspen Center for Physics][ASPEN]. Due to the COVID-19 lockdown, I was a remote visitor at the [Fields Institute][FIELDS] in 2021 and the ESI in 2022.
 
 I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][PITT].

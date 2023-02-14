@@ -4,7 +4,7 @@ use_math : true
 type: journal
 arxiv: "1908.05610"
 doi: 
-journal:Geometriae Dedicata
+journal: gd
 authors:
     - rob
     - wöden
