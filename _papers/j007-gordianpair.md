@@ -10,7 +10,7 @@ authors:
     - wöden
 title: A Gordian Pair of Links
 year: 2023
-volume: 
+volume: 217
 issue: 
 pages: 
 ---
