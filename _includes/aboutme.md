@@ -34,7 +34,7 @@ for a short overview, or even find a link to a more recent copy my [CV]({{ site.
 
 - [Pentagons appear in Die Presse.]({{ site.url }}/assets/DiePresse2017422.pdf)
 
-Other information may be found in my [CV (~2022)]({{ site.url }}/assets/KusnerCV.pdf) or my short [Research Statement (~2020)]({{ site.url }}/assets/KusnerRS.pdf).
+Other information may be found in my [CV (~2023)]({{ site.url }}/assets/KusnerCV.pdf) or my short [Research Statement (~2020)]({{ site.url }}/assets/KusnerRS.pdf).
 
 For search purposes it may be helpful to consider my name as Woden Kusner or Woeden Kusner.
 
