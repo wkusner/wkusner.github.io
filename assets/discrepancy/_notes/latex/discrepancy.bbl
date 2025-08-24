@@ -1,0 +1,76 @@
+\begin{thebibliography}{GSW09}
+
+\bibitem[ABD12]{aistleitner2012point}
+Christoph Aistleitner, JS~Brauchart, and Josef Dick.
+\newblock Point sets on the sphere$\backslash$ mathbb $\{$S$\}$\^{}$\{$2$\}$
+  with small spherical cap discrepancy.
+\newblock {\em Discrete \& Computational Geometry}, 48(4):990--1024, 2012.
+
+\bibitem[BC87]{beck1987irregularities}
+J~Beck and WL~Chen.
+\newblock Irregularities of distribution, volume 89 of cambridge tracts in
+  mathematics, 1987.
+
+\bibitem[BD13]{brauchart2013simple}
+Johann Brauchart and Josef Dick.
+\newblock A simple proof of stolarsky’s invariance principle.
+\newblock {\em Proceedings of the American Mathematical Society},
+  141(6):2085--2096, 2013.
+
+\bibitem[BG15]{brauchart2015distributing}
+Johann~S Brauchart and Peter~J Grabner.
+\newblock Distributing many points on spheres: minimal energy and designs.
+\newblock {\em Journal of Complexity}, 31(3):293--326, 2015.
+
+\bibitem[Cha00]{chazelle2000discrepancy}
+Bernard Chazelle.
+\newblock {\em The discrepancy method: randomness and complexity}.
+\newblock Cambridge University Press, 2000.
+
+\bibitem[DE93]{dobkin1993computing}
+David Dobkin and David Eppstein.
+\newblock Computing the discrepancy.
+\newblock In {\em Proceedings of the ninth annual symposium on Computational
+  geometry}, pages 47--52. ACM, 1993.
+
+\bibitem[DEM96]{dobkin1996computing}
+David~P Dobkin, David Eppstein, and Don~P Mitchell.
+\newblock Computing the discrepancy with applications to supersampling
+  patterns.
+\newblock {\em ACM Transactions on Graphics (TOG)}, 15(4):354--376, 1996.
+
+\bibitem[DGS05]{doerr2005bounds}
+Benjamin Doerr, Michael Gnewuch, and Anand Srivastav.
+\newblock Bounds and constructions for the star-discrepancy via
+  $\delta$-covers.
+\newblock {\em Journal of Complexity}, 21(5):691--709, 2005.
+
+\bibitem[DM93]{dobkin1993random}
+David~P Dobkin and Don~P Mitchell.
+\newblock Random-edge discrepancy of supersampling patterns.
+\newblock In {\em Graphics Interface}, pages 62--62. CANADIAN INFORMATION
+  PROCESSING SOCIETY, 1993.
+
+\bibitem[GSW09]{gnewuch2009finding}
+Michael Gnewuch, Anand Srivastav, and Carola Winzen.
+\newblock Finding optimal volume subintervals with< i> k</i> points and
+  calculating the star discrepancy are np-hard problems.
+\newblock {\em Journal of Complexity}, 25(2):115--127, 2009.
+
+\bibitem[Mat09]{matousek2009geometric}
+Jiri Matousek.
+\newblock {\em Geometric discrepancy: An illustrated guide}, volume~18.
+\newblock Springer Science \& Business Media, 2009.
+
+\bibitem[Nie72]{niederreiter1972discrepancy}
+H~Niederreiter.
+\newblock Discrepancy and convex programming.
+\newblock {\em Annali di matematica pura ed applicata}, 93(1):89--97, 1972.
+
+\bibitem[Sto73]{stolarsky1973sums}
+Kenneth~B Stolarsky.
+\newblock Sums of distances between points on a sphere. ii.
+\newblock {\em Proceedings of the American Mathematical Society},
+  41(2):575--582, 1973.
+
+\end{thebibliography}

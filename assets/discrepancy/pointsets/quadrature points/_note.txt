@@ -1,0 +1,4 @@
+Gauss quadrature points. Potts
+
+https://www-user.tu-chemnitz.de/~potts/workgroup/graef/quadrature/
+

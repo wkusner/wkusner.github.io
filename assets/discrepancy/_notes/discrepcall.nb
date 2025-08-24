@@ -1,0 +1,839 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     31489,        830]
+NotebookOptionsPosition[     30078,        781]
+NotebookOutlinePosition[     30460,        798]
+CellTagsIndexPosition[     30417,        795]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"files", "=", 
+   RowBox[{"FileNames", "[", 
+    RowBox[{
+    "\"\<*.csv\>\"", ",", "\"\<~/Dropbox/discrepancy/pointsets/fib\>\""}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"callonfile", "[", "x_", "]"}], ":=", 
+   RowBox[{"StringJoin", "[", 
+    RowBox[{"\"\<!~/Dropbox/discrepancy/discrep -f\>\"", ",", "x"}], "]"}]}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"randiscrep", "[", "x_", "]"}], ":=", 
+  RowBox[{"Import", "[", 
+   RowBox[{
+    RowBox[{"StringJoin", "[", 
+     RowBox[{"\"\<!~/Dropbox/discrepancy/discrep -r\>\"", ",", "x"}], "]"}], 
+    ",", "\"\<Table\>\""}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"discrep", "[", "x_", "]"}], ":=", 
+  RowBox[{"Import", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"callonfile", "[", "x", "]"}], ",", "\"\<Table\>\""}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->{{3.652675835065516*^9, 3.652675868131048*^9}, 
+   3.652676371928632*^9, {3.6526764460225353`*^9, 3.652676463556653*^9}, {
+   3.6526765447099543`*^9, 3.652676547300342*^9}, {3.652676642647358*^9, 
+   3.652676643893114*^9}, {3.652676689374563*^9, 3.652676693971949*^9}, {
+   3.65267680913869*^9, 3.652676836144067*^9}, {3.6526774700772257`*^9, 
+   3.652677470860837*^9}, {3.652677568350732*^9, 3.652677593655306*^9}, {
+   3.652677755664627*^9, 3.652677823542245*^9}, {3.652678113980444*^9, 
+   3.652678128378519*^9}, {3.6526812063016787`*^9, 3.652681210150683*^9}, {
+   3.652702206747254*^9, 3.65270220806816*^9}, {3.652702365865161*^9, 
+   3.652702367402191*^9}, {3.65270253109907*^9, 3.652702532481608*^9}, {
+   3.652960277385583*^9, 3.652960338904393*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"files", "[", 
+   RowBox[{"[", 
+    RowBox[{"1", ";;", "16"}], "]"}], "]"}], "\[IndentingNewLine]"}]], "Input",\
+
+ CellChangeTimes->{{3.652702282343699*^9, 3.65270228410435*^9}, {
+  3.652702823000259*^9, 3.6527028269987926`*^9}, {3.652702968399222*^9, 
+  3.6527029685001593`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"~/Dropbox/discrepancy/pointsets/fib/03fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/04fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/05fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/06fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/07fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/08fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/09fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/10fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/11fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/12fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/13fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/14fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/15fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/16fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/17fib.csv\"\>", 
+   ",", "\<\"~/Dropbox/discrepancy/pointsets/fib/18fib.csv\"\>"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{
+  3.652702284592325*^9, 3.6527023159276*^9, 3.652702370002676*^9, 
+   3.6527025354693604`*^9, 3.652702931814616*^9, 3.652702968949587*^9, {
+   3.652960304693169*^9, 3.652960341623032*^9}}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"imfiles", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Import", "[", 
+      RowBox[{"#", ",", "\"\<Data\>\""}], "]"}], "&"}], "/@", "files"}]}], 
+  ";"}]], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Length", "/@", 
+  RowBox[{"imfiles", "[", 
+   RowBox[{"[", 
+    RowBox[{"1", ";;", "16"}], "]"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.6526774070053*^9, 3.652677408600113*^9}, {
+  3.6526775191337833`*^9, 3.65267752295788*^9}, {3.652678033737629*^9, 
+  3.652678036301943*^9}, {3.652702955612308*^9, 3.652702963820097*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+  "2", ",", "3", ",", "5", ",", "8", ",", "13", ",", "21", ",", "34", ",", 
+   "55", ",", "89", ",", "144", ",", "233", ",", "377", ",", "610", ",", 
+   "987", ",", "1597", ",", "2584"}], "}"}]], "Output",
+ CellChangeTimes->{{3.6526774097811193`*^9, 3.6526774921162443`*^9}, 
+   3.652677523583252*^9, 3.652702136716776*^9, 3.6527022258575974`*^9, 
+   3.6527023303419*^9, 3.652702383051456*^9, 3.652702550384214*^9, {
+   3.652702951343964*^9, 3.652702964299447*^9}, 3.652960358086122*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Import", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"StringJoin", "[", 
+        RowBox[{
+        "\"\<!/Users/bozo/Dropbox/discrepancy/discrep -f\>\"", ",", "#"}], 
+        "]"}], "&"}], "/@", "files"}], ")"}], "[", 
+    RowBox[{"[", "1", "]"}], "]"}], ",", "\"\<Table\>\""}], "]"}]], "Input",
+ CellChangeTimes->{{3.652679227125524*^9, 3.652679347493348*^9}, 
+   3.652679486592023*^9, {3.652702554870391*^9, 3.652702555635489*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"\<\"Discrepancy:\"\>", ",", "0.853553`"}], "}"}], "}"}]], "Output",\
+
+ CellChangeTimes->{{3.6526792544646*^9, 3.652679317922604*^9}, 
+   3.652679348035832*^9, 3.6527021848769627`*^9, 3.652702333046698*^9, 
+   3.6527023879832983`*^9, 3.6527025534363947`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"Scan", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Print", "[", 
+     RowBox[{"Import", "[", 
+      RowBox[{"#", ",", "\"\<Table\>\""}], "]"}], "]"}], "&"}], ",", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"StringJoin", "[", 
+       RowBox[{
+       "\"\<!/Users/bozo/Dropbox/discrepancy/discrep -f\>\"", ",", "#", ",", 
+        " ", "\"\< -v\>\""}], "]"}], "&"}], "/@", 
+     RowBox[{"files", "[", 
+      RowBox[{"[", 
+       RowBox[{"1", ";;", "16"}], "]"}], "]"}]}], ")"}]}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Import", "[", 
+      RowBox[{"#", ",", "\"\<Table\>\""}], "]"}], "&"}], "/@", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"StringJoin", "[", 
+        RowBox[{
+        "\"\<!/Users/bozo/Dropbox/discrepancy/discrep -f\>\"", ",", "#", ",", 
+         "\"\< -v\>\""}], "]"}], "&"}], "/@", "files"}], ")"}]}], 
+   "*)"}]}]}], "Input",
+ CellChangeTimes->{{3.6526781217411413`*^9, 3.652678131985972*^9}, {
+   3.652678202496882*^9, 3.652678207378701*^9}, {3.6526783763153467`*^9, 
+   3.652678378843961*^9}, {3.652678499944911*^9, 3.652678521806532*^9}, {
+   3.652679064915226*^9, 3.6526791829699907`*^9}, {3.652679215594495*^9, 
+   3.6526792246301527`*^9}, {3.652679373558899*^9, 3.65267937592524*^9}, {
+   3.652679494283805*^9, 3.652679758095022*^9}, {3.65267978872663*^9, 
+   3.652679794046874*^9}, {3.6526798364075336`*^9, 3.652679852820842*^9}, {
+   3.65267989453232*^9, 3.652679922533106*^9}, {3.652680026280634*^9, 
+   3.652680072248543*^9}, 3.652681217401379*^9, 3.6526813330846567`*^9, {
+   3.65270242927396*^9, 3.6527024431465683`*^9}, {3.652702558346846*^9, 
+   3.652702559238349*^9}, {3.652702600497725*^9, 3.652702600683139*^9}, {
+   3.65270278271768*^9, 3.652702808685968*^9}, {3.6527029723895283`*^9, 
+   3.652702974532234*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/03fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "2", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "2", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.853553`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.707107,\"\>", ",", "\<\"0.000000,\"\>", 
+     ",", "\<\"0.707107],\"\>", ",", "\<\"0.707107)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702979884186*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/04fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "3", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "3", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.710042`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.891133,\"\>", ",", "\<\"0.171499,\"\>", 
+     ",", "\<\"0.420084],\"\>", ",", "\<\"0.420084)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702979908025*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/05fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "5", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "5", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.516735`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.669749,\"\>", ",", "\<\"-0.584478,\"\>", 
+     ",", "\<\"0.458063],\"\>", ",", "\<\"0.433471)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702979944107*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/06fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "8", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "8", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.334845`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.362811,\"\>", ",", "\<\"0.790712,\"\>", 
+     ",", "\<\"0.493095],\"\>", ",", "\<\"0.169689)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.6527029799512453`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/07fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "13", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "13", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.235879`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.424258,\"\>", ",", "\<\"-0.866000,\"\>", 
+     ",", "\<\"0.264667],\"\>", ",", "\<\"0.087143)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.6527029799936733`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/08fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "21", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "21", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.168729`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.485435,\"\>", ",", "\<\"0.847742,\"\>", 
+     ",", "\<\"0.213745],\"\>", ",", "\<\"0.099362)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702980001371*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/09fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "34", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "34", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.12875`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.848424,\"\>", ",", "\<\"0.287992,\"\>", 
+     ",", "\<\"0.444114],\"\>", ",", "\<\"0.198677)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.6527029800074463`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/10fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "55", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "55", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.092358`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([0.543190,\"\>", ",", "\<\"0.760266,\"\>", 
+     ",", "\<\"0.356286],\"\>", ",", "\<\"0.093807)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702980060596*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/11fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "89", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "89", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.061945`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([0.490473,\"\>", ",", "\<\"-0.725587,\"\>", 
+     ",", "\<\"0.482658],\"\>", ",", "\<\"-0.134537)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702980129917*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/12fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "144", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "144", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.043692`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([-0.102273,\"\>", ",", "\<\"0.939473,\"\>", 
+     ",", "\<\"0.327004],\"\>", ",", "\<\"0.073494)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702980683259*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/13fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "233", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "233", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.033011`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([0.023829,\"\>", ",", "\<\"-0.814014,\"\>", 
+     ",", "\<\"0.580356],\"\>", ",", "\<\"-0.041273)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652702983496688*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/14fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "377", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "377", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.024439`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([0.630526,\"\>", ",", "\<\"-0.309734,\"\>", 
+     ",", "\<\"0.711689],\"\>", ",", "\<\"-0.075791)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.6527030034334803`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/15fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "610", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "610", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.017544`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([0.698190,\"\>", ",", "\<\"-0.447208,\"\>", 
+     ",", "\<\"0.559049],\"\>", ",", "\<\"0.051481)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652703138799921*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/16fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "987", ",", "\<\"points\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "987", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.01199`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([0.869720,\"\>", ",", "\<\"-0.266340,\"\>", 
+     ",", "\<\"0.415511],\"\>", ",", "\<\"-0.293142)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.6527040731385508`*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"Reading\"\>", ",", "\<\"CSV\"\>", ",", "\<\"file\"\>", 
+     ",", "\<\"/Users/bozo/Dropbox/discrepancy/pointsets/fib/17fib.csv\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Read\"\>", ",", "1597", ",", "\<\"points\"\>"}], "}"}], ",", 
+   
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy...\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Finding\"\>", ",", "\<\"discrepancy\"\>", ",", "\<\"of\"\>", 
+     ",", "1597", ",", "\<\"points\"\>", ",", "\<\"with\"\>", 
+     ",", "\<\"epsilon=0.000001\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Discrepancy:\"\>", ",", "0.008791`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Maximal\"\>", ",", "\<\"cap:\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"Scap([0.449941,\"\>", ",", "\<\"-0.663509,\"\>", 
+     ",", "\<\"0.597753],\"\>", ",", "\<\"-0.465198)\"\>"}], "}"}]}], 
+  "}"}]], "Print",
+ CellChangeTimes->{
+  3.652702151845538*^9, 3.652702337774716*^9, 3.652702391362835*^9, {
+   3.6527024353347197`*^9, 3.65270244369296*^9}, 3.652702560982984*^9, 
+   3.652710256899811*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"quad", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.5`"}], "}"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.416667`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.333333`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.2291`"}], "}"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.223607`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.166667`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.140063`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.117222`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.125`"}], "}"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.089557`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.084626`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.073721`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.093498`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.065003`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.069371`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.056212`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.076923`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.054863`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.063014`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.039315`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.04603`"}], "}"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.041235`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.038948`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.035429`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.034332`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.027656`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.031485`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.034598`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.038089`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.027304`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.025107`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.023513`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.02583`"}], "}"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.022406`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.018894`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.019561`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.021855`"}], "}"}], "}"}], ",", 
+     
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Discrepancy:\>\"", ",", "0.019255`"}], "}"}], "}"}]}], 
+    "}"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6526811953274517`*^9, 3.652681200850154*^9}}]
+},
+Evaluator->"Local",
+WindowSize->{1112, 705},
+WindowMargins->{{Automatic, -164}, {-40, Automatic}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 1697, 36, 114, "Input"],
+Cell[CellGroupData[{
+Cell[2280, 60, 314, 8, 46, "Input"],
+Cell[2597, 70, 1317, 22, 148, "Output"]
+}, Open  ]],
+Cell[3929, 95, 199, 7, 28, "Input"],
+Cell[CellGroupData[{
+Cell[4153, 106, 349, 7, 28, "Input"],
+Cell[4505, 115, 527, 9, 28, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5069, 129, 503, 13, 28, "Input"],
+Cell[5575, 144, 314, 7, 28, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5926, 156, 1869, 44, 46, "Input"],
+Cell[CellGroupData[{
+Cell[7820, 204, 1153, 26, 54, "Print"],
+Cell[8976, 232, 1153, 26, 54, "Print"],
+Cell[10132, 260, 1154, 26, 54, "Print"],
+Cell[11289, 288, 1155, 26, 54, "Print"],
+Cell[12447, 316, 1158, 26, 54, "Print"],
+Cell[13608, 344, 1155, 26, 54, "Print"],
+Cell[14766, 372, 1156, 26, 54, "Print"],
+Cell[15925, 400, 1154, 26, 54, "Print"],
+Cell[17082, 428, 1156, 26, 54, "Print"],
+Cell[18241, 456, 1157, 26, 54, "Print"],
+Cell[19401, 484, 1158, 26, 54, "Print"],
+Cell[20562, 512, 1160, 26, 54, "Print"],
+Cell[21725, 540, 1157, 26, 54, "Print"],
+Cell[22885, 568, 1159, 26, 54, "Print"],
+Cell[24047, 596, 1164, 27, 54, "Print"]
+}, Open  ]]
+}, Open  ]],
+Cell[25238, 627, 4836, 152, 216, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)

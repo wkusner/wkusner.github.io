@@ -1,0 +1,7 @@
+Reading CSV file /Users/poirot/Dropbox/discrepancy/pointsets/hecke points/900heckepoints.csv
+Read 900 points
+Finding discrepancy...
+Finding discrepancy of 900 points with epsilon=0.000001
+Discrepancy: 0.048424
+Maximal cap:
+Scap([0.062702, 0.995824, -0.066348], -0.012040)

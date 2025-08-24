@@ -1,19 +1,21 @@
-For 2023-2024, I am an Instructor at [Lawrence University][Lawrence].   
+For 2023-2026, I am at [Lawrence University][Lawrence]. 
 
-I was at the [University of Georgia][UGA] through the spring of 2022.
-Previously I was at [Vanderbilt University][VANDERBILT] from 2017, and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. I was also a visitor at the [ESI][ESI] at the University of Vienna and  [ICERM][ICERM] at Brown University, and a summer researcher at [MSRI][MSRI] and the [Aspen Center for Physics][ASPEN]. Due to the COVID-19 lockdown, I was a remote visitor at the [Fields Institute][FIELDS] in 2021 and the ESI in 2022.
+Previously: I was at the [University of Georgia][UGA] through the spring of 2022; at [Vanderbilt University][VANDERBILT] as part of their Center for Constructive Approximation and the Data Science Institute.
+from 2017; and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. 
+I have also been a visitor at the [ESI][ESI] at the University of Vienna;  [ICERM][ICERM] at Brown University, and a summer researcher at [MSRI][MSRI] and the [Aspen Center for Physics][ASPEN]. 
+Due to the COVID-19 lockdown, I was a remote visitor at the [Fields Institute][FIELDS] in 2021 and the ESI in 2022.
 
 I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][PITT].
 
 Over the years, my research has been partially supported by some these institutions, the FWF, and the NSF in a variety of forms.
 
-Recently, I have been studying and teaching a great deal of probability and statistics.
+After graduate school, I ended studying and teaching a great deal of probability and statistics.  
 If you want some reasons why a mathematician should do that, I refer you to Mumford's "The Dawning of the Age of Stochasticity".
 
 <!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry and geometric optimization
 that are approachable by synthetic or analytic means and those where brute force computation is becoming tractable.
 
-#### Right now I am thinking about:
+#### Right now I am (still) thinking about:
 
 - Critical density in packings of anisotropic objects
 - The quality of point sets on the sphere
