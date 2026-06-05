@@ -1,4 +1,4 @@
-For 2023-2026, I am at [Lawrence University][Lawrence]. 
+For 2023-2027, I am at [Lawrence University][Lawrence]. 
 
 Previously: I was at the [University of Georgia][UGA] through the spring of 2022; at [Vanderbilt University][VANDERBILT] as part of their Center for Constructive Approximation and the Data Science Institute.
 from 2017; and an FWF Postdoctoral Researcher at the [Institute of Analysis and Number Theory][ANT] at Graz University of Technology from 2014. 
@@ -9,7 +9,7 @@ I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][P
 
 Over the years, my research has been partially supported by some these institutions, the FWF, and the NSF in a variety of forms.
 
-After graduate school, I ended studying and teaching a great deal of probability and statistics.  
+After graduate school, I ended up studying and teaching a great deal of probability and statistics.  
 If you want some reasons why a mathematician should do that, I refer you to Mumford's "The Dawning of the Age of Stochasticity".
 
 <!---Because of this, consider the site to be under construction.  Briefly, -->I am interested in problems of discrete geometry and geometric optimization
