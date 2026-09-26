@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Defectsweeper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#EDF0F0; --panel:#F8FAFA; --ink:#14232A; --muted:#566870; --line:#C6D0D3;
+  --cell:#E2E8E9; --cell-hover:#D6DEE0; --cell-sel:#C9D8F6; --cell-edge:#B7C2C6;
+  --accent:#2957C8; --accent-ink:#FFFFFF; --defect:#B96E0C; --good:#2A8653; --bad:#BF3A2B;
+  --atom:#3C5560; --bond:#9AABB2;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F171B; --panel:#16222A; --ink:#E2EAED; --muted:#91A4AC; --line:#2B3B43;
+    --cell:#1A272E; --cell-hover:#223340; --cell-sel:#233B66; --cell-edge:#2F424B;
+    --accent:#86A6FF; --accent-ink:#0E1620; --defect:#F0A53A; --good:#5CC48A; --bad:#FF7A68;
+    --atom:#B9CBD2; --bond:#4B6069;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F171B; --panel:#16222A; --ink:#E2EAED; --muted:#91A4AC; --line:#2B3B43;
+  --cell:#1A272E; --cell-hover:#223340; --cell-sel:#233B66; --cell-edge:#2F424B;
+  --accent:#86A6FF; --accent-ink:#0E1620; --defect:#F0A53A; --good:#5CC48A; --bad:#FF7A68;
+  --atom:#B9CBD2; --bond:#4B6069;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,50px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--defect);}
+.tag{color:var(--muted);max-width:60ch;margin:0;text-wrap:balance;}
+.game{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start;}
+@media (max-width:900px){.game{grid-template-columns:1fr;}}
+.boardbox{display:flex;flex-direction:column;gap:10px;}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+.seg button{border:0;border-radius:0;}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button:focus-visible,input:focus-visible,select:focus-visible,.logitem:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+.spacer{flex:1 1 auto;}
+svg#board{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.cell{fill:var(--cell);stroke:var(--cell-edge);stroke-width:1;}
+.cell.sel{fill:var(--cell-sel);}
+.cell.hover{fill:var(--cell-hover);}
+.cell.sel.hover{fill:var(--cell-sel);}
+.outline{stroke:var(--accent);stroke-width:3;fill:none;stroke-linecap:round;}
+.outline.log{stroke-dasharray:6 5;stroke-width:2.5;}
+.flag{stroke:var(--ink);fill:var(--ink);}
+.truth{stroke:var(--defect);fill:var(--defect);}
+.ok{stroke:var(--good);fill:none;stroke-width:2.5;}
+.bad{stroke:var(--bad);stroke-width:2.5;}
+.atom{fill:var(--atom);}
+.bond{stroke:var(--bond);stroke-width:1.4;}
+.core{fill:var(--defect);}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.win{color:var(--good);}
+.status.warn{color:var(--bad);}
+aside{display:flex;flex-direction:column;gap:14px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.stat{display:flex;flex-direction:column;gap:2px;}
+.stat b{font-family:var(--display);font-size:28px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;}
+.stat span{font-size:12px;color:var(--muted);}
+.result{display:grid;grid-template-columns:128px 1fr;gap:12px;align-items:center;}
+.result svg{width:128px;height:128px;}
+.vec{font-family:var(--mono);font-size:15px;}
+.vecsub{font-size:13px;color:var(--muted);}
+.log{display:flex;flex-direction:column;gap:4px;max-height:230px;overflow:auto;}
+.logitem{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent;font-size:13px;}
+.logitem:hover{border-color:var(--line);}
+.logitem.act{border-color:var(--accent);}
+.logitem .n{font-family:var(--mono);color:var(--muted);}
+.logitem .v{font-family:var(--mono);}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input{font:14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 8px;}
+input{width:110px;font-family:var(--mono);}
+.howto{columns:2 300px;column-gap:28px;color:var(--ink);}
+.howto p{margin:0 0 10px;break-inside:avoid;}
+.howto h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;}
+.muted{color:var(--muted);}
+kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;}
+@media (prefers-reduced-motion:no-preference){.outline{transition:opacity .2s;}}
+</style>
+
+<style>body{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Defect<span>sweeper</span></h1>
+    <p class="tag">A hexagonal crystal hides dislocations. Walk Burgers circuits around regions you choose, read how far each circuit misses closing, and flag every defect with its Burgers vector.</p>
+  </header>
+
+  <div class="game">
+    <div class="boardbox">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Mode">
+          <button id="modeSel" class="on" type="button">Select region</button>
+          <button id="modeFlag" type="button">Place flags</button>
+        </div>
+        <button id="selAll" type="button">All</button>
+        <button id="selNone" type="button">Clear</button>
+        <button id="selInv" type="button">Invert</button>
+        <span class="spacer"></span>
+        <button id="walk" class="primary" type="button">Walk circuit</button>
+      </div>
+      <svg id="board" aria-label="Game board"></svg>
+      <div id="status" class="status" role="status"></div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h2>Last circuit</h2>
+        <div class="result">
+          <svg id="compass" viewBox="-70 -70 140 140" aria-label="Closure failure"></svg>
+          <div>
+            <div id="vec" class="vec"></div>
+            <div id="vecsub" class="vecsub"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Score</h2>
+        <div class="stats">
+          <div class="stat"><b id="sQ">0</b><span>circuits</span></div>
+          <div class="stat"><b id="sP">0</b><span>penalty</span></div>
+          <div class="stat"><b id="sF">0/0</b><span>flags / defects</span></div>
+        </div>
+        <div class="row muted" style="font-size:13px"><span id="par"></span><span id="best"></span></div>
+        <div class="row">
+          <button id="check" class="primary" type="button">Check flags</button>
+          <button id="reveal" type="button">Reveal</button>
+          <button id="crystal" type="button" disabled>Crystal view</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Circuit log</h2>
+        <div id="log" class="log"></div>
+        <div class="muted" style="font-size:12px">Click an entry to show its region again and reselect it.</div>
+      </div>
+
+      <div class="card">
+        <h2>Board</h2>
+        <div class="row">
+          <label for="diff" class="muted" style="font-size:13px">Level</label>
+          <select id="diff">
+            <option value="easy">Easy: 37 cells, 3 defects</option>
+            <option value="medium">Medium: 61 cells, 5 defects</option>
+            <option value="hard">Hard: 91 cells, 8 defects, net zero</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="seed" class="muted" style="font-size:13px">Board no.</label>
+          <input id="seed" inputmode="numeric" autocomplete="off">
+          <button id="load" type="button">Load</button>
+          <button id="newb" type="button">New board</button>
+        </div>
+        <div class="muted" style="font-size:12px">Share a board number so a class plays the same crystal.</div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card howto" aria-labelledby="howh">
+    <h2 id="howh">How it works</h2>
+    <p><b>The crystal.</b> Each hexagon is one atom site of a triangular lattice with lattice vectors a₁ (east) and a₂ (60° up). Some sites hold the core of an edge dislocation, whose Burgers vector is one of the six nearest-neighbor steps.</p>
+    <p><b>A Burgers circuit.</b> Pick any region and walk around its boundary, counting lattice steps as if the crystal were perfect. In a perfect crystal you return to the start. Around dislocations you miss by the <em>sum</em> of the enclosed Burgers vectors. This is Stokes' theorem for a lattice: the closure failure is the total dislocation content inside.</p>
+    <p><b>Cancellation.</b> Two defects with opposite Burgers vectors cancel, so a circuit that closes does not prove its region is empty. On the Hard level the whole crystal sums to zero, just as a bent crystal's dislocations must when they come in pairs.</p>
+    <p><b>Scoring.</b> Every circuit costs 1. The free boundary circuit is already in the log. A wrong check adds 2 and tells you how many cells are wrong, but not which. Lower is better; par is a rough binary-search budget.</p>
+    <p><b>Controls.</b> In <em>Select region</em>, click or drag to paint cells. In <em>Place flags</em>, click a cell to cycle its flag through the six directions and back to empty. Keys: <kbd>F</kbd> switches mode, <kbd>Enter</kbd> walks the circuit, <kbd>Esc</kbd> clears the selection.</p>
+    <p><b>After the game.</b> <em>Crystal view</em> draws the atoms displaced by the Volterra field u = Σ bᵢ θᵢ/2π. Bonds join atoms that end up about one spacing apart, so each core shows up as a snag in the net where an extra half-row of atoms ends.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+const S = 20, SQ3 = Math.sqrt(3);
+const DIRS = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]];
+const LEVELS = {easy:{R:3,k:3,zero:false}, medium:{R:4,k:5,zero:false}, hard:{R:5,k:8,zero:true}};
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const key = (q,r) => q+","+r;
+const unkey = k => k.split(",").map(Number);
+const px = (q,r) => [S*SQ3*(q + r/2), -S*1.5*r];
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;}}
+
+let G = null;
+
+function cellsFor(R){
+  const out=[];
+  for(let q=-R;q<=R;q++) for(let r=-R;r<=R;r++) if(Math.abs(q+r)<=R) out.push(key(q,r));
+  return out;
+}
+function genDefects(level, seed){
+  const L = LEVELS[level], rng = mulberry32(seed*2654435761>>>0);
+  const cells = cellsFor(L.R).slice();
+  for(let i=cells.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+  const d = new Map();
+  for(let i=0;i<L.k;i++){
+    let dir = Math.floor(rng()*6);
+    if(L.zero && i%2===1) dir = (d.get(cells[i-1])+3)%6;
+    d.set(cells[i], dir);
+  }
+  return d;
+}
+function sumVec(keys){
+  let m=0,n=0;
+  for(const k of keys){ if(G.defects.has(k)){ const [a,b]=DIRS[G.defects.get(k)]; m+=a; n+=b; } }
+  return [m,n];
+}
+function fmtVec([m,n]){
+  if(m===0 && n===0) return "b = 0";
+  const term=(c,s)=> c===0?"":(c===1?s:c===-1?"−"+s:(c<0?"−"+(-c):c)+s);
+  let t1=term(m,"a₁"), t2=term(n,"a₂");
+  if(t1 && t2) return "b = "+t1+(n>0?" + ":" − ")+(n>0?t2:t2.slice(1));
+  return "b = "+(t1||t2);
+}
+function lenVec([m,n]){ return Math.sqrt(m*m+m*n+n*n); }
+
+function newGame(level, seed, restore){
+  const L = LEVELS[level];
+  G = { level, seed, R:L.R, k:L.k, cells:cellsFor(L.R), defects:genDefects(level,seed),
+        selected:new Set(), flags:new Map(), queries:0, penalties:0, log:[], active:null,
+        mode:"select", over:false, won:false, crystal:false, msg:"", msgClass:"" };
+  const all = G.cells.slice();
+  G.log.push({n:0, cells:all, vec:sumVec(all), free:true});
+  G.active = 0;
+  if(restore){
+    G.selected = new Set(restore.selected||[]);
+    G.flags = new Map(restore.flags||[]);
+    G.queries = restore.queries||0; G.penalties = restore.penalties||0;
+    if(restore.log) G.log = restore.log;
+    G.active = restore.active ?? G.active;
+    G.mode = restore.mode||"select"; G.over=!!restore.over; G.won=!!restore.won;
+  } else {
+    G.msg = "The free boundary circuit is logged. Select a region and walk a circuit.";
+  }
+  $("diff").value = level; $("seed").value = seed;
+  buildBoard(); render();
+}
+
+/* ---------- board ---------- */
+let polyByKey = new Map(), hoverKey=null, painting=null;
+function corner(cx,cy,i){ const a=(60*i-30)*Math.PI/180; return [cx+S*Math.cos(a), cy-S*Math.sin(a)]; }
+function buildBoard(){
+  const svg=$("board"); svg.innerHTML="";
+  const R=G.R, w=S*SQ3*(2*R+1)+8, h=S*(3*R+2)+8;
+  svg.setAttribute("viewBox", `${-w/2} ${-h/2} ${w} ${h}`);
+  const gCells=document.createElementNS(NS,"g"), gOver=document.createElementNS(NS,"g");
+  gCells.id="gCells"; gOver.id="gOver";
+  polyByKey.clear();
+  for(const k of G.cells){
+    const [q,r]=unkey(k), [cx,cy]=px(q,r);
+    const p=document.createElementNS(NS,"polygon");
+    const pts=[]; for(let i=0;i<6;i++){pts.push(corner(cx,cy,i).map(v=>v.toFixed(2)).join(","));}
+    p.setAttribute("points",pts.join(" ")); p.setAttribute("class","cell"); p.dataset.k=k;
+    gCells.appendChild(p); polyByKey.set(k,p);
+  }
+  svg.appendChild(gCells); svg.appendChild(gOver);
+}
+function svgPoint(evt){
+  const svg=$("board"), pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY;
+  const m=svg.getScreenCTM(); if(!m) return null; return pt.matrixTransform(m.inverse());
+}
+function hexAt(evt){
+  const p=svgPoint(evt); if(!p) return null;
+  const Y=-p.y, qf=(SQ3/3*p.x - Y/3)/S, rf=(2/3*Y)/S, sf=-qf-rf;
+  let q=Math.round(qf), r=Math.round(rf), s=Math.round(sf);
+  const dq=Math.abs(q-qf), dr=Math.abs(r-rf), ds=Math.abs(s-sf);
+  if(dq>dr && dq>ds) q=-r-s; else if(dr>ds) r=-q-s;
+  const k=key(q,r); return polyByKey.has(k)?k:null;
+}
+function arrow(g, cx, cy, dir, cls, scale=0.62){
+  const [m,n]=DIRS[dir], ang=Math.atan2(n*SQ3/2, m+n/2); // y-up angle
+  const ux=Math.cos(ang), uy=-Math.sin(ang), L=S*scale;
+  const x1=cx-ux*L, y1=cy-uy*L, x2=cx+ux*L, y2=cy+uy*L;
+  const line=document.createElementNS(NS,"line");
+  line.setAttribute("x1",x1);line.setAttribute("y1",y1);line.setAttribute("x2",x2-ux*5);line.setAttribute("y2",y2-uy*5);
+  line.setAttribute("class",cls);line.setAttribute("stroke-width","2.6");line.setAttribute("stroke-linecap","round");
+  const head=document.createElementNS(NS,"polygon"), px_=-uy, py_=ux;
+  head.setAttribute("points",`${x2},${y2} ${x2-ux*8+px_*4.5},${y2-uy*8+py_*4.5} ${x2-ux*8-px_*4.5},${y2-uy*8-py_*4.5}`);
+  head.setAttribute("class",cls);
+  g.appendChild(line); g.appendChild(head);
+}
+function outline(g, keys, cls){
+  const set=new Set(keys);
+  const path=[];
+  for(const k of set){
+    const [q,r]=unkey(k), [cx,cy]=px(q,r);
+    for(let d=0;d<6;d++){
+      const nb=key(q+DIRS[d][0], r+DIRS[d][1]);
+      if(!set.has(nb)){ const a=corner(cx,cy,d), b=corner(cx,cy,d+1); path.push(`M${a[0].toFixed(2)},${a[1].toFixed(2)}L${b[0].toFixed(2)},${b[1].toFixed(2)}`); }
+    }
+  }
+  if(!path.length) return;
+  const p=document.createElementNS(NS,"path"); p.setAttribute("d",path.join("")); p.setAttribute("class",cls); g.appendChild(p);
+}
+
+function renderBoard(){
+  const gOver=$("gOver"); gOver.innerHTML="";
+  const gCells=$("gCells");
+  if(G.crystal){ gCells.style.display="none"; renderCrystal(gOver); return; }
+  gCells.style.display="";
+  for(const [k,p] of polyByKey){
+    p.classList.toggle("sel", G.selected.has(k));
+    p.classList.toggle("hover", k===hoverKey && !G.over);
+  }
+  if(G.active!==null && G.log[G.active]) outline(gOver, G.log[G.active].cells, "outline log");
+  if(G.selected.size) outline(gOver, [...G.selected], "outline");
+  for(const k of G.cells){
+    const [q,r]=unkey(k), [cx,cy]=px(q,r);
+    const f=G.flags.get(k), t=G.defects.get(k);
+    if(G.over){
+      if(t!==undefined) arrow(gOver,cx,cy,t,"truth",0.66);
+      if(f!==undefined || t!==undefined){
+        if(f===t){ const c=document.createElementNS(NS,"circle"); c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r",S*0.8);c.setAttribute("class","ok"); gOver.appendChild(c); }
+        else {
+          if(f!==undefined) arrow(gOver,cx,cy,f,"flag",0.45);
+          const x=document.createElementNS(NS,"path"), d=S*0.55;
+          x.setAttribute("d",`M${cx-d},${cy-d}L${cx+d},${cy+d}M${cx+d},${cy-d}L${cx-d},${cy+d}`); x.setAttribute("class","bad"); x.setAttribute("opacity","0.55");
+          gOver.appendChild(x);
+        }
+      }
+    } else if(f!==undefined) arrow(gOver,cx,cy,f,"flag");
+  }
+}
+function renderCrystal(g){
+  const R=G.R, a=SQ3*S;
+  const cores=[...G.defects].map(([k,dir])=>{const [q,r]=unkey(k),[cx,cy]=px(q,r);const [m,n]=DIRS[dir];return {x:cx+0.18*a, y:cy-0.28*a, bx:a*(m+n/2), by:-a*(n*SQ3/2)};});
+  const pos=new Map();
+  for(let q=-R;q<=R;q++) for(let r=-R;r<=R;r++){ if(Math.abs(q+r)>R) continue;
+    let [x,y]=px(q,r), ux=0, uy=0;
+    for(const c of cores){ const th=Math.atan2(-(y-c.y), x-c.x); ux+=c.bx*th/(2*Math.PI); uy+=c.by*th/(2*Math.PI); }
+    pos.set(key(q,r),[x+ux,y+uy]);
+  }
+  const P=[...pos.values()];
+  for(let i=0;i<P.length;i++) for(let j=i+1;j<P.length;j++){
+    const dist=Math.hypot(P[j][0]-P[i][0],P[j][1]-P[i][1]); if(dist>1.22*a||dist<0.7*a) continue;
+    const l=document.createElementNS(NS,"line"); l.setAttribute("x1",P[i][0]);l.setAttribute("y1",P[i][1]);l.setAttribute("x2",P[j][0]);l.setAttribute("y2",P[j][1]);l.setAttribute("class","bond"); g.appendChild(l); }
+  for(const [,[x,y]] of pos){ const c=document.createElementNS(NS,"circle"); c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.2);c.setAttribute("class","atom"); g.appendChild(c); }
+  for(const c of cores){ const e=document.createElementNS(NS,"circle"); e.setAttribute("cx",c.x);e.setAttribute("cy",c.y);e.setAttribute("r",5.5);e.setAttribute("class","core"); g.appendChild(e); }
+}
+
+/* ---------- side panel ---------- */
+function renderCompass(vec){
+  const svg=$("compass"); svg.innerHTML=""; const sp=15;
+  const lp=(m,n)=>[sp*(m+n/2), -sp*(n*SQ3/2)];
+  for(let m=-4;m<=4;m++) for(let n=-4;n<=4;n++){ if(Math.abs(m+n)>4) continue;
+    const [x,y]=lp(m,n), c=document.createElementNS(NS,"circle"); c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",(m===0&&n===0)?3.2:1.7);c.setAttribute("fill","var(--muted)"); svg.appendChild(c); }
+  if(!vec) return;
+  const [m,n]=vec;
+  if(m===0&&n===0){ const c=document.createElementNS(NS,"circle"); c.setAttribute("r",9);c.setAttribute("fill","none");c.setAttribute("stroke","var(--good)");c.setAttribute("stroke-width","2.5"); svg.appendChild(c); return; }
+  let [x,y]=lp(m,n); const L=Math.hypot(x,y), lim=62; if(L>lim){x*=lim/L;y*=lim/L;}
+  const ux=x/Math.hypot(x,y), uy=y/Math.hypot(x,y);
+  const l=document.createElementNS(NS,"line"); l.setAttribute("x1",0);l.setAttribute("y1",0);l.setAttribute("x2",x-ux*7);l.setAttribute("y2",y-uy*7);l.setAttribute("stroke","var(--accent)");l.setAttribute("stroke-width","3");l.setAttribute("stroke-linecap","round"); svg.appendChild(l);
+  const h=document.createElementNS(NS,"polygon"), pxn=-uy, pyn=ux;
+  h.setAttribute("points",`${x},${y} ${x-ux*10+pxn*5.5},${y-uy*10+pyn*5.5} ${x-ux*10-pxn*5.5},${y-uy*10-pyn*5.5}`); h.setAttribute("fill","var(--accent)"); svg.appendChild(h);
+}
+function par(){ return Math.round(G.k*Math.log2(G.cells.length)/1.5); }
+function bestKey(){ return "ds-best-"+G.level; }
+function getBest(){ try{ const v=localStorage.getItem(bestKey()); return v?Number(v):null; }catch(e){ return null; } }
+function setBest(v){ try{ const b=getBest(); if(b===null||v<b) localStorage.setItem(bestKey(),String(v)); }catch(e){} }
+
+function render(){
+  renderBoard();
+  const e=G.active!==null?G.log[G.active]:null;
+  renderCompass(e?e.vec:null);
+  if(e){
+    $("vec").textContent=fmtVec(e.vec);
+    const lv=lenVec(e.vec);
+    $("vecsub").textContent=(e.free?"Boundary of the whole crystal":"Circuit #"+e.n)+" · "+e.cells.length+" cells"+(lv>0?" · |b| = "+(Number.isInteger(lv)?lv:lv.toFixed(3))+" spacings":" · the circuit closes");
+  } else { $("vec").textContent="—"; $("vecsub").textContent="Walk a circuit to see its closure failure."; }
+  $("sQ").textContent=G.queries; $("sP").textContent=G.penalties; $("sF").textContent=G.flags.size+"/"+G.k;
+  $("par").textContent="Par "+par()+"."; const b=getBest(); $("best").textContent=b!==null?" Your best on this level: "+b+".":"";
+  const log=$("log"); log.innerHTML="";
+  for(let i=G.log.length-1;i>=0;i--){ const it=G.log[i];
+    const d=document.createElement("div"); d.className="logitem"+(i===G.active?" act":""); d.tabIndex=0; d.setAttribute("role","button");
+    d.innerHTML=`<span class="n">${it.free?"free":"#"+it.n}</span><span>${it.cells.length} cells</span><span class="v">${fmtVec(it.vec).replace("b = ","")}</span>`;
+    const pick=()=>{ G.active=i; if(!it.free||true){ G.selected=new Set(it.cells); } render(); };
+    d.addEventListener("click",pick); d.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();pick();}});
+    log.appendChild(d); }
+  $("modeSel").classList.toggle("on",G.mode==="select"); $("modeFlag").classList.toggle("on",G.mode==="flag");
+  for(const id of ["walk","check","reveal","selAll","selNone","selInv","modeSel","modeFlag"]) $(id).disabled=G.over;
+  $("crystal").disabled=!G.over; $("crystal").textContent=G.crystal?"Board view":"Crystal view";
+  const st=$("status"); st.textContent=G.msg; st.className="status "+(G.msgClass||"");
+  try{ window.claude?.hot?.snapshot?.(snapshot); }catch(e){}
+}
+
+/* ---------- actions ---------- */
+function walk(){
+  if(G.over) return;
+  if(!G.selected.size){ G.msg="Select at least one cell first."; G.msgClass="warn"; render(); return; }
+  const cells=[...G.selected], vec=sumVec(cells);
+  G.queries++; G.log.push({n:G.queries, cells, vec}); G.active=G.log.length-1;
+  G.msg=(vec[0]===0&&vec[1]===0)?"The circuit closes: the enclosed Burgers vectors sum to zero.":"The circuit misses closing by "+fmtVec(vec).replace("b = ","")+".";
+  G.msgClass=""; render();
+}
+function check(){
+  if(G.over) return;
+  let wrong=0; for(const k of G.cells){ if(G.flags.get(k)!==G.defects.get(k)) wrong++; }
+  if(wrong===0){ G.over=true; G.won=true; const sc=G.queries+G.penalties; setBest(sc);
+    G.msg=`Solved with a score of ${sc} (par ${par()}). Open the crystal view to see the defects.`; G.msgClass="win"; }
+  else { G.penalties+=2; G.msg=`${wrong} cell${wrong>1?"s are":" is"} wrong or missing a flag. Penalty +2.`; G.msgClass="warn"; }
+  render();
+}
+function reveal(){ if(G.over) return; G.over=true; G.won=false; G.msg="Revealed. Orange arrows are the true defects; green rings mark correct flags."; G.msgClass=""; render(); }
+
+function onDown(ev){
+  if(G.over||G.crystal) return; const k=hexAt(ev); if(!k) return; ev.preventDefault();
+  if(G.mode==="flag"){ const f=G.flags.get(k); if(f===undefined) G.flags.set(k,0); else if(f===5) G.flags.delete(k); else G.flags.set(k,f+1); render(); return; }
+  painting=!G.selected.has(k); if(painting) G.selected.add(k); else G.selected.delete(k);
+  G.active=null; try{$("board").setPointerCapture(ev.pointerId);}catch(e){} render();
+}
+function onMove(ev){
+  const k=hexAt(ev);
+  if(painting!==null && k){ const has=G.selected.has(k); if(painting&&!has){G.selected.add(k);render();} else if(!painting&&has){G.selected.delete(k);render();} }
+  if(k!==hoverKey){ hoverKey=k; if(painting===null) renderBoard(); }
+}
+function onUp(){ painting=null; }
+
+function snapshot(){ return {level:G.level, seed:G.seed, selected:[...G.selected], flags:[...G.flags], queries:G.queries, penalties:G.penalties, log:G.log, active:G.active, mode:G.mode, over:G.over, won:G.won}; }
+
+function wire(){
+  const b=$("board");
+  b.addEventListener("pointerdown",onDown); b.addEventListener("pointermove",onMove);
+  b.addEventListener("pointerup",onUp); b.addEventListener("pointercancel",onUp); b.addEventListener("pointerleave",()=>{hoverKey=null; if(G&&!G.crystal) renderBoard();});
+  $("modeSel").onclick=()=>{G.mode="select";render();}; $("modeFlag").onclick=()=>{G.mode="flag";render();};
+  $("selAll").onclick=()=>{G.selected=new Set(G.cells);G.active=null;render();};
+  $("selNone").onclick=()=>{G.selected.clear();G.active=null;render();};
+  $("selInv").onclick=()=>{G.selected=new Set(G.cells.filter(k=>!G.selected.has(k)));G.active=null;render();};
+  $("walk").onclick=walk; $("check").onclick=check; $("reveal").onclick=reveal;
+  $("crystal").onclick=()=>{G.crystal=!G.crystal;render();};
+  $("load").onclick=()=>{const s=parseInt($("seed").value,10); if(Number.isFinite(s)&&s>0) newGame($("diff").value,s); else {G.msg="Enter a positive whole number as the board number.";G.msgClass="warn";render();}};
+  $("newb").onclick=()=>newGame($("diff").value, 1+Math.floor(Math.random()*99999));
+  $("diff").onchange=()=>newGame($("diff").value, G.seed);
+  document.addEventListener("keydown",ev=>{
+    if(ev.target.tagName==="INPUT"||ev.target.tagName==="SELECT") return;
+    if(ev.key==="f"||ev.key==="F"){G.mode=G.mode==="select"?"flag":"select";render();}
+    else if(ev.key==="Enter" && !(ev.target.classList&&ev.target.classList.contains("logitem")) && ev.target.tagName!=="BUTTON"){walk();}
+    else if(ev.key==="Escape"){G.selected.clear();G.active=null;render();}
+  });
+}
+
+function start(data){
+  wire();
+  if(data && data.level && data.seed) newGame(data.level, data.seed, data);
+  else newGame("easy", 2718);
+}
+if(window.claude?.hot?.ready) window.claude.hot.ready(start); else start(window.claude?.hot?.data ?? {});
+})();
+</script>
+
+</body>
+</html>
