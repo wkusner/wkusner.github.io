@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fifteen and the Parity Dial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --frame:#243441; --frame-hi:#344B5C; --tile:#F3EEE1; --tile-edge:#D8CFB9; --tile-ink:#1B2630;
+  --brass:#A77E22; --even:#2C7A55; --odd:#B6402F; --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --sel:#F1D98A;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --frame:#0B1116; --frame-hi:#22313C; --tile:#E6DFCC; --tile-edge:#B9AF97; --tile-ink:#16202A;
+    --brass:#D4A845; --even:#5BC48E; --odd:#FF7C66; --accent:#8AA8FF; --accent-ink:#0E1620; --sel:#E8C75A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --frame:#0B1116; --frame-hi:#22313C; --tile:#E6DFCC; --tile-edge:#B9AF97; --tile-ink:#16202A;
+  --brass:#D4A845; --even:#5BC48E; --odd:#FF7C66; --accent:#8AA8FF; --accent-ink:#0E1620; --sel:#E8C75A;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,50px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.game{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px;align-items:start;}
+@media (max-width:920px){.game{grid-template-columns:1fr;}}
+.left{display:flex;flex-direction:column;gap:12px;}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button:focus-visible,.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+button.on{background:var(--brass);color:#fff;border-color:var(--brass);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+.framewrap{width:min(100%,560px);}
+.frame{background:linear-gradient(160deg,var(--frame-hi),var(--frame));border-radius:14px;padding:clamp(8px,2vw,14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 24px rgba(0,0,0,.18);}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(4px,1vw,7px);aspect-ratio:1;max-width:100%;}
+.tile{border:0;border-radius:8px;background:var(--tile);color:var(--tile-ink);font-family:var(--display);font-weight:600;font-size:clamp(26px,6vw,46px);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -3px 0 var(--tile-edge),0 1px 0 rgba(0,0,0,.25);padding:0;position:relative;font-variant-numeric:tabular-nums;}
+.tile.blank{background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.07);cursor:default;}
+.tile.home::after{content:"";position:absolute;right:7px;top:7px;width:6px;height:6px;border-radius:50%;background:var(--even);opacity:.7;}
+.tile.sel{background:var(--sel);}
+.tile .cell{position:absolute;left:7px;bottom:4px;font:500 10px var(--mono);color:var(--muted);}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.win{color:var(--even);} .status.warn{color:var(--odd);}
+aside{display:flex;flex-direction:column;gap:14px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+.dials{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px;}
+.dial{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.dial svg{width:100%;max-width:108px;height:auto;}
+.dial .lbl{font-size:12px;color:var(--muted);text-align:center;}
+.op{font-family:var(--display);font-size:26px;color:var(--muted);}
+.needle{transition:transform .35s cubic-bezier(.3,1.4,.5,1);transform-origin:50px 54px;}
+@media (prefers-reduced-motion:reduce){.needle{transition:none;}}
+.mono{font-family:var(--mono);font-size:13px;}
+.cycles{font-family:var(--mono);font-size:14px;word-break:break-word;min-height:1.5em;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.stat{display:flex;flex-direction:column;gap:2px;}
+.stat b{font-family:var(--display);font-size:26px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;}
+.stat span{font-size:12px;color:var(--muted);}
+.word{display:grid;grid-template-columns:48px 1fr;gap:4px 10px;align-items:start;}
+.word .nm{font-family:var(--display);font-size:22px;font-weight:700;color:var(--brass);line-height:1.1;}
+.word .seq{font-family:var(--mono);font-size:14px;letter-spacing:.06em;word-break:break-all;}
+.word .eff{grid-column:2;font-size:13px;color:var(--muted);}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.small{font-size:12px;color:var(--muted);}
+.howto{columns:2 300px;column-gap:28px;}
+.howto p{margin:0 0 10px;break-inside:avoid;}
+.howto h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;}
+</style>
+
+<style>body{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Fifteen <span>&amp; the Parity Dial</span></h1>
+    <p class="tag">The classic sliding puzzle with its algebra running alongside: every slide is a transposition, the dials track the two parities that always flip together, and a small lab builds loops, inverses, and commutators.</p>
+  </header>
+
+  <div class="game">
+    <div class="left">
+      <div class="toolbar">
+        <button id="shuffle" class="primary" type="button">Shuffle</button>
+        <button id="solved" type="button">Solved</button>
+        <button id="loyd" type="button">Loyd's 14–15</button>
+        <button id="pry" type="button">Pry two tiles</button>
+        <button id="undo" type="button">Undo</button>
+      </div>
+      <div class="framewrap"><div class="frame"><div id="board" class="board" role="grid" aria-label="15 puzzle"></div></div></div>
+      <div id="status" class="status" role="status"></div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h2>Parity dial</h2>
+        <div class="dials">
+          <div class="dial"><svg id="dSign" viewBox="0 0 100 66" aria-label="Sign of the permutation"></svg><div class="lbl">sign of σ</div></div>
+          <div class="op">×</div>
+          <div class="dial"><svg id="dBlank" viewBox="0 0 100 66" aria-label="Color of the gap's square"></svg><div class="lbl">gap's square</div></div>
+          <div class="op">=</div>
+          <div class="dial"><svg id="dProd" viewBox="0 0 100 66" aria-label="Invariant"></svg><div class="lbl" id="prodLbl">invariant</div></div>
+        </div>
+        <div class="small">Each slide swaps the gap with one tile, so the sign of σ flips. The gap also moves to a square of the other color. The two needles flip together, so their product never changes. It reads +1 exactly when the position can be solved.</div>
+      </div>
+
+      <div class="card">
+        <h2>The permutation σ</h2>
+        <div id="cyc" class="cycles"></div>
+        <div class="small">Cycle (a b c) means square a holds tile b, square b holds tile c, and square c holds tile a. Squares are named by the tile that belongs there; 16 is the gap's home.</div>
+        <div class="stats">
+          <div class="stat"><b id="sMoves">0</b><span>slides</span></div>
+          <div class="stat"><b id="sInv">0</b><span>inversions</span></div>
+          <div class="stat"><b id="sMan">0</b><span>Manhattan</span></div>
+          <div class="stat"><b id="sOrd">1</b><span>order of σ</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Loop lab</h2>
+        <div class="word"><span class="nm">A</span><span id="wA" class="seq"></span><span id="eA" class="eff"></span></div>
+        <div class="word"><span class="nm">B</span><span id="wB" class="seq"></span><span id="eB" class="eff"></span></div>
+        <div class="word"><span class="nm" style="font-size:16px">[A,B]</span><span id="wC" class="seq"></span><span id="eC" class="eff"></span></div>
+        <div class="row">
+          <button id="recA" type="button">Record A</button>
+          <button id="recB" type="button">Record B</button>
+        </div>
+        <div class="row">
+          <button id="apA" type="button">A</button>
+          <button id="apAi" type="button">A⁻¹</button>
+          <button id="apB" type="button">B</button>
+          <button id="apBi" type="button">B⁻¹</button>
+          <button id="apC" type="button">[A,B]</button>
+          <button id="apBAB" type="button">B A B⁻¹</button>
+        </div>
+        <div class="small">A loop is a sequence of slides that brings the gap back to where it started. The arrow strings show how the gap moves; in each effect, a→b means the tile on square a ends on square b. [A,B] means A, then B, then undo A, then undo B.</div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card howto" aria-labelledby="howh">
+    <h2 id="howh">What the dial is measuring</h2>
+    <p><b>Positions as permutations.</b> Label the squares 1 to 16, with 16 the gap's home in the lower right. A position is the permutation σ of the 16 symbols that says which tile sits on each square. A slide swaps the gap with a neighbor, so it multiplies σ by one transposition.</p>
+    <p><b>The invariant.</b> Color the squares like a checkerboard. Every slide flips the sign of σ and moves the gap to the other color. So sign(σ) × (−1)<sup>d</sup>, where d is the gap's taxicab distance from home, never changes. It is +1 at the start, so it is +1 at every position you can reach.</p>
+    <p><b>Loyd's challenge.</b> Sam Loyd's famous prize asked for the solved board with 14 and 15 swapped. That position has an odd σ with the gap at home, so the dial reads −1 and no sequence of slides reaches it. <em>Pry two tiles</em> is the only way across: a swap that is not a slide flips just one needle.</p>
+    <p><b>The converse.</b> Every position with invariant +1 can be solved. With the gap at home, the reachable arrangements of tiles are exactly the even permutations of 15 things, the alternating group A₁₅, which has 15!/2 ≈ 6.5 × 10¹¹ elements.</p>
+    <p><b>Loops and 3-cycles.</b> Sending the gap once around a 2×2 block is the preloaded loop A. It moves exactly three tiles, a 3-cycle. 3-cycles generate A₁₅, which is why the puzzle can always be finished. The same idea powers Rubik's cube solving.</p>
+    <p><b>Commutators.</b> [A,B] = A B A⁻¹ B⁻¹ undoes everything A and B do separately and keeps only their interaction. When two loops share little, their commutator moves few tiles. That is the discrete version of the Lie bracket.</p>
+    <p><b>Controls.</b> Click a tile in the gap's row or column to slide it (and any tiles between). Arrow keys slide the tile next to the gap in that direction. <kbd>U</kbd> undoes a slide.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const DIR={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]};
+const ARROW={U:"↑",D:"↓",L:"←",R:"→"};
+const INV={U:"D",D:"U",L:"R",R:"L"};
+const SOLVED=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+let S=null;
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function blankOf(b){return b.indexOf(0);}
+function step(b,d){ // move the gap one step in direction d; returns new gap index or -1
+  const g=blankOf(b), r=g>>2, c=g&3, nr=r+DIR[d][0], nc=c+DIR[d][1];
+  if(nr<0||nr>3||nc<0||nc>3) return -1;
+  const n=nr*4+nc; b[g]=b[n]; b[n]=0; return n;
+}
+function sigma(b){ // map: square label (1..16) -> tile label there (blank=16)
+  const m={}; for(let i=0;i<16;i++) m[i+1]=b[i]===0?16:b[i]; return m;
+}
+function cyclesOf(m,n){
+  const seen=new Set(), out=[];
+  for(let i=1;i<=n;i++){ if(seen.has(i)) continue; const cyc=[]; let j=i;
+    while(!seen.has(j)){ seen.add(j); cyc.push(j); j=m[j]; }
+    if(cyc.length>1) out.push(cyc); }
+  return out;
+}
+function fmtCycles(cs){ return cs.length? cs.map(c=>"("+c.join(" ")+")").join(""): "identity"; }
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+function order(cs){ return cs.reduce((o,c)=>o/gcd(o,c.length)*c.length,1); }
+function signOf(cs){ return cs.reduce((s,c)=>s*((c.length%2===0)?-1:1),1); }
+function inversions(b){ const t=b.filter(x=>x); let n=0; for(let i=0;i<t.length;i++) for(let j=i+1;j<t.length;j++) if(t[i]>t[j]) n++; return n; }
+function manhattan(b){ let s=0; b.forEach((t,i)=>{ if(t){ const h=t-1; s+=Math.abs((h>>2)-(i>>2))+Math.abs((h&3)-(i&3)); } }); return s; }
+function gapParity(b){ const g=blankOf(b); return ((3-(g>>2))+(3-(g&3)))%2; } // 0 = home color
+function wordEffect(word){ // permutation of squares induced by a gap loop starting at word.start
+  const mk=[]; for(let i=0;i<16;i++) mk.push(i+1); mk[word.start]=0;
+  for(const d of word.moves){ if(step(mk,d)<0) return null; }
+  if(blankOf(mk)!==word.start) return {open:true};
+  const m={}; for(let i=1;i<=16;i++) m[i]=i;
+  mk.forEach((v,j)=>{ if(v) m[v]=j+1; }); // tile starting on square v ends on square j+1
+  const cs=cyclesOf(m,16); return {cs};
+}
+function inverseWord(w){ return {start:w.start, moves:w.moves.slice().reverse().map(d=>INV[d])}; }
+function concat(...ws){ return {start:ws[0].start, moves:ws.flatMap(w=>w.moves)}; }
+function commutator(A,B){ return concat(A,B,inverseWord(A),inverseWord(B)); }
+
+/* ---------- dials ---------- */
+function drawDial(svg,value,labels,colors){ // value: +1 or -1
+  const ang = value>0?-50:50;
+  svg.innerHTML=`
+   <path d="M10 54 A40 40 0 0 1 50 14" fill="none" stroke="${colors[0]}" stroke-width="7" stroke-linecap="butt"/>
+   <path d="M50 14 A40 40 0 0 1 90 54" fill="none" stroke="${colors[1]}" stroke-width="7" stroke-linecap="butt"/>
+   <text x="14" y="64" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--muted)">${labels[0]}</text>
+   <text x="86" y="64" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--muted)">${labels[1]}</text>
+   <g class="needle" style="transform:rotate(${ang}deg)"><line x1="50" y1="54" x2="50" y2="20" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/></g>
+   <circle cx="50" cy="54" r="5" fill="var(--brass)"/>`;
+}
+function setNeedle(svg,value){ const n=svg.querySelector(".needle"); if(n) n.style.transform=`rotate(${value>0?-50:50}deg)`; }
+
+/* ---------- board ---------- */
+const tiles=[];
+function buildBoard(){
+  const el=$("board"); el.innerHTML="";
+  for(let i=0;i<16;i++){ const b=document.createElement("button"); b.type="button"; b.className="tile"; b.dataset.i=i;
+    b.addEventListener("click",()=>clickCell(i)); el.appendChild(b); tiles.push(b); }
+}
+function renderBoard(){
+  for(let i=0;i<16;i++){ const t=S.board[i], b=tiles[i];
+    b.className="tile"+(t===0?" blank":"")+(t===i+1?" home":"")+(S.pry===i?" sel":"");
+    b.textContent=t===0?"":String(t);
+    const lab=document.createElement("span"); lab.className="cell"; lab.textContent=i+1; b.appendChild(lab);
+    b.setAttribute("aria-label",t===0?`square ${i+1}: gap`:`square ${i+1}: tile ${t}`);
+    b.tabIndex=t===0?-1:0; }
+}
+
+function render(){
+  renderBoard();
+  const cs=cyclesOf(sigma(S.board),16), sg=signOf(cs), gp=gapParity(S.board), inv=sg*(gp?-1:1);
+  setNeedle($("dSign"),sg); setNeedle($("dBlank"),gp?-1:1); setNeedle($("dProd"),inv);
+  $("prodLbl").textContent=inv>0?"+1: solvable":"−1: unsolvable";
+  $("prodLbl").style.color=inv>0?"var(--even)":"var(--odd)";
+  $("cyc").textContent="σ = "+fmtCycles(cs);
+  $("sMoves").textContent=S.moves; $("sInv").textContent=inversions(S.board); $("sMan").textContent=manhattan(S.board); $("sOrd").textContent=order(cs);
+  for(const k of ["A","B"]){ const w=S.words[k];
+    $("w"+k).textContent=(w.moves.map(d=>ARROW[d]).join("")||"—")+(S.rec===k?"  ● recording":"");
+    const e=wordEffect(w); $("e"+k).textContent=descEffect(w,e); }
+  const C=commutator(S.words.A,S.words.B), eC=wordEffect(C);
+  $("wC").textContent=C.moves.length? C.moves.length+" slides":"—"; $("eC").textContent=S.words.A.start===S.words.B.start?descEffect(C,eC):"A and B must start with the gap on the same square.";
+  $("recA").textContent=S.rec==="A"?"Stop A":"Record A"; $("recB").textContent=S.rec==="B"?"Stop B":"Record B";
+  $("recA").classList.toggle("on",S.rec==="A"); $("recB").classList.toggle("on",S.rec==="B");
+  for(const id of ["apA","apAi","apB","apBi","apC","apBAB"]) $(id).disabled=!!S.rec;
+  $("pry").classList.toggle("on",S.pry!==null); $("undo").disabled=!S.hist.length;
+  const st=$("status"); st.textContent=S.msg||""; st.className="status "+(S.msgClass||"");
+  try{ window.claude?.hot?.snapshot?.(()=>({board:S.board,moves:S.moves,words:S.words})); }catch(e){}
+}
+function descEffect(w,e){
+  if(!w.moves.length) return "Empty.";
+  if(!e) return "Leaves the board.";
+  if(e.open) return "Not a loop: the gap does not return to square "+(w.start+1)+".";
+  const cs=e.cs, moved=cs.reduce((n,c)=>n+c.length,0);
+  const kinds=cs.length? cs.map(c=>c.length+"-cycle").join(" + "):"nothing";
+  const arrows=cs.map(c=>c.concat(c[0]).join("→")).join(",  ");
+  return `Gap starts on square ${w.start+1}. Moves ${moved} tile${moved===1?"":"s"}${cs.length?" ("+kinds+"): "+arrows:""}.`;
+}
+
+/* ---------- actions ---------- */
+function slideGap(d,record=true){
+  const before=S.board.slice(); if(step(S.board,d)<0) return false;
+  S.moves++; S.hist.push({board:before,moves:S.moves-1});
+  if(S.hist.length>500) S.hist.shift();
+  if(record && S.rec) S.words[S.rec].moves.push(d);
+  return true;
+}
+function checkWin(){ if(S.board.every((v,i)=>v===SOLVED[i])){ S.msg=`Solved in ${S.moves} slides.`; S.msgClass="win"; } }
+function clickCell(i){
+  if(S.pry!==null || S.pryMode){
+    if(S.board[i]===0){ S.msg="Pick two tiles, not the gap."; S.msgClass="warn"; render(); return; }
+    if(S.pry===null){ S.pry=i; S.msg="Now pick the second tile."; S.msgClass=""; render(); return; }
+    if(S.pry===i){ S.pry=null; S.pryMode=false; S.msg=""; render(); return; }
+    const a=S.pry; S.hist.push({board:S.board.slice(),moves:S.moves});
+    [S.board[a],S.board[i]]=[S.board[i],S.board[a]]; S.pry=null; S.pryMode=false;
+    S.msg="Swapped two tiles by hand. Only the sign needle moved, so the invariant flipped."; S.msgClass="warn"; render(); return;
+  }
+  const g=blankOf(S.board), gr=g>>2, gc=g&3, r=i>>2, c=i&3;
+  if(i===g) return;
+  let d=null, n=0;
+  if(r===gr){ d=c>gc?"R":"L"; n=Math.abs(c-gc); } else if(c===gc){ d=r>gr?"D":"U"; n=Math.abs(r-gr); }
+  if(!d){ S.msg="Only tiles in the gap's row or column can slide."; S.msgClass=""; render(); return; }
+  for(let k=0;k<n;k++) slideGap(d);
+  S.msg=""; S.msgClass=""; checkWin(); render();
+}
+function applyWord(w,label){
+  if(!w.moves.length){ S.msg=label+" is empty. Record it first."; S.msgClass="warn"; render(); return; }
+  if(blankOf(S.board)!==w.start){ S.msg=`${label} starts with the gap on square ${w.start+1}. Move the gap there first.`; S.msgClass="warn"; render(); return; }
+  for(const d of w.moves) if(!slideGap(d,false)){ S.msg=label+" runs off the board from here."; S.msgClass="warn"; render(); return; }
+  S.msg=`Applied ${label} (${w.moves.length} slides).`; S.msgClass=""; checkWin(); render();
+}
+function toggleRec(k){
+  if(S.rec===k){ S.rec=null; const e=wordEffect(S.words[k]);
+    S.msg=e&&e.open?`${k} is not a loop yet: bring the gap back to square ${S.words[k].start+1}.`:`Recorded ${k}.`; S.msgClass=e&&e.open?"warn":""; render(); return; }
+  S.rec=k; S.words[k]={start:blankOf(S.board),moves:[]}; S.msg=`Recording ${k}. Slide tiles, then bring the gap back to square ${blankOf(S.board)+1} and press Stop.`; S.msgClass=""; render();
+}
+function shuffle(){
+  const rng=mulberry32((Date.now()^Math.floor(Math.random()*1e9))>>>0);
+  scramble(rng,160);
+  S.msg="Shuffled with 160 random slides, then the gap was walked home. The dial reads +1."; S.msgClass=""; render();
+}
+function scramble(rng,n){
+  S.board=SOLVED.slice(); let last=null;
+  for(let k=0;k<n;k++){ const ds=["U","D","L","R"].filter(d=>d!==INV[last||"X"]); let d;
+    do{ d=ds[Math.floor(rng()*ds.length)]; }while(!canStep(d));
+    if(step(S.board,d)>=0) last=d; }
+  while(blankOf(S.board)%4<3) step(S.board,"R");
+  while(blankOf(S.board)<12) step(S.board,"D");
+  S.moves=0; S.hist=[]; S.pry=null; S.pryMode=false;
+}
+function canStep(d){ const b=S.board.slice(); return step(b,d)>=0; }
+
+function start(){
+  buildBoard();
+  drawDial($("dSign"),1,["even","odd"],["var(--even)","var(--odd)"]);
+  drawDial($("dBlank"),1,["home","other"],["var(--even)","var(--odd)"]);
+  drawDial($("dProd"),1,["+1","−1"],["var(--even)","var(--odd)"]);
+  S={board:SOLVED.slice(),moves:0,hist:[],rec:null,pry:null,pryMode:false,msg:"",msgClass:"",
+     words:{A:{start:15,moves:["U","L","D","R"]},B:{start:15,moves:["U","U","L","D","D","R"]}}};
+  scramble(mulberry32(1880),60);
+  S.msg="A sample position (the gap is home). Try the dial, apply loop A to see a 3-cycle, or apply [A,B].";
+  wire(); render();
+}
+function wire(){
+  $("shuffle").onclick=shuffle;
+  $("solved").onclick=()=>{S.board=SOLVED.slice();S.moves=0;S.hist=[];S.msg="Solved position.";S.msgClass="";render();};
+  $("loyd").onclick=()=>{S.board=SOLVED.slice();S.board[13]=15;S.board[14]=14;S.moves=0;S.hist=[];
+    S.msg="Loyd's position: 14 and 15 swapped. The dial reads −1, so no sequence of slides can fix it.";S.msgClass="warn";render();};
+  $("pry").onclick=()=>{ if(S.pry!==null||S.pryMode){S.pry=null;S.pryMode=false;S.msg="";} else {S.pryMode=true;S.msg="Pick the first tile to pry out.";S.msgClass="";} render(); };
+  $("undo").onclick=undo;
+  $("recA").onclick=()=>toggleRec("A"); $("recB").onclick=()=>toggleRec("B");
+  $("apA").onclick=()=>applyWord(S.words.A,"A"); $("apAi").onclick=()=>applyWord(inverseWord(S.words.A),"A⁻¹");
+  $("apB").onclick=()=>applyWord(S.words.B,"B"); $("apBi").onclick=()=>applyWord(inverseWord(S.words.B),"B⁻¹");
+  $("apC").onclick=()=>{ if(S.words.A.start!==S.words.B.start){S.msg="A and B must start with the gap on the same square.";S.msgClass="warn";render();return;} applyWord(commutator(S.words.A,S.words.B),"[A,B]"); };
+  $("apBAB").onclick=()=>{ if(S.words.A.start!==S.words.B.start){S.msg="A and B must start with the gap on the same square.";S.msgClass="warn";render();return;} applyWord(concat(S.words.B,S.words.A,inverseWord(S.words.B)),"B A B⁻¹"); };
+  document.addEventListener("keydown",ev=>{
+    if(ev.target.tagName==="INPUT") return;
+    const m={ArrowUp:"D",ArrowDown:"U",ArrowLeft:"R",ArrowRight:"L"}; // tile moves with the arrow, gap moves against it
+    if(m[ev.key]){ ev.preventDefault(); if(slideGap(m[ev.key])){S.msg="";S.msgClass="";checkWin();render();} }
+    else if(ev.key==="u"||ev.key==="U"){ undo(); }
+  });
+}
+function undo(){ const h=S.hist.pop(); if(!h) return; S.board=h.board; S.moves=h.moves;
+  if(S.rec && S.words[S.rec].moves.length) S.words[S.rec].moves.pop();
+  S.msg="Undid one slide."; S.msgClass=""; render(); }
+
+start();
+})();
+</script>
+
+</body>
+</html>
