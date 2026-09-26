@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slide Rule Cabinet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --scale:#F4EFE2; --scale-edge:#CDBF9E; --slide:#E9F0F8; --slide-edge:#9FB3CC;
+  --hair:#C23B22; --accent:#2F5DB8; --accent-ink:#FFFFFF; --brass:#A77E22; --good:#2C7A55;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --scale:#1E2A31; --scale-edge:#3E4F58; --slide:#1B2B3F; --slide-edge:#3D5878;
+    --hair:#FF6F57; --accent:#8AA8FF; --accent-ink:#0E1620; --brass:#D4A845; --good:#5BC48E;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --scale:#1E2A31; --scale-edge:#3E4F58; --slide:#1B2B3F; --slide-edge:#3D5878;
+  --hair:#FF6F57; --accent:#8AA8FF; --accent-ink:#0E1620; --brass:#D4A845; --good:#5BC48E;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,50px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+nav{display:flex;flex-wrap:wrap;gap:6px;}
+nav button{font:600 15px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.svgbox{overflow-x:auto;}
+svg.rule{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+svg.round{width:100%;max-width:560px;height:auto;display:block;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none;}
+.drag{cursor:grab;} .drag:active{cursor:grabbing;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+.read{font-family:var(--mono);font-size:14px;line-height:1.7;}
+.read b{color:var(--hair);font-weight:500;}
+.big{font-family:var(--display);font-size:30px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+input[type=text],input[type=number],select{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;width:92px;}
+select{font-family:var(--sans);width:auto;}
+.note{font-size:14px;max-width:70ch;}
+.note p{margin:0 0 8px;}
+.small{font-size:12px;color:var(--muted);}
+/* svg classes */
+.sc{fill:var(--scale);stroke:var(--scale-edge);}
+.sl{fill:var(--slide);stroke:var(--slide-edge);}
+.tk{stroke:var(--ink);}
+.tl{fill:var(--ink);font-family:var(--sans);}
+.tm{fill:var(--muted);font-family:var(--sans);}
+.hair{stroke:var(--hair);}
+.hairf{fill:var(--hair);}
+.idx{fill:var(--accent);}
+.lm{fill:var(--brass);}
+.lmt{fill:var(--brass);font-family:var(--mono);}
+.grid{stroke:var(--muted);}
+</style>
+
+<style>body{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Slide Rule <span>Cabinet</span></h1>
+    <p class="tag">Five instruments that turn a group operation into sliding or turning: the straight and circular log rules, a complex rule on a cylinder, finite-field wheels, and a relativistic velocity rule. Drag the slides and cursors, or use the controls.</p>
+  </header>
+  <nav id="tabs" aria-label="Instruments">
+    <button type="button" data-t="straight">Straight</button>
+    <button type="button" data-t="circular">Circular</button>
+    <button type="button" data-t="complex">Complex</button>
+    <button type="button" data-t="field">Finite field</button>
+    <button type="button" data-t="relativity">Relativity</button>
+  </nav>
+
+  <!-- STRAIGHT -->
+  <section id="p-straight" class="panel">
+    <div class="inst">
+      <div class="stage">
+        <div class="svgbox"><svg id="sv-straight" class="rule" viewBox="0 0 1000 270" aria-label="Straight slide rule"></svg></div>
+        <div class="ctl">
+          <label for="st-off">Slide</label><input id="st-off" type="range" min="-1" max="1" step="0.0005" value="0.30103"><output id="st-offo"></output>
+          <label for="st-cur">Cursor</label><input id="st-cur" type="range" min="0" max="1" step="0.0005" value="0.77815"><output id="st-curo"></output>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Reading</h2>
+        <div id="st-read" class="read"></div>
+        <div class="row"><label class="small" for="st-a">a</label><input id="st-a" type="number" step="any" value="2"><label class="small" for="st-b">b</label><input id="st-b" type="number" step="any" value="3"></div>
+        <div class="row"><button id="st-mul" class="primary" type="button">Set up a × b</button><button id="st-div" type="button">Set up a ÷ b</button></div>
+        <div class="note small"><p>Group: ℝ<sub>&gt;0</sub> under ×. The scale is log₁₀, so sliding adds logarithms. Faded copies of C show the neighboring decades: reading from them multiplies or divides by 10.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CIRCULAR -->
+  <section id="p-circular" class="panel" hidden>
+    <div class="inst">
+      <div class="stage">
+        <svg id="sv-circular" class="round" viewBox="-280 -280 560 560" aria-label="Circular slide rule"></svg>
+        <div class="ctl">
+          <label for="ci-rot">Disk</label><input id="ci-rot" type="range" min="0" max="360" step="0.1" value="108.37"><output id="ci-roto"></output>
+          <label for="ci-cur">Cursor</label><input id="ci-cur" type="range" min="0" max="360" step="0.1" value="280.13"><output id="ci-curo"></output>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Reading</h2>
+        <div id="ci-read" class="read"></div>
+        <div class="note small"><p>Outer rings: the log scale, one decade per turn, so it computes in ℝ<sub>&gt;0</sub>/10<sup>ℤ</sup>. Inner rings: degrees, the rotation group SO(2). Both are the same circle group. Once around is exactly the power of ten the rule cannot see.</p><p>Drag the disk to turn it, and drag the red arm to move the cursor.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPLEX -->
+  <section id="p-complex" class="panel" hidden>
+    <div class="inst">
+      <div class="stage">
+        <div class="svgbox"><svg id="sv-complex" class="rule" viewBox="0 0 1000 520" aria-label="Complex slide rule"></svg></div>
+        <div class="ctl">
+          <label for="cx-dx">log|z|</label><input id="cx-dx" type="range" min="0" max="1" step="0.0005" value="0.150515"><output id="cx-dxo"></output>
+          <label for="cx-dy">arg z</label><input id="cx-dy" type="range" min="0" max="360" step="0.25" value="45"><output id="cx-dyo"></output>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Reading</h2>
+        <div id="cx-read" class="read"></div>
+        <div class="row"><label class="small" for="cx-z">z</label><input id="cx-z" type="text" value="1+i"><label class="small" for="cx-w">w</label><input id="cx-w" type="text" value="sqrt3+i"></div>
+        <div class="row"><button id="cx-mul" class="primary" type="button">Set up z × w</button></div>
+        <div class="note small"><p>Group: ℂ<sup>×</sup> ≅ ℝ × S¹ through exp. Across: log₁₀|z|, one decade. Up: arg z, wrapping at 360°, so the strip is a cylinder unrolled. The blue sheet slides and turns; its index is the number 1. Drag the red target to read a value. Enter numbers like <code>2</code>, <code>3i</code>, <code>1-i</code>, <code>sqrt3+i</code>.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIELD -->
+  <section id="p-field" class="panel" hidden>
+    <div class="inst">
+      <div class="stage">
+        <svg id="sv-field" class="round" viewBox="-280 -280 560 560" aria-label="Finite field wheel"></svg>
+        <div class="ctl">
+          <label for="ff-rot">Turn</label><input id="ff-rot" type="range" min="0" max="9" step="1" value="3"><output id="ff-roto"></output>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Wheel</h2>
+        <div class="row">
+          <label class="small" for="ff-p">Field</label>
+          <select id="ff-p"><option>5</option><option>7</option><option selected>11</option><option>13</option><option>17</option><option>19</option><option>23</option></select>
+          <label class="small" for="ff-mode">Operation</label>
+          <select id="ff-mode"><option value="mul">multiply</option><option value="add">add</option></select>
+        </div>
+        <div class="row"><label class="small"><input id="ff-sq" type="checkbox"> mark the squares</label></div>
+        <div id="ff-read" class="read"></div>
+        <div class="note small"><p>There is no exponential over 𝔽<sub>p</sub>, but 𝔽<sub>p</sub><sup>×</sup> is cyclic, so a primitive root g gives a discrete logarithm and the multiplication wheel is a circular slide rule with p − 1 ticks. Click an inner number to pick x. −1 sits exactly halfway around, and the squares sit at even positions.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATIVITY -->
+  <section id="p-relativity" class="panel" hidden>
+    <div class="inst">
+      <div class="stage">
+        <div class="svgbox"><svg id="sv-relativity" class="rule" viewBox="0 0 1000 270" aria-label="Relativistic velocity slide rule"></svg></div>
+        <div class="ctl">
+          <label for="rl-off">Slide</label><input id="rl-off" type="range" min="-3" max="3" step="0.001" value="0.5493"><output id="rl-offo"></output>
+          <label for="rl-cur">Cursor</label><input id="rl-cur" type="range" min="-3" max="3" step="0.001" value="1.0986"><output id="rl-curo"></output>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Reading</h2>
+        <div id="rl-read" class="read"></div>
+        <div class="row"><label class="small" for="rl-a">v₁/c</label><input id="rl-a" type="number" step="any" value="0.5"><label class="small" for="rl-b">v₂/c</label><input id="rl-b" type="number" step="any" value="0.5"></div>
+        <div class="row"><button id="rl-add" class="primary" type="button">Set up v₁ ⊕ v₂</button></div>
+        <div class="note small"><p>Collinear velocities combine by (β₁+β₂)/(1+β₁β₂). Rapidities φ = artanh β simply add, so the rule is spaced by φ and labelled by β = v/c above and by the Doppler factor k = e<sup>φ</sup> below, which multiplies (Bondi's k-calculus). It is an ordinary log rule relabelled. Nothing reaches β = 1.</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg", $=id=>document.getElementById(id);
+function E(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function T(txt,attrs,parent){const e=E("text",attrs,parent);e.textContent=txt;return e;}
+const frac=x=>x-Math.floor(x);
+const fmt=(x,d=4)=>{if(!isFinite(x))return"—";const s=Number(x.toPrecision(d));return String(s);};
+function svgPt(svg,ev){const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;const m=svg.getScreenCTM();return m?p.matrixTransform(m.inverse()):{x:0,y:0};}
+function dragger(svg,el,onStart,onMove){
+  el.addEventListener("pointerdown",ev=>{ev.preventDefault();ev.stopPropagation();const p0=svgPt(svg,ev);const st=onStart(p0);
+    try{el.setPointerCapture(ev.pointerId);}catch(e){}
+    const mv=e=>onMove(svgPt(svg,e),p0,st), up=()=>{el.removeEventListener("pointermove",mv);el.removeEventListener("pointerup",up);el.removeEventListener("pointercancel",up);};
+    el.addEventListener("pointermove",mv);el.addEventListener("pointerup",up);el.addEventListener("pointercancel",up);});
+}
+function logTicks(){const t=[];
+  for(let k=100;k<200;k++){const x=k/100;t.push([x,k%10===0?2:(k%5===0?1:0)]);}
+  for(let k=40;k<100;k++){const x=k/20;t.push([x,k%20===0?3:(k%2===0?2:0)]);}
+  for(let k=50;k<=100;k++){const x=k/10;t.push([x,k%10===0?3:(k%5===0?2:0)]);}
+  return t;}
+const TL=[7,11,15,20];
+
+/* ============ STRAIGHT ============ */
+(function(){
+  const svg=$("sv-straight"), X0=50, L=900;
+  E("rect",{x:X0-30,y:150,width:L+60,height:78,rx:4,class:"sc"},svg);
+  T("D",{x:X0-22,y:200,class:"tl","font-size":18,"font-weight":600},svg);
+  const gD=E("g",{},svg);
+  for(const [x,lv] of logTicks()){const px=X0+L*Math.log10(x);E("line",{x1:px,y1:150,x2:px,y2:150+TL[lv],class:"tk","stroke-width":lv>=3?1.4:.7},gD);}
+  for(let n=1;n<=10;n++){const px=X0+L*Math.log10(n);E("line",{x1:px,y1:150,x2:px,y2:174,class:"tk","stroke-width":1.6},gD);T(n,{x:px,y:192,"text-anchor":"middle",class:"tl","font-size":15,"font-weight":600},gD);}
+  for(const v of [1.5,2.5,3.5,4.5]){const px=X0+L*Math.log10(v);T(v,{x:px,y:190,"text-anchor":"middle",class:"tm","font-size":10},gD);}
+  const clip=E("clipPath",{id:"stclip"},E("defs",{},svg));E("rect",{x:X0-30,y:60,width:L+60,height:92},clip);
+  const gC=E("g",{"clip-path":"url(#stclip)"},svg);
+  const slide=E("g",{class:"drag"},gC);
+  for(const k of [-1,0,1]){
+    const g=E("g",{transform:`translate(${k*L},0)`,opacity:k===0?1:.35},slide);
+    E("rect",{x:X0-(k===0?20:0),y:72,width:L+(k===0?40:0),height:76,class:"sl"},g);
+    for(const [x,lv] of logTicks()){const px=X0+L*Math.log10(x);E("line",{x1:px,y1:148,x2:px,y2:148-TL[lv],class:"tk","stroke-width":lv>=3?1.4:.7},g);}
+    for(let n=1;n<=10;n++){const px=X0+L*Math.log10(n);E("line",{x1:px,y1:148,x2:px,y2:124,class:"tk","stroke-width":1.6},g);T(n,{x:px,y:112,"text-anchor":"middle",class:"tl","font-size":15,"font-weight":600},g);}
+    if(k===0){E("rect",{x:X0-3,y:72,width:6,height:10,class:"idx"},g);E("rect",{x:X0+L-3,y:72,width:6,height:10,class:"idx"},g);T("C",{x:X0-14,y:100,class:"tl","font-size":18,"font-weight":600,"text-anchor":"middle"},g);}
+  }
+  const cur=E("g",{class:"drag"},svg);
+  E("rect",{x:-16,y:52,width:32,height:190,rx:4,fill:"var(--hair)","fill-opacity":.08,stroke:"var(--hair)","stroke-opacity":.5},cur);
+  E("line",{x1:0,y1:52,x2:0,y2:242,class:"hair","stroke-width":1.5},cur);
+  E("rect",{x:-16,y:236,width:32,height:14,rx:3,class:"hairf"},cur);
+  let off=Math.log10(2), cx=Math.log10(6);
+  function draw(){
+    slide.setAttribute("transform",`translate(${off*L},0)`); cur.setAttribute("transform",`translate(${X0+cx*L},0)`);
+    $("st-off").value=off; $("st-cur").value=cx; $("st-offo").value=fmt(Math.pow(10,frac(off)),4); $("st-curo").value=fmt(Math.pow(10,cx),4);
+    const a=Math.pow(10,frac(off)), c=Math.pow(10,frac(cx-off)), d=Math.pow(10,cx);
+    const k=Math.floor(cx-off)-Math.floor(off)+Math.floor(cx)-Math.floor(cx); // decade bookkeeping
+    const e=Math.round(Math.log10(d/(a*c)));
+    $("st-read").innerHTML=`C index over D: <b>${fmt(a)}</b><br>Hairline on C: <b>${fmt(c)}</b><br>Hairline on D: <b>${fmt(d)}</b><br><span class="big">${fmt(a)} × ${fmt(c)} = ${fmt(d)}${e?` × 10<sup>${-e}</sup>`:""}</span>`;
+  }
+  dragger(svg,slide,()=>off,(p,p0,o)=>{off=Math.max(-1,Math.min(1,o+(p.x-p0.x)/L));draw();});
+  dragger(svg,cur,()=>cx,(p,p0,o)=>{cx=Math.max(0,Math.min(1,o+(p.x-p0.x)/L));draw();});
+  $("st-off").oninput=e=>{off=+e.target.value;draw();}; $("st-cur").oninput=e=>{cx=+e.target.value;draw();};
+  const norm=v=>{let l=Math.log10(Math.abs(v));return frac(l);};
+  $("st-mul").onclick=()=>{const a=+$("st-a").value,b=+$("st-b").value;if(!(a>0&&b>0))return;off=norm(a);cx=frac(norm(a)+norm(b));draw();};
+  $("st-div").onclick=()=>{const a=+$("st-a").value,b=+$("st-b").value;if(!(a>0&&b>0))return;off=norm(a)-norm(b);cx=frac(off);if(cx<0)cx+=1;draw();};
+  draw();
+})();
+
+/* ============ CIRCULAR ============ */
+(function(){
+  const svg=$("sv-circular"), R1=205, R2=130;
+  const ang=f=>(f*360-90)*Math.PI/180; // clockwise from top
+  const P=(f,r)=>[r*Math.cos(ang(f)),r*Math.sin(ang(f))];
+  E("circle",{r:268,class:"sc"},svg);
+  function logRing(g,r,outward){const s=outward?1:-1;
+    for(const [x,lv] of logTicks()){const f=Math.log10(x);if(f>=1)continue;const [a,b]=P(f,r),[c,d]=P(f,r+s*TL[lv]*.9);E("line",{x1:a,y1:b,x2:c,y2:d,class:"tk","stroke-width":lv>=3?1.3:.6},g);}
+    for(let n=1;n<=9;n++){const f=Math.log10(n);const [a,b]=P(f,r),[c,d]=P(f,r+s*22),[tx,ty]=P(f,r+s*34);E("line",{x1:a,y1:b,x2:c,y2:d,class:"tk","stroke-width":1.6},g);T(n,{x:tx,y:ty+5,"text-anchor":"middle",class:"tl","font-size":15,"font-weight":600},g);}
+    for(const v of [1.5,2.5]){const f=Math.log10(v),[tx,ty]=P(f,r+s*30);T(v,{x:tx,y:ty+4,"text-anchor":"middle",class:"tm","font-size":10},g);}
+  }
+  function degRing(g,r,outward){const s=outward?1:-1;
+    for(let d=0;d<360;d+=2){const f=d/360,[a,b]=P(f,r),[c,e]=P(f,r+s*(d%10===0?11:5));E("line",{x1:a,y1:b,x2:c,y2:e,class:"tk","stroke-width":d%30===0?1.3:.6},g);
+      if(d%30===0){const [tx,ty]=P(f,r+s*22);T(d,{x:tx,y:ty+4,"text-anchor":"middle",class:"tm","font-size":10},g);}}
+  }
+  const base=E("g",{},svg); logRing(base,R1,true); degRing(base,R2,true);
+  T("D",{x:0,y:-252,"text-anchor":"middle",class:"tm","font-size":11},base);
+  const disk=E("g",{class:"drag"},svg);
+  E("circle",{r:R1,fill:"var(--slide)","fill-opacity":.55,stroke:"var(--slide-edge)"},disk);
+  logRing(disk,R1,false); degRing(disk,R2,false);
+  const [ix,iy]=P(0,R1-8);E("circle",{cx:ix,cy:iy,r:5,class:"idx"},disk);
+  E("circle",{r:6,fill:"var(--ink)"},svg);
+  const arm=E("g",{class:"drag"},svg);
+  E("rect",{x:-10,y:-266,width:20,height:266,rx:5,fill:"var(--hair)","fill-opacity":.1,stroke:"var(--hair)","stroke-opacity":.45},arm);
+  E("line",{x1:0,y1:-266,x2:0,y2:0,class:"hair","stroke-width":1.5},arm);
+  let rot=360*Math.log10(2), cu=360*Math.log10(6);
+  function draw(){
+    disk.setAttribute("transform",`rotate(${rot})`); arm.setAttribute("transform",`rotate(${cu})`);
+    $("ci-rot").value=rot;$("ci-cur").value=cu;$("ci-roto").value=rot.toFixed(1)+"°";$("ci-curo").value=cu.toFixed(1)+"°";
+    const a=Math.pow(10,rot/360), d=Math.pow(10,cu/360), c=Math.pow(10,frac((cu-rot)/360));
+    const da=rot, dc=((cu-rot)%360+360)%360, dd=cu;
+    $("ci-read").innerHTML=`Disk index over: <b>${fmt(a)}</b> (${fmt(da,4)}°)<br>Cursor on disk: <b>${fmt(c)}</b> (${fmt(dc,4)}°)<br>Cursor on base: <b>${fmt(d)}</b> (${fmt(dd,4)}°)<br><span class="big">${fmt(a)} × ${fmt(c)} ≡ ${fmt(d)}</span><br><span class="big">${fmt(da,4)}° + ${fmt(dc,4)}° ≡ ${fmt(dd,4)}°</span><br><span class="small">≡ means up to a power of ten, or a multiple of 360°.</span>`;
+  }
+  const angAt=p=>((Math.atan2(p.y,p.x)*180/Math.PI+90)%360+360)%360;
+  dragger(svg,disk,p=>({r:rot,a:angAt(p)}),(p,p0,s)=>{rot=((s.r+angAt(p)-s.a)%360+360)%360;draw();});
+  dragger(svg,arm,()=>0,p=>{cu=angAt(p);draw();});
+  $("ci-rot").oninput=e=>{rot=+e.target.value;draw();}; $("ci-cur").oninput=e=>{cu=+e.target.value;draw();};
+  draw();
+})();
+
+/* ============ COMPLEX ============ */
+(function(){
+  const svg=$("sv-complex"), X0=60, W=880, Y0=30, H=440;
+  const px=(f,deg)=>[X0+f*W, Y0+H-(deg/360)*H];
+  const clip=E("clipPath",{id:"cxclip"},E("defs",{},svg));E("rect",{x:X0,y:Y0,width:W,height:H},clip);
+  E("rect",{x:X0,y:Y0,width:W,height:H,class:"sc"},svg);
+  const gD=E("g",{"clip-path":"url(#cxclip)"},svg);
+  for(let n=1;n<=10;n++){const [x]=px(Math.log10(n),0);E("line",{x1:x,y1:Y0,x2:x,y2:Y0+H,class:"grid","stroke-width":n===1||n===10?1.2:.8,"stroke-opacity":.6},gD);}
+  for(const v of [1.5,2.5,3.5,4.5,6,7,8,9]){const [x]=px(Math.log10(v),0);E("line",{x1:x,y1:Y0,x2:x,y2:Y0+H,class:"grid","stroke-width":.4,"stroke-opacity":.35},gD);}
+  for(let d=0;d<=360;d+=15){const [,y]=px(0,d);E("line",{x1:X0,y1:y,x2:X0+W,y2:y,class:"grid","stroke-width":d%90===0?1.1:.4,"stroke-opacity":d%90===0?.6:.35},gD);}
+  for(let n=1;n<=10;n++){const [x]=px(Math.log10(n),0);T(n,{x,y:Y0+H+18,"text-anchor":"middle",class:"tl","font-size":13,"font-weight":600},svg);}
+  T("|z|",{x:X0+W+8,y:Y0+H+18,class:"tm","font-size":12},svg);
+  for(let d=0;d<=360;d+=45){const [,y]=px(0,d);T(d+"°",{x:X0-6,y:y+4,"text-anchor":"end",class:"tm","font-size":11},svg);}
+  const S3=Math.sqrt(3);
+  const LM=[[1,0,"1"],[1,90,"i"],[1,180,"−1"],[1,270,"−i"],[Math.SQRT2,45,"1+i"],[Math.SQRT2,135,"−1+i"],[Math.SQRT2,315,"1−i"],[2,30,"√3+i"],[2,60,"1+√3i"],[1,60,"e^(iπ/3)"],[3,90,"3i"],[2,180,"−2"],[Math.sqrt(8),45,"2+2i"],[5,0,"5"],[4,180,"−4"],[8,90,"8i"],[Math.E,0,"e"],[6,270,"−6i"],[2,0,"2"]];
+  for(const [r,d,l] of LM){const [x,y]=px(Math.log10(r),d);E("circle",{cx:x,cy:y,r:3.5,class:"lm"},gD);T(l,{x:x+5,y:y-5,class:"lmt","font-size":11},gD);}
+  const gC=E("g",{"clip-path":"url(#cxclip)"},svg);
+  const sheet=E("g",{class:"drag"},gC);
+  for(const i of [-1,0,1]) for(const j of [-1,0,1]){
+    const g=E("g",{transform:`translate(${i*W},${-j*H})`},sheet);
+    E("rect",{x:X0,y:Y0,width:W,height:H,fill:"var(--slide)","fill-opacity":.28,stroke:"var(--slide-edge)","stroke-width":1.2},g);
+    for(let n=2;n<=9;n++){const [x]=px(Math.log10(n),0);E("line",{x1:x,y1:Y0,x2:x,y2:Y0+H,stroke:"var(--accent)","stroke-width":.7,"stroke-opacity":.45},g);}
+    for(let d=90;d<360;d+=90){const [,y]=px(0,d);E("line",{x1:X0,y1:y,x2:X0+W,y2:y,stroke:"var(--accent)","stroke-width":.7,"stroke-opacity":.45},g);}
+    const [ix,iy]=px(0,0);E("circle",{cx:ix,cy:iy,r:8,class:"idx","fill-opacity":.9},g);T("1",{x:ix+11,y:iy-8,fill:"var(--accent)","font-size":13,"font-weight":600,"font-family":"IBM Plex Mono, monospace"},g);
+  }
+  const tgt=E("g",{class:"drag"},svg);
+  E("circle",{r:13,fill:"var(--hair)","fill-opacity":.15,stroke:"var(--hair)","stroke-width":1.5},tgt);
+  E("line",{x1:-20,y1:0,x2:20,y2:0,class:"hair","stroke-width":1.2},tgt);E("line",{x1:0,y1:-20,x2:0,y2:20,class:"hair","stroke-width":1.2},tgt);
+  let dx=Math.log10(Math.SQRT2), dy=45, tf=frac(dx+Math.log10(2)), td=(dy+30)%360;
+  const cstr=(r,deg)=>{const t=deg*Math.PI/180,a=r*Math.cos(t),b=r*Math.sin(t);const A=Math.abs(a)<1e-9?0:a,B=Math.abs(b)<1e-9?0:b;
+    if(B===0)return fmt(A);if(A===0)return (fmt(B)==="1"?"":fmt(B)==="-1"?"−":fmt(B))+"i";const ab=fmt(Math.abs(B));return fmt(A)+(B<0?" − ":" + ")+(ab==="1"?"":ab)+"i";};
+  function draw(){
+    sheet.setAttribute("transform",`translate(${dx*W},${-(dy/360)*H})`);
+    const [x,y]=px(tf,td); tgt.setAttribute("transform",`translate(${x},${y})`);
+    $("cx-dx").value=dx;$("cx-dy").value=dy;$("cx-dxo").value=fmt(Math.pow(10,dx));$("cx-dyo").value=dy.toFixed(1)+"°";
+    const rz=Math.pow(10,dx), rw=Math.pow(10,frac(tf-dx)), rd=Math.pow(10,tf);
+    const aw=((td-dy)%360+360)%360;
+    $("cx-read").innerHTML=`Sheet index (z): <b>${cstr(rz,dy)}</b><br><span class="small">|z| = ${fmt(rz)}, arg z = ${fmt(dy)}°</span><br>Target on sheet (w): <b>${cstr(rw,aw)}</b><br>Target on base: <b>${cstr(rd,td)}</b><br><span class="big">z·w ≡ ${cstr(rd,td)}</span><br><span class="small">≡ up to a power of ten.</span>`;
+  }
+  dragger(svg,sheet,()=>({dx,dy}),(p,p0,s)=>{dx=Math.max(0,Math.min(1,s.dx+(p.x-p0.x)/W));dy=(((s.dy-(p.y-p0.y)/H*360)%360)+360)%360;draw();});
+  dragger(svg,tgt,()=>({tf,td}),(p,p0,s)=>{tf=Math.max(0,Math.min(1,s.tf+(p.x-p0.x)/W));td=(((s.td-(p.y-p0.y)/H*360)%360)+360)%360;draw();});
+  $("cx-dx").oninput=e=>{dx=+e.target.value;draw();}; $("cx-dy").oninput=e=>{dy=+e.target.value;draw();};
+  function parseC(s){s=s.replace(/\s+/g,"").replace(/sqrt(\d+(\.\d+)?)/g,(m,n)=>String(Math.sqrt(+n))).replace(/√(\d+(\.\d+)?)/g,(m,n)=>String(Math.sqrt(+n))).replace(/−/g,"-");
+    const m=s.match(/^([+-]?[\d.]+(?:e[+-]?\d+)?)?(?:([+-])([\d.]*)\*?i)?$/i); const mi=s.match(/^([+-]?[\d.]*)\*?i$/i);
+    if(mi){const b=mi[1]===""||mi[1]==="+"?1:mi[1]==="-"?-1:+mi[1];return[0,b];}
+    if(!m)return null; const a=m[1]?+m[1]:0; let b=0; if(m[2]){b=m[3]===""?1:+m[3]; if(m[2]==="-")b=-b;} return[a,b];}
+  $("cx-mul").onclick=()=>{const z=parseC($("cx-z").value),w=parseC($("cx-w").value);if(!z||!w||(!z[0]&&!z[1])||(!w[0]&&!w[1]))return;
+    const pol=v=>[Math.log10(Math.hypot(v[0],v[1])),((Math.atan2(v[1],v[0])*180/Math.PI)+360)%360];
+    const [lz,az]=pol(z),[lw,aw]=pol(w); dx=frac(lz); dy=az; tf=frac(lz+lw); td=(az+aw)%360; draw();};
+  draw();
+})();
+
+/* ============ FINITE FIELD ============ */
+(function(){
+  const svg=$("sv-field"); let p=11, mode="mul", s=3, pick=null, sq=false;
+  const primRoot=p=>{for(let g=2;g<p;g++){let x=1,ok=true;for(let k=1;k<p-1;k++){x=x*g%p;if(x===1){ok=false;break;}}if(ok)return g;}return 1;};
+  function draw(){
+    svg.innerHTML=""; const g=primRoot(p), n=mode==="mul"?p-1:p;
+    const lab=k=>{if(mode==="add")return k; let x=1;for(let i=0;i<k;i++)x=x*g%p;return x;};
+    const logOf=x=>{let v=1;for(let k=0;k<p-1;k++){if(v===x)return k;v=v*g%p;}return -1;};
+    const P=(k,r)=>{const a=(k/n*360-90)*Math.PI/180;return[r*Math.cos(a),r*Math.sin(a)];};
+    E("circle",{r:262,class:"sc"},svg);
+    const fs=p>17?14:17;
+    for(let k=0;k<n;k++){const [a,b]=P(k,200),[c,d]=P(k,214),[tx,ty]=P(k,234);E("line",{x1:a,y1:b,x2:c,y2:d,class:"tk","stroke-width":1.5},svg);
+      const v=lab(k), isSq=mode==="mul"&&sq&&k%2===0;
+      if(isSq)E("circle",{cx:tx,cy:ty,r:14,fill:"var(--brass)","fill-opacity":.25},svg);
+      T(v,{x:tx,y:ty+6,"text-anchor":"middle",class:"tl","font-size":fs,"font-weight":600},svg);}
+    const disk=E("g",{class:"drag",transform:`rotate(${s/n*360})`},svg);
+    E("circle",{r:200,fill:"var(--slide)","fill-opacity":.7,stroke:"var(--slide-edge)"},disk);
+    for(let k=0;k<n;k++){const [a,b]=P(k,200),[c,d]=P(k,186),[tx,ty]=P(k,164);E("line",{x1:a,y1:b,x2:c,y2:d,class:"tk","stroke-width":1.5},disk);
+      const v=lab(k), sel=pick===v;
+      const grp=E("g",{style:"cursor:pointer"},disk);
+      E("circle",{cx:tx,cy:ty,r:15,fill:sel?"var(--hair)":"transparent","fill-opacity":sel?.25:0},grp);
+      T(v,{x:tx,y:ty+6,"text-anchor":"middle",class:"tl","font-size":fs,"font-weight":sel?700:500,transform:`rotate(${-s/n*360} ${tx} ${ty})`},grp);
+      grp.addEventListener("pointerdown",ev=>{ev.stopPropagation();pick=v;draw();});}
+    const [ix,iy]=P(0,140);E("circle",{cx:ix,cy:iy,r:6,class:"idx"},disk);
+    T(mode==="mul"?`g = ${g}`:"",{x:0,y:6,"text-anchor":"middle",class:"tm","font-size":14,transform:`rotate(${-s/n*360})`},disk);
+    const a=lab(s%n);
+    let out=`Field 𝔽<sub>${p}</sub>. `+(mode==="mul"?`Primitive root g = ${g}; positions are discrete logs.<br>`:`Positions are the residues themselves.<br>`);
+    out+=`Inner ${mode==="mul"?"1":"0"} sits over <b>${a}</b>, so every inner x sits under ${mode==="mul"?a+"·x":a+" + x"}.<br>`;
+    if(pick!==null&&pick!==undefined){const r=mode==="mul"?a*pick%p:(a+pick)%p;out+=`<span class="big">${a} ${mode==="mul"?"×":"+"} ${pick} = ${r}</span> (mod ${p})<br>`;
+      if(mode==="mul"){out+=`<span class="small">log ${a} + log ${pick} = ${s} + ${logOf(pick)} ≡ ${(s+logOf(pick))%(p-1)} (mod ${p-1})</span>`;}}
+    else out+=`<span class="small">Click an inner number to pick x.</span>`;
+    if(mode==="mul")out+=`<br><span class="small">−1 = ${p-1} is at position ${(p-1)/2}, halfway round.</span>`;
+    $("ff-read").innerHTML=out;
+    const r=$("ff-rot"); r.max=n-1; r.value=s; $("ff-roto").value=s;
+    const angAt=pt=>((Math.atan2(pt.y,pt.x)*180/Math.PI+90)%360+360)%360;
+    dragger(svg,disk,pt=>({s0:s,a:angAt(pt)}),(pt,p0,st)=>{const ns=((st.s0+Math.round((angAt(pt)-st.a)/360*n))%n+n)%n;if(ns!==s){s=ns;draw();}});
+  }
+  $("ff-p").onchange=e=>{p=+e.target.value;s=Math.min(s,p-2);pick=null;draw();};
+  $("ff-mode").onchange=e=>{mode=e.target.value;pick=null;draw();};
+  $("ff-sq").onchange=e=>{sq=e.target.checked;draw();};
+  $("ff-rot").oninput=e=>{s=+e.target.value;draw();};
+  pick=7; draw();
+})();
+
+/* ============ RELATIVITY ============ */
+(function(){
+  const svg=$("sv-relativity"), X0=50, L=900, F=3; // phi in [-F,F]
+  const X=phi=>X0+(phi+F)/(2*F)*L;
+  E("rect",{x:X0-30,y:150,width:L+60,height:78,rx:4,class:"sc"},svg);
+  const betas=[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,.95,.99];
+  const ks=[1,1.5,2,3,5,10,20];
+  function ticks(g,edge,dir,labelsBeta,labelsK){
+    for(let b=-.99;b<=.991;b+=.01){const ph=Math.atanh(b);if(Math.abs(ph)>F)continue;const x=X(ph);E("line",{x1:x,y1:edge,x2:x,y2:edge+dir*(Math.round(b*100)%10===0?16:7),class:"tk","stroke-width":.7},g);}
+    for(const b of betas)for(const sg of (b===0?[1]:[1,-1])){const ph=Math.atanh(sg*b);if(Math.abs(ph)>F)continue;const x=X(ph);
+      E("line",{x1:x,y1:edge,x2:x,y2:edge+dir*22,class:"tk","stroke-width":1.5},g);
+      if(labelsBeta)T((sg<0?"−":"")+String(b).replace("0.","."),{x,y:edge+dir*36+(dir>0?6:0),"text-anchor":"middle",class:"tl","font-size":13,"font-weight":600},g);}
+    if(labelsK)for(const k of ks)for(const sg of (k===1?[1]:[1,-1])){const ph=sg*Math.log(k);const x=X(ph);
+      T(sg<0?"1/"+k:k,{x,y:edge+dir*56+(dir>0?6:0),"text-anchor":"middle",class:"tm","font-size":11},g);
+      E("line",{x1:x,y1:edge+dir*40,x2:x,y2:edge+dir*44,class:"tk","stroke-width":.8},g);}
+  }
+  const gD=E("g",{},svg); ticks(gD,150,1,true,true);
+  T("β",{x:X0-18,y:190,class:"tl","font-size":15,"font-weight":600},svg); T("k",{x:X0-18,y:212,class:"tm","font-size":13},svg);
+  const clip=E("clipPath",{id:"rlclip"},E("defs",{},svg));E("rect",{x:X0-30,y:40,width:L+60,height:112},clip);
+  const gC=E("g",{"clip-path":"url(#rlclip)"},svg);
+  const slide=E("g",{class:"drag"},gC);
+  E("rect",{x:X0-20,y:62,width:L+40,height:86,class:"sl"},slide);
+  ticks(slide,148,-1,true,true);
+  E("rect",{x:X(0)-3,y:62,width:6,height:10,class:"idx"},slide);
+  const cur=E("g",{class:"drag"},svg);
+  E("rect",{x:-16,y:44,width:32,height:196,rx:4,fill:"var(--hair)","fill-opacity":.08,stroke:"var(--hair)","stroke-opacity":.5},cur);
+  E("line",{x1:0,y1:44,x2:0,y2:240,class:"hair","stroke-width":1.5},cur);
+  E("rect",{x:-16,y:236,width:32,height:14,rx:3,class:"hairf"},cur);
+  let off=Math.atanh(0.5), cu=Math.atanh(0.8);
+  function draw(){
+    slide.setAttribute("transform",`translate(${off/(2*F)*L},0)`); cur.setAttribute("transform",`translate(${X(cu)},0)`);
+    $("rl-off").value=off;$("rl-cur").value=cu;$("rl-offo").value=fmt(Math.tanh(off),3);$("rl-curo").value=fmt(Math.tanh(cu),3);
+    const b1=Math.tanh(off), b2=Math.tanh(cu-off), b=Math.tanh(cu), chk=(b1+b2)/(1+b1*b2);
+    $("rl-read").innerHTML=`Slide index (0) over β₁ = <b>${fmt(b1,4)}</b><br>Hairline on slide: β₂ = <b>${fmt(b2,4)}</b><br>Hairline on base: β = <b>${fmt(b,4)}</b><br><span class="big">${fmt(b1,3)} ⊕ ${fmt(b2,3)} = ${fmt(b,3)}</span><br><span class="small">Formula (β₁+β₂)/(1+β₁β₂) = ${fmt(chk,4)}. Doppler factors: ${fmt(Math.exp(off),4)} × ${fmt(Math.exp(cu-off),4)} = ${fmt(Math.exp(cu),4)}. Rapidities: ${fmt(off,4)} + ${fmt(cu-off,4)} = ${fmt(cu,4)}.</span>`;
+  }
+  dragger(svg,slide,()=>off,(p,p0,o)=>{off=Math.max(-F,Math.min(F,o+(p.x-p0.x)/L*2*F));draw();});
+  dragger(svg,cur,()=>cu,(p,p0,o)=>{cu=Math.max(-F,Math.min(F,o+(p.x-p0.x)/L*2*F));draw();});
+  $("rl-off").oninput=e=>{off=+e.target.value;draw();}; $("rl-cur").oninput=e=>{cu=+e.target.value;draw();};
+  $("rl-add").onclick=()=>{const a=+$("rl-a").value,b=+$("rl-b").value;if(!(Math.abs(a)<1&&Math.abs(b)<1))return;off=Math.max(-F,Math.min(F,Math.atanh(a)));cu=Math.max(-F,Math.min(F,Math.atanh(a)+Math.atanh(b)));draw();};
+  draw();
+})();
+
+/* ============ tabs ============ */
+const names=["straight","circular","complex","field","relativity"];
+function show(t){ if(!names.includes(t)) t="straight";
+  for(const n of names){ $("p-"+n).hidden=(n!==t); }
+  for(const b of document.querySelectorAll("#tabs button")) b.classList.toggle("on",b.dataset.t===t);
+  try{ localStorage.setItem("rules-tab",t); }catch(e){}
+}
+for(const b of document.querySelectorAll("#tabs button")) b.onclick=()=>{ show(b.dataset.t); try{history.replaceState(null,"","#"+b.dataset.t);}catch(e){} };
+let first=(location.hash||"").slice(1); if(!names.includes(first)){ try{ first=localStorage.getItem("rules-tab")||"straight"; }catch(e){ first="straight"; } }
+show(first);
+})();
+</script>
+
+</body>
+</html>
