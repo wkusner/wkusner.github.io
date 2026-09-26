@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Galois Lock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.lock{background:linear-gradient(160deg,#3A4B57,#1F2B33);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:16px;color:#E8EDF0;max-width:640px;}
+.dials{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.dial{background:#F3EEE1;color:#1B2630;border-radius:12px;padding:14px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;border:3px solid transparent;cursor:pointer;font:inherit;}
+.dial.sel{border-color:#E8C75A;}
+.dial .v{font-family:var(--display);font-size:clamp(24px,5vw,36px);font-weight:700;line-height:1;}
+.dial .s{font:500 11px var(--mono);color:#6B6250;}
+.lid{font-family:var(--mono);font-size:13px;line-height:1.8;background:rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;}
+.lid .ok{color:#7FD8A4;} .lid .bad{color:#FF8C77;}
+.lamp{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px;}
+.targetrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:14px;}
+.chip{background:rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;}
+.lock button{background:#F7F8F6;color:#1B2630;border-color:transparent;}
+.lock button.primary{background:#E8C75A;color:#1B2630;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Galois <span>Lock</span></h1>
+    <p class="tag">Four dials hold the four roots of x⁴ − 2. The lock only turns in ways that keep every algebraic relation on its lid true. Find out which arrangements it will ever reach.</p>
+  </header>
+  <div class="inst">
+    <div class="stage">
+      <div class="lock">
+        <div class="targetrow"><span>Target:</span><span id="target" class="chip"></span><span id="round" class="small" style="color:#B8C4CB"></span></div>
+        <div class="dials" id="dials"></div>
+        <div class="row">
+          <button type="button" id="rot">Turn: α ↦ iα</button>
+          <button type="button" id="flip">Flip: conjugate</button>
+          <button type="button" id="swap">Try swapping the two selected dials</button>
+        </div>
+        <div class="lid" id="lid"></div>
+        <div class="row">
+          <button type="button" id="imp">Declare impossible</button>
+          <button type="button" id="reset">Reset dials</button>
+          <button type="button" id="next" class="primary">New target</button>
+        </div>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card"><h2>The roots</h2><svg id="plane" class="fig" viewBox="-175 -130 350 260" aria-label="Roots in the complex plane" style="max-width:320px;margin:0 auto"></svg><div class="small">α = ⁴√2 ≈ 1.189. The four roots sit on a square. The dial colors match the corners.</div></div>
+      <div class="card"><h2>Score</h2><div id="score" class="read"></div></div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>The theory in the lock</h2>
+    <p><b>The roots.</b> x⁴ − 2 has four roots, α, iα, −α, −iα, with α = ⁴√2. A symmetry of the roots is a rearrangement that respects every polynomial relation with rational coefficients. Those rearrangements form the Galois group.</p>
+    <p><b>The lid.</b> Three relations are enough to pin the group down: dial 1 + dial 3 = 0, dial 2 + dial 4 = 0, and (dial 1 · dial 2)² = −2. The lock refuses any move that would make one of them false.</p>
+    <p><b>What it allows.</b> "Turn" sends α to iα and fixes i, so it rotates the square a quarter turn. "Flip" is complex conjugation, a reflection of the square. Together they generate the dihedral group D₄, the eight symmetries of a square. That is the Galois group of x⁴ − 2 over ℚ.</p>
+    <p><b>What it forbids.</b> Of the 24 ways to arrange four roots, only 8 open. Swapping α with iα alone breaks dial 1 + dial 3 = 0, since iα + (−α) ≠ 0. When a target is not one of the 8, the right answer is "impossible."</p>
+    <p><b>Why it matters.</b> The group's structure (it has a normal series with abelian steps) is exactly why x⁴ − 2 can be solved with radicals. A polynomial whose group is all of S₅ cannot.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id), NS="http://www.w3.org/2000/svg";
+const E=(t,a,pa)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(pa)pa.appendChild(e);return e;};
+const T=(s,a,pa)=>{const e=E("text",a,pa);e.textContent=s;return e;};
+const NAMES=["α","iα","−α","−iα"], COLORS=["#2F5DB8","#B8622F","#2C7A55","#A77E22"];
+const A=Math.pow(2,0.25);
+const ROOT=[[A,0],[0,A],[-A,0],[0,-A]];
+const cm=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]];
+const ca=(a,b)=>[a[0]+b[0],a[1]+b[1]];
+const near=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<1e-9;
+const fz=z=>{const r=x=>Math.abs(x)<1e-9?0:+x.toFixed(3);const a=r(z[0]),b=r(z[1]);if(!b)return String(a);if(!a)return (b===1?"":b===-1?"−":b)+"i";return a+(b<0?" − ":" + ")+Math.abs(b)+"i";};
+let dial=[0,1,2,3], sel=[], target=null, stats={won:0,lost:0,rounds:0,moves:0}, over=false;
+function relations(d){ const z=d.map(k=>ROOT[k]);
+  return [
+    {txt:"dial 1 + dial 3 = 0", val:ca(z[0],z[2]), ok:near(ca(z[0],z[2]),[0,0])},
+    {txt:"dial 2 + dial 4 = 0", val:ca(z[1],z[3]), ok:near(ca(z[1],z[3]),[0,0])},
+    {txt:"(dial 1 · dial 2)² = −2", val:cm(cm(z[0],z[1]),cm(z[0],z[1])), ok:near(cm(cm(z[0],z[1]),cm(z[0],z[1])),[-2,0])}]; }
+const allOk=d=>relations(d).every(r=>r.ok);
+const inD4=d=>allOk(d);
+function perms(){const out=[];const rec=(a,rest)=>{if(!rest.length){out.push(a);return;}rest.forEach((x,i)=>rec(a.concat(x),rest.filter((_,j)=>j!==i)));};rec([],[0,1,2,3]);return out;}
+const ALL=perms();
+function newTarget(){ let t; do{ t=ALL[Math.floor(Math.random()*24)]; }while(t.every((v,i)=>v===dial[i])); target=t; over=false; stats.rounds++; }
+function render(){
+  const ds=$("dials"); ds.innerHTML="";
+  dial.forEach((k,i)=>{const b=document.createElement("button");b.type="button";b.className="dial"+(sel.includes(i)?" sel":"");
+    b.innerHTML=`<span class="s">dial ${i+1}</span><span class="v" style="color:${COLORS[k]}">${NAMES[k]}</span>`;
+    b.onclick=()=>{ if(sel.includes(i)) sel=sel.filter(x=>x!==i); else { sel.push(i); if(sel.length>2) sel.shift(); } render(); };
+    ds.appendChild(b);});
+  $("target").innerHTML=target.map(k=>`<span style="color:${COLORS[k]};filter:brightness(1.6)">${NAMES[k]}</span>`).join(" · ");
+  $("round").textContent=`round ${stats.rounds}`;
+  $("lid").innerHTML=relations(dial).map(r=>`<div><span class="lamp" style="background:${r.ok?"#7FD8A4":"#FF8C77"}"></span>${r.txt} <span class="${r.ok?"ok":"bad"}">(now ${fz(r.val)})</span></div>`).join("");
+  $("score").innerHTML=`Opened: ${stats.won}<br>Wrong calls: ${stats.lost}<br>Rounds: ${stats.rounds}<br>Moves this round: ${stats.moves}`;
+  $("swap").disabled=sel.length!==2||over; $("rot").disabled=$("flip").disabled=$("imp").disabled=over;
+  // plane
+  const svg=$("plane"); svg.innerHTML="";
+  E("line",{x1:-120,y1:0,x2:120,y2:0,stroke:"var(--line)"},svg);E("line",{x1:0,y1:-120,x2:0,y2:120,stroke:"var(--line)"},svg);
+  E("polygon",{points:ROOT.map(([x,y])=>`${x*80},${-y*80}`).join(" "),fill:"none",stroke:"var(--muted)","stroke-dasharray":"4 4"},svg);
+  ROOT.forEach(([x,y],k)=>{E("circle",{cx:x*80,cy:-y*80,r:9,fill:COLORS[k]},svg);const di=dial.indexOf(k);T(`${NAMES[k]} (dial ${di+1})`,{x:x*80+(x<0?-12:12),y:-y*80+(y>0?-12:y<0?22:5),"text-anchor":x<0?"end":x>0?"start":"middle","font-size":12,fill:"var(--ink)","font-family":"IBM Plex Mono, monospace"},svg);});
+  if(!over && target.every((v,i)=>v===dial[i])){ over=true; stats.won++; msg("The lock opens. This arrangement is one of the 8 symmetries.","good"); render(); }
+}
+function msg(t,c){ $("status").textContent=t; $("status").className="status "+(c||""); }
+function apply(f,label){ if(over) return; dial=dial.map(f); sel=[]; stats.moves++; msg(label); render(); }
+$("rot").onclick=()=>apply(k=>(k+1)%4,"Turned: each dial's root r became i·r, so α ↦ iα ↦ −α ↦ −iα ↦ α.");
+$("flip").onclick=()=>apply(k=>(4-k)%4,"Flipped: complex conjugation fixes ±α and swaps iα with −iα.");
+$("swap").onclick=()=>{ if(sel.length!==2||over) return; const [a,b]=sel; const nd=dial.slice(); [nd[a],nd[b]]=[nd[b],nd[a]];
+  const broken=relations(nd).filter(r=>!r.ok);
+  if(broken.length){ msg(`Jammed: swapping dials ${a+1} and ${b+1} would break “${broken[0].txt}”.`,"warn"); sel=[]; render(); return; }
+  dial=nd; sel=[]; stats.moves++; msg(`Swapped dials ${a+1} and ${b+1}. Every relation still holds, so this swap is a symmetry.`); render(); };
+$("imp").onclick=()=>{ if(over) return; over=true;
+  if(inD4(target)){ stats.lost++; msg("Not impossible: this target satisfies every relation, so it is one of the 8. Try Turn and Flip.","warn"); }
+  else { stats.won++; const br=relations(target).filter(r=>!r.ok)[0]; msg(`Correct. The target breaks “${br.txt}”, so no symmetry reaches it.`,"good"); }
+  render(); };
+$("reset").onclick=()=>{ dial=[0,1,2,3]; sel=[]; stats.moves=0; msg("Dials reset to α, iα, −α, −iα."); render(); };
+$("next").onclick=()=>{ dial=[0,1,2,3]; sel=[]; stats.moves=0; newTarget(); msg("New target. Reach it, or declare it impossible."); render(); };
+target=[1,2,3,0]; stats.rounds=1; msg("Reach the target with Turn, Flip, and swaps, or declare it impossible.");
+render();
+})();
+</script>
+
+</body>
+</html>

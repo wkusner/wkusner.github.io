@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quaternion Cards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.table{display:flex;flex-direction:column;gap:14px;}
+.pile{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
+.bigcard{width:110px;height:150px;border-radius:12px;background:var(--panel);border:2px solid var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--display);font-size:58px;font-weight:700;line-height:1;}
+.bigcard small{font:500 12px var(--sans);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:6px;}
+.bigcard.target{border-color:var(--brass);color:var(--brass);}
+.hand{display:flex;gap:10px;flex-wrap:wrap;}
+.qc{width:78px;height:108px;border-radius:10px;background:var(--panel);border:1.5px solid var(--line);font-family:var(--display);font-size:40px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0;}
+.qc.sel{border-color:var(--a);box-shadow:0 0 0 3px color-mix(in srgb,var(--a) 30%,transparent);}
+.qc.neg{color:var(--hair);}
+.opp .qc{width:44px;height:62px;font-size:20px;color:transparent;background:repeating-linear-gradient(45deg,var(--soft),var(--soft) 6px,var(--panel) 6px,var(--panel) 12px);cursor:default;}
+.plays{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:520px;}
+.plays button{padding:14px 10px;font-size:15px;line-height:1.3;}
+.score{display:flex;gap:28px;}
+.score div{display:flex;flex-direction:column;}
+.score b{font-family:var(--display);font-size:34px;line-height:1;}
+.score span{font-size:12px;color:var(--muted);}
+table.cay{border-collapse:collapse;font-family:var(--mono);font-size:13px;}
+table.cay td,table.cay th{border:1px solid var(--line);padding:3px 6px;text-align:center;}
+table.cay th{color:var(--muted);font-weight:500;}
+table.cay td.hl{background:color-mix(in srgb,var(--brass) 30%,transparent);}
+.log{font-family:var(--mono);font-size:12.5px;color:var(--muted);max-height:160px;overflow:auto;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Quaternion <span>Cards</span></h1>
+    <p class="tag">Eight cards, ±1, ±i, ±j, ±k. Multiply the pile on the left or on the right to hit the target before the computer does. Left and right give different answers, and that is the whole game.</p>
+  </header>
+  <div class="inst">
+    <div class="table">
+      <div class="score"><div><b id="sYou">0</b><span>you</span></div><div><b id="sCpu">0</b><span>computer</span></div><div><b>5</b><span>to win</span></div></div>
+      <div class="row opp" id="opp"></div>
+      <div class="pile">
+        <div class="bigcard" id="pile">1<small>pile</small></div>
+        <div class="bigcard target" id="target">k<small>target</small></div>
+      </div>
+      <div id="status" class="status"></div>
+      <div class="hand" id="hand"></div>
+      <div class="plays">
+        <button type="button" id="left" disabled>Play on the left</button>
+        <button type="button" id="right" disabled>Play on the right</button>
+      </div>
+      <div class="row"><label class="small"><input id="preview" type="checkbox" checked> show results before playing</label><button type="button" id="newg">New game</button></div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card"><h2>Multiplication (row × column)</h2><div style="overflow-x:auto"><table class="cay" id="cay"></table></div><div class="small">i² = j² = k² = ijk = −1. So ij = k but ji = −k.</div></div>
+      <div class="card"><h2>Game log</h2><div class="log" id="log"></div></div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>Rules and the math inside</h2>
+    <p><b>Play.</b> On your turn, pick a card and put it on the left of the pile (card × pile) or on the right (pile × card). If the new pile equals the target, you score and a new target is turned up. Then you draw back to five cards. The computer plays the same way.</p>
+    <p><b>The group.</b> The cards form the quaternion group Q₈, of order 8. It is not commutative: ij = k, ji = −k. So the same card can land on k or −k depending on the side you play it on.</p>
+    <p><b>Rotations.</b> Each unit quaternion q rotates space by v ↦ q v q⁻¹. The card i is a half-turn about the x-axis, j about y, k about z. The cards q and −q give the same rotation, so −1 is a full 360° turn that is not the identity card: Dirac's belt trick. Aiming for −1 versus +1 is aiming for a 360° versus a 720° turn.</p>
+    <p><b>Defects.</b> Q₈ is also the group that classifies line defects in a biaxial nematic liquid crystal. Two defect lines labeled i and j cannot pass through each other freely: their commutator iji⁻¹j⁻¹ = −1 leaves a tether behind.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const U=["1","i","j","k"];
+// unit table: [a][b] -> [sign, unit]
+const TAB={"1":{"1":[1,"1"],"i":[1,"i"],"j":[1,"j"],"k":[1,"k"]},
+ "i":{"1":[1,"i"],"i":[-1,"1"],"j":[1,"k"],"k":[-1,"j"]},
+ "j":{"1":[1,"j"],"i":[-1,"k"],"j":[-1,"1"],"k":[1,"i"]},
+ "k":{"1":[1,"k"],"i":[1,"j"],"j":[-1,"i"],"k":[-1,"1"]}};
+const mul=(a,b)=>{const [s,u]=TAB[a.u][b.u];return {s:a.s*b.s*s,u};};
+const eq=(a,b)=>a.s===b.s&&a.u===b.u;
+const str=q=>(q.s<0?"−":"")+q.u;
+const ALL=[];for(const s of [1,-1])for(const u of U)ALL.push({s,u});
+let G;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function draw(){ if(!G.deck.length) G.deck=shuffle(ALL.flatMap(q=>[q,q,q,q].map(x=>({...x})))); return G.deck.pop(); }
+function newTarget(){ let t; do{ t=ALL[Math.floor(Math.random()*8)]; }while(eq(t,G.pile)); G.target={...t}; }
+function newGame(){ G={deck:[],pile:{s:1,u:"1"},hand:[],cpu:[],you:0,them:0,sel:null,over:false,log:[],last:null};
+  G.deck=shuffle(ALL.flatMap(q=>[q,q,q,q].map(x=>({...x}))));
+  for(let i=0;i<5;i++){G.hand.push(draw());G.cpu.push(draw());}
+  newTarget(); G.msg="Your turn. Pick a card."; render(); }
+function logit(s){G.log.unshift(s);}
+function play(who,idx,side){
+  const hand=who==="you"?G.hand:G.cpu; const c=hand.splice(idx,1)[0];
+  const before=G.pile; G.pile=side==="L"?mul(c,before):mul(before,c);
+  G.last={a:side==="L"?c:before,b:side==="L"?before:c};
+  const expr=side==="L"?`${str(c)} × ${str(before)}`:`${str(before)} × ${str(c)}`;
+  let hit=eq(G.pile,G.target);
+  logit(`${who==="you"?"You":"Computer"}: ${expr} = ${str(G.pile)}${hit?"  ✓ target":""}`);
+  if(hit){ if(who==="you")G.you++; else G.them++; newTarget(); }
+  hand.push(draw());
+  if(G.you>=5||G.them>=5){G.over=true;G.msg=G.you>=5?"You win.":"The computer wins.";}
+  return hit;
+}
+function cpuTurn(){
+  if(G.over) return;
+  let best=null;
+  G.cpu.forEach((c,i)=>{for(const s of ["L","R"]){const r=s==="L"?mul(c,G.pile):mul(G.pile,c);if(eq(r,G.target)&&!best)best=[i,s];}});
+  if(!best){ // avoid handing you an easy one: prefer results whose negatives are the target? just random
+    best=[Math.floor(Math.random()*G.cpu.length),Math.random()<.5?"L":"R"]; }
+  const hit=play("cpu",best[0],best[1]);
+  if(!G.over) G.msg=(hit?"The computer hit the target. ":"")+"Your turn.";
+  render();
+}
+function youPlay(side){
+  if(G.sel===null||G.over)return;
+  const hit=play("you",G.sel,side); G.sel=null;
+  G.msg=hit?"Target hit. ":"No hit. ";
+  render();
+  if(!G.over){ G.msg+="The computer is playing…"; render(); setTimeout(cpuTurn,650); }
+}
+function render(){
+  $("sYou").textContent=G.you;$("sCpu").textContent=G.them;
+  $("pile").innerHTML=str(G.pile)+"<small>pile</small>"; $("target").innerHTML=str(G.target)+"<small>target</small>";
+  $("pile").classList.toggle("neg",G.pile.s<0);
+  const h=$("hand");h.innerHTML="";
+  G.hand.forEach((c,i)=>{const b=document.createElement("button");b.type="button";b.className="qc"+(c.s<0?" neg":"")+(G.sel===i?" sel":"");b.textContent=str(c);
+    b.setAttribute("aria-label","card "+str(c));b.onclick=()=>{if(G.over)return;G.sel=G.sel===i?null:i;render();};h.appendChild(b);});
+  const o=$("opp");o.innerHTML='<span class="small" style="margin-right:6px">computer</span>';G.cpu.forEach(()=>{const d=document.createElement("div");d.className="qc";o.appendChild(d);});
+  const pv=$("preview").checked;
+  if(G.sel!==null){const c=G.hand[G.sel];const L=mul(c,G.pile),R=mul(G.pile,c);
+    $("left").innerHTML=`Left: ${str(c)} × ${str(G.pile)}`+(pv?` = <b>${str(L)}</b>${eq(L,G.target)?" ✓":""}`:"");
+    $("right").innerHTML=`Right: ${str(G.pile)} × ${str(c)}`+(pv?` = <b>${str(R)}</b>${eq(R,G.target)?" ✓":""}`:"");
+    $("left").disabled=$("right").disabled=G.over;}
+  else {$("left").textContent="Play on the left";$("right").textContent="Play on the right";$("left").disabled=$("right").disabled=true;}
+  $("status").textContent=G.msg||""; $("status").className="status"+(G.over?(G.you>=5?" good":" warn"):"");
+  // table
+  let t="<tr><th>×</th>"+ALL.map(q=>`<th>${str(q)}</th>`).join("")+"</tr>";
+  for(const a of ALL){t+=`<tr><th>${str(a)}</th>`+ALL.map(b=>{const r=mul(a,b);const hl=G.last&&eq(G.last.a,a)&&eq(G.last.b,b);return `<td class="${hl?"hl":""}">${str(r)}</td>`;}).join("")+"</tr>";}
+  $("cay").innerHTML=t; $("log").innerHTML=G.log.join("<br>")||"No moves yet.";
+}
+$("left").onclick=()=>youPlay("L"); $("right").onclick=()=>youPlay("R"); $("newg").onclick=newGame; $("preview").onchange=render;
+newGame();
+})();
+</script>
+
+</body>
+</html>

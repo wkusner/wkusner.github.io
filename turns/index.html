@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hamilton's Turns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.sphere{max-width:560px;margin:0 auto;cursor:grab;}
+.sphere:active{cursor:grabbing;}
+.rot{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.rot h3{grid-column:1/-1;margin:0;font-family:var(--display);font-size:18px;letter-spacing:.05em;}
+.rot select{grid-column:2/4;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Hamilton's <span>Turns</span></h1>
+    <p class="tag">Compose two rotations by laying their arcs head to tail on the sphere. The third side of the spherical triangle is the product. Drag the globe to look around.</p>
+  </header>
+  <div class="inst">
+    <div class="stage">
+      <svg id="sph" class="fig sphere" viewBox="-270 -270 540 540" aria-label="Sphere with turns"></svg>
+      <div class="row">
+        <button type="button" id="pre1">90° about x, then 90° about y</button>
+        <button type="button" id="pre2">Two half-turns 30° apart</button>
+        <button type="button" id="pre3">Same axis</button>
+        <button type="button" id="swap">Swap the order</button>
+      </div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="rot">
+          <h3 style="color:var(--a)">First rotation R₁</h3>
+          <label for="ax1">Axis</label><select id="ax1"></select>
+          <label for="an1">Angle</label><input id="an1" type="range" min="-360" max="360" step="1" value="90"><output id="an1o"></output>
+        </div>
+        <div class="rot">
+          <h3 style="color:var(--b)">Then R₂</h3>
+          <label for="ax2">Axis</label><select id="ax2"></select>
+          <label for="an2">Angle</label><input id="an2" type="range" min="-360" max="360" step="1" value="90"><output id="an2o"></output>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Product R₂R₁</h2>
+        <div id="read" class="read"></div>
+      </div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>How turns work</h2>
+    <p><b>A turn is an arc.</b> The rotation by φ about the axis n is drawn as an arc of length φ/2 on the great circle perpendicular to n, running counterclockwise as seen from n. An arc can slide along its own great circle without changing the rotation, just as a vector slides along its line.</p>
+    <p><b>Composition is head to tail.</b> Slide the first arc (blue) so it ends where the two great circles cross, and slide the second arc (orange) so it starts there. The dashed arc from the start of the first to the end of the second is the product. In quaternions: (S Q̄)(Q P̄) = S P̄.</p>
+    <p><b>Order matters.</b> Swapping the order reflects the triangle, and the product changes. That is non-commutativity you can see.</p>
+    <p><b>The double cover.</b> An arc is really a unit quaternion q, and the arc for −q is the complementary arc on the same circle. Both give the same rotation. An arc of length 180° is −1, a full 360° rotation, which is Dirac's belt trick.</p>
+    <p><b>The torus.</b> When both rotations share an axis, both arcs lie on one great circle and their lengths simply add: a circular slide rule inside SO(3).</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id), NS="http://www.w3.org/2000/svg";
+const E=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const T=(s,a,p)=>{const e=E("text",a,p);e.textContent=s;return e;};
+const AX={"x":[1,0,0],"y":[0,1,0],"z":[0,0,1],"−x":[-1,0,0],"−y":[0,-1,0],"−z":[0,0,-1],"(1,1,0)":[1,1,0],"(1,0,1)":[1,0,1],"(1,1,1)":[1,1,1],"(1,1,−1)":[1,1,-1],"30° in xy":[Math.cos(Math.PI/6),Math.sin(Math.PI/6),0]};
+for(const id of ["ax1","ax2"]) for(const k in AX){const o=document.createElement("option");o.textContent=k;$(id).appendChild(o);}
+$("ax1").value="x";$("ax2").value="y";
+const norm=v=>{const l=Math.hypot(...v);return v.map(x=>x/l);};
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+// quaternions [w,x,y,z]
+const qm=(a,b)=>[a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]];
+const qc=a=>[a[0],-a[1],-a[2],-a[3]];
+const qa=(n,phi)=>{n=norm(n);const s=Math.sin(phi/2);return[Math.cos(phi/2),n[0]*s,n[1]*s,n[2]*s];};
+const qrot=(q,v)=>qm(qm(q,[0,...v]),qc(q)).slice(1);
+// view
+let yaw=-0.6, pitch=0.45;
+function view(v){ // rotate world -> camera; camera looks along -z
+  const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  // world: z up. first yaw about z, then pitch about x
+  let x=cy*v[0]-sy*v[1], y=sy*v[0]+cy*v[1], z=v[2];
+  // camera coords: X right = x, Y up = z*cp - y*sp, depth toward viewer = y*cp + z*sp
+  return [x, z*cp - y*sp, -(y*cp + z*sp)];
+}
+const R=230;
+const proj=v=>{const c=view(v);return [c[0]*R,-c[1]*R,c[2]];};
+function arcPts(p,q,n=48,full=false){ // slerp p->q
+  const om=Math.acos(Math.max(-1,Math.min(1,dot(p,q))));const pts=[];
+  if(om<1e-6) return [p];
+  for(let i=0;i<=n;i++){const t=i/n,s=Math.sin(om);const a=Math.sin((1-t)*om)/s,b=Math.sin(t*om)/s;pts.push([a*p[0]+b*q[0],a*p[1]+b*q[1],a*p[2]+b*q[2]]);}
+  return pts;}
+function circlePts(n,k=120){ n=norm(n); let u=Math.abs(n[0])<0.9?cross(n,[1,0,0]):cross(n,[0,1,0]); u=norm(u); const w=cross(n,u); const pts=[];
+  for(let i=0;i<=k;i++){const t=2*Math.PI*i/k;pts.push([u[0]*Math.cos(t)+w[0]*Math.sin(t),u[1]*Math.cos(t)+w[1]*Math.sin(t),u[2]*Math.cos(t)+w[2]*Math.sin(t)]);}
+  return pts;}
+function drawPath(g,pts,attrs){ // split front/back
+  let seg=[],front=null;
+  const flush=()=>{if(seg.length>1){E("polyline",Object.assign({points:seg.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "),fill:"none"},attrs,front?{}:{"stroke-dasharray":"3 4","stroke-opacity":0.45}),g);} seg=[];};
+  for(const v of pts){const p=proj(v);const f=p[2]<0? true:false; // depth: negative -> toward viewer
+    if(front===null) front=f; if(f!==front){seg.push(p);flush();front=f;} seg.push(p);} flush();
+}
+function dotAt(g,v,r,fill,label,lc){const p=proj(v);const f=p[2]<0;E("circle",{cx:p[0],cy:p[1],r,fill,"fill-opacity":f?1:.35},g);if(label)T(label,{x:p[0]+8,y:p[1]-8,fill:lc||fill,"font-size":14,"font-family":"IBM Plex Mono, monospace","fill-opacity":f?1:.5},g);}
+let order=1; // 1: R2 after R1
+function fmtq(q){const f=x=>(Math.abs(x)<5e-4?0:x);let s=f(q[0]).toFixed(3);[['i',q[1]],['j',q[2]],['k',q[3]]].forEach(([u,x])=>{x=f(x);s+=(x<0?' − ':' + ')+Math.abs(x).toFixed(3)+u;});return s;}
+function draw(){
+  const svg=$("sph"); svg.innerHTML="";
+  const a1=norm(AX[$("ax1").value]), a2=norm(AX[$("ax2").value]);
+  const p1=+$("an1").value*Math.PI/180, p2=+$("an2").value*Math.PI/180;
+  $("an1o").value=$("an1").value+"°"; $("an2o").value=$("an2").value+"°";
+  const q1=qa(a1,p1), q2=qa(a2,p2);
+  const [qa_,qb_,na,nb,ca,cb]=order===1?[q1,q2,a1,a2,"var(--a)","var(--b)"]:[q2,q1,a2,a1,"var(--b)","var(--a)"];
+  // sphere
+  E("circle",{r:R,fill:"var(--soft)","fill-opacity":.55,stroke:"var(--muted)","stroke-width":1},svg);
+  const g=E("g",{},svg);
+  for(let lat=-60;lat<=60;lat+=30){const pts=[];const z=Math.sin(lat*Math.PI/180),r=Math.cos(lat*Math.PI/180);for(let i=0;i<=120;i++){const t=2*Math.PI*i/120;pts.push([r*Math.cos(t),r*Math.sin(t),z]);}drawPath(g,pts,{stroke:"var(--muted)","stroke-width":.5,"stroke-opacity":.5});}
+  for(let lon=0;lon<180;lon+=30){const t=lon*Math.PI/180;drawPath(g,circlePts([-Math.sin(t),Math.cos(t),0]),{stroke:"var(--muted)","stroke-width":.5,"stroke-opacity":.5});}
+  // polar great circles
+  drawPath(g,circlePts(na),{stroke:ca,"stroke-width":1,"stroke-opacity":.35});
+  drawPath(g,circlePts(nb),{stroke:cb,"stroke-width":1,"stroke-opacity":.35});
+  // Q: intersection of the two great circles
+  let Q=cross(na,nb); let lq=Math.hypot(...Q);
+  let same=false;
+  if(lq<1e-6){ same=true; let u=Math.abs(na[0])<0.9?cross(na,[1,0,0]):cross(na,[0,1,0]); Q=norm(u);} else Q=Q.map(x=>x/lq);
+  if(view(Q)[2]>0) Q=Q.map(x=>-x); // prefer the visible crossing
+  const lm=(q,v)=>qm(q,[0,...v]).slice(1); const P=lm(qc(qa_),Q), S=lm(qb_,Q); // Q = qa_ P and S = qb_ Q as quaternion products
+  // arcs along their great circles (use rotation to sweep for lengths > 180)
+  const arc=(start,q,axis)=>{ // arc from start of length = half rotation angle
+    const w=Math.max(-1,Math.min(1,q[0])); const half=Math.acos(w); // 0..pi
+    const s=Math.hypot(q[1],q[2],q[3]); const ax=s<1e-9?axis:[q[1]/s,q[2]/s,q[3]/s];
+    const pts=[];const n=72;for(let i=0;i<=n;i++){const t=half*i/n;pts.push(qrot([Math.cos(t/2),ax[0]*Math.sin(t/2),ax[1]*Math.sin(t/2),ax[2]*Math.sin(t/2)],start));}
+    return pts;};
+  drawPath(g,arc(P,qa_,na),{stroke:ca,"stroke-width":4,"stroke-linecap":"round"});
+  drawPath(g,arc(Q,qb_,nb),{stroke:cb,"stroke-width":4,"stroke-linecap":"round"});
+  const prod=qm(qb_,qa_);
+  drawPath(g,arc(P,prod,cross(P,S)),{stroke:"var(--ink)","stroke-width":2.5,"stroke-dasharray":"8 6"});
+  dotAt(g,P,5,ca,"P",ca); dotAt(g,Q,5,"var(--ink)","Q"); dotAt(g,S,5,cb,"S",cb);
+  dotAt(g,na,4,ca,order===1?"n₁":"n₂"); dotAt(g,nb,4,cb,order===1?"n₂":"n₁");
+  const sp=Math.hypot(prod[1],prod[2],prod[3]);
+  if(sp>1e-6){const n=[prod[1]/sp,prod[2]/sp,prod[3]/sp];dotAt(g,n,5,"var(--hair)","n");}
+  for(const [v,l] of [[[1,0,0],"x"],[[0,1,0],"y"],[[0,0,1],"z"]]){dotAt(g,v,3,"var(--muted)",l,"var(--muted)");}
+  // readout
+  const w=Math.max(-1,Math.min(1,prod[0])), ang=2*Math.acos(w)*180/Math.PI;
+  const n=sp>1e-6?[prod[1]/sp,prod[2]/sp,prod[3]/sp]:[0,0,1];
+  const r3=x=>(Math.abs(x)<5e-4?0:x).toFixed(3);
+  const img=v=>qrot(prod,v).map(r3).join(", ");
+  const arcLen=Math.acos(Math.max(-1,Math.min(1,dot(P,S))))*180/Math.PI;
+  const angN=ang>180?360-ang:ang, nn=ang>180?n.map(x=>-x):n;
+  $("read").innerHTML=`q₁ = ${fmtq(q1)}<br>q₂ = ${fmtq(q2)}<br>${order===1?"q₂q₁":"q₁q₂"} = ${fmtq(prod)}<br><span class="big">${angN.toFixed(1)}° about (${nn.map(r3).join(", ")})</span><br>Third side P→S: ${arcLen.toFixed(1)}°${ang>180.05?` (the arc used is ${(ang/2).toFixed(1)}°, the complementary arc gives −q, the same rotation)`:""}<br>x ↦ (${img([1,0,0])})<br>y ↦ (${img([0,1,0])})<br>z ↦ (${img([0,0,1])})${same?`<br><span class="small">Same axis: the arcs lie on one great circle and their lengths add.</span>`:""}`;
+  $("swap").textContent=order===1?"Show R₁R₂ instead":"Show R₂R₁ instead";
+  document.querySelector("#read").previousElementSibling.textContent=order===1?"Product R₂R₁ (R₁ first)":"Product R₁R₂ (R₂ first)";
+}
+// drag to rotate view
+(function(){const svg=$("sph");let st=null;
+ svg.addEventListener("pointerdown",e=>{st={x:e.clientX,y:e.clientY,yaw,pitch};try{svg.setPointerCapture(e.pointerId);}catch(_){}} );
+ svg.addEventListener("pointermove",e=>{if(!st)return;yaw=st.yaw-(e.clientX-st.x)*0.008;pitch=Math.max(-1.5,Math.min(1.5,st.pitch+(e.clientY-st.y)*0.008));draw();});
+ const end=()=>{st=null;};svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);})();
+for(const id of ["ax1","ax2","an1","an2"]) $(id).addEventListener("input",draw);
+$("swap").onclick=()=>{order=-order;draw();};
+$("pre1").onclick=()=>{$("ax1").value="x";$("an1").value=90;$("ax2").value="y";$("an2").value=90;order=1;draw();};
+$("pre2").onclick=()=>{$("ax1").value="x";$("an1").value=180;$("ax2").value="30° in xy";$("an2").value=180;order=1;draw();};
+$("pre3").onclick=()=>{$("ax1").value="z";$("an1").value=80;$("ax2").value="z";$("an2").value=130;order=1;draw();};
+draw();
+})();
+</script>
+
+</body>
+</html>

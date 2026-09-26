@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>p-adic Ruler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.tree{max-width:600px;margin:0 auto;}
+.leaf{cursor:pointer;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>p-adic <span>Ruler</span></h1>
+    <p class="tag">A ruler where two numbers are close when their difference is divisible by a high power of p. Numbers sit on the tips of a branching tree; the deeper two paths agree, the closer the numbers.</p>
+  </header>
+  <div class="inst">
+    <div class="stage">
+      <svg id="tree" class="fig tree" viewBox="-300 -300 600 600" aria-label="p-adic tree"></svg>
+      <div class="row">
+        <label class="small" for="p">Prime</label><select id="p"><option value="2">p = 2 (32 tips)</option><option value="3">p = 3 (81 tips)</option><option value="5">p = 5 (125 tips)</option></select>
+        <label class="small" for="add">Slide by</label><input id="add" type="number" value="1" style="width:70px"><button type="button" id="doadd">Add</button>
+      </div>
+      <div class="row">
+        <button type="button" id="seqpow">Powers of p → 0</button>
+        <button type="button" id="seqgeo">(p−1)(1 + p + p² + …) → ?</button>
+        <button type="button" id="clear">Clear</button>
+      </div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card"><h2>Two numbers</h2><div id="read" class="read"></div><div class="small">Click a tip to choose a, then another for b.</div></div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>How to read the ruler</h2>
+    <p><b>Distance by divisibility.</b> The p-adic size of a nonzero integer n is |n|ₚ = p^(−v), where pᵛ is the largest power of p dividing n. So 1024 is tiny 2-adically, and 1 and 2 are far apart. Two numbers are close when their difference is divisible by a big power of p.</p>
+    <p><b>The tree.</b> Read each number's base-p digits from the right. The first digit picks a branch at the center, the next picks a branch at the next ring, and so on. Two numbers share a path for exactly v steps, where pᵛ divides their difference. Their distance is p^(−v): the deeper they split, the closer they are.</p>
+    <p><b>The ultrametric.</b> Every triangle is isosceles with the two long sides equal: |a − c| ≤ max(|a − b|, |b − c|). On the tree this is obvious: three paths can split in only one of two ways.</p>
+    <p><b>Adding slides the tree.</b> Adding n moves every tip, and the carries are jumps between branches. The tree only shows numbers modulo p^depth, so a slide wraps around, just as a circular slide rule wraps at one decade.</p>
+    <p><b>Limits.</b> Powers of p march inward toward 0's tip. The partial sums of (p−1)(1 + p + p² + …) march toward the tip of −1, which is written …(p−1)(p−1)(p−1) in base p. So 1 + p + p² + … = 1/(1 − p), and for p = 2 that reads 1 + 2 + 4 + 8 + … = −1.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id), NS="http://www.w3.org/2000/svg";
+const E=(t,a,pa)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(pa)pa.appendChild(e);return e;};
+const T=(s,a,pa)=>{const e=E("text",a,pa);e.textContent=s;return e;};
+let p=2, K=5, sel=[], trail=[], trailLabel="";
+const depthFor={2:5,3:4,5:3};
+const mod=(a,m)=>((a%m)+m)%m;
+function angle(n,d){ // angle of residue n mod p^d: van der Corput
+  let a=0,scale=1/p,x=n;for(let i=0;i<d;i++){a+=(x%p)*scale;scale/=p;x=Math.floor(x/p);} // digits from least significant
+  return a + 0.5*Math.pow(p,-d);
+}
+const R=d=>40+d*(230/K);
+const xy=(ang,r)=>[r*Math.cos(2*Math.PI*ang-Math.PI/2),r*Math.sin(2*Math.PI*ang-Math.PI/2)];
+function v_p(n){ if(n===0) return Infinity; let v=0; while(n%p===0){n/=p;v++;} return v; }
+function digits(n,len){ let s=[],x=mod(n,Math.pow(p,len));for(let i=0;i<len;i++){s.unshift(x%p);x=Math.floor(x/p);}return s.join(""); }
+function draw(){
+  const svg=$("tree"); svg.innerHTML="";
+  const N=Math.pow(p,K);
+  for(let d=1;d<=K;d++) E("circle",{r:R(d),fill:"none",stroke:"var(--line)","stroke-width":.6},svg);
+  // edges
+  const onPath=new Set();
+  for(const a of sel) for(let d=0;d<=K;d++) onPath.add(d+":"+mod(a,Math.pow(p,d)));
+  for(let d=1;d<=K;d++){const m=Math.pow(p,d);for(let n=0;n<m;n++){const parent=n%Math.pow(p,d-1);
+    const [x1,y1]=d===1?[0,0]:xy(angle(parent,d-1),R(d-1)), [x2,y2]=xy(angle(n,d),R(d));
+    const hl=onPath.has(d+":"+n)&&onPath.has((d-1)+":"+parent);
+    E("line",{x1,y1,x2,y2,stroke:hl?"var(--a)":"var(--muted)","stroke-width":hl?2.6:(d<3?1:.6),"stroke-opacity":hl?1:.55},svg);}}
+  E("circle",{r:5,fill:"var(--ink)"},svg);
+  // trail
+  if(trail.length>1){ const pts=trail.map(n=>xy(angle(mod(n,N),K),R(K)+14)); E("polyline",{points:pts.map(q=>q.map(v=>v.toFixed(1)).join(",")).join(" "),fill:"none",stroke:"var(--brass)","stroke-width":1.6,"stroke-dasharray":"3 3"},svg);
+    trail.forEach((n,i)=>{const [x,y]=xy(angle(mod(n,N),K),R(K)+14);E("circle",{cx:x,cy:y,r:3+i*0.6,fill:"var(--brass)"},svg);}); }
+  // leaves
+  const fs=p===2?12:p===3?8:6.5;
+  for(let n=0;n<N;n++){const a=angle(n,K);const [x,y]=xy(a,R(K));const [tx,ty]=xy(a,R(K)+(p===2?18:12));
+    const isSel=sel.includes(n);
+    const g=E("g",{class:"leaf"},svg);
+    E("circle",{cx:x,cy:y,r:isSel?6:(p===2?4:2.6),fill:isSel?(sel[0]===n?"var(--a)":"var(--b)"):"var(--ink)"},g);
+    const rot=a*360; const flip=rot>180;
+    T(n,{x:tx,y:ty,"font-size":fs,fill:isSel?"var(--ink)":"var(--muted)","font-family":"IBM Plex Mono, monospace","text-anchor":flip?"end":"start","dominant-baseline":"middle",transform:`rotate(${(flip?rot+90:rot-90).toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)})`,"font-weight":isSel?700:400},g);
+    E("circle",{cx:x,cy:y,r:10,fill:"transparent"},g);
+    g.addEventListener("click",()=>{if(sel.length>=2)sel=[];sel.push(n);read();draw();});}
+  read();
+}
+function read(){
+  const N=Math.pow(p,K);
+  let h=`Prime p = ${p}; the tree shows integers mod ${p}<sup>${K}</sup> = ${N}.<br>`;
+  if(sel.length){const a=sel[0];h+=`a = ${a} = (${digits(a,K)})<sub>${p}</sub><br>`;}
+  if(sel.length===2){const [a,b]=sel;const v=v_p(b-a);
+    h+=`b = ${b} = (${digits(b,K)})<sub>${p}</sub><br>b − a = ${b-a}<br>`;
+    if(v===Infinity) h+=`Same tip.`;
+    else h+=`Paths agree for ${v} step${v===1?"":"s"}: ${p}<sup>${v}</sup> divides b − a.<br><span class="big" style="color:var(--a)">|b − a|<sub>${p}</sub> = ${p}<sup>−${v}</sup> = ${Math.pow(p,-v).toPrecision(3)}</span><br><span class="small">Ordinary distance: ${Math.abs(b-a)}.</span>`;}
+  if(trailLabel) h+=`<br>${trailLabel}`;
+  $("read").innerHTML=h;
+}
+$("p").onchange=e=>{p=+e.target.value;K=depthFor[p];sel=[];trail=[];trailLabel="";draw();};
+$("doadd").onclick=()=>{const n=Math.round(+$("add").value)||0;const N=Math.pow(p,K);if(!sel.length){sel=[0];}
+  const a=sel[sel.length-1];const b=mod(a+n,N);sel=[a,b];trail=[];trailLabel=`Slid ${a} by ${n}: lands on ${b} (mod ${N}). Carries show up as jumps between branches.`;draw();};
+$("seqpow").onclick=()=>{trail=[];for(let k=0;k<=K;k++)trail.push(Math.pow(p,k));sel=[0];trailLabel=`Gold dots: ${trail.join(", ")}. Each shares one more step with 0 than the last, so |pᵏ|ₚ = p^−k → 0.`;draw();};
+$("seqgeo").onclick=()=>{trail=[];let s=0;for(let k=0;k<K;k++){s+=(p-1)*Math.pow(p,k);trail.push(s);}const N=Math.pow(p,K);sel=[N-1];trailLabel=`Gold dots: partial sums ${trail.join(", ")}. They close in on ${N-1} ≡ −1: in base ${p} it is ${digits(N-1,K)}, all digits ${p-1}. So (${p}−1)(1 + ${p} + ${p}² + …) = −1 in ℚ<sub>${p}</sub>, that is, 1 + ${p} + ${p}² + … = 1/(1 − ${p}).`;draw();};
+$("clear").onclick=()=>{sel=[];trail=[];trailLabel="";draw();};
+sel=[3,19]; draw();
+})();
+</script>
+
+</body>
+</html>

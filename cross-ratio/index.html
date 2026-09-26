@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cross-Ratio Ruler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.road{max-width:720px;margin:0 auto;}
+.probe{cursor:ns-resize;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Cross-Ratio <span>Ruler</span></h1>
+    <p class="tag">A photograph squeezes distances, but it keeps the cross-ratio of any four points on a line. Given the horizon and two marks of known distance, this ruler reads true distances straight off the picture.</p>
+  </header>
+  <div class="inst">
+    <div class="stage">
+      <svg id="road" class="fig road" viewBox="0 0 700 520" aria-label="Road in perspective"></svg>
+      <div class="ctl">
+        <label for="cam">Camera distance</label><input id="cam" type="range" min="2" max="40" step="0.5" value="8"><output id="camo"></output>
+        <label for="hor">Horizon height</label><input id="hor" type="range" min="40" max="260" step="1" value="120"><output id="horo"></output>
+      </div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <h2>Measure the red marker</h2>
+        <div id="read" class="read"></div>
+        <div class="small">Drag the red marker up and down the road.</div>
+      </div>
+      <div class="card">
+        <h2>Four stripes</h2>
+        <div id="cr" class="read"></div>
+      </div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>Why it works</h2>
+    <p><b>Perspective is projective.</b> A camera sends a point at distance t along a straight road to the height y = (a t + b)/(c t + d) in the picture. Maps of this form are the projective transformations of a line, the group PGL(2,ℝ). They distort lengths and ratios of lengths.</p>
+    <p><b>The invariant scale.</b> For four points on a line, the cross-ratio (A,B;C,D) = (AC·BD)/(BC·AD) is unchanged by every projective map. It plays the same role for PGL(2) that length plays for sliding and angle plays for rotating.</p>
+    <p><b>The ruler.</b> Take the picture heights of three known points: the near mark at 0 m, the sign at 10 m, and the horizon, which is the picture of the point at infinity. For any fourth height y, the true distance is t = 10 · [(y − y₀)(y₁₀ − y∞)] / [(y₁₀ − y₀)(y − y∞)]. Change the camera: the picture changes, and the ruler still reads correctly.</p>
+    <p><b>The naive reading.</b> Measuring picture heights proportionally (treating the photo as if it were to scale) is right near the sign and badly wrong far away. The error grows without bound toward the horizon.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id), NS="http://www.w3.org/2000/svg";
+const E=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const T=(s,a,p)=>{const e=E("text",a,p);e.textContent=s;return e;};
+const W=700,H=520,Y0=500,XC=350,HALF=210;
+let D=8, YH=120, probeT=23;
+const Y=t=>YH+(Y0-YH)*D/(t+D);        // picture height of distance t (t>=0)
+const Xw=t=>HALF*D/(t+D);             // half-width of road at t
+const tOf=y=>D*(Y0-YH)/(y-YH)-D;      // inverse
+function draw(){
+  const svg=$("road"); svg.innerHTML="";
+  E("rect",{x:0,y:0,width:W,height:YH,fill:"var(--soft)"},svg);
+  E("rect",{x:0,y:YH,width:W,height:H-YH,fill:"var(--panel)"},svg);
+  E("line",{x1:0,y1:YH,x2:W,y2:YH,stroke:"var(--muted)","stroke-dasharray":"4 4"},svg);
+  T("horizon: the picture of t = ∞",{x:8,y:YH-6,fill:"var(--muted)","font-size":12,"font-family":"IBM Plex Sans, sans-serif"},svg);
+  E("polygon",{points:`${XC-HALF},${Y0} ${XC+HALF},${Y0} ${XC},${YH}`,fill:"var(--soft)",stroke:"var(--muted)"},svg);
+  // stripes every 2 m, 1 m long
+  for(let t=0;t<400;t+=2){const y1=Y(t),y2=Y(t+1);if(y1-y2<0.4)break;const w1=Xw(t)*0.05,w2=Xw(t+1)*0.05;
+    E("polygon",{points:`${XC-w1},${y1} ${XC+w1},${y1} ${XC+w2},${y2} ${XC-w2},${y2}`,fill:"var(--brass)"},svg);}
+  // reference marks
+  const ref=(t,label)=>{const y=Y(t),w=Xw(t);E("line",{x1:XC-w-8,y1:y,x2:XC+w+8,y2:y,stroke:"var(--a)","stroke-width":2},svg);T(label,{x:XC+w+12,y:y+4,fill:"var(--a)","font-size":13,"font-family":"IBM Plex Mono, monospace"},svg);};
+  ref(0,"0 m"); ref(10,"10 m sign");
+  // probe
+  const yp=Y(probeT), wp=Xw(probeT);
+  const g=E("g",{class:"probe"},svg);
+  E("line",{x1:XC-wp-14,y1:yp,x2:XC+wp+14,y2:yp,stroke:"var(--hair)","stroke-width":3},g);
+  E("circle",{cx:XC-wp-14,cy:yp,r:9,fill:"var(--hair)"},g);
+  E("rect",{x:0,y:yp-14,width:W,height:28,fill:"transparent"},g);
+  g.addEventListener("pointerdown",ev=>{ev.preventDefault();const m=svg.getScreenCTM();try{g.setPointerCapture(ev.pointerId);}catch(_){}
+    const mv=e=>{const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());let y=Math.min(Y0,Math.max(YH+3,q.y));probeT=Math.max(0,tOf(y));draw();};
+    const up=()=>{g.removeEventListener("pointermove",mv);g.removeEventListener("pointerup",up);};g.addEventListener("pointermove",mv);g.addEventListener("pointerup",up);});
+  // readouts
+  const y0=Y(0),y10=Y(10),yi=YH, y=Y(probeT);
+  const cr=10*((y-y0)*(y10-yi))/((y10-y0)*(y-yi));
+  const naive=10*(y-y0)/(y10-y0);
+  $("read").innerHTML=`Picture heights (px above the bottom):<br>0 m at ${(H-y0).toFixed(1)}, 10 m at ${(H-y10).toFixed(1)}, horizon at ${(H-yi).toFixed(1)}, marker at ${(H-y).toFixed(1)}<br><span class="big" style="color:var(--hair)">${cr.toFixed(2)} m</span><br>by cross-ratio (true value ${probeT.toFixed(2)} m)<br>Naive proportional reading: ${naive.toFixed(2)} m`;
+  const ts=[0,2,4,6], ys=ts.map(Y);
+  const crw=((ts[2]-ts[0])*(ts[3]-ts[1]))/((ts[2]-ts[1])*(ts[3]-ts[0]));
+  const crp=((ys[2]-ys[0])*(ys[3]-ys[1]))/((ys[2]-ys[1])*(ys[3]-ys[0]));
+  $("cr").innerHTML=`Stripes at 0, 2, 4, 6 m.<br>On the road: gaps 2 : 2 : 2, cross-ratio ${crw.toFixed(4)}<br>In the picture: gaps ${(ys[0]-ys[1]).toFixed(1)} : ${(ys[1]-ys[2]).toFixed(1)} : ${(ys[2]-ys[3]).toFixed(1)} px, cross-ratio ${crp.toFixed(4)}<br><span class="small">Move the camera sliders: the gaps change, the cross-ratio does not.</span>`;
+  $("camo").value=D+" m"; $("horo").value=YH+" px";
+}
+$("cam").oninput=e=>{D=+e.target.value;draw();}; $("hor").oninput=e=>{YH=+e.target.value;draw();};
+draw();
+})();
+</script>
+
+</body>
+</html>

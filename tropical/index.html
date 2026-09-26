@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tropical Slide Rule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.plot{max-width:720px;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Tropical <span>Slide Rule</span></h1>
+    <p class="tag">On a log scale, multiplication is sliding and stays exact. Addition is almost "take the larger one", and it gets exactly that as the base grows. Turn up the base and watch arithmetic become max-plus.</p>
+  </header>
+  <div class="ctl" style="max-width:720px">
+    <label for="base">Base b</label><input id="base" type="range" min="0.3" max="7" step="0.01" value="1"><output id="baseo"></output>
+  </div>
+  <div class="inst">
+    <div class="stage">
+      <svg id="rule" class="fig plot" viewBox="0 0 720 200" aria-label="Log scale in base b"></svg>
+      <div class="ctl" style="max-width:720px">
+        <label for="u">x = bᵘ, u</label><input id="u" type="range" min="0" max="10" step="0.01" value="4"><output id="uo"></output>
+        <label for="v">y = bᵛ, v</label><input id="v" type="range" min="0" max="10" step="0.01" value="5.2"><output id="vo"></output>
+      </div>
+      <svg id="poly" class="fig plot" viewBox="0 0 720 330" aria-label="Tropical polynomial"></svg>
+      <div class="ctl" style="max-width:720px">
+        <label for="c0">a₀</label><input id="c0" type="range" min="-4" max="8" step="0.1" value="4"><output id="c0o"></output>
+        <label for="c1">a₁</label><input id="c1" type="range" min="-4" max="8" step="0.1" value="3"><output id="c1o"></output>
+        <label for="c2">a₂</label><input id="c2" type="range" min="-4" max="8" step="0.1" value="0.5"><output id="c2o"></output>
+        <label for="c3">a₃</label><input id="c3" type="range" min="-4" max="8" step="0.1" value="-3"><output id="c3o"></output>
+      </div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card"><h2>Positions on the rule</h2><div id="read" class="read"></div></div>
+      <div class="card"><h2>The polynomial</h2><div id="pread" class="read"></div></div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>What is going on</h2>
+    <p><b>Position = log.</b> The rule places the number x at position u = log_b x. Multiplying x·y slides by v, so its position is u + v in every base. That part of the slide rule never changes.</p>
+    <p><b>Addition becomes max.</b> The sum x + y sits at log_b(bᵘ + bᵛ) = max(u,v) + log_b(1 + b^−|u−v|). The correction is at most log_b 2, which goes to 0 as b grows. In the limit, "plus" becomes "max" and "times" stays "plus": the tropical semiring (max, +).</p>
+    <p><b>Polynomials become corners.</b> A polynomial Σ bᵃⁱ·Xⁱ, read on the rule at X = bˣ, has position log_b Σ b^(aᵢ + i x). As b grows it collapses onto max(aᵢ + i x), a piecewise-linear graph. The corners of that graph are the tropical roots, and their positions predict the sizes of the ordinary roots (Newton polygon).</p>
+    <p><b>The name.</b> This limit is sometimes called Maslov dequantization: log base b plays the role of Planck's constant going to zero. "Tropical" honors the Brazilian mathematician Imre Simon.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id), NS="http://www.w3.org/2000/svg";
+const E=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const T=(s,a,p)=>{const e=E("text",a,p);e.textContent=s;return e;};
+const lse=(xs,L)=>{const m=Math.max(...xs);if(!isFinite(L))return m;return m+Math.log(xs.reduce((s,x)=>s+Math.exp((x-m)*L),0))/L;}; // log_b sum b^x, L=ln b
+function state(){const s=+$("base").value;const inf=s>=6.99;const L=inf?Infinity:s*Math.LN10;return {L,inf,b:Math.pow(10,s)};}
+const fmtB=st=>st.inf?"∞":(st.b<1000?st.b.toPrecision(3):"10^"+Math.log10(st.b).toFixed(2));
+function drawRule(){
+  const st=state(),u=+$("u").value,v=+$("v").value,svg=$("rule");svg.innerHTML="";
+  const X0=30,Wd=660,sx=p=>X0+p/12*Wd;
+  E("rect",{x:X0-10,y:40,width:Wd+20,height:60,rx:4,fill:"var(--panel)",stroke:"var(--line)"},svg);
+  for(let p=0;p<=12;p++){E("line",{x1:sx(p),y1:40,x2:sx(p),y2:58,stroke:"var(--ink)","stroke-width":1.2},svg);T(p,{x:sx(p),y:74,"text-anchor":"middle","font-size":12,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},svg);}
+  T("position = log_b(number)",{x:X0,y:94,"font-size":11,fill:"var(--muted)","font-family":"IBM Plex Sans, sans-serif"},svg);
+  const s=lse([u,v],st.L), m=Math.max(u,v), prod=u+v;
+  const mark=(p,label,color,y)=>{if(p>12.2)return;E("line",{x1:sx(p),y1:34,x2:sx(p),y2:110,stroke:color,"stroke-width":2.5},svg);T(label,{x:sx(p),y:y,"text-anchor":"middle","font-size":13,fill:color,"font-family":"IBM Plex Mono, monospace","font-weight":600},svg);};
+  mark(u,"x","var(--a)",28); mark(v,"y","var(--b)",28);
+  mark(s,"x+y","var(--hair)",128);
+  if(prod<=12) mark(prod,"x·y","var(--c)",148);
+  E("rect",{x:sx(m),y:160,width:Math.max(1,sx(s)-sx(m)),height:10,fill:"var(--hair)","fill-opacity":.5},svg);
+  T("gap between x+y and max: "+(s-m).toFixed(4),{x:X0,y:192,"font-size":12,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},svg);
+  $("baseo").value=fmtB(st); $("uo").value=u.toFixed(2); $("vo").value=v.toFixed(2);
+  const bound=st.inf?0:Math.LN2/st.L;
+  $("read").innerHTML=`Base b = ${fmtB(st)}<br>log_b x = ${u.toFixed(2)}, log_b y = ${v.toFixed(2)}<br>log_b(x·y) = ${(u+v).toFixed(2)} <span class="small">(exact, any base)</span><br>log_b(x+y) = <b style="color:var(--hair)">${s.toFixed(4)}</b><br>max(u,v) = ${m.toFixed(4)}<br><span class="small">The gap is at most log_b 2 = ${bound.toFixed(4)}.</span>`;
+}
+function drawPoly(){
+  const st=state(), a=[0,1,2,3].map(i=>+$("c"+i).value), svg=$("poly"); svg.innerHTML="";
+  for(let i=0;i<4;i++)$("c"+i+"o").value=a[i].toFixed(1);
+  const X0=50,Y0=290,Wd=640,Hh=270,xmin=-4,xmax=6,ymin=-4,ymax=16;
+  const sx=x=>X0+(x-xmin)/(xmax-xmin)*Wd, sy=y=>Y0-(y-ymin)/(ymax-ymin)*Hh;
+  E("rect",{x:X0,y:Y0-Hh,width:Wd,height:Hh,fill:"var(--panel)",stroke:"var(--line)"},svg);
+  for(let x=xmin;x<=xmax;x+=2){E("line",{x1:sx(x),y1:Y0,x2:sx(x),y2:Y0-Hh,stroke:"var(--line)"},svg);T(x,{x:sx(x),y:Y0+16,"text-anchor":"middle","font-size":11,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},svg);}
+  for(let y=ymin;y<=ymax;y+=4){E("line",{x1:X0,y1:sy(y),x2:X0+Wd,y2:sy(y),stroke:"var(--line)"},svg);T(y,{x:X0-6,y:sy(y)+4,"text-anchor":"end","font-size":11,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"},svg);}
+  const clip=E("clipPath",{id:"pc"},E("defs",{},svg));E("rect",{x:X0,y:Y0-Hh,width:Wd,height:Hh},clip);
+  const g=E("g",{"clip-path":"url(#pc)"},svg);
+  const cols=["var(--a)","var(--b)","var(--c)","var(--brass)"];
+  for(let i=0;i<4;i++)E("line",{x1:sx(xmin),y1:sy(a[i]+i*xmin),x2:sx(xmax),y2:sy(a[i]+i*xmax),stroke:cols[i],"stroke-width":1,"stroke-dasharray":"4 4"},g);
+  const trop=[],soft=[];
+  for(let k=0;k<=400;k++){const x=xmin+(xmax-xmin)*k/400;const terms=a.map((ai,i)=>ai+i*x);trop.push([sx(x),sy(Math.max(...terms))]);soft.push([sx(x),sy(lse(terms,st.L))]);}
+  E("polyline",{points:trop.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" "),fill:"none",stroke:"var(--ink)","stroke-width":2},g);
+  E("polyline",{points:soft.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" "),fill:"none",stroke:"var(--hair)","stroke-width":3,"stroke-opacity":.8},g);
+  // corners: where the max switches
+  const corners=[];let prev=null;
+  for(let k=0;k<=2000;k++){const x=xmin+(xmax-xmin)*k/2000;const terms=a.map((ai,i)=>ai+i*x);const im=terms.indexOf(Math.max(...terms));if(prev!==null&&im!==prev){corners.push(x);E("circle",{cx:sx(x),cy:sy(Math.max(...terms)),r:5,fill:"var(--ink)"},g);}prev=im;}
+  T("black: max(aᵢ + i·x)   red: log_b Σ b^(aᵢ + i·x)",{x:X0+8,y:Y0-Hh+16,"font-size":12,fill:"var(--muted)","font-family":"IBM Plex Sans, sans-serif"},svg);
+  $("pread").innerHTML=`p(X) = ${a.map((ai,i)=>`b^${ai.toFixed(1)}·X${i?"^"+i:"⁰"}`).join(" + ")}<br>Tropical roots (corners), as log_b|X|: <b>${corners.map(c=>c.toFixed(2)).join(", ")||"none in view"}</b><br><span class="small">For large b the ordinary roots of p have sizes near b to these powers.</span>`;
+}
+function draw(){drawRule();drawPoly();}
+for(const id of ["base","u","v","c0","c1","c2","c3"])$(id).addEventListener("input",draw);
+draw();
+})();
+</script>
+
+</body>
+</html>
