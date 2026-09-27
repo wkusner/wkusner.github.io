@@ -902,3 +902,66 @@ h1.paper-title {
         margin-top: $spacing-unit;
     }
 }
+
+/**
+ * Puzzles & Devices dropdown in the site nav
+ */
+.site-nav .nav-drop {
+    position: relative;
+    display: inline-block;
+}
+
+.site-nav .nav-drop-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 20;
+    min-width: 240px;
+    padding: 6px 0;
+    line-height: $base-line-height;
+    text-align: left;
+    background-color: $background-color;
+    border: 1px solid $grey-color-light;
+    border-radius: 5px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+
+    a {
+        display: block;
+        padding: 6px 14px;
+        color: $text-color;
+        white-space: nowrap;
+
+        &:hover,
+        &:focus {
+            background-color: $grey-color-light;
+            text-decoration: none;
+        }
+    }
+}
+
+.site-nav .nav-drop:hover .nav-drop-menu,
+.site-nav .nav-drop:focus-within .nav-drop-menu {
+    display: block;
+}
+
+@include media-query($on-palm) {
+    .site-nav .nav-drop {
+        display: block;
+    }
+
+    .site-nav .nav-drop-menu {
+        display: block;
+        position: static;
+        min-width: 0;
+        padding: 0 0 4px 0;
+        text-align: right;
+        border: 0;
+        box-shadow: none;
+
+        a {
+            padding: 4px 10px;
+            font-size: $small-font-size;
+        }
+    }
+}
