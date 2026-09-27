@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stereonet Slide Rule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.net{max-width:620px;margin:0 auto;cursor:grab;}
+.net:active{cursor:grabbing;}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+.seg button{border:0;border-radius:0;}
+.mat{font-family:var(--mono);font-size:13px;display:grid;grid-template-columns:repeat(3,auto);gap:2px 14px;justify-content:start;}
+.word{font-family:var(--mono);font-size:12.5px;color:var(--muted);max-height:110px;overflow:auto;word-break:break-word;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Stereonet <span>Slide Rule</span></h1>
+    <p class="tag">The SO(3) slide rule: a Wulff net with a turning overlay. Turn the overlay to rotate about your line of sight, and slide points along the small circles to rotate about the north–south axis. Those two moves build every rotation.</p>
+  </header>
+  <div class="inst">
+    <div class="stage">
+      <div class="row">
+        <div class="seg" role="group" aria-label="Drag mode"><button type="button" id="mTurn" class="on">Drag turns</button><button type="button" id="mSlide">Drag slides</button></div>
+        <label class="small"><input type="checkbox" id="snap" checked> snap to 15°</label>
+        <span style="flex:1"></span>
+        <button type="button" id="undo">Undo</button>
+        <button type="button" id="reset">Reset</button>
+      </div>
+      <svg id="net" class="fig net" viewBox="-300 -300 600 600" aria-label="Wulff net"></svg>
+      <div class="row">
+        <span class="small">Turn</span><button type="button" data-t="-90">−90°</button><button type="button" data-t="-15">−15°</button><button type="button" data-t="15">+15°</button><button type="button" data-t="90">+90°</button>
+        <span class="small" style="margin-left:10px">Slide</span><button type="button" data-s="-90">−90°</button><button type="button" data-s="-15">−15°</button><button type="button" data-s="15">+15°</button><button type="button" data-s="90">+90°</button>
+      </div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <h2>Show</h2>
+        <div class="row">
+          <select id="shape"><option value="frame">Labelled frame</option><option value="cube">Cube</option><option value="tet">Tetrahedron</option><option value="oct">Octahedron</option></select>
+          <label class="small"><input type="checkbox" id="lower" checked> lower hemisphere</label>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Challenge</h2>
+        <div class="row"><button type="button" id="chal" class="primary">New target</button><button type="button" id="chalOff">Clear</button></div>
+        <div id="chalRead" class="small">Match a ghost frame using as few turns and slides as you can.</div>
+      </div>
+      <div class="card">
+        <h2>Total rotation</h2>
+        <div id="read" class="read"></div>
+        <div id="mat" class="mat"></div>
+        <div class="small">Moves, oldest first:</div>
+        <div id="word" class="word"></div>
+      </div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>How to use it</h2>
+    <p><b>The chart.</b> You look down on a sphere from above. A point (x, y, z) of the upper hemisphere is drawn at R·(x, y)/(1 + z): stereographic projection, which keeps angles and sends circles to circles. The rim is the horizon. With lower hemisphere turned on, points below are drawn as open circles at their antipodes.</p>
+    <p><b>The net.</b> Meridians are great circles through N and S, spaced 10° apart by rotation about the N–S axis. Small circles are the paths points follow under that rotation. Along a meridian, small circles measure angle; along a small circle, meridians measure the rotation.</p>
+    <p><b>Two moves.</b> <em>Turn</em> spins the overlay about the center, a rotation about the viewing axis z. <em>Slide</em> moves every point along its small circle, a rotation about the N–S axis y. A positive slide carries the center toward the east. Every rotation is turn · slide · turn: Euler angles.</p>
+    <p><b>Why two moves are enough.</b> The Lie brackets of the two generators give the third direction: [L_z, L_y] = −L_x. That is the same reason parallel parking works.</p>
+    <p><b>The readout.</b> The panel shows the total rotation as a unit quaternion (defined up to sign), as an axis and angle, as a matrix, and as z–y–z Euler angles. The Lab Manual has the paper version of this device and its exercises.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id), NS="http://www.w3.org/2000/svg";
+const E=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const T=(s,a,p)=>{const e=E("text",a,p);e.textContent=s;return e;};
+const R=250, D=Math.PI/180;
+const qm=(a,b)=>[a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]];
+const qc=a=>[a[0],-a[1],-a[2],-a[3]];
+const qa=(n,phi)=>{const s=Math.sin(phi/2);return[Math.cos(phi/2),n[0]*s,n[1]*s,n[2]*s];};
+const qrot=(q,v)=>qm(qm(q,[0,...v]),qc(q)).slice(1);
+const qnorm=q=>{const l=Math.hypot(...q);return q.map(x=>x/l);};
+const s3=1/Math.sqrt(3), s2=1/Math.SQRT2;
+const SHAPES={
+  frame:[[[1,0,0],"x","var(--hair)"],[[0,1,0],"y","var(--c)"],[[0,0,1],"z","var(--a)"],[[s2,s2,0],"flag","var(--brass)"]],
+  cube:[[[1,0,0],"+x"],[[-1,0,0],"−x"],[[0,1,0],"+y"],[[0,-1,0],"−y"],[[0,0,1],"+z"],[[0,0,-1],"−z"],
+        ...[[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1]].map(v=>[v.map(x=>x*s3),"",""])],
+  tet:[[[s3,s3,s3],"A"],[[s3,-s3,-s3],"B"],[[-s3,s3,-s3],"C"],[[-s3,-s3,s3],"D"]],
+  oct:[[[1,0,0],"1"],[[-1,0,0],"2"],[[0,1,0],"3"],[[0,-1,0],"4"],[[0,0,1],"5"],[[0,0,-1],"6"]]};
+let q=[1,0,0,0], hist=[], moves=[], turnSum=0, mode="turn", anim=null, target=null, chalMoves=0;
+const proj=v=>{const up=v[2]>=-1e-9; const w=up?v:v.map(x=>-x); return {x:R*w[0]/(1+w[2]), y:-R*w[1]/(1+w[2]), up};};
+function drawNet(g){
+  const clip=E("clipPath",{id:"nc"},E("defs",{},g)); E("circle",{r:R},clip);
+  E("circle",{r:R,fill:"var(--panel)"},g);
+  const gg=E("g",{"clip-path":"url(#nc)"},g);
+  for(let p=2;p<90;p+=2){const major=p%10===0, st=major?{stroke:"var(--muted)","stroke-width":.9,"stroke-opacity":.7}:{stroke:"var(--muted)","stroke-width":.35,"stroke-opacity":.4};
+    const c=R/Math.tan(p*D), r=R/Math.sin(p*D);
+    E("circle",Object.assign({cx:-c,cy:0,r,fill:"none"},st),gg);E("circle",Object.assign({cx:c,cy:0,r,fill:"none"},st),gg);
+    const cy=R/Math.cos(p*D), rr=R*Math.tan(p*D);
+    E("circle",Object.assign({cx:0,cy:-cy,r:rr,fill:"none"},st),gg);E("circle",Object.assign({cx:0,cy:cy,r:rr,fill:"none"},st),gg);}
+  E("line",{x1:-R,y1:0,x2:R,y2:0,stroke:"var(--muted)","stroke-width":.9},gg);E("line",{x1:0,y1:-R,x2:0,y2:R,stroke:"var(--muted)","stroke-width":.9},gg);
+  E("circle",{r:R,fill:"none",stroke:"var(--ink)","stroke-width":2},g);
+  T("N",{x:0,y:-R-26,"text-anchor":"middle",fill:"var(--ink)","font-size":16,"font-weight":600,"font-family":"IBM Plex Sans, sans-serif"},g);
+  E("polygon",{points:`0,${-R-2} -8,${-R-14} 8,${-R-14}`,fill:"var(--hair)"},g);
+  T("S",{x:0,y:R+34,"text-anchor":"middle",fill:"var(--muted)","font-size":14,"font-family":"IBM Plex Sans, sans-serif"},g);
+  T("E",{x:R+22,y:5,"text-anchor":"middle",fill:"var(--muted)","font-size":14,"font-family":"IBM Plex Sans, sans-serif"},g);
+  T("W",{x:-R-22,y:5,"text-anchor":"middle",fill:"var(--muted)","font-size":14,"font-family":"IBM Plex Sans, sans-serif"},g);
+}
+function render(qq){
+  const svg=$("net"); svg.innerHTML=""; drawNet(svg);
+  // overlay rim (rotates with accumulated turns)
+  const rim=E("g",{transform:`rotate(${-turnSum})`},svg);
+  for(let a=0;a<360;a+=5){const big=a%30===0;const r1=R+2,r2=R+(big?14:7);const t=(90-a)*D;E("line",{x1:r1*Math.cos(t),y1:-r1*Math.sin(t),x2:r2*Math.cos(t),y2:-r2*Math.sin(t),stroke:"var(--a)","stroke-width":big?1.4:.7},rim);}
+  const shape=SHAPES[$("shape").value], showLow=$("lower").checked;
+  const draw=(qq,ghost)=>{ for(const [v,l,col] of shape){ const w=qrot(qq,v), p=proj(w); if(!p.up&&!showLow) continue;
+      const color=col||"var(--ink)";
+      E("circle",{cx:p.x,cy:p.y,r:ghost?9:7,fill:p.up&&!ghost?color:"none",stroke:color,"stroke-width":ghost?1.5:2,"stroke-dasharray":ghost?"3 3":"none","stroke-opacity":ghost?.7:1},svg);
+      if(l) T(l,{x:p.x+10,y:p.y-9,fill:color,"font-size":14,"font-family":"IBM Plex Mono, monospace","fill-opacity":ghost?.6:1},svg);}};
+  if(target) draw(target,true);
+  draw(qq,false);
+  if($("shape").value==="cube"){ // edges between adjacent upper vertices for a sense of shape: skip
+  }
+}
+function fmt(x,d=3){return (Math.abs(x)<5e-4?0:x).toFixed(d);}
+function readout(){
+  const qq=q[0]<0?q.map(x=>-x):q;
+  const w=Math.min(1,qq[0]), ang=2*Math.acos(w)/D, s=Math.hypot(qq[1],qq[2],qq[3]);
+  const n=s<1e-9?[0,0,1]:[qq[1]/s,qq[2]/s,qq[3]/s];
+  const M=[[1,0,0],[0,1,0],[0,0,1]].map(e=>qrot(q,e)); // columns
+  // ZYZ Euler: R = Rz(a) Ry(b) Rz(g)
+  const m=(i,j)=>M[j][i];
+  const b=Math.acos(Math.max(-1,Math.min(1,m(2,2))));
+  let a,g; if(Math.abs(Math.sin(b))>1e-6){a=Math.atan2(m(1,2),m(0,2));g=Math.atan2(m(2,1),-m(2,0));} else {a=Math.atan2(m(1,0),m(0,0));g=0;}
+  $("read").innerHTML=`q = ±(${fmt(qq[0])}, ${fmt(qq[1])}, ${fmt(qq[2])}, ${fmt(qq[3])})<br><span class="big">${fmt(ang,1)}° about (${n.map(x=>fmt(x,2)).join(", ")})</span><br>Euler z–y–z: ${fmt(a/D,1)}°, ${fmt(b/D,1)}°, ${fmt(g/D,1)}°<br>${moves.length} move${moves.length===1?"":"s"}`;
+  $("mat").innerHTML=[0,1,2].map(i=>[0,1,2].map(j=>`<span>${fmt(m(i,j),3)}</span>`).join("")).join("");
+  $("word").textContent=moves.length?moves.map(([k,v])=>`${k==="t"?"turn":"slide"} ${v>0?"+":""}${Math.round(v)}°`).join(", "):"none";
+  if(target){ const d=qm(q,qc(target)); const err=2*Math.acos(Math.min(1,Math.abs(d[0])))/D;
+    $("chalRead").innerHTML=err<0.5?`<b style="color:var(--c)">Matched in ${chalMoves} moves.</b> Try New target for another.`:`Off by ${err.toFixed(1)}°. Moves so far: ${chalMoves}.`; }
+}
+function applyMove(kind,deg,animate=true){
+  const axis=kind==="t"?[0,0,1]:[0,1,0];
+  const dq=qa(axis,deg*D), q0=q.slice(), t0=turnSum;
+  hist.push({q:q0,turn:t0,moves:moves.slice(),chal:chalMoves});
+  const last=moves[moves.length-1];
+  if(last&&last[0]===kind){ last[1]+=deg; if(Math.abs(last[1])<1e-9) moves.pop(); } else moves.push([kind,deg]);
+  if(target) chalMoves++;
+  const q1=qnorm(qm(dq,q0)), t1=kind==="t"?t0+deg:t0;
+  if(!animate||window.matchMedia("(prefers-reduced-motion: reduce)").matches){q=q1;turnSum=t1;render(q);readout();return;}
+  const start=performance.now(), dur=Math.min(700,200+Math.abs(deg)*4);
+  cancelAnimationFrame(anim);
+  const step=now=>{const u=Math.min(1,(now-start)/dur), e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    const qq=qnorm(qm(qa(axis,deg*e*D),q0)); turnSum=t0+(kind==="t"?deg*e:0); render(qq);
+    if(u<1) anim=requestAnimationFrame(step); else {q=q1;turnSum=t1;render(q);readout();}};
+  anim=requestAnimationFrame(step);
+}
+// drag
+(function(){const svg=$("net");let st=null;
+  const pt=e=>{const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());};
+  svg.addEventListener("pointerdown",e=>{const p=pt(e);st={p,a:Math.atan2(-p.y,p.x),q0:q.slice(),t0:turnSum,deg:0};try{svg.setPointerCapture(e.pointerId);}catch(_){}});
+  svg.addEventListener("pointermove",e=>{if(!st)return;const p=pt(e);let deg;
+    if(mode==="turn"){let da=Math.atan2(-p.y,p.x)-st.a;da=Math.atan2(Math.sin(da),Math.cos(da));deg=da/D;} else deg=(p.x-st.p.x)/R*90;
+    if($("snap").checked) deg=Math.round(deg/15)*15; st.deg=deg;
+    const axis=mode==="turn"?[0,0,1]:[0,1,0]; turnSum=st.t0+(mode==="turn"?deg:0); render(qnorm(qm(qa(axis,deg*D),st.q0)));});
+  const end=()=>{if(!st)return;const d=st.deg;turnSum=st.t0;q=st.q0;st=null;if(Math.abs(d)>1e-9)applyMove(mode==="turn"?"t":"s",d,false);else{render(q);}};
+  svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);})();
+document.querySelectorAll("button[data-t]").forEach(b=>b.onclick=()=>applyMove("t",+b.dataset.t));
+document.querySelectorAll("button[data-s]").forEach(b=>b.onclick=()=>applyMove("s",+b.dataset.s));
+$("mTurn").onclick=()=>{mode="turn";$("mTurn").classList.add("on");$("mSlide").classList.remove("on");};
+$("mSlide").onclick=()=>{mode="slide";$("mSlide").classList.add("on");$("mTurn").classList.remove("on");};
+$("undo").onclick=()=>{const h=hist.pop();if(!h)return;q=h.q;turnSum=h.turn;moves=h.moves;chalMoves=h.chal;render(q);readout();};
+$("reset").onclick=()=>{q=[1,0,0,0];turnSum=0;moves=[];hist=[];chalMoves=0;render(q);readout();};
+$("shape").onchange=()=>render(q); $("lower").onchange=()=>render(q);
+$("chal").onclick=()=>{ // random rotation from the 24 cube rotations
+  const gens=[qa([0,0,1],Math.PI/2),qa([0,1,0],Math.PI/2)]; let t=[1,0,0,0]; const n=3+Math.floor(Math.random()*5);
+  for(let i=0;i<n;i++) t=qnorm(qm(gens[Math.floor(Math.random()*2)],t));
+  const d=qm(t,qc([1,0,0,0])); if(Math.abs(d[0])>0.999) t=qnorm(qm(gens[1],t));
+  target=t; q=[1,0,0,0]; turnSum=0; moves=[]; hist=[]; chalMoves=0; $("shape").value="frame"; render(q); readout();};
+$("chalOff").onclick=()=>{target=null;$("chalRead").textContent="Match a ghost frame using as few turns and slides as you can.";render(q);readout();};
+render(q); readout();
+})();
+</script>
+
+</body>
+</html>
