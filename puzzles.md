@@ -18,3 +18,4 @@ shorttitle:
 - [Quaternion Cards](/quaternion-cards/): a card game in the quaternion group, where left and right differ.
 - [p-adic Ruler](/p-adic/): a branching-tree ruler for p-adic distance.
 - [Galois Lock](/symmetry-lock/): a lock whose moves are the Galois group of x⁴ − 2.
+- [Planimeter Bench](/planimeters/): measure area by tracing, with polar, linear, hatchet, and x–y planimeters and a running error budget.
