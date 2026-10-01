@@ -11,7 +11,8 @@ function rng(seed){ let a = seed>>>0; return () => { a |= 0; a = a + 0x6D2B79F5 
 function hashStr(s){ let h=2166136261; for(const ch of String(s)){ h ^= ch.charCodeAt(0); h = Math.imul(h,16777619); } return h>>>0; }
 const muted = (hex, k=0.55) => { const c = new THREE.Color(hex); const g = c.r*.3+c.g*.59+c.b*.11; return new THREE.Color(g+(c.r-g)*k, g+(c.g-g)*k, g+(c.b-g)*k); };
 function mat(color, opts={}){ return new THREE.MeshStandardMaterial(Object.assign({color:new THREE.Color(color), roughness:.85, metalness:0}, opts)); }
-function canvasTex(w, h, paint){ const c = document.createElement("canvas"); c.width=w; c.height=h; const g = c.getContext("2d"); paint(g, w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+let TEXK = 1;
+function canvasTex(w, h, paint){ const c = document.createElement("canvas"); c.width=Math.round(w*TEXK); c.height=Math.round(h*TEXK); const g = c.getContext("2d"); g.scale(TEXK, TEXK); paint(g, w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 const FELL = '"IM Fell English", Georgia, serif', FELLSC = '"IM Fell English SC", "IM Fell English", Georgia, serif';
 
 /* ---------- the engraving pass ---------- */
@@ -82,7 +83,9 @@ export function create(container, hooks){
   const renderer = new THREE.WebGLRenderer({canvas, antialias:false, preserveDrawingBuffer:true});
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const Q = ({draft:{dpr:1, shadow:1024, tex:.75}, normal:{dpr:2, shadow:2048, tex:1}, fine:{dpr:3, shadow:4096, tex:2}})[(hooks.quality&&hooks.quality())||"normal"];
+  TEXK = Q.tex;
+  const dpr = Math.min((window.devicePixelRatio||1) * (Q.dpr>2 ? 1.5 : 1), Q.dpr);
   renderer.setPixelRatio(1);
   const camera = new THREE.PerspectiveCamera(62, 16/9, .05, 80);
   camera.rotation.order = "YXZ";
@@ -182,7 +185,7 @@ export function create(container, hooks){
     if(k !== key){ key = k; build(p); }
     // where to stand and where to look
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5)};
-    let pos, yaw = Math.atan2(-sl.dir.x, -sl.dir.z), pitch = p.pitch*0.95;
+    let pos, yaw = Math.atan2(-sl.dir.x, -sl.dir.z), pitch = p.pitch*((p.room.ceiling||"")==="open" && p.pitch>0 ? 1.32 : 0.95);
     if(p.close==="ahead" && stations[p.ahead]){ const st = stations[p.ahead]; pos = st.view.clone(); pitch = -0.66; yaw = Math.atan2(-(st.top.x-pos.x), -(st.top.z-pos.z)); }
     else { pos = sl.stand.clone(); }
     goal.pos.copy(pos); goal.yaw = yaw; goal.pitch = pitch;
@@ -208,6 +211,7 @@ export function create(container, hooks){
     // ---- walls, with their doors and windows cut out
     const doorsBySlot = {}; p.doors.forEach(d => (doorsBySlot[d.wall] = doorsBySlot[d.wall]||[]).push(d));
     const objsBySlot = {}; p.objects.forEach(o => (objsBySlot[o.wall] = objsBySlot[o.wall]||[]).push(o));
+    const boardsOn = (f, len) => { f.holes = f.holes || []; const m = f.slot>=0 ? (objsBySlot[f.slot]||[]).filter(o => o.mount).length : 0; return m ? boardSpots(f, len, m) : []; };
     faces.forEach((f, fi) => {
       const len = f.a.distanceTo(f.b), u = f.b.clone().sub(f.a).normalize(), n = f.n;
       const ds = f.slot>=0 ? (doorsBySlot[f.slot]||[]) : [];
@@ -244,7 +248,7 @@ export function create(container, hooks){
       if(p.decor.includes("shelves") || (p.decor.includes("cases") && f.slot!==1) || p.decor.includes("lowshelves")){
         const low = p.decor.includes("lowshelves"), cases = p.decor.includes("cases") && !p.decor.includes("shelves");
         let x = .6; while(x < len - .6){ const w = Math.min(1.6, len - .6 - x); if(w < .7) break;
-          const at = x + w/2; if(!holes.some(hh => Math.abs(hh.at-at) < hh.w/2 + w/2 + .1)) { const c = f.a.clone().add(u.clone().multiplyScalar(at)); cases ? buildCase(c, u, n, w, R, spot) : buildBookcase(c, u, n, w, low ? 1.1 : 3.3, R, spot); }
+          const at = x + w/2; if(!holes.some(hh => Math.abs(hh.at-at) < hh.w/2 + w/2 + .1) && !boardsOn(f, len).some(b => Math.abs(b.at-at) < b.w/2 + w/2 + .05)) { const c = f.a.clone().add(u.clone().multiplyScalar(at)); cases ? buildCase(c, u, n, w, R, spot) : buildBookcase(c, u, n, w, low ? 1.1 : 3.3, R, spot); }
           x += w + .08; }
       }
     });
@@ -262,7 +266,9 @@ export function create(container, hooks){
       ceilingDetail(ceilKind, faces, R);
     } else skyCeiling(p, faces);
     // ---- light
-    const amb = new THREE.HemisphereLight(night ? "#8a90a0" : "#fbf6ea", night ? "#2a2620" : "#a39a88", night ? .9 : dusk ? 1.8 : 2.4); scene.add(amb);
+    const openSky = (p.room.ceiling||"") === "open", cloudK = 1 - .7*Math.min(1, (p.cloud||0)/100);
+    const moonK = p.moonAlt > 0 && p.sunAlt < -.8 ? p.moonLit * (1 - .9*Math.min(1, (p.cloud||0)/100)) * Math.min(1, p.moonAlt/8) : 0;
+    const amb = new THREE.HemisphereLight(night ? "#8a90a0" : "#fbf6ea", night ? "#2a2620" : "#a39a88", night ? (openSky ? .32 + .25*moonK : .9) : dusk ? 1.8 : 2.4); scene.add(amb);
     const fill = new THREE.DirectionalLight("#fff8ec", night ? .25 : .7); fill.position.set(2, 3, 6); scene.add(fill);
     const lit = p.lampLit;
     if(p.decor.includes("lamp")){
@@ -272,19 +278,30 @@ export function create(container, hooks){
     } else if(night){ const pl = new THREE.PointLight("#ffe2b0", 22, 0, 1.1); pl.position.set(0, WALL_H-.6, 1); scene.add(pl); }
     if(p.sunUp){
       // the real sun, from the real direction: walls cast the shadows, windows let it in
-      const s = new THREE.DirectionalLight("#fff3d9", p.overcast ? .8 : 3.4);
+      const s = new THREE.DirectionalLight("#fff3d9", 3.4*cloudK);
       const az = p.sunRel*DEG, alt = Math.max(3, p.sunAlt)*DEG;
       const d = new THREE.Vector3(Math.sin(az)*Math.cos(alt), Math.sin(alt), -Math.cos(az)*Math.cos(alt));
       s.position.copy(d.multiplyScalar(30)); s.target.position.set(0,0,0); s.castShadow = true;
-      s.shadow.mapSize.set(2048,2048); const sc = s.shadow.camera; sc.left=-12; sc.right=12; sc.top=12; sc.bottom=-12; sc.near=1; sc.far=80; s.shadow.bias = -.0006;
+      s.shadow.mapSize.set(Q.shadow,Q.shadow); const sc = s.shadow.camera; sc.left=-12; sc.right=12; sc.top=12; sc.bottom=-12; sc.near=1; sc.far=80; s.shadow.bias = -.0006;
       scene.add(s); scene.add(s.target);
+    }
+    if(moonK > .02){
+      // the moon, from where it really is, as bright as its phase and the clouds allow; a bright moon throws shadows
+      const m = new THREE.DirectionalLight("#c6d0e6", (openSky ? 2.6 : 1.6)*moonK);
+      const az = p.moonRel*DEG, alt = Math.max(3, p.moonAlt)*DEG;
+      m.position.set(Math.sin(az)*Math.cos(alt)*30, Math.sin(alt)*30, -Math.cos(az)*Math.cos(alt)*30); m.target.position.set(0,0,0);
+      if(moonK > .18){ m.castShadow = true; m.shadow.mapSize.set(Q.shadow,Q.shadow); const sc = m.shadow.camera; sc.left=-12; sc.right=12; sc.top=12; sc.bottom=-12; sc.near=1; sc.far=80; m.shadow.bias = -.0006; }
+      scene.add(m); scene.add(m.target);
     }
     if(p.lantern){ const pl = new THREE.PointLight("#ffd28a", 9, 7, 1.5); scene.add(pl); anims.push(() => { pl.position.copy(cam.pos).add(new THREE.Vector3(.3,-.4,0)); }); }
     if(p.gloom){ amb.intensity *= p.lantern ? .7 : .25; }
     // ---- floor and wall fittings
     decorBuild(p, faces, R, spot);
     // ---- stations: furniture with the room's things on it, one per wall that has things
-    Object.keys(objsBySlot).forEach(sk => { const sl = slots[sk]; if(!sl) return; buildStation(+sk, sl, objsBySlot[sk], p, R, spot); });
+    Object.keys(objsBySlot).forEach(sk => { const sl = slots[sk]; if(!sl) return;
+      const mounted = objsBySlot[sk].filter(o => o.mount), loose = objsBySlot[sk].filter(o => !o.mount);
+      mounted.forEach((o,i) => buildBoard(sl, o, i, mounted.length, p, spot));
+      if(loose.length) buildStation(+sk, sl, loose, p, R, spot); });
     scene.fog = night ? new THREE.Fog("#0d0c0b", 10, 30) : null;
   }
 
@@ -339,12 +356,82 @@ export function create(container, hooks){
       disc.rotation.set(Math.PI/2, 0, -p.F*DEG); disc.position.y = WALL_H+.01; disc.layers.set(1); scene.add(disc);
       // ribs of the dome
       for(let i=0;i<12;i++){ const rib = new THREE.Mesh(new THREE.BoxGeometry(.06,.06,r*.62), mat("#2a261f")); rib.position.set(Math.sin(i/12*TAU)*r*.31, WALL_H-.02, -Math.cos(i/12*TAU)*r*.31); rib.rotation.y = -i/12*TAU; scene.add(rib); }
-    } else {
-      const sm = new THREE.MeshBasicMaterial({color: p.band==="night" ? "#16181e" : "#dfe4e3", side:THREE.DoubleSide}); if(p.band==="night") mats.push(sm);
-      const sky = new THREE.Mesh(new THREE.CircleGeometry(r*1.6, 48), sm);
-      sky.rotation.x = Math.PI/2; sky.position.y = WALL_H + 2.5; sky.layers.set(1); scene.add(sky);
-    }
+    } else if(p.dome) buildDome(p);
   }
+
+  /* ---- the open sky: a dome coloured by the sun's height and the clouds, with the real stars, moon, and planets ---- */
+  function buildDome(p){
+    const D = p.dome, RS = 58, F = p.F, cc = Math.min(1, (p.cloud||0)/100);
+    const dir = (alt, az) => { const a = (az - F)*DEG, h = alt*DEG; return new THREE.Vector3(Math.sin(a)*Math.cos(h), Math.sin(h), -Math.cos(a)*Math.cos(h)); };
+    const on1 = o => { o.layers.set(1); o.renderOrder = -10; scene.add(o); return o; };
+    const sunD = dir(D.sun.alt, D.sun.az), sa = D.sun.alt;
+    const C = h => new THREE.Color(h);
+    const day = {z:C("#7f9db0"), h:C("#d8dfdc")}, tw = {z:C("#3a4660"), h:C("#d39a76")}, nt = {z:C("#0b0e15"), h:C("#1b2130")};
+    const k1 = Math.max(0, Math.min(1, (sa + 12)/12)), k2 = Math.max(0, Math.min(1, sa/10));
+    const geo = new THREE.SphereGeometry(RS+1, 64, 24, 0, TAU, 0, Math.PI/2 + .15), pos = geo.attributes.position, col = [];
+    const grey = sa > 0 ? C("#c4c4bd") : sa > -8 ? C("#6f6c6a") : C("#1e2024"), v = new THREE.Vector3();
+    for(let i=0;i<pos.count;i++){
+      v.fromBufferAttribute(pos, i).normalize(); const up = Math.max(0, v.y), toward = Math.max(0, v.dot(sunD));
+      const zt = nt.z.clone().lerp(tw.z, k1).lerp(day.z, k2), ht = nt.h.clone().lerp(tw.h.clone().lerp(C("#9c8f8c"), 1-Math.pow(toward,2)), k1).lerp(day.h, k2);
+      const c = ht.clone().lerp(zt, Math.pow(up, .55));
+      if(sa > -6) c.lerp(C("#fff3dc"), Math.pow(toward, 24)*.8*(1-cc));
+      c.lerp(grey, cc*.88); col.push(c.r, c.g, c.b); }
+    geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    on1(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({vertexColors:true, side:THREE.BackSide, fog:false, depthWrite:false})));
+    const dot = canvasTex(64, 64, (g,w,h) => { const gr = g.createRadialGradient(32,32,0,32,32,30); gr.addColorStop(0,"rgba(255,255,255,1)"); gr.addColorStop(.35,"rgba(255,255,255,.9)"); gr.addColorStop(1,"rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0,0,w,h); });
+    const sv = Math.max(0, Math.min(1, (-sa - 3)/10)) * (1 - cc*.97);
+    if(sv > .03){
+      [[-2,1.6,5.2],[1.6,3,3.6],[3,4.7,2.4]].forEach(([lo,hi,size]) => { const pts = [];
+        D.stars.forEach(([alt,az,m]) => { if(m < lo || m >= hi) return; pts.push(...dir(alt,az).multiplyScalar(RS-1).toArray()); });
+        const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+        on1(new THREE.Points(g, new THREE.PointsMaterial({size, map:dot, color:"#f6f0de", transparent:true, opacity:sv, sizeAttenuation:false, fog:false, depthWrite:false}))); });
+      const lp = []; D.lines.forEach(([a,b]) => { lp.push(...dir(a[0],a[1]).multiplyScalar(RS-1.5).toArray(), ...dir(b[0],b[1]).multiplyScalar(RS-1.5).toArray()); });
+      const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
+      on1(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({color:"#"+muted(p.spot,.7).getHexString(), transparent:true, opacity:.38*sv, fog:false, depthWrite:false})));
+      D.cons.forEach(([alt,az,n]) => skyLabel(n.toUpperCase(), dir(alt,az).multiplyScalar(RS-2), "#9a8f7c", 22, .55*sv, 3.2));
+      D.names.forEach(([alt,az,n]) => skyLabel(n, dir(alt,az).multiplyScalar(RS-2).add(new THREE.Vector3(0,-.9,0)), "#e9e1cc", 20, .7*sv, 2.4, true));
+    }
+    const pv = Math.max(0, Math.min(1, (-sa + 1)/6)) * (1 - cc*.95);
+    if(pv > .05) D.planets.forEach(pl => { if(pl.alt < 0) return; const at = dir(pl.alt, pl.az).multiplyScalar(RS-1.2);
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(at.toArray(), 3));
+      on1(new THREE.Points(g, new THREE.PointsMaterial({size:7, map:dot, color:"#ffe6b0", transparent:true, opacity:pv, sizeAttenuation:false, fog:false, depthWrite:false})));
+      skyLabel(pl.name, at.clone().add(new THREE.Vector3(0,-1.2,0)), "#e6c88f", 22, .85*pv, 2.6, true); });
+    if(sa > -1.5 && cc < .9){ const s = new THREE.Mesh(new THREE.CircleGeometry(1.4, 32), new THREE.MeshBasicMaterial({color:"#fff7e2", fog:false, transparent:true, opacity:1-cc*.8, depthWrite:false}));
+      s.position.copy(sunD.clone().multiplyScalar(RS-2)); s.lookAt(0,0,0); on1(s);
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({map:dot, color:"#fff0cf", transparent:true, opacity:.55*(1-cc), fog:false, depthWrite:false})); halo.scale.setScalar(9); halo.position.copy(sunD.clone().multiplyScalar(RS-2.5)); on1(halo); }
+    if(D.moon.alt > -1){ const mD = dir(D.moon.alt, D.moon.az), ph = D.moon.phase, lit = (1-Math.cos(TAU*ph))/2;
+      const tex = canvasTex(256, 256, (g,w,h) => { const r = 118, cx = w/2, cy = h/2;
+        g.fillStyle = "#262a33"; g.beginPath(); g.arc(cx,cy,r,0,TAU); g.fill();
+        g.save(); g.beginPath(); g.arc(cx,cy,r,0,TAU); g.clip();
+        g.fillStyle = "#f1ead6"; g.beginPath(); g.arc(cx,cy,r,-Math.PI/2,Math.PI/2); g.fill();
+        const ex = r*Math.abs(1-2*lit); g.beginPath(); g.ellipse(cx,cy,ex,r,0,0,TAU); g.fillStyle = lit < .5 ? "#262a33" : "#f1ead6"; g.fill();
+        g.globalAlpha = .13; g.fillStyle = "#5d5a52"; [[-30,-38,26],[18,-52,15],[34,10,30],[-20,30,20],[-48,6,13],[6,52,11]].forEach(([x,y,rr]) => { g.beginPath(); g.arc(cx+x,cy+y,rr,0,TAU); g.fill(); });
+        g.restore(); });
+      const moon = new THREE.Mesh(new THREE.CircleGeometry(1.25, 48), new THREE.MeshBasicMaterial({map:tex, transparent:true, fog:false, opacity: (sa > 0 ? .7 : 1)*(1-cc*.85), depthWrite:false}));
+      moon.position.copy(mD.clone().multiplyScalar(RS-2.2));
+      const z = mD.clone().negate(), x = sunD.clone().sub(mD.clone().multiplyScalar(sunD.dot(mD))); if(x.lengthSq() < 1e-6) x.set(1,0,0); x.normalize(); const y = z.clone().cross(x);
+      moon.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z)); on1(moon);
+      if(sa < 0 && cc < .9){ const halo = new THREE.Sprite(new THREE.SpriteMaterial({map:dot, color:"#c9d3ea", transparent:true, opacity:.22*lit*(1-cc), fog:false, depthWrite:false})); halo.scale.setScalar(7); halo.position.copy(mD.clone().multiplyScalar(RS-2.6)); on1(halo); } }
+    if(cc > .08){ const R2 = rng(D.seed), n = Math.round(4 + cc*22), grp = new THREE.Group();
+      const puff = canvasTex(256, 128, (g,w,h) => { for(let k=0;k<14;k++){ const x = 40 + R2()*176, y = 50 + R2()*40, r = 18 + R2()*34; const gr = g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,"rgba(255,255,255,.9)"); gr.addColorStop(1,"rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0,0,w,h); } });
+      const cColor = sa > 0 ? "#f2efe6" : sa > -8 ? "#b7a597" : "#3a3d45";
+      for(let k=0;k<n;k++){ const alt = 14 + R2()*62, az = R2()*360, sp = new THREE.Sprite(new THREE.SpriteMaterial({map:puff, color:cColor, transparent:true, opacity:.55 + .4*cc, fog:false, depthWrite:false}));
+        sp.position.copy(dir(alt, az).multiplyScalar(RS-4)); sp.scale.set(16 + R2()*14, 7 + R2()*5, 1); grp.add(sp); }
+      grp.traverse(o => o.layers.set(1)); scene.add(grp); anims.push(t => { grp.rotation.y = t*.004; });
+    }
+    if(["rain","snow","storm"].includes(p.wxKind)){ const snow = p.wxKind==="snow", n = snow ? 1400 : 900, len = snow ? 0 : .32, pts = new Float32Array(n*6);
+      for(let i=0;i<n;i++){ const x = (Math.random()-.5)*14, y = Math.random()*9, z = (Math.random()-.5)*14; pts.set([x,y,z, x+.03,y+len,z], i*6); }
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pts, 3));
+      if(snow) on1(new THREE.Points(g, new THREE.PointsMaterial({size:3.2, map:dot, color:"#ffffff", transparent:true, opacity:.9, sizeAttenuation:false, fog:false, depthWrite:false})));
+      else on1(new THREE.LineSegments(g, new THREE.LineBasicMaterial({color: p.band==="night" ? "#9aa6b4" : "#5d6875", transparent:true, opacity:.55, fog:false, depthWrite:false})));
+      anims.push((t, dt) => { dt = Math.min(.1, dt || .016); const a = g.attributes.position.array, v = (snow ? 1.1 : 9)*dt;
+        for(let i=0;i<n*2;i++){ a[i*3+1] -= v; if(snow) a[i*3] += Math.sin(t+i)*.002; }
+        for(let i=0;i<n;i++){ if(a[i*6+1] < 0){ a[i*6+1] += 9; a[i*6+4] += 9; } }
+        g.attributes.position.needsUpdate = true; }); }
+  }
+  function skyLabel(text, at, color, px, opacity, scale, italic){
+    const tex = canvasTex(256, 48, (g,w,h) => { g.font = `${italic?"italic ":""}${px}px ${italic?FELL:FELLSC}`; g.fillStyle = color; g.textAlign = "center"; g.fillText(text, w/2, 32); });
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, opacity, fog:false, depthWrite:false})); sp.scale.set(scale*256/48*.9, scale*.9, 1); sp.position.copy(at); sp.layers.set(1); scene.add(sp); return sp; }
 
   /* ---- doors ---- */
   function buildDoor(hh, c, u, n, p, f){
@@ -415,6 +502,11 @@ export function create(container, hooks){
   }
 
   /* ---- furniture ---- */
+  // books are drawn by the thousand in one pass: one instanced mesh per bookcase
+  function bookBatch(){ const list = []; return { add(x,y,z,w,h,d,color,rz){ list.push([x,y,z,w,h,d,color,rz||0]); },
+    mesh(){ if(!list.length) return null; const im = new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshStandardMaterial({roughness:.9}), list.length);
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(); list.forEach((b,i) => { e.set(0,0,b[7]); q.setFromEuler(e); m.compose(new THREE.Vector3(b[0],b[1],b[2]), q, new THREE.Vector3(b[3],b[4],b[5])); im.setMatrixAt(i, m); im.setColorAt(i, new THREE.Color(b[6])); });
+      im.castShadow = true; im.receiveShadow = true; return im; } }; }
   function buildBookcase(c, u, n, w, h, R, spot){
     const g = new THREE.Group(), yaw = Math.atan2(-u.z, u.x), depth = .38;
     const wood = mat("#6a5440"), dark = mat("#2b2219");
@@ -423,14 +515,15 @@ export function create(container, hooks){
     const topP = new THREE.Mesh(new THREE.BoxGeometry(w+.08, .07, depth+.04), wood); topP.position.set(0, h-.035, depth/2); g.add(topP);
     const shelves = Math.max(2, Math.round(h/.42)), sh = (h-.12)/shelves;
     const bookCols = ["#7d6b55","#5f574a","#9a8b70","#4a4339","#b3a487","#6b5a48", "#"+spot.getHexString()];
+    const bb = bookBatch();
     for(let s=0;s<shelves;s++){
       const y0 = .06 + s*sh, board = new THREE.Mesh(new THREE.BoxGeometry(w-.08, .04, depth-.02), wood); board.position.set(0, y0, depth/2); board.receiveShadow = true; g.add(board);
       let x = -w/2 + .07;
       while(x < w/2 - .1){ const bw = .025 + R()*.05, bh = sh*(.62 + R()*.3); if(R()<.06){ x += .08; continue; }
         const lean = R()<.07 ? (R()-.5)*.4 : 0;
-        const b = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, depth*.75), mat(bookCols[Math.floor(R()*bookCols.length)], {roughness:.9}));
-        b.position.set(x + bw/2, y0 + .02 + bh/2, depth*.5 + .02); b.rotation.z = lean; b.castShadow = true; g.add(b); x += bw + .004; }
+        bb.add(x + bw/2, y0 + .02 + bh/2, depth*.5 + .02, bw, bh, depth*.75, bookCols[Math.floor(R()*bookCols.length)], lean); x += bw + .004; }
     }
+    const bm = bb.mesh(); if(bm) g.add(bm);
     g.position.copy(c).add(n.clone().multiplyScalar(.02)); g.rotation.y = yaw; scene.add(g);
   }
   function buildCase(c, u, n, w, R, spot){
@@ -448,19 +541,45 @@ export function create(container, hooks){
     return {group};
   }
 
+  /* ---- boards on the walls: notices, links, office hours, the almanac ---- */
+  // where the mounted boards on a face go, so shelves can leave room for them
+  function boardSpots(f, len, n){ const bw = Math.min(2.6, len*.36), cands = [len*.5, len*.3, len*.7, len*.2, len*.8].filter(c => !f.holes.some(h => Math.abs(h.at-c) < h.w/2 + bw/2 + .15));
+    return Array.from({length:n}, (_,i) => ({at: cands[i] ?? (len*(i+1)/(n+1)), w: bw})); }
+  function buildBoard(sl, o, i, n, p, spot){
+    const f = sl.face, u = f.b.clone().sub(f.a).normalize(), len = f.a.distanceTo(f.b), yaw = Math.atan2(-u.z, u.x);
+    const bw = Math.min(2.6, len*.36), bh = 1.7;
+    const at = boardSpots(f, len, n)[i].at;
+    const c = f.a.clone().add(u.clone().multiplyScalar(at)).add(f.n.clone().multiplyScalar(.06));
+    const bd = o.board || {title:o.title, lines:[]}, cork = o.raw && o.raw.action==="notices";
+    const tex = canvasTex(1024, 680, (g,w,h) => {
+      g.fillStyle = cork ? "#b89a6e" : "#2f2a24"; g.fillRect(0,0,w,h);
+      if(cork) for(let k=0;k<2500;k++){ g.fillStyle=`rgba(80,55,30,${Math.random()*.25})`; g.fillRect(Math.random()*w, Math.random()*h, 2, 2); }
+      g.strokeStyle = "#5a4632"; g.lineWidth = 26; g.strokeRect(0,0,w,h);
+      g.fillStyle = cork ? "#1e1912" : "#e9e1cc"; g.textAlign = "center"; g.font = `64px ${FELLSC}`; g.fillText(bd.title, w/2, 92);
+      if(bd.tiles){ const cols = 4, tw = (w-120)/cols; bd.tiles.forEach((t,k) => { const x = 60 + (k%cols)*tw, y = 130 + Math.floor(k/cols)*120; g.fillStyle = "#cdbf9a"; g.fillRect(x+8, y, tw-16, 96); g.strokeStyle = "#1e1912"; g.lineWidth = 4; g.strokeRect(x+8, y, tw-16, 96); g.fillStyle = "#1e1912"; g.font = `${t.length>14?30:38}px ${FELLSC}`; g.fillText(t.slice(0,18), x+tw/2, y+60); }); }
+      else { if(cork){ g.fillStyle = "#f1ead8"; g.save(); g.translate(70,130); g.rotate(-.015); g.fillRect(0,0,w-140,h-190); g.restore(); [[90,140],[w-90,140]].forEach(([x,y]) => { g.beginPath(); g.arc(x,y,12,0,6.3); g.fillStyle="#"+spot.getHexString(); g.fill(); }); }
+        g.textAlign = "left"; g.fillStyle = "#1e1912"; if(!cork) g.fillStyle = "#e9e1cc";
+        (bd.lines||[]).forEach((L,k) => { g.font = (k===0 ? `40px ${FELLSC}` : `italic 36px ${FELL}`); g.fillText(L, 100, 200 + k*44); }); }
+    });
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(bw+.12, bh+.12, .06), mat("#4a3b2e")); frame.position.copy(c); frame.position.y = 2.15; frame.rotation.y = yaw; frame.castShadow = true; scene.add(frame);
+    const m = label(new THREE.Mesh(new THREE.PlaneGeometry(bw, bh), mat("#ffffff",{map:tex}))); m.position.copy(c).add(f.n.clone().multiplyScalar(.035)); m.position.y = 2.15; m.rotation.y = yaw; scene.add(m);
+    frame.userData.hit = {kind: o.raw && o.raw.action==="links" ? "open" : "look", label: o.title, onClick:()=>hooks.useObject(o)}; picks.push(frame);
+    m.userData.hit = frame.userData.hit; picks.push(m);
+  }
+
   /* ---- stations: a desk, a table, or a low bookcase, with the things on it ---- */
   function buildStation(slot, sl, objs, p, R, spot){
     const f = sl.face, u = f.b.clone().sub(f.a).normalize(), n = f.n, yaw = Math.atan2(-u.z, u.x);
     const len = f.a.distanceTo(f.b), free = [len*.5, len*.3, len*.7].find(at => !f.holes.some(h => Math.abs(h.at-at) < h.w/2 + 1.1)) ?? len*.5;
     const c = f.a.clone().add(u.clone().multiplyScalar(free)).add(n.clone().multiplyScalar(1.15));
     const bookish = objs.filter(o => o.bookish).length > objs.length/2;
-    const shown = objs.slice(0, 7), w = Math.min(len*.7, Math.max(1.6, shown.length*.62+.5)), topY = bookish ? .95 : .82;
+    const shown = objs.slice(0, 9), w = Math.min(len*.7, Math.max(1.6, shown.length*.62+.5)), topY = bookish ? .95 : .82;
     const g = new THREE.Group(); g.position.copy(c); g.rotation.y = yaw;
     const wood = mat("#8c7458"), darkWood = mat("#4a3b2e");
     const top = new THREE.Mesh(new THREE.BoxGeometry(w, .07, .95), mat("#a58c6c")); top.position.y = topY; top.castShadow = top.receiveShadow = true; g.add(top);
     if(bookish){ const body = new THREE.Mesh(new THREE.BoxGeometry(w-.04, topY-.03, .9), darkWood); body.position.y = (topY-.03)/2; g.add(body);
       for(let k=0;k<2;k++){ const shelf = new THREE.Mesh(new THREE.BoxGeometry(w-.1,.03,.85), wood); shelf.position.set(0, .12+k*.38, .02); g.add(shelf);
-        let x=-w/2+.08; while(x<w/2-.1){ const bw=.03+R()*.04, bh=.24+R()*.08; const b=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,.6), mat(["#7d6b55","#4a4339","#9a8b70","#"+spot.getHexString()][Math.floor(R()*4)])); b.position.set(x+bw/2, .14+k*.38+bh/2, .25); g.add(b); x+=bw+.005; } } }
+        const bb=bookBatch(); let x=-w/2+.08; while(x<w/2-.1){ const bw=.03+R()*.04, bh=.24+R()*.08; bb.add(x+bw/2, .14+k*.38+bh/2, .25, bw, bh, .6, ["#7d6b55","#4a4339","#9a8b70","#"+spot.getHexString()][Math.floor(R()*4)]); x+=bw+.005; } const bm=bb.mesh(); if(bm) g.add(bm); } }
     else { [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => { const leg = new THREE.Mesh(new THREE.BoxGeometry(.07, topY, .07), darkWood); leg.position.set(sx*(w/2-.08), topY/2, sz*.4); leg.castShadow = true; g.add(leg); });
       const apron = new THREE.Mesh(new THREE.BoxGeometry(w-.1,.14,.9), darkWood); apron.position.y = topY-.1; g.add(apron);
       const drawer = new THREE.Mesh(new THREE.BoxGeometry(.5,.1,.02), wood); drawer.position.set(0, topY-.1, .46); g.add(drawer); }
@@ -513,6 +632,10 @@ export function create(container, hooks){
       case "map": add(new THREE.BoxGeometry(.26,.003,.18), paper, 0,.002); add(new THREE.BoxGeometry(.004,.006,.18), ink, -.043,.003); add(new THREE.BoxGeometry(.004,.006,.18), ink, .043,.003); add(new THREE.TorusGeometry(.03,.004,4,12), sp, .05,.004,.03,Math.PI/2,0,0); break;
       case "pendulum": add(new THREE.CylinderGeometry(.003,.003,.35,4), ink, 0,.2); add(new THREE.SphereGeometry(.04,16,12), brass, 0,.03); break;
       case "hex": { const sh = new THREE.Shape(); for(let k=0;k<6;k++){ const t=k*Math.PI/3; k? sh.lineTo(Math.cos(t)*.12,Math.sin(t)*.12) : sh.moveTo(.12,0); } add(new THREE.ExtrudeGeometry(sh,{depth:.03,bevelEnabled:false}), paper, 0,.03,0,-Math.PI/2,0,0); break; }
+      case "astrolabe": { const ring = add(new THREE.CylinderGeometry(.13,.13,.012,40), brass, 0,.2,0, Math.PI/2,0,0); add(new THREE.CylinderGeometry(.11,.11,.014,40), paper, 0,.2,.002, Math.PI/2,0,0);
+        add(new THREE.TorusGeometry(.075,.006,6,32), ink, 0,.2,.012); add(new THREE.BoxGeometry(.22,.012,.006), sp, 0,.2,.014, 0,0,.5); add(new THREE.BoxGeometry(.04,.05,.02), brass, 0,.34,0);
+        add(new THREE.CylinderGeometry(.02,.02,.06,10), mat("#e8eceb",{transparent:true,opacity:.6}), 0,.36,0); add(new THREE.BoxGeometry(.03,.2,.03), wood, 0,.1,-.02); add(new THREE.CylinderGeometry(.07,.08,.02,16), wood, 0,.01,-.02); break; }
+      case "bell": add(new THREE.CylinderGeometry(.09,.1,.02,24), wood, 0,.01); add(new THREE.SphereGeometry(.075,24,12,0,TAU,0,Math.PI/2), brass, 0,.02); add(new THREE.CylinderGeometry(.006,.006,.04,8), brass, 0,.11); add(new THREE.SphereGeometry(.014,10,8), brass, 0,.135); break;
       default: add(new THREE.BoxGeometry(.16,.12,.16), wood, 0,.06); add(new THREE.BoxGeometry(.17,.02,.17), sp, 0,.12);
     }
     g.scale.setScalar(1.25*s);
@@ -524,6 +647,10 @@ export function create(container, hooks){
     const d = p.decor, sp = mat("#"+spot.getHexString());
     if(d.includes("rug")){ const tex = canvasTex(512,512,(g,w,h)=>{ g.fillStyle="#"+spot.getHexString(); g.fillRect(0,0,w,h); g.strokeStyle="#2b2318"; g.lineWidth=10; g.strokeRect(20,20,w-40,h-40); g.lineWidth=3; g.strokeRect(46,46,w-92,h-92); for(let i=0;i<10;i++){ g.beginPath(); g.arc(w/2,h/2,30+i*18,0,TAU); g.stroke(); } });
       const rug = new THREE.Mesh(new THREE.PlaneGeometry(4.2,3), mat("#ffffff",{map:tex})); rug.rotation.x = -Math.PI/2; rug.position.y = .005; rug.receiveShadow = true; scene.add(rug); }
+    if(d.includes("rose")){ const tex = canvasTex(1024,1024,(g,w,h)=>{ g.translate(w/2,h/2); g.fillStyle="#d9d0bb"; g.beginPath(); g.arc(0,0,500,0,TAU); g.fill(); g.strokeStyle="#2b2318"; g.lineWidth=10; g.stroke(); g.lineWidth=3; g.beginPath(); g.arc(0,0,440,0,TAU); g.stroke();
+        for(let k=0;k<32;k++){ const t=k/32*TAU, r1 = k%8===0 ? 430 : k%4===0 ? 330 : k%2===0 ? 250 : 190; g.beginPath(); g.moveTo(Math.sin(t)*r1, -Math.cos(t)*r1); g.lineTo(Math.sin(t+.09)*48, -Math.cos(t+.09)*48); g.lineTo(0,0); g.closePath(); g.fillStyle = k%2 ? "#2b2318" : (k===0 ? "#"+spot.getHexString() : "#f1ead8"); g.fill(); g.stroke(); }
+        g.fillStyle="#2b2318"; g.font=`80px ${FELLSC}`; g.textAlign="center"; ["N","E","S","W"].forEach((L,k)=>{ g.save(); g.rotate(k*Math.PI/2); g.fillText(L,0,-450+80); g.restore(); }); });
+      const rose = new THREE.Mesh(new THREE.CircleGeometry(1.6,64), mat("#ffffff",{map:tex})); rose.rotation.set(-Math.PI/2, 0, p.F*DEG); rose.position.set(0,.007,.4); rose.receiveShadow = true; scene.add(rose); }
     if(d.includes("pendulum")){
       const pivot = new THREE.Group(); pivot.position.set(0, WALL_H, 0); scene.add(pivot);
       const wire = new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,WALL_H-.45,4), mat("#222")); wire.position.y = -(WALL_H-.45)/2; pivot.add(wire);
@@ -549,13 +676,14 @@ export function create(container, hooks){
         const phi = p.lat*DEG; for(let hr=6; hr<=18; hr++){ const th = Math.atan2(Math.sin(phi)*Math.sin((hr-12)*15*DEG), Math.cos((hr-12)*15*DEG)); g.lineWidth = hr===12?6:3; g.beginPath(); g.moveTo(w/2,h/2); g.lineTo(w/2+Math.sin(th)*460, h/2-Math.cos(th)*460); g.stroke();
           g.save(); g.translate(w/2+Math.sin(th)*400, h/2-Math.cos(th)*400); g.rotate(th); g.fillStyle="#2b2318"; g.font=`54px ${FELLSC}`; g.textAlign="center"; g.fillText(["VI","VII","VIII","IX","X","XI","XII","I","II","III","IV","V","VI"][hr-6],0,0); g.restore(); } });
       // the dial is laid out with north toward the room's north
-      const F = p.F*DEG;
+      const south = p.lat < 0, F = p.F*DEG + (south ? Math.PI : 0);   // the noon line points at the pole the style aims for
       const dial = new THREE.Mesh(new THREE.CircleGeometry(1.1,64), mat("#ffffff",{map:plate, metalness:.3, roughness:.5})); dial.rotation.set(-Math.PI/2, 0, F); dial.position.set(0,.92,0); dial.receiveShadow = true; scene.add(dial);
       const ped = new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,.9,16), mat("#bdb4a0")); ped.position.set(0,.45,0); ped.castShadow = true; scene.add(ped);
       // the style, pointing at the celestial pole at the latitude's angle
-      const L0 = .85, style = new THREE.Shape(); style.moveTo(0,0); style.lineTo(L0,0); style.lineTo(L0, L0*Math.tan(p.lat*DEG)); style.lineTo(0,0);
+      const L0 = .85, style = new THREE.Shape(); style.moveTo(0,0); style.lineTo(L0,0); style.lineTo(L0, L0*Math.tan(Math.min(89, Math.abs(p.lat))*DEG)); style.lineTo(0,0);
       const gn = new THREE.Mesh(new THREE.ExtrudeGeometry(style,{depth:.05,bevelEnabled:false}), mat("#8a7448",{metalness:.6,roughness:.35}));
       const holder = new THREE.Group(); holder.position.set(0,.92,0); holder.rotation.y = Math.atan2(Math.cos(F), -Math.sin(F)); gn.position.set(0,0,-.025); holder.add(gn); gn.castShadow = true; scene.add(holder);
+      const read = {kind:"look", label:"The sundial: read the shadow", onClick:()=>hooks.dial && hooks.dial()}; dial.userData.hit = read; ped.userData.hit = read; picks.push(dial, ped);
     }
     if(d.includes("pillar")){ const col = new THREE.Mesh(new THREE.CylinderGeometry(.55,.6,WALL_H,24), mat("#d3cab7")); col.position.set(0,WALL_H/2,-.5); col.castShadow = true; scene.add(col);
       const zero = canvasTex(256,256,(g,w,h)=>{ g.fillStyle="#d3cab7"; g.fillRect(0,0,w,h); g.fillStyle="#"+spot.getHexString(); g.font=`200px ${FELLSC}`; g.textAlign="center"; g.fillText(p.sheetZero||"0",w/2,200); });

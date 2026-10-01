@@ -11,7 +11,7 @@ const ROOMS = {}; P.rooms.forEach(r => { ROOMS[String(r.id)] = r; });
 const WINGS = P.wings || {};
 const START = String(P.start!=null ? P.start : P.rooms[0].id);
 const RANKS = P.ranks || [{name:"Visitor",at:0,color:"#d9d2c0"}];
-const LAT = P.latitude || 44.26;
+let LAT = P.latitude || 44.26;   // the astrolabe can move the palace; see setPlace()
 const Q = new URLSearchParams(location.search);
 
 /* ---------- state ---------- */
@@ -48,12 +48,18 @@ function now(){
   if(Q.has("date")) { const t = new Date(Q.get("date")+"T"+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")); if(!isNaN(t)) return t; }
   return d;
 }
-function band(d){ const h=d.getHours(); return h>=21||h<5 ? "night" : h<8 ? "dawn" : h<18 ? "day" : "dusk"; }
+function band(d){ if(S.loc){ const sk = skyNow(), a = sk.sun.alt; return a < -12 ? "night" : a < -.8 ? (sk.sun.az < 180 ? "dawn" : "dusk") : (a < 6 ? (sk.sun.az < 180 ? "dawn" : "dusk") : "day"); }
+  const h=d.getHours(); return h>=21||h<5 ? "night" : h<8 ? "dawn" : h<18 ? "day" : "dusk"; }
 function moonPhase(d){ const syn=29.530588853, ref=Date.UTC(2000,0,6,18,14); return (((d - ref)/864e5 % syn) + syn) % syn / syn; }
 function lightNow(){ return S.light==="auto" ? band(now()) : S.light; }
 
 /* ---------- the sky over the palace ---------- */
-const DEG = Math.PI/180, LON = (P.longitude!=null ? P.longitude : -88.41);
+const DEG = Math.PI/180; let LON = (P.longitude!=null ? P.longitude : -88.41);
+const HOME = {lat: LAT, lon: LON, name: P.place || "Appleton"};
+if(S.loc && isFinite(S.loc.lat) && isFinite(S.loc.lon)){ LAT = S.loc.lat; LON = S.loc.lon; }
+const placeName = () => S.loc ? (S.loc.name || `${Math.abs(LAT).toFixed(2)}°${LAT>=0?"N":"S"}, ${Math.abs(LON).toFixed(2)}°${LON>=0?"E":"W"}`) : HOME.name;
+const locKey = () => LAT.toFixed(2)+","+LON.toFixed(2);
+function setPlace(loc){ S.loc = loc; LAT = loc ? loc.lat : HOME.lat; LON = loc ? loc.lon : HOME.lon; S.wx = null; S.fc = null; weather.failed = 0; forecast.failed = 0; skyCache.key = null; save(); }
 const jdOf = d => d.getTime()/864e5 + 2440587.5;
 const OBL = 23.43928;
 function eclToEq(lam, beta){ const e=OBL*DEG, l=lam*DEG, b=beta*DEG;
@@ -163,7 +169,7 @@ function cond(c, room){
     case "has": return S.inv.includes(val);
     case "solved": return !!S.solved[val];
     case "seen": return seen() >= +val;
-    case "mode": return (S.mode||"wanderer")===val;
+    case "mode": return walkMode()===val;
     case "level": return rankIndex() >= +val;
     case "sheet": { const m = val.match(/^(\w+)(=|!=|<|>)(-?\d+)$/); if(!m) return true; const v=S.sheets[m[1]]||0, n=+m[3];
       return m[2]==="=" ? v===n : m[2]==="!=" ? v!==n : m[2]==="<" ? v<n : v>n; }
@@ -597,9 +603,11 @@ const ICON = {
   pendulum:(g)=>{ E("line",{x1:0,y1:-22,x2:6,y2:12,stroke:"var(--ink)"},g); E("circle",{cx:6,cy:14,r:6,fill:"url(#h-mid)",stroke:"var(--ink)"},g); },
   hex:(g)=>{ E("polygon",{points:[0,1,2,3,4,5].map(i=>`${20*Math.cos(i*Math.PI/3)},${20*Math.sin(i*Math.PI/3)}`).join(" "),fill:"var(--paper)",stroke:"var(--ink)"},g); },
   door:(g)=>{ E("path",{d:"M-12,20 V-8 A12,12 0 0 1 12,-8 V20 Z",fill:"var(--ink)",stroke:"var(--ink)"},g); },
+  astrolabe:(g)=>{ E("circle",{r:19,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":2},g); E("circle",{r:13,fill:"none",stroke:"var(--ink)"},g); E("path",{d:"M-13,0 A13,13 0 0 0 13,0 M0,-13 V13",fill:"none",stroke:"var(--ink)",opacity:.6},g); E("path",{d:"M-6,-22 h12 v4 h-12 Z",fill:"var(--spot)",stroke:"var(--ink)"},g); E("line",{x1:-16,y1:6,x2:16,y2:-6,stroke:"var(--ink)","stroke-width":2},g); },
   hourglass:(g)=>{ E("rect",{x:-16,y:-24,width:32,height:5,fill:"var(--ink)"},g); E("rect",{x:-16,y:19,width:32,height:5,fill:"var(--ink)"},g); E("path",{d:"M-12,-19 C-12,-4 -2,-4 -2,0 C-2,4 -12,4 -12,19 H12 C12,4 2,4 2,0 C2,-4 12,-4 12,-19 Z",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.6},g); E("path",{d:"M-8,17 Q0,6 8,17 Z",fill:"url(#s-dark)"},g); E("path",{d:"M-6,-12 h12 l-6,9 Z",fill:"url(#s-dark)"},g); },
   compass:(g)=>{ E("circle",{r:20,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g); for(let k=0;k<8;k++){ const t=k*Math.PI/4; E("line",{x1:Math.sin(t)*15,y1:-Math.cos(t)*15,x2:Math.sin(t)*19,y2:-Math.cos(t)*19,stroke:"var(--ink)"},g); } E("path",{d:"M0,-15 L4,0 L0,15 L-4,0 Z",fill:"var(--paper)",stroke:"var(--ink)"},g); E("path",{d:"M0,-15 L4,0 L-4,0 Z",fill:"var(--spot)"},g); },
   lamp:(g)=>{ E("path",{d:"M-10,-20 h20 M0,-20 v-4",stroke:"var(--ink)","stroke-width":2},g); E("path",{d:"M-12,-18 h24 l-3,30 h-18 Z",fill:"url(#hz)",stroke:"var(--ink)","stroke-width":1.6},g); E("ellipse",{cx:0,cy:-2,rx:5,ry:8,fill:"var(--spot)"},g); E("rect",{x:-14,y:12,width:28,height:6,fill:"var(--ink)"},g); },
+  bell:(g)=>{ E("rect",{x:-18,y:10,width:36,height:6,rx:2,fill:"var(--ink)"},g); E("path",{d:"M-14,10 A14,14 0 0 1 14,10 Z",fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":1.6},g); E("line",{x1:0,y1:-4,x2:0,y2:-12,stroke:"var(--ink)","stroke-width":2},g); E("circle",{cy:-13,r:3,fill:"var(--spot)",stroke:"var(--ink)"},g); },
   box:(g)=>{ E("rect",{x:-16,y:-14,width:32,height:28,fill:"var(--paper)",stroke:"var(--ink)"},g); }
 };
 const KIND_ICON = {device:"box", book:"book", paper:"scroll", ref:"book", unwritten:"unwritten", key:"key", note:"note", link:"book", page:"note"};
@@ -637,6 +645,7 @@ function render(){
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
   $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : "View: engraved";
+  $("b-q").textContent = "Quality: " + (S.quality||"normal"); $("b-q").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none";
   const mirror = S.frame[1]===1;
   $("rnum").textContent = room.label || id;
   $("rname").innerHTML = mirror ? `<span class="mirror-text" title="${esc(room.name||"")}">${esc(room.name||"")}</span>` : esc(room.name||"");
@@ -714,7 +723,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     ahead:(1+S.face)%4, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
     decor: room.decor || [], names,
     doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look:d.look||"", onClick:()=>tryDoor(d, room)})),
-    objects: objs.map((o,i) => ({raw:o, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
+    objects: objs.map((o,i) => ({raw:o, mount:o.mount||null, board: o.mount ? boardContent(o) : null, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
     lampLit: light==="night" || light==="dusk" || S.light==="night" || !!room.dark,
     sunUp: sk.sun.alt > 0 && !overcast, sunAlt: sk.sun.alt, sunRel, overcast,
     sunInWindow: sk.sun.alt > -2 && !overcast ? inWin(sk.sun.alt, sunRel) : null, moonInWindow: sk.moon.alt > 0 ? inWin(sk.moon.alt, moonRel) : null,
@@ -723,12 +732,29 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     lantern: !!(S.lantern && S.inv.includes("lantern")), gloom: (room.decor||[]).includes("gloom"),
     sheetKey: JSON.stringify(S.sheets), minuteKey: Math.floor(now().getTime()/60000),
     snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
-    skyCanvas: (room.decor||[]).includes("sky") || room.ceiling==="open" ? skyCanvasFor : null,
+    skyCanvas: (room.decor||[]).includes("sky") ? skyCanvasFor : null,
+    // the moon: where it is, how much of it is lit, and how much the clouds let through
+    moonAlt: sk.moon.alt, moonRel, moonLit: (1 - Math.cos(2*Math.PI*sk.moon.phase))/2, cloud: wx ? (wx.cloud_cover||0) : 0,
+    dome: room.ceiling==="open" ? domeData(sk) : null, place: placeName(),
   };
+}
+/* the open sky over a courtyard, as directions (alt, az) for the 3D view to place */
+function domeData(sk){
+  const key = Math.floor(sk.d.getTime()/60000) + ":" + locKey();
+  if(domeData.key === key) return domeData.v;
+  const SK = window.SKY || {stars:[], lines:[], names:[], cons:[]}, up = (ra,dec) => altaz(ra,dec,sk.L);
+  const stars = []; SK.stars.forEach(([ra,dec,m]) => { if(m > 4.7) return; const a = up(ra,dec); if(a[0] > -2) stars.push([a[0], a[1], m]); });
+  const lines = []; (SK.lines||[]).forEach(ln => { let prev = null; ln.forEach(([ra,dec]) => { const a = up(ra,dec); if(prev && prev[0] > -2 && a[0] > -2) lines.push([prev, a]); prev = a; }); });
+  const names = (SK.names||[]).filter(n => n[3] <= 1.5).map(([ra,dec,n]) => up(ra,dec).concat([n])).filter(a => a[0] > 6);
+  const cons = (SK.cons||[]).filter(c => c[3] <= 1).map(([ra,dec,n]) => up(ra,dec).concat([n])).filter(a => a[0] > 12);
+  domeData.key = key;
+  domeData.v = {sun: {alt: sk.sun.alt, az: sk.sun.az}, moon: {alt: sk.moon.alt, az: sk.moon.az, phase: sk.moon.phase},
+    planets: sk.planets.filter(p => p.alt > -2).map(p => ({name: p.name, alt: p.alt, az: p.az})), stars, lines, names, cons, seed: Math.floor(sk.d.getTime()/36e5)};
+  return domeData.v;
 }
 function skyCanvasFor(cb){
   // draw the sky chart as a picture, then hand it to the 3D view as a texture
-  const key = Math.floor(now().getTime()/300000) + ":" + S.frame.join(",");
+  const key = Math.floor(now().getTime()/300000) + ":" + S.frame.join(",") + ":" + locKey();
   if(skyCache.key === key && skyCache.canvas) return cb(skyCache.canvas);
   skyCache.waiting.push(cb); if(skyCache.busy) return; skyCache.busy = true;
   const svg = document.createElementNS(NS,"svg"); svg.setAttribute("xmlns", NS); svg.setAttribute("viewBox","0 0 1024 1024"); svg.setAttribute("width","1024"); svg.setAttribute("height","1024");
@@ -749,19 +775,20 @@ function start3d(){
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
   import("./palace3d.js").then(m => {
     VIEW3D = m.create($("stage"), {
-      turn, toast, now,
+      turn, toast, now, quality: () => S.quality || "normal",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
       closer: slot => { const f = (slot + 3) % 4; if(f===S.face) setView(S.face, "ahead"); else setView(f, null); },
       stepBack: () => setView(S.face, null),
       useObject: o => useObject(o.raw, effective(cur)),
       palaceSeconds: () => now().getTime()/1000,
+      dial: () => { const w = $("widget"); if(w && w.firstChild){ w.scrollIntoView({behavior:"smooth", block:"center"}); w.classList.add("flash"); setTimeout(() => w.classList.remove("flash"), 1400); } },
       pendulumPlane: () => { const rate = 360*Math.sin(LAT*DEG)/23.9345; return -((now().getTime()/36e5*rate) % 180)*DEG; },
     });
     if(cur) render();
   }).catch(e => { console.warn("3D view unavailable", e); });
 }
 function fillTokens(t){ return String(t).replace(/\{sheet:(\w+)\}/g, (_,k) => String(S.sheets[k]||0)).replace(/\{reader\}/g, esc(S.reader||"reader")); }
-function doorName(d){ if(Array.isArray(d.to) || d.to==="random" || d.to==="back") return d.title ? "" : ""; const r = ROOMS[String(d.to)]; if(!r) return ""; if(r.secret && !S.visits[r.id]) return ""; return (r.name||"").replace(/^The /,""); }
+function doorName(d){ if(Array.isArray(d.to) || d.to==="random" || d.to==="back") return ""; const r = ROOMS[String(d.to)]; if(!r) return ""; if(r.secret && !S.visits[r.id]) return ""; const nm = (r.name||"").replace(/^The /,""); return r.hours ? nm + " · " + (officeStatus().open ? "open" : "closed") : nm; }
 function turnZones(svg, behind){
   const zl = E("rect",{x:0,y:0,width:62,height:H,fill:"transparent",class:"turnL"},svg);
   const zr = E("rect",{x:W-62,y:0,width:62,height:H,fill:"transparent",class:"turnR"},svg);
@@ -932,12 +959,23 @@ const ITEMS = {
   "page-right":  {icon:"note",      name:"The right half of a torn page", use:()=>toast("Half a page. The words start in the middle.")},
   "mended-page": {icon:"scroll",    name:"A mended page", use:()=>overlay("The mended page", `<div class="text"><p>Once mended, the page is a short poem about square roots: every number has two, and you cannot choose one consistently all the way around zero. Walk around the pillar once and you have changed your mind about which root you meant.</p><p>At the bottom, in a different hand, a warp word: <b class="mono">SHEET</b>.</p></div>`)},
   "primer":      {icon:"book",      name:"A Young Lady's Illustrated Primer", use:()=>primerView()},
+  "astrolabe":   {icon:"astrolabe", name:"An astrolabe with a storm glass: sets the place, the date, and the weather", use:()=>astrolabeView()},
 };
 function take(item, msg){ if(S.inv.includes(item)) return; S.inv.push(item); save(); award("item:"+item, item==="golden-key"?40:15); toast(msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
 function useObject(o, room){
   if(o.more) return setView(S.face, "ahead");
   if(o.kind==="key"){ take(o.item, o.take); return; }
   if(o.action==="mode") return modeView();
+  if(o.action==="letter") return letterView();
+  if(o.action==="register") return registerView();
+  if(o.action==="return") return returnView();
+  if(o.action==="bell"){ award("bell", 1); toast(Math.random()<.15 ? "The bell rings, and somewhere far off a latch clicks." : "The bell rings. Nobody comes. Nobody ever comes."); return; }
+  if(o.action==="notices") return noticesView();
+  if(o.action==="links") return linksView();
+  if(o.action==="almanac") return almanacView();
+  if(o.action==="officehours") return officeHoursView();
+  if(o.action==="search") return searchView();
+  if(o.action==="astrolabe"){ if(o.item && !S.inv.includes(o.item)) take(o.item, "You lift the astrolabe off its hook. The storm glass in its throne clouds and clears."); return astrolabeView(); }
   if(o.action==="combine"){ const uses=o.uses||[]; if(uses.every(k=>S.inv.includes(k))){ S.inv = S.inv.filter(k=>!uses.includes(k)); if(o.solve) S.solved[o.solve]=1; save(); take(o.gives, o.say); award("combine:"+o.gives, 40); } else toast(o.hint || "Something is missing."); return; }
   if(o.action==="directory") return directoryView();
   if(o.action==="codes") return codesView();
@@ -991,20 +1029,28 @@ function tally(light){
     <span class="chip" title="Level and experience"><span class="vest" style="background:${rk.color}"></span>L${ri} ${esc(rk.name)} <span class="xp"><span style="width:${(frac*100).toFixed(0)}%"></span></span> ${S.xp} xp</span>
     <span class="chip" title="Your frame: how the palace has turned you">${f} ${nameG(g)}${sheets?" · "+esc(sheets):""}</span>
     <button class="chip" id="t-time" type="button" title="${S.inv.includes("hourglass")?"Set the palace's clock with the hourglass":"The palace keeps your time"}">${icon} ${d.toLocaleDateString([], {month:"short", day:"numeric"})} ${d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}${S.clock?" ⧗":""}</button>
-    <span class="chip" title="${wx?"Weather in Appleton now (Open-Meteo)":"Weather unavailable"}">${wx? `${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F` : "· · ·"}</span>
+    <span class="chip" title="${wx? (wx.set ? "Weather set by the astrolabe's storm glass" : "Weather in "+placeName()+" now (Open-Meteo)") :"Weather unavailable"}">${wx? `${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F` : "· · ·"}</span>
     <button class="chip" id="t-code" type="button" title="Save code and warp codes">⌘ ${saveCode().slice(0,9)}…</button>
-    <span class="chip">${esc((S.mode||"wanderer"))}</span>
+    <span class="chip" title="Your way of walking, by what you carry">${esc(walkMode())}</span>
+    <button class="chip" id="t-pin" type="button" title="Pin this room to the link board">${(S.pins||[]).includes(String(cur.id)) ? "★" : "☆"}</button>
+    <button class="chip" id="t-go" type="button" title="Go to… (press /)">/ go</button>
     ${S.showAll? '<span class="chip warn">curator</span>':""}`;
   $("t-time").onclick = () => S.inv.includes("hourglass") ? timeView() : toast("You'd need an hourglass to change the time.");
   $("t-code").onclick = codesView;
+  $("t-go").onclick = searchView;
+  $("t-pin").onclick = () => { S.pins = S.pins||[]; const id=String(cur.id); S.pins = S.pins.includes(id) ? S.pins.filter(x=>x!==id) : S.pins.concat([id]); save(); tally(lightNow()); toast(S.pins.includes(id) ? "Pinned to the link board." : "Unpinned."); };
 }
 /* ---------- weather (Open-Meteo, no key) ---------- */
 let wxFetching = false;
+const WX_SET = {clear:{weather_code:0,cloud_cover:0}, cloud:{weather_code:2,cloud_cover:55}, overcast:{weather_code:3,cloud_cover:96}, fog:{weather_code:45,cloud_cover:100}, rain:{weather_code:63,cloud_cover:100}, snow:{weather_code:73,cloud_cover:100}, storm:{weather_code:95,cloud_cover:100}};
 function weather(){
+  if(S.wxSet && WX_SET[S.wxSet]){ const live = S.wx && S.wx.c || {}; const sk = skyNow();
+    return Object.assign({temperature_2m: live.temperature_2m!=null ? live.temperature_2m : (S.wxSet==="snow" ? 28 : 58), relative_humidity_2m: live.relative_humidity_2m||60, wind_speed_10m: live.wind_speed_10m!=null ? live.wind_speed_10m : 6, surface_pressure: live.surface_pressure||1013, is_day: sk.sun.alt>0?1:0, set:true}, WX_SET[S.wxSet]); }
+  if(S.wx && S.wx.at && S.wx.at !== locKey()) S.wx = null;
   const fresh = S.wx && (Date.now()-S.wx.t < 20*60e3);
   if(!fresh && !wxFetching && !(weather.failed && Date.now()-weather.failed < 10*60e3)){ wxFetching = true;
     fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,wind_speed_10m,surface_pressure,is_day&temperature_unit=fahrenheit&wind_speed_unit=mph`)
-      .then(r => r.json()).then(j => { if(j && j.current){ S.wx = {t:Date.now(), c:j.current}; save(); if(cur) render(); } }).catch(()=>{ weather.failed = Date.now(); }).finally(()=>{ wxFetching=false; }); }
+      .then(r => r.json()).then(j => { if(j && j.current){ S.wx = {t:Date.now(), c:j.current, at:locKey()}; save(); if(cur) render(); } }).catch(()=>{ weather.failed = Date.now(); }).finally(()=>{ wxFetching=false; }); }
   return S.wx ? S.wx.c : null;
 }
 function wxKind(code){ if(code==null) return "clear"; if(code>=95) return "storm"; if(code>=71 && code<=77 || code===85 || code===86) return "snow"; if(code>=51 && code<=67 || code>=80 && code<=82) return "rain"; if(code===45||code===48) return "fog"; if(code>=2) return "cloud"; return "clear"; }
@@ -1019,6 +1065,39 @@ function timeView(fromDesk){
   if(S.clock) $("tv-r").value = String(S.clock.rate);
   $("tv-s").onclick = () => { const t = new Date($("tv-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("tv-r").value}; save(); closeOv(); render(); toast("The sand runs differently now."); award("hourglass-used", 10); };
   $("tv-n").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
+}
+/* ---------- the astrolabe: carry the palace to another place, day, or weather ---------- */
+const PLACES = [["Appleton, Wisconsin", 44.26, -88.41], ["Reykjavík", 64.15, -21.94], ["Tromsø, in the midnight sun", 69.65, 18.96], ["Quito, on the equator", -0.18, -78.47], ["Alexandria, after Eratosthenes", 31.2, 29.92], ["Kyoto", 35.01, 135.77], ["Sydney", -33.87, 151.21], ["the South Pole", -89.99, 0]];
+function astrolabeView(){
+  if(!S.inv.includes("astrolabe") && !S.showAll){ toast("You'd need the astrolabe. It hangs in the Sundial Court."); return; }
+  const d = now(), pad = n => String(n).padStart(2,"0"), v = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const wxo = [["", "live, from the weather service"], ["clear","clear"], ["cloud","broken cloud"], ["overcast","overcast"], ["fog","fog"], ["rain","rain"], ["snow","snow"], ["storm","a storm"]];
+  overlay("The astrolabe", `<div class="text"><p>A brass astrolabe, its rete pierced with star pointers, and set into its throne a little storm glass. Turn the rete and the palace stands somewhere else under the sky; tap the glass and the weather changes its mind.</p></div>
+    <div class="board">
+      <div class="pin"><h3>The place</h3><p class="mono">now: ${esc(placeName())} · ${Math.abs(LAT).toFixed(2)}°${LAT>=0?"N":"S"} ${Math.abs(LON).toFixed(2)}°${LON>=0?"E":"W"}</p>
+        <div class="row widget"><select id="as-p"><option value="">choose a place…</option>${PLACES.map((pl,i)=>`<option value="${i}">${esc(pl[0])}</option>`).join("")}</select></div>
+        <div class="row widget"><input id="as-lat" type="number" step="0.01" min="-90" max="90" value="${LAT}" style="width:110px" aria-label="latitude"> <input id="as-lon" type="number" step="0.01" min="-180" max="180" value="${LON}" style="width:110px" aria-label="longitude"> <input id="as-n" type="text" placeholder="name (optional)" value="${S.loc&&S.loc.name?esc(S.loc.name):""}" style="width:160px"></div>
+        <div class="row"><button class="btn primary" id="as-go" type="button">Stand here</button> <button class="btn" id="as-geo" type="button">Where I am</button> <button class="btn" id="as-home" type="button">Home to ${esc(HOME.name)}</button></div>
+        <p class="note">Latitude north and longitude east are positive. “Where I am” asks your browser, once; nothing is sent anywhere but the weather service.</p></div>
+      <div class="pin"><h3>The day and hour</h3>
+        <div class="row widget"><input id="as-d" type="datetime-local" value="${v}" style="width:240px"><select id="as-r"><option value="1">runs at 1×</option><option value="60">60×</option><option value="3600">3600×</option><option value="0">stopped</option></select></div>
+        <div class="row"><button class="btn primary" id="as-t" type="button">Set the clock</button> <button class="btn" id="as-tn" type="button">Real time</button></div>
+        <p class="note">Times are on your own clock's zone, wherever the palace stands.</p></div>
+      <div class="pin"><h3>The storm glass</h3><div class="row widget"><select id="as-w">${wxo.map(([k,l])=>`<option value="${k}" ${(S.wxSet||"")===k?"selected":""}>${l}</option>`).join("")}</select></div>
+        <p class="note">Clouds dim the sun and hide the stars; under a clear sky a bright moon throws shadows of its own.</p></div>
+    </div>`);
+  if(S.clock) $("as-r").value = String(S.clock.rate);
+  $("as-p").onchange = e => { const pl = PLACES[+e.target.value]; if(!pl) return; $("as-lat").value = pl[1]; $("as-lon").value = pl[2]; $("as-n").value = pl[0]; };
+  const go = (lat, lon, name) => { if(!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 90) return toast("The rete won't turn that far.");
+    lon = ((lon + 540) % 360) - 180; const home = Math.abs(lat-HOME.lat) < .005 && Math.abs(lon-HOME.lon) < .005;
+    setPlace(home ? null : {lat, lon, name: name || ""}); award("astrolabe-moved", 15); closeOv(); render(); toast(home ? "Home again." : `The palace stands at ${placeName()} now.`); };
+  $("as-go").onclick = () => go(parseFloat($("as-lat").value), parseFloat($("as-lon").value), $("as-n").value.trim());
+  $("as-home").onclick = () => { setPlace(null); closeOv(); render(); toast("Home again."); };
+  $("as-geo").onclick = () => { if(!navigator.geolocation) return toast("This browser can't say where it is.");
+    toast("Asking where you are…"); navigator.geolocation.getCurrentPosition(pos => go(+pos.coords.latitude.toFixed(3), +pos.coords.longitude.toFixed(3), "where you are"), () => toast("The browser wouldn't say."), {timeout:10000, maximumAge:36e5}); };
+  $("as-t").onclick = () => { const t = new Date($("as-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("as-r").value}; save(); closeOv(); render(); toast("The rete turns to another hour."); };
+  $("as-tn").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
+  $("as-w").onchange = e => { S.wxSet = e.target.value || null; save(); closeOv(); render(); toast(S.wxSet ? "The storm glass clouds over, and outside the sky agrees." : "The storm glass settles. The weather is the real weather again."); };
 }
 setInterval(() => { if(S.clock && S.clock.rate>1 && cur && !$("ov").classList.contains("open")) render(); }, 4000);
 /* ---------- modes ---------- */
@@ -1041,14 +1120,157 @@ function directoryView(){
   const links = P.links || [];
   overlay("The directory", `<p class="note">The plain way through: the rest of the site, without the walking.</p><div class="dir">${links.map(l => `<a class="dirl" href="${esc(l.href)}"><b>${esc(l.title)}</b><span>${esc(l.note||"")}</span></a>`).join("")}</div>`);
 }
+/* ---------- the Entry: the letter, the desk, the boards ---------- */
+function walkMode(){ return S.inv.includes("master-key") ? "guided" : (S.inv.some(k => ["map","plan","compass"].includes(k)) ? "wanderer" : "hardcore"); }
+const DESK_ITEMS = ["master-key","plan","map","compass","finding-aid","lantern","hourglass"];
+function isoWeek(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1)); return [t.getUTCFullYear(), Math.ceil(((t-y0)/864e5+1)/7)]; }
+function puzzleOfWeek(offset){ const L = P.puzzles||[]; if(!L.length) return null; const [y,w] = isoWeek(new Date(now().getTime() + (offset||0)*7*864e5)); return L[((y*53 + w) % L.length + L.length) % L.length]; }
+function upcomingEvents(n){ const t0 = new Date(now().toDateString()).getTime(); return (P.events||[]).map(e => Object.assign({t:new Date(e.date+"T00:00").getTime()}, e)).filter(e => e.t >= t0).sort((a,b)=>a.t-b.t).slice(0, n||4); }
+function officeStatus(){
+  const H = P.office_hours || []; if(!H.length) return {open:false, label:"hours not yet posted"};
+  const d = now(), day = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()], m = d.getHours()*60+d.getMinutes();
+  const toM = s => { const [h,mm] = String(s).split(":").map(Number); return h*60+(mm||0); };
+  const nowSlot = H.find(h => [].concat(h.days||h.day).includes(day) && m >= toM(h.start) && m < toM(h.end));
+  if(nowSlot) return {open:true, label:`open now, until ${nowSlot.end}`};
+  return {open:false, label:"closed now"};
+}
+function letterView(){
+  const L = P.letter || "";
+  overlay("A letter, left on the desk", `<div class="letter">${L.split(/\n\s*\n/).map(p=>`<p>${p.replace(/\n/g,"<br>")}</p>`).join("")}</div>
+    <p class="note">This is visit ${Object.values(S.visits).reduce((a,b)=>a+b,0)} of yours to the palace, by its own count.</p>`);
+  award("letter", 5);
+}
+function registerView(){
+  overlay("The guest book", `<div class="text"><p>An open book with a pen in the gutter. The last entries are in your own hand, if you've been here before${S.reader?`: <b>${esc(S.reader)}</b>`:""}.</p></div>
+    <div class="row widget"><input id="gb-n" style="width:240px" placeholder="your name or initials" value="${esc(S.reader||"")}"><button class="btn primary" id="gb-b" type="button">Sign</button></div><p class="note">The name stays in this browser. The Primer will use it.</p>`);
+  $("gb-b").onclick = () => { const v=$("gb-n").value.trim(); if(!v) return; S.reader=v; save(); closeOv(); award("signed", 5); toast(`Signed: ${v}.`); };
+}
+function returnView(){
+  const back = S.inv.filter(k => DESK_ITEMS.includes(k));
+  if(!back.length){ toast("You aren't carrying anything from the desk."); return; }
+  S.inv = S.inv.filter(k => !DESK_ITEMS.includes(k)); save(); render();
+  toast(`You put back ${back.map(k => (ITEMS[k]||{}).name || k).join(", ")}.`);
+}
+function noticesView(){
+  const pz = puzzleOfWeek(0), last = puzzleOfWeek(-1), ev = upcomingEvents(5), news = (P.news||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,5);
+  const d = now(), y = d.getFullYear(), mo = d.getMonth(), first = new Date(y,mo,1).getDay(), days = new Date(y,mo+1,0).getDate();
+  const evDays = new Set((P.events||[]).filter(e => { const t=new Date(e.date+"T00:00"); return t.getFullYear()===y && t.getMonth()===mo; }).map(e => new Date(e.date+"T00:00").getDate()));
+  let cal = `<table class="cal"><tr>${["S","M","T","W","T","F","S"].map(x=>`<th>${x}</th>`).join("")}</tr><tr>`;
+  for(let i=0;i<first;i++) cal += "<td></td>";
+  for(let dd=1; dd<=days; dd++){ cal += `<td class="${dd===d.getDate()?"today":""}${evDays.has(dd)?" ev":""}">${dd}</td>`; if((first+dd)%7===0) cal += "</tr><tr>"; }
+  cal += "</tr></table>";
+  const unw = []; P.rooms.forEach(r => { if(r.closed || r.secret) return; (r.objects||[]).forEach(o => { if(o.kind==="unwritten" && !o.hidden) unw.push({o, r}); }); });
+  const wanted = unw.length ? unw[isoWeek(d)[1] % unw.length] : null;
+  overlay("The notice board", `<div class="board">
+    <div class="pin"><h3>Problem of the week · week ${isoWeek(d)[1]}</h3>${pz ? `<p class="text">${pz.q}</p><p class="note">${esc(pz.source||"")}</p>` : `<p class="note">No problems on file.</p>`}
+      ${last ? `<details><summary class="note">Last week's problem, and its answer</summary><p>${last.q}</p><p><b>Answer.</b> ${last.a}</p></details>` : ""}</div>
+    <div class="pin"><h3>${d.toLocaleString([], {month:"long", year:"numeric"})}</h3>${cal}
+      ${ev.length ? `<ul class="list">${ev.map(e=>`<li><span class="mono">${esc(e.date)}${e.time?" "+esc(e.time):""}</span> ${e.href?`<a href="${esc(e.href)}">${esc(e.title)}</a>`:esc(e.title)}${e.where?` <span class="note">· ${esc(e.where)}</span>`:""}</li>`).join("")}</ul>` : `<p class="note">No events posted.</p>`}</div>
+    <div class="pin"><h3>News</h3><ul class="list">${news.map(n=>`<li><span class="mono">${esc(n.date)}</span> ${n.href?`<a href="${esc(n.href)}">${esc(n.text)}</a>`:esc(n.text)}</li>`).join("") || "<li class='note'>Nothing new.</li>"}</ul></div>
+    ${wanted ? `<div class="pin"><h3>Wanted</h3><p><b>${esc(wanted.o.title)}</b>: ${wanted.o.note||""}</p><p class="note">On the shelf of unwritten things in room ${esc(wanted.r.label||wanted.r.id)}, ${esc(wanted.r.name)}.</p></div>` : ""}
+  </div>`);
+}
+/* the link board: public tiles from the data file, private tiles kept only in this browser */
+const LKEY = "palace-links";
+function myLinks(){ try { return JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e){ return []; } }
+function setMyLinks(L){ try { localStorage.setItem(LKEY, JSON.stringify(L)); } catch(e){} }
+function linksView(){
+  const pub = P.links || [], mine = myLinks(), pins = (S.pins||[]).filter(id => ROOMS[id]);
+  const tile = (l, i, own) => `<div class="tilewrap"><a class="dirl" href="${esc(l.href)}"${/^https?:/.test(l.href)?' target="_blank" rel="noopener"':""}><b>${esc(l.title)}</b><span>${esc(l.note||l.href.replace(/^https?:\/\//,"").slice(0,40))}</span></a>${own?`<span class="tileed"><button type="button" data-up="${i}" title="Move up">↑</button><button type="button" data-del="${i}" title="Remove">×</button></span>`:""}</div>`;
+  overlay("The link board", `
+    ${pins.length ? `<h3 class="cat-wing">Pinned rooms</h3><div class="dir">${pins.map(id => tile({title:`${ROOMS[id].label||id} · ${ROOMS[id].name}`, href:"#"+id, note:"in the palace"}, 0, false)).join("")}</div>` : ""}
+    <h3 class="cat-wing">Your own tiles <span class="note">(kept only in this browser)</span></h3>
+    <div class="dir" id="lb-mine">${mine.map((l,i)=>tile(l,i,true)).join("") || `<p class="note">None yet. Add your mail, calendar, course sites, anything.</p>`}</div>
+    <div class="row widget"><input id="lb-t" placeholder="label" style="width:160px"><input id="lb-u" placeholder="https://…" style="width:280px"><button class="btn primary" id="lb-add" type="button">Add a tile</button></div>
+    <h3 class="cat-wing">The site</h3><div class="dir">${pub.map((l,i)=>tile(l,i,false)).join("")}</div>
+    <div class="row widget" style="margin-top:14px"><label class="note"><input type="checkbox" id="lb-start" ${S.startLinks?"checked":""}> open the palace straight onto this board</label>
+      <button class="btn" id="lb-exp" type="button">Export my tiles</button><button class="btn" id="lb-imp" type="button">Import tiles</button></div>
+    <p class="note">Bookmark <span class="mono">${esc(location.origin+location.pathname)}#0/links</span> to use this as your launch page.</p>`);
+  $("lb-add").onclick = () => { const t=$("lb-t").value.trim(); let u=$("lb-u").value.trim(); if(!t||!u) return; if(!/^(https?:|\/|#|mailto:)/.test(u)) u="https://"+u; const L=myLinks(); L.push({title:t, href:u}); setMyLinks(L); linksView(); };
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = e => { e.preventDefault(); const L=myLinks(); L.splice(+b.dataset.del,1); setMyLinks(L); linksView(); });
+  document.querySelectorAll("[data-up]").forEach(b => b.onclick = e => { e.preventDefault(); const i=+b.dataset.up; if(i<1) return; const L=myLinks(); [L[i-1],L[i]]=[L[i],L[i-1]]; setMyLinks(L); linksView(); });
+  $("lb-start").onchange = e => { S.startLinks = e.target.checked; save(); };
+  $("lb-exp").onclick = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify(myLinks())))); prompt("Copy this, and import it in another browser:", s); };
+  $("lb-imp").onclick = () => { const s = prompt("Paste exported tiles:"); if(!s) return; try { const L = JSON.parse(decodeURIComponent(escape(atob(s.trim())))); if(Array.isArray(L)){ setMyLinks(L); linksView(); } } catch(e){ toast("That didn't read as a set of tiles."); } };
+  award("links", 2);
+}
+/* the almanac: today's sun and moon, the planets tonight, and a short forecast */
+let fcFetching = false;
+function forecast(){
+  if(S.fc && S.fc.at && S.fc.at !== locKey()) S.fc = null;
+  const fresh = S.fc && (Date.now()-S.fc.t < 3*3600e3);
+  if(!fresh && !fcFetching && !(forecast.failed && Date.now()-forecast.failed < 15*60e3)){ fcFetching = true;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=4`)
+      .then(r=>r.json()).then(j => { if(j && j.daily){ S.fc = {t:Date.now(), d:j.daily, at:locKey()}; save(); if($("ov").classList.contains("open") && $("ovt").textContent==="The almanac") almanacView(); } }).catch(()=>{ forecast.failed = Date.now(); if($("ov").classList.contains("open") && $("ovt").textContent==="The almanac") almanacView(); }).finally(()=>{ fcFetching=false; }); }
+  return S.fc ? S.fc.d : null;
+}
+function sunTimes(){
+  // scan the day for the sun crossing −0.833° (the standard horizon, refraction included)
+  const d0 = new Date(now().toDateString()).getTime(), alt = t => { const jd = t/864e5 + 2440587.5, L = lst(jd), s = sunEq(jd); return altaz(s[0], s[1], L)[0]; };
+  let rise=null, set=null, prev = alt(d0);
+  for(let m=5; m<=1440; m+=5){ const t = d0 + m*60e3, a = alt(t); if(prev < -.833 && a >= -.833 && rise==null) rise = t; if(prev >= -.833 && a < -.833) set = t; prev = a; }
+  return {rise, set};
+}
+function almanacView(){
+  const wx = weather(), fc = forecast(), st = sunTimes(), d = now(), ph = moonPhase(d), lit = Math.round(50*(1-Math.cos(2*Math.PI*ph)));
+  const t21 = new Date(d.toDateString()); t21.setHours(21); const off = (t21.getTime()-d.getTime())/36e5, sky = skyNow(off);
+  const tf = t => t ? new Date(t).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}) : "—";
+  const len = st.rise && st.set ? ((st.set-st.rise)/36e5) : null;
+  const phaseName = ph<.03||ph>.97 ? "new" : ph<.22 ? "waxing crescent" : ph<.28 ? "first quarter" : ph<.47 ? "waxing gibbous" : ph<.53 ? "full" : ph<.72 ? "waning gibbous" : ph<.78 ? "last quarter" : "waning crescent";
+  const compass = az => ["N","NE","E","SE","S","SW","W","NW"][Math.round(az/45)%8];
+  overlay("The almanac", `<div class="board">
+    <div class="pin"><h3>Now, in ${esc(placeName())}${wx && wx.set ? " (by the storm glass)" : ""}</h3>${wx ? `<p class="big">${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F</p><p class="mono note">humidity ${wx.relative_humidity_2m}% · wind ${Math.round(wx.wind_speed_10m)} mph · ${(wx.surface_pressure*0.02953).toFixed(2)} inHg</p>` : `<p class="note">The instruments can't reach the weather service just now.</p>`}</div>
+    <div class="pin"><h3>Forecast</h3>${fc ? `<ul class="list">${fc.time.slice(0,4).map((t,i)=>`<li><span class="mono">${new Date(t+"T12:00").toLocaleDateString([], {weekday:"short"})}</span> ${wxIcon(fc.weather_code[i], 1)} ${Math.round(fc.temperature_2m_max[i])}° / ${Math.round(fc.temperature_2m_min[i])}°${fc.precipitation_probability_max?` <span class="note">· ${fc.precipitation_probability_max[i]}% chance of rain</span>`:""}</li>`).join("")}</ul>` : `<p class="note">${forecast.failed ? "The forecast can't be fetched just now." : "Fetching…"}</p>`}</div>
+    <div class="pin"><h3>The sun</h3><p class="mono">rises ${tf(st.rise)} · sets ${tf(st.set)}${len?` · ${Math.floor(len)}h ${Math.round((len%1)*60)}m of daylight`:""}</p></div>
+    <div class="pin"><h3>Tonight at 9</h3><p class="mono">moon ${phaseName}, ${lit}% lit${sky.moon.alt>0?`, ${sky.moon.alt.toFixed(0)}° up in the ${compass(sky.moon.az)}`:", below the horizon"}</p>
+      <p class="mono">${sky.planets.filter(p=>p.alt>0).map(p=>`${p.name} ${p.alt.toFixed(0)}° ${compass(p.az)}`).join(" · ") || "no bright planets up"}</p></div>
+  </div><p class="note">Weather from Open-Meteo. Sun, moon, and planets computed here, for latitude ${LAT}° and longitude ${LON}°.</p>`);
+}
+function officeHoursView(){
+  const H = P.office_hours || [], st = officeStatus(), o = P.office || {};
+  overlay("Office hours", `<div class="board"><div class="pin"><h3>${st.open ? "Open" : "Closed"}</h3><p class="big">${esc(st.label)}</p>${o.where?`<p class="mono">${esc(o.where)}</p>`:""}</div>
+    <div class="pin"><h3>Each week</h3>${H.length ? `<ul class="list">${H.map(h=>`<li><span class="mono">${esc([].concat(h.days||h.day).join(", "))} ${esc(h.start)}–${esc(h.end)}</span>${h.where?` · ${esc(h.where)}`:""}${h.note?` <span class="note">· ${esc(h.note)}</span>`:""}</li>`).join("")}</ul>` : `<p class="note">${esc(o.unset || "Office hours will be posted here.")}</p>`}</div>
+    ${o.note?`<div class="pin"><p>${o.note}</p></div>`:""}</div>`);
+}
+/* type to go: rooms, things, links, warp words */
+function searchView(){
+  const recent = []; for(let i=S.log.length-1; i>=0 && recent.length<6; i--){ const id = S.log[i]; if(ROOMS[id] && !recent.includes(id)) recent.push(id); }
+  overlay("Go to…", `<div class="row widget"><input id="sv-q" style="width:100%;font-size:18px" placeholder="a room, a device, a book, a link, a warp word" autocomplete="off"></div><div id="sv-r"></div>`);
+  const items = [];
+  P.rooms.forEach(r => { if(r.closed && !S.showAll) return; if(r.secret && !S.visits[r.id] && !S.showAll) return; items.push({kind:"room", title:`${r.label||r.id} · ${r.name}`, text:(r.text||"")+" "+(r.wing||""), go:()=>{ location.hash = String(r.id); }});
+    (r.objects||[]).forEach(o => { if(o.hidden && !S.showAll) return; items.push({kind:o.kind||"device", title:o.title, text:(o.by||"")+" "+(o.note||""), sub:`room ${r.label||r.id}`, go:()=>{ if(o.href) location.href = o.href; else location.hash = String(r.id); }}); }); });
+  (P.links||[]).concat(myLinks()).forEach(l => items.push({kind:"link", title:l.title, text:l.href, go:()=>{ location.href = l.href; }}));
+  const draw = q => {
+    q = (q||"").trim().toLowerCase(); let list;
+    if(!q){ const pins = (S.pins||[]).filter(id=>ROOMS[id]); list = pins.map(id=>({kind:"pinned", title:`${ROOMS[id].label||id} · ${ROOMS[id].name}`, go:()=>{ location.hash=id; }})).concat(recent.map(id=>({kind:"recent", title:`${ROOMS[id].label||id} · ${ROOMS[id].name}`, go:()=>{ location.hash=id; }}))); }
+    else { const w = (P.warps||{})[q.toUpperCase().replace(/\s+/g,"")]; list = (w ? [{kind:"warp", title:q.toUpperCase(), go:()=>{ S.frame=[0,0]; location.hash=String(w.room); }}] : []).concat(items.filter(it => (it.title+" "+(it.text||"")).toLowerCase().includes(q)).sort((a,b) => (a.title.toLowerCase().startsWith(q)?0:1) - (b.title.toLowerCase().startsWith(q)?0:1)).slice(0,14)); }
+    $("sv-r").innerHTML = list.map((it,i)=>`<button type="button" class="doorbtn svi${i===0?" first":""}" data-i="${i}"><span class="k">${esc(it.kind)}</span> ${esc(it.title)} ${it.sub?`<span class="note">· ${esc(it.sub)}</span>`:""}</button>`).join("") || `<p class="note">Nothing by that name.</p>`;
+    document.querySelectorAll(".svi").forEach(b => b.onclick = () => { closeOv(); list[+b.dataset.i].go(); });
+    searchView.list = list;
+  };
+  $("sv-q").oninput = e => draw(e.target.value);
+  $("sv-q").onkeydown = e => { if(e.key==="Enter" && searchView.list && searchView.list[0]){ closeOv(); searchView.list[0].go(); } };
+  draw(""); $("sv-q").focus();
+}
+document.addEventListener("keydown", e => { if(e.key==="/" && !(e.target.closest && e.target.closest("input,textarea,select")) && !$("ov").classList.contains("open")){ e.preventDefault(); searchView(); } });
+/* what a mounted board shows on the wall, in the engraved view */
+function boardContent(o){
+  if(o.action==="notices"){ const pz = puzzleOfWeek(0), ev = upcomingEvents(2); return {title:"NOTICES", lines:[`Problem of the week ${isoWeek(now())[1]}:`, ...(pz ? wrapText(pz.q.replace(/<[^>]+>/g,""), 44).slice(0,5) : ["(none on file)"]), "", ev.length ? "Next: "+ev[0].date+" "+ev[0].title : "No events posted.", "", ...((P.news||[]).slice(-2).map(n => "· "+n.text))]}; }
+  if(o.action==="links"){ return {title:"LINKS", tiles:(P.links||[]).map(l=>l.title).concat(myLinks().map(l=>l.title)).slice(0,16)}; }
+  if(o.action==="officehours"){ const st = officeStatus(); return {title:"OFFICE HOURS", lines:[st.label.toUpperCase(), "", ...(P.office_hours||[]).map(h => `${[].concat(h.days||h.day).join(", ")}  ${h.start}–${h.end}`)]}; }
+  if(o.action==="almanac"){ const wx=weather(), st=sunTimes(); const tf=t=>t?new Date(t).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}):"—"; return {title:"ALMANAC", lines:[wx?`${Math.round(wx.temperature_2m)}°F  ${(wx.surface_pressure*0.02953).toFixed(2)} in`:"· · ·", `sunrise ${tf(st.rise)}`, `sunset ${tf(st.set)}`]}; }
+  return {title:o.title.toUpperCase(), lines:[]};
+}
+function wrapText(s, n){ const out=[]; let line=""; s.split(/\s+/).forEach(w => { if((line+" "+w).trim().length > n){ out.push(line); line=w; } else line=(line+" "+w).trim(); }); if(line) out.push(line); return out; }
+
 /* ---------- save codes and warp codes ---------- */
 const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-const ITEM_ORDER = ["map","plan","finding-aid","master-key","golden-key","compass","lantern","hourglass","primer","page-left","page-right","mended-page"];
+const ITEM_ORDER = ["map","plan","finding-aid","master-key","golden-key","compass","lantern","hourglass","primer","page-left","page-right","mended-page","astrolabe"];
 const SOLVED_ORDER = ["galois","island","mended"];
 function roomOrder(){ return P.rooms.map(r => String(r.id)); }
 function crc8(bytes){ let c=0; bytes.forEach(b => { c ^= b; for(let k=0;k<8;k++) c = (c&0x80) ? ((c<<1)^0x07)&255 : (c<<1)&255; }); return c; }
 function saveCode(){
-  const ro = roomOrder(), bytes = [1, ["wanderer","guided","hardcore"].indexOf(S.mode||"wanderer") & 3, (S.xp>>8)&255, S.xp&255];
+  const ro = roomOrder(), bytes = [1, ["wanderer","guided","hardcore"].indexOf(walkMode()) & 3, (S.xp>>8)&255, S.xp&255];
   const bits = (list, has) => { const out=[]; for(let i=0;i<list.length;i+=8){ let b=0; for(let j=0;j<8 && i+j<list.length;j++) if(has(list[i+j])) b|=1<<j; out.push(b); } return out; };
   bytes.push(...bits(ro, id => !!S.visits[id]));
   bytes.push(...bits(ITEM_ORDER, k => S.inv.includes(k)));
@@ -1138,11 +1360,12 @@ function arrive(id){
   award("room:"+id, ROOMS[id].secret ? 30 : 10);
   save(); randomPick = {};
   render();
-  if(id===START && !S.mode) setTimeout(modeView, 400);
+  if(id===START && S.visits[id]===1) setTimeout(letterView, 500);
 }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   if(h==="curator"){ S.curator=true; save(); history.replaceState(null,"","#"+(cur?cur.id:START)); if(!cur) arrive(START); curatorView(); return; }
+  if(h.endsWith("/links") || (!h && S.startLinks)){ const rid0 = h.split("/")[0] || START; history.replaceState(null,"","#"+rid0); if(!cur || String(cur.id)!==rid0){ S.frame=[0,0]; arrive(rid0); } setTimeout(linksView, 200); return; }
   const [rid, f, c] = (h || START).split("/"), id = rid || START, face = Math.max(0, FACES.indexOf(f||"n")), close = c || null;
   if(planned==="view" || (cur && String(cur.id)===id)){ planned = null; S.face = face; S.close = close; save(); render(); return; }
   if(planned === id){ planned = null; arrive(id); return; }
@@ -1561,19 +1784,26 @@ WIDGETS.oracle = (el) => {
 
 WIDGETS.sundial = (el) => {
   el.innerHTML = `<div class="panel"><h3>The dial, from above</h3><svg id="sd-s" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="A horizontal sundial with today's shadow"></svg><div id="sd-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
-    <p class="note">A horizontal dial laid out for latitude ${LAT}°: each hour line makes angle θ with the noon line, where tan θ = sin φ · tan(15° × hours from noon). The style points at the celestial pole. The dial tells local apparent solar time. Your clock differs by the longitude correction (Appleton is west of its time-zone meridian), by daylight saving time, and by the equation of time.</p></div>`;
+    <p class="note">A horizontal dial laid out for latitude ${LAT}° (${esc(placeName())}): each hour line makes angle θ with the noon line, where tan θ = sin φ · tan(15° × hours from noon). The style points at the celestial pole. The dial tells local apparent solar time. Your clock differs by the longitude correction (in Appleton, which is west of its time-zone meridian), by daylight saving time, and by the equation of time.</p></div>`;
   const draw = () => {
     const svg=$("sd-s"); svg.innerHTML=""; const sk=skyNow(), phi=LAT*DEG, Hd=(((sk.L-sk.sun.ra)%360)+540)%360-180, H=Hd*DEG;
     E("circle",{r:240,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":3},svg); E("circle",{r:226,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.2},svg);
     for(let m=6*4; m<=18*4; m++){ const h=m/4, th=Math.atan2(Math.sin(phi)*Math.sin((h-12)*15*DEG), Math.cos((h-12)*15*DEG)), r0 = m%4?196:150;
       L(svg, Math.sin(th)*r0, -Math.cos(th)*r0, Math.sin(th)*220, -Math.cos(th)*220, m%4?.6:1.4);
       if(!(m%4)){ T(["VI","VII","VIII","IX","X","XI","XII","I","II","III","IV","V","VI"][m/4-6],{x:Math.sin(th)*176,y:-Math.cos(th)*176+5,"text-anchor":"middle","font-size":16,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg); } }
-    T("N",{x:0,y:-244,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg);
-    if(sk.sun.alt>0){ const th=Math.atan2(Math.sin(phi)*Math.sin(H), Math.cos(H)); E("polygon",{points:`0,0 ${Math.sin(th-.03)*210},${-Math.cos(th-.03)*210} ${Math.sin(th+.03)*210},${-Math.cos(th+.03)*210}`,fill:"var(--spot)",opacity:.85},svg); }
+    T(LAT>=0?"N":"S",{x:0,y:-244,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg);
+    const Hm = ((((sk.L-sk.moon.ra)%360)+540)%360-180)*DEG, wxd = weather(), cc = wxd ? (wxd.cloud_cover||0) : 0, lit = (1-Math.cos(2*Math.PI*sk.moon.phase))/2, moonShadow = sk.sun.alt < -.8 && sk.moon.alt > 0 && lit > .2 && cc < 85;
+    if(moonShadow){ const th=Math.atan2(Math.sin(phi)*Math.sin(Hm), Math.cos(Hm)); E("polygon",{points:`0,0 ${Math.sin(th-.03)*210},${-Math.cos(th-.03)*210} ${Math.sin(th+.03)*210},${-Math.cos(th+.03)*210}`,fill:"var(--ink)",opacity:.25+.5*lit},svg); }
+    if(sk.sun.alt>0 && cc < 85){ const th=Math.atan2(Math.sin(phi)*Math.sin(H), Math.cos(H)); E("polygon",{points:`0,0 ${Math.sin(th-.03)*210},${-Math.cos(th-.03)*210} ${Math.sin(th+.03)*210},${-Math.cos(th+.03)*210}`,fill:"var(--spot)",opacity:.85},svg); }
     E("polygon",{points:"-5,0 5,0 0,-150",fill:"url(#h-dark)",stroke:"var(--ink)","stroke-width":1.5},svg); E("circle",{r:5,fill:"var(--ink)"},svg);
     const n=sk.jd-2451545, Lm=((280.460+0.9856474*n)%360+360)%360; let eot=(Lm-sk.sun.ra); eot=((eot+540)%360-180)*4;
     const solar = 12 + Hd/15, sh = Math.floor((solar+24)%24), sm = Math.floor(((solar%1)+1)%1*60);
-    $("sd-t").innerHTML = sk.sun.alt>0 ? `sundial time ${sh}:${String(sm).padStart(2,"0")} · clock ${sk.d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}<br>equation of time today: ${eot>=0?"+":""}${eot.toFixed(1)} min (sundial ahead of mean sun when +) · sun ${sk.sun.alt.toFixed(0)}° up` : `The sun is down. The dial is only a plate of brass until morning. (Sun ${(-sk.sun.alt).toFixed(0)}° below the horizon.)`;
+    const hm = s => { const h = ((s%24)+24)%24; return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,"0")}`; };
+    const age = sk.moon.phase*29.530588853, mread = 12 + (Hm/DEG)/15, corr = age*24/29.530588853;
+    const sunOK = sk.sun.alt>0 && cc < 85;
+    $("sd-t").innerHTML = sk.sun.alt>0 && !sunOK ? `The sun is up but the cloud is too thick for a shadow (${Math.round(cc)}% cover). The dial waits. (By the sky's reckoning it would read ${hm(solar)}.)`
+      : moonShadow ? `The moon is ${sk.moon.alt.toFixed(0)}° up and ${Math.round(lit*100)}% lit, and its shadow reads <b>${hm(mread)}</b> on the dial.<br>The moon runs late: it is ${age.toFixed(1)} days old, so add ${(corr).toFixed(1)} hours (about 48 minutes a day). Sun time ≈ <b>${hm(mread+corr)}</b>; the true sun time is ${hm(solar)}. · clock ${sk.d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}`
+      : sk.sun.alt>0 ? `sundial time ${sh}:${String(sm).padStart(2,"0")} · clock ${sk.d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}<br>equation of time today: ${eot>=0?"+":""}${eot.toFixed(1)} min (sundial ahead of mean sun when +) · sun ${sk.sun.alt.toFixed(0)}° up` : (sk.moon.alt > 0 && cc >= 85 ? `The moon is up behind the clouds. No shadow tonight.` : sk.moon.alt > 0 ? `The moon is up but only ${Math.round(lit*100)}% lit, too thin to throw a shadow you could read.` : `The sun is down and the moon is ${sk.moon.alt < 0 ? "down too" : "hidden"}. The dial is only a plate of brass until morning.`) + ` (Sun ${(-sk.sun.alt).toFixed(0)}° below the horizon.)`;
   };
   draw(); timers.push(setInterval(draw, 30000));
 };
@@ -1597,6 +1827,7 @@ $("b-ink").onclick = () => { S.ink = S.ink==="1bit" ? "two" : "1bit"; save(); re
 setInterval(() => { if(cur && !$("ov").classList.contains("open")) tally(lightNow()); }, 30000);
 $("b-lamp").onclick = () => { S.light = {auto:"night", night:"day", day:"auto"}[S.light] || "auto"; save(); render(); toast(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down." : "You light every lamp."); };
 rankIndex.cache = null;
+$("b-q").onclick = () => { S.quality = {draft:"normal", normal:"fine", fine:"draft"}[S.quality||"normal"]; save(); toast(`Quality: ${S.quality}. Redrawing…`); setTimeout(() => location.reload(), 500); };
 $("b-gfx").onclick = () => { S.gfx = S.gfx==="2d" ? "3d" : "2d"; save(); if(S.gfx==="3d" && !VIEW3D) start3d(); render(); };
 route();
 start3d();

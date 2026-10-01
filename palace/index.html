@@ -166,6 +166,22 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
 .tip3d{position:absolute;z-index:4;pointer-events:none;background:var(--paper2);color:var(--ink);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);padding:2px 8px;font:400 13px var(--chrome);opacity:0;transition:opacity .12s;max-width:240px}
 .tip3d.on{opacity:1}
 .inspect3d{display:block;width:100%;max-width:520px;height:auto;border:2px solid var(--ink)}
+
+.letter{font:400 20px/1.6 var(--fell);background:#f3ecd9;color:#1d1a16;border:1px solid var(--ink);padding:22px 28px;box-shadow:3px 3px 0 var(--ink);max-width:640px;margin:0 auto 10px;transform:rotate(-.4deg)}
+.letter p{margin:0 0 .8em}
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pin{border:2px solid var(--ink);background:var(--paper2);padding:10px 14px;box-shadow:2px 2px 0 var(--ink)}
+.pin h3{font:600 13px var(--chrome);text-transform:uppercase;letter-spacing:.1em;margin:0 0 6px}
+table.cal{border-collapse:collapse;font:13px var(--mono);margin-bottom:8px}
+table.cal th,table.cal td{width:30px;height:24px;text-align:center}
+table.cal td.today{outline:2px solid var(--spot);font-weight:600}
+table.cal td.ev{text-decoration:underline;text-decoration-color:var(--spot);text-decoration-thickness:3px}
+.tilewrap{position:relative}
+.tileed{position:absolute;top:4px;right:6px;display:flex;gap:2px}
+.tileed button{font:13px var(--mono);border:1px solid var(--ink);background:var(--paper);cursor:pointer;padding:0 5px}
+.svi{margin:3px 0}
+.svi.first{outline:2px solid var(--spot)}
+#widget.flash{outline:3px solid var(--spot);outline-offset:4px;transition:outline-color 1s}
 </style>
 </head>
 <body>
@@ -177,6 +193,7 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
   <button type="button" id="b-lamp">Lamps</button>
   <button type="button" id="b-ink">Ink</button>
   <button type="button" id="b-gfx">View</button>
+  <button type="button" id="b-q">Quality</button>
   <button type="button" id="b-ann">Annotations</button>
   <button type="button" id="b-help">How to walk</button>
 </div>
