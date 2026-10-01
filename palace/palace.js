@@ -765,7 +765,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     skyCanvas: (room.decor||[]).includes("sky") ? skyCanvasFor : null,
     // the moon: where it is, how much of it is lit, and how much the clouds let through
     moonAlt: sk.moon.alt, moonRel, moonLit: (1 - Math.cos(2*Math.PI*sk.moon.phase))/2, cloud: wx ? (wx.cloud_cover||0) : 0,
-    dome: room.ceiling==="open" ? domeData(sk) : null, place: placeName(),
+    dome: room.ceiling==="open" ? domeData(sk) : null, place: placeName(), skyOpts: Object.assign({lines:true, names:true, tracks:true}, S.skyOpts||{}),
     orrery: (room.decor||[]).includes("orrery") ? orreryData(sk.jd) : null,
     dialType: (room.decor||[]).includes("sundial") ? dialType() : null, dialData: (room.decor||[]).includes("sundial") ? dialData(dialType()) : null, dials: DIALS,
     catalog: (room.decor||[]).includes("catalogshelves") ? (CATALOG||[]).filter(it => ["book","paper","physical","digital","ephemera","art"].includes(it.type)).map(it => ({id:it.id, title:it.title, creator:((it.creators||[])[0]||{}).name||"", type:it.type, pages:it.pages})) : null,
@@ -836,8 +836,10 @@ function domeData(sk){
   // each planet's path among the stars, forty days either side of now, every four days
   const tracks = PLANET_KEYS.map(k => ({id:k, pts:[]}));
   for(let dd=-40; dd<=40; dd+=4){ if(!dd) continue; planetsEq(sk.jd + dd).forEach(pl => { const tr = tracks.find(t => t.id===pl.id); if(!tr) return; const a = altaz(pl.ra, pl.dec, sk.L); if(a[0] > -2) tr.pts.push([a[0], a[1], dd]); }); }
+  const equator = Array.from({length:121}, (_, k) => altaz(k*3, 0, sk.L));
+  const ecliptic = Array.from({length:121}, (_, k) => altaz(...eclToEq(k*3, 0), sk.L));
   domeData.key = key;
-  domeData.v = {tracks: tracks.filter(t => t.pts.length),sun: {alt: sk.sun.alt, az: sk.sun.az}, moon: {alt: sk.moon.alt, az: sk.moon.az, phase: sk.moon.phase},
+  domeData.v = {equator, ecliptic, tracks: tracks.filter(t => t.pts.length),sun: {alt: sk.sun.alt, az: sk.sun.az}, moon: {alt: sk.moon.alt, az: sk.moon.az, phase: sk.moon.phase},
     planets: sk.planets.filter(p => p.alt > -2).map(p => ({name: p.name, alt: p.alt, az: p.az})), stars, lines, names, cons, seed: Math.floor(sk.d.getTime()/36e5)};
   return domeData.v;
 }
@@ -874,6 +876,7 @@ function start3d(){
       useObject: o => useObject(o.raw, effective(cur)),
       palaceSeconds: () => now().getTime()/1000,
       planets: () => planetsView(),
+      sky: () => skyView(), skyClosed: () => { const sp = $("skypanel"); if(sp) sp.classList.remove("open"); }, footstep: () => sound.step(),
       setDial: t => setDial(t),
       openItem: id => catalogView("item/" + id),
       openCatalog: h => catalogView(h || ""),
@@ -1178,7 +1181,11 @@ const DIALS = {
   meridiana:  {name:"The glass sphere", blurb:"A glass ball on a column throws a spot of sun on the paving; at clock noon it crosses the figure-eight, at sun noon the straight line."},
   cannon:     {name:"The noon cannon", blurb:"A burning glass over the touch-hole: when the sun crosses the meridian on a clear day, it fires."},
 };
+Object.entries(P.dials || {}).forEach(([k, v]) => { DIALS[k] = Object.assign({}, DIALS[k] || {}, v); });
 const dialType = () => DIALS[S.dial] ? S.dial : "horizontal";
+// the history and workings of a dial, shown under its reading
+function dialAbout(t){ const D = DIALS[t] || {}; if(!D.notes) return "";
+  return `<details class="dialabout" open><summary>About ${esc((D.name||"the dial").replace(/^The /,"the "))}</summary>${D.notes.map(n => `<p>${n}</p>`).join("")}${D.sources ? `<p class="note">Sources: ${D.sources.join("; ")}</p>` : ""}</details>`; }
 // hours east of UTC for standard time (no daylight saving), as the dials that tell clock time are drawn
 function stdOffsetH(){ const y = now().getFullYear(); return -Math.max(new Date(y,0,1).getTimezoneOffset(), new Date(y,6,1).getTimezoneOffset())/60; }
 function sunAtUTC(ms){ const jd = ms/864e5 + 2440587.5, L = lst(jd), sq = sunEq(jd), a = altaz(sq[0], sq[1], L); a[0] += refr(a[0]); return {alt:a[0], az:a[1], ra:sq[0], dec:sq[1], L}; }
@@ -1204,6 +1211,60 @@ setInterval(() => { if(!cur || String(cur.id) !== "34" || dialType() !== "cannon
   const sk = skyNow(), ha = ((sk.L - sk.sun.ra + 540) % 360) - 180, wx = weather(), cc = wx ? (wx.cloud_cover||0) : 0;
   if(lastHA != null && lastHA < 0 && ha >= 0 && sk.sun.alt > 0 && cc < 70 && !skyOff("sun")){ window.dispatchEvent(new CustomEvent("wending-cannon")); sound.cannon && sound.cannon(); toast("Noon. The sun crosses the meridian, the burning glass finds the touch-hole, and the little cannon fires."); award("cannon", 20); }
   lastHA = ha; }, 2000);
+
+/* ---------- the sky, as a place: notes and explorations for an observer in the court ---------- */
+const SHOWERS = [["Quadrantids",0,3,"Boötes",80],["Lyrids",3,22,"Lyra",18],["Eta Aquariids",4,6,"Aquarius",50],["Delta Aquariids",6,30,"Aquarius",25],["Perseids",7,12,"Perseus",100],["Draconids",9,8,"Draco",10],["Orionids",9,21,"Orion",20],["Leonids",10,17,"Leo",15],["Geminids",11,14,"Gemini",150],["Ursids",11,22,"Ursa Minor",10]];
+function skyView(){
+  let sp = $("skypanel");
+  if(!sp){ sp = document.createElement("aside"); sp.id = "skypanel"; sp.className = "skypanel win"; document.querySelector(".viewport").appendChild(sp); }
+  sp.classList.add("open"); S.skyTab = S.skyTab || "tonight"; drawSkyPanel(); award("sky", 10);
+}
+function drawSkyPanel(){
+  const sp = $("skypanel"); if(!sp) return; const sk = skyNow(), O = Object.assign({lines:true, names:true, tracks:true}, S.skyOpts||{}), tab = S.skyTab;
+  const compass = az => ["N","NE","E","SE","S","SW","W","NW"][Math.round(az/45)%8], dark = sk.sun.alt < -12, tf = t => t ? new Date(t).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}) : "—";
+  const lit = Math.round(50*(1-Math.cos(2*Math.PI*sk.moon.phase))), age = sk.moon.phase*29.53, st = sunTimes();
+  const ph = sk.moon.phase, phase = ph<.03||ph>.97 ? "new" : ph<.22 ? "a waxing crescent" : ph<.28 ? "at first quarter" : ph<.47 ? "waxing gibbous" : ph<.53 ? "full" : ph<.72 ? "waning gibbous" : ph<.78 ? "at last quarter" : "a waning crescent";
+  const stars = (window.SKY && SKY.names || []).map(([ra,dec,n,m]) => { const a = altaz(...prec(ra,dec,sk.jd), sk.L); return {n, m, alt:a[0], az:a[1]}; }).filter(x => x.alt > 8).sort((a,b) => a.m - b.m).slice(0, 7);
+  const cons = (window.SKY && SKY.cons || []).filter(c => c[3] <= 1).map(([ra,dec,n]) => { const a = altaz(...prec(ra,dec,sk.jd), sk.L); return {n, alt:a[0]}; }).filter(c => c.alt > 45).map(c => c.n);
+  const pls = sk.planets.filter(p => p.alt > 3);
+  const d = sk.d, doy = m => new Date(d.getFullYear(), m[1], m[2]);
+  const next = SHOWERS.map(m => { let t = doy(m); if(t < d - 2*864e5) t = new Date(d.getFullYear()+1, m[1], m[2]); return {m, t}; }).sort((a,b) => a.t - b.t)[0];
+  const tog = (k, label) => `<label class="note sk-t"><input type="checkbox" data-o="${k}" ${O[k] ? "checked" : ""}> ${label}</label>`;
+  const timeRate = S.clock && S.clock.rate > 1 ? S.clock.rate : 0;
+  let body = "";
+  if(tab === "tonight") body = `
+    <p>${sk.sun.alt > 0 ? `The sun is ${sk.sun.alt.toFixed(0)}° up in the ${compass(sk.sun.az)}; it sets at ${tf(st.set)}.` : `The sun is ${(-sk.sun.alt).toFixed(0)}° below the horizon${sk.sun.alt > -18 ? ", and it's still twilight" : ""}. It rises at ${tf(st.rise)}.`}
+      The moon is ${phase}, ${lit}% lit, ${age.toFixed(1)} days old, and ${sk.moon.alt > 0 ? `${sk.moon.alt.toFixed(0)}° up in the ${compass(sk.moon.az)}` : "below the horizon"}.</p>
+    ${pls.length ? `<h4>Planets up</h4><p>${pls.map(p => `${p.name}, ${p.alt.toFixed(0)}° up in the ${compass(p.az)}`).join("; ")}.</p>` : `<p class="note">No planets above the horizon just now.</p>`}
+    ${stars.length ? `<h4>The brightest stars up</h4><p>${stars.map(x => `${esc(x.n)} (${x.alt.toFixed(0)}° ${compass(x.az)})`).join(", ")}.</p>` : ""}
+    ${cons.length ? `<h4>Overhead</h4><p>${cons.slice(0,8).map(esc).join(", ")}.</p>` : ""}
+    <h4>Next meteor shower</h4><p>The ${next.m[0]}, peaking about ${next.t.toLocaleDateString([], {month:"long", day:"numeric"})}, radiating from ${next.m[3]}: up to about ${next.m[4]} an hour under a dark sky, after midnight. ${lit > 60 && Math.abs(next.t - d) < 5*864e5 ? "The moon will wash out the fainter ones." : ""}</p>
+    ${!dark && sk.sun.alt > -6 ? `<p class="note">It's light out, so the stars are hidden. To see the day's stars, put the sun out with the astrolabe's storm glass, or let time run on.</p>` : ""}`;
+  if(tab === "explore") body = `
+    <div class="sk-card"><h4>The turning sky</h4><p>The whole sky turns once in 23 hours 56 minutes, a sidereal day, about the celestial pole. Let time run and watch the stars wheel, rising in the east and setting in the west, while the pole stays put.</p>
+      <div class="row"><button class="btn" data-rate="600" type="button">Run time: 10 minutes a second</button><button class="btn" data-rate="3600" type="button">an hour a second</button>${timeRate ? `<button class="btn primary" data-rate="0" type="button">Back to real time</button>` : ""}</div></div>
+    <div class="sk-card"><h4>Find the pole</h4><p>The celestial pole stands ${Math.abs(LAT).toFixed(1)}° above the ${LAT >= 0 ? "northern" : "southern"} horizon, exactly your latitude. ${LAT >= 0 ? "Polaris, at the end of the Little Dipper's handle, is within a degree of it: follow the two stars at the end of the Big Dipper's bowl, Merak and Dubhe, about five times their spacing." : "No bright star marks the south pole; find it from the Southern Cross."}</p>
+      <div class="row">${tog("pole","mark the pole")} ${tog("grid","altitude and direction grid")}</div></div>
+    <div class="sk-card"><h4>The sun's road</h4><p>The ecliptic is the sun's yearly path among the stars, and so the plane of the earth's orbit. The moon and planets keep close to it, which is why the zodiac's constellations lie along it. Tonight it crosses the sky as the gold line.</p><div class="row">${tog("ecliptic","show the ecliptic")}</div></div>
+    <div class="sk-card"><h4>The sky's equator</h4><p>The celestial equator is the earth's equator thrown on the sky. It meets the horizon due east and due west, and stands ${(90 - Math.abs(LAT)).toFixed(1)}° high at the meridian. At the equinoxes the sun rides along it, so day and night are equal.</p><div class="row">${tog("equator","show the equator")}</div></div>
+    <div class="sk-card"><h4>Wandering stars</h4><p>The dotted tracks show each planet's path among the stars over eighty days. When the earth overtakes an outer planet, its track doubles back: retrograde motion, the puzzle that epicycles were invented to explain.</p><div class="row">${tog("tracks","planet tracks")} <button class="btn" data-go="planets" type="button">The planet book…</button></div></div>
+    <div class="sk-card"><h4>Somewhere else</h4><p>From the equator the pole sits on the horizon and the stars rise straight up; from the pole the stars never set at all. Carry the house somewhere else and look again.</p><div class="row"><button class="btn" data-go="astrolabe" type="button">The astrolabe…</button></div></div>`;
+  if(tab === "notes") body = `
+    <p>The sky over the court is computed, not photographed. The stars come from the data files of Olaf Frohn's d3-celestial, down to magnitude 4.7, about what a dark suburban sky shows. Their positions are precessed to today's date.</p>
+    <p>The sun, the moon, and the planets are worked out from their orbits, with the moon's parallax, the planets' light-time, and the atmosphere's refraction near the horizon. Checked against a professional ephemeris (pyephem), they agree to about a hundredth of a degree for the sun, a few hundredths for the planets, and a third of a degree for the moon.</p>
+    <p>The constellation figures are the IAU's modern constellations, drawn as d3-celestial draws them. The clouds come from the weather now (Open-Meteo), unless the storm glass says otherwise.</p>`;
+  sp.innerHTML = `<div class="tb"><span class="t">The sky</span><button class="box" type="button" id="sk-x" aria-label="Come back down"></button></div><div class="wb">
+    <div class="chips">${[["tonight","Tonight"],["explore","Explorations"],["notes","Notes"]].map(([k,l]) => `<button class="chip ${tab===k?"on":""}" data-tab="${k}" type="button">${l}</button>`).join(" ")}</div>
+    ${body}<div class="row" style="margin-top:8px">${tog("lines","figures")} ${tog("names","names")}</div>
+    <p class="note">Drag to look around; the bottom of the picture brings you back down.</p></div>`;
+  sp.querySelector("#sk-x").onclick = () => { sp.classList.remove("open"); if(VIEW3D && VIEW3D.skyMode) VIEW3D.skyMode(false); };
+  sp.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { S.skyTab = b.dataset.tab; save(); drawSkyPanel(); });
+  sp.querySelectorAll("[data-o]").forEach(c => c.onchange = () => { S.skyOpts = Object.assign({lines:true, names:true, tracks:true}, S.skyOpts||{}, {[c.dataset.o]: c.checked}); save(); render(); });
+  sp.querySelectorAll("[data-rate]").forEach(b => b.onclick = () => { const r = +b.dataset.rate; if(r){ S.clock = {base:Date.now(), pal:now().getTime(), rate:r}; toast(r === 600 ? "Ten minutes a second." : "An hour a second."); } else { S.clock = null; toast("Back to real time."); } save(); render(); drawSkyPanel(); });
+  sp.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "planets" ? planetsView() : astrolabeView());
+}
+// keep the panel's facts current while time runs
+setInterval(() => { const sp = $("skypanel"); if(sp && sp.classList.contains("open")) drawSkyPanel(); }, 15000);
 /* ---------- the Archive's log book: the catalogue, read inside the house ---------- */
 let CATALOG = null;
 function loadCatalog(){ const url = (P.catalog && P.catalog.url) || "/catalog/index.json";
@@ -1769,6 +1830,8 @@ document.addEventListener("keydown", e => {
   if(k==="f"){ e.preventDefault(); fullView(); return; }
   if(k==="ArrowLeft" || k==="a"){ e.preventDefault(); turn(-1); }
   else if(k==="ArrowRight" || k==="d"){ e.preventDefault(); turn(1); }
+  else if((k==="ArrowDown" || k==="s") && VIEW3D && VIEW3D.canWalk && VIEW3D.canWalk() && !S.close){ e.preventDefault(); VIEW3D.step(-1); }
+  else if((k==="ArrowUp" || k==="w") && VIEW3D && VIEW3D.canWalk && VIEW3D.canWalk() && !S.close){ e.preventDefault(); VIEW3D.step(1); }
   else if(k==="ArrowDown" || k==="s"){ e.preventDefault(); if(S.close) setView(S.face,null); else turn(2); }
   else if(k==="ArrowUp" || k==="w"){ e.preventDefault(); const room=effective(cur); const ds=(room.doors||[]).filter(d=>visible(d,room)); const d=ds.find((d,i)=>pos(d.wall!=null?WALLS[d.wall]:[1,0,2][i%3])===1); if(d) tryDoor(d, room); }
 });
@@ -2175,8 +2238,8 @@ WIDGETS.oracle = (el) => {
 
 WIDGETS.sundial = (el) => {
   const t = dialType(); if(t === "meantime" || t === "meridiana" || t === "cannon") return dialWidget2(el, t);
-  el.innerHTML = `<div class="panel"><h3>The dial, from above</h3><svg id="sd-s" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="A horizontal sundial with today's shadow"></svg><div id="sd-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
-    <p class="note">A horizontal dial laid out for latitude ${LAT}° (${esc(placeName())}): each hour line makes angle θ with the noon line, where tan θ = sin φ · tan(15° × hours from noon). The style points at the celestial pole. The dial tells local apparent solar time. Your clock differs by the longitude correction (in Appleton, which is west of its time-zone meridian), by daylight saving time, and by the equation of time.</p></div>`;
+  el.innerHTML = `<div class="panel"><h3>${esc(DIALS[t].name)}, ${t === "armillary" ? "read as a horizontal dial" : "from above"}</h3><svg id="sd-s" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="A horizontal sundial with today's shadow"></svg><div id="sd-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
+    <p class="note">A horizontal dial laid out for latitude ${LAT}° (${esc(placeName())}): each hour line makes angle θ with the noon line, where tan θ = sin φ · tan(15° × hours from noon). The style points at the celestial pole. The dial tells local apparent solar time. Your clock differs by the longitude correction (in Appleton, which is west of its time-zone meridian), by daylight saving time, and by the equation of time.</p>${dialAbout(t)}</div>`;
   const draw = () => {
     const svg=$("sd-s"); svg.innerHTML=""; const sk=skyNow(), phi=LAT*DEG, Hd=(((sk.L-sk.sun.ra)%360)+540)%360-180, H=Hd*DEG;
     E("circle",{r:240,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":3},svg); E("circle",{r:226,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.2},svg);
@@ -2212,7 +2275,7 @@ WIDGETS.sundial = (el) => {
 // the readings for the dials that tell clock time, or fire
 function dialWidget2(el, t){
   const D = DIALS[t];
-  el.innerHTML = `<div class="panel"><h3>${esc(D.name)}</h3><svg id="sd2" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="${esc(D.name)}"></svg><div id="sd2-t" class="mono" style="font-size:13.5px;line-height:1.7"></div><p class="note">${esc(D.blurb)} Change it at the cabinet under the colonnade.</p></div>`;
+  el.innerHTML = `<div class="panel"><h3>${esc(D.name)}</h3><svg id="sd2" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="${esc(D.name)}"></svg><div id="sd2-t" class="mono" style="font-size:13.5px;line-height:1.7"></div><p class="note">${esc(D.blurb)} Change it at the cabinet under the colonnade.</p>${dialAbout(t)}</div>`;
   const draw = () => {
     const svg = $("sd2"); if(!svg) return; svg.innerHTML = ""; const sk = skyNow(), wx = weather(), cc = wx ? (wx.cloud_cover||0) : 0, sunOK = sk.sun.alt > 0 && cc < 85 && !skyOff("sun");
     const off = stdOffsetH(), d = sk.d, stdH = ((d.getUTCHours() + d.getUTCMinutes()/60 + d.getUTCSeconds()/3600 + off) % 24 + 24) % 24, hm = h => { const x = ((h%24)+24)%24; return `${Math.floor(x)}:${String(Math.floor(x%1*60)).padStart(2,"0")}`; };

@@ -66,6 +66,66 @@ items:
 catalog:   # the Archive's log book; the archivist writes to it from /palace/catalog/
   url: /catalog/index.json
 
+dials:   # the court's cabinet of sundials: what each is, how it works, and where to see a great one
+  horizontal:
+    name: The horizontal dial
+    blurb: "A brass plate and a style aimed at the pole: the sun's own time, as it falls here."
+    notes:
+      - "The style (the shadow-casting edge) is tilted to the latitude so that it lies parallel to the earth's axis. That one choice makes every hour the same length all year: the sun turns about the style at 15° an hour, whatever its height."
+      - "On a horizontal plate the hour lines are not evenly spaced. Each makes an angle θ with the noon line where tan θ = sin φ · tan(15° × hours from noon), φ being the latitude. At the pole the lines would be even; at the equator they would all crowd toward six o'clock."
+      - "The oldest surviving dial with a style parallel to the earth's axis was made by the astronomer Ibn al-Shatir in 1371–72 for the Umayyad Mosque in Damascus, on a marble slab about two meters by one. The original is in the Damascus museum; a copy stands on the minaret. European dials took up the polar style in the fifteenth century."
+      - "The dial reads apparent solar time, the sun's own time here. It differs from a clock by the longitude within the time zone, by daylight saving, and by the equation of time."
+    sources:
+      - "Ibn al-Shatir, in Thomas Hockey and others, eds., <i>Biographical Encyclopedia of Astronomers</i>."
+      - "René R. J. Rohr, <i>Sundials: History, Theory, and Practice</i>, 1970."
+      - "Albert E. Waugh, <i>Sundials: Their Theory and Construction</i>, 1973."
+  armillary:
+    name: The armillary sphere
+    blurb: "An equatorial dial: the polar rod's shadow on an evenly divided band."
+    notes:
+      - "An armillary sphere is the sky reduced to its circles: rings (armillae) for the horizon, the meridian, the equator, and often the ecliptic, nested around a center that stands for the earth. The idea is old: a ringed model of the celestial sphere was in common use from the time of Eratosthenes, in the third century BC."
+      - "Observing armillaries were real instruments, not ornaments. Ptolemy describes one in the Almagest; astronomers at Maragha and Samarkand used them; Tycho Brahe built several in the 1580s. In China, Zhang Heng's armillary sphere of the second century was turned by water, and Su Song's clock tower of 1092 carried a water-driven armillary on its roof."
+      - "As a sundial, the armillary is the simplest of all. A rod parallel to the earth's axis throws its shadow on a band lying in the plane of the equator, and because the band is perpendicular to the rod, the hours on it are exactly evenly spaced: 15° each."
+      - "Twice a year, at the equinoxes, the sun lies in the plane of the equator, and the band shades its own inner face. On those days the rod's shadow vanishes into the band's edge."
+    sources:
+      - "Museo della Specola, Università di Bologna, <i>Armillary spheres</i>."
+      - "Whipple Museum of the History of Science, Cambridge, <i>The observational armillary sphere</i>."
+      - "Joseph Needham, <i>Heavenly Clockwork</i>, 1960."
+  meantime:
+    name: The mean-time dial
+    blurb: "A plate of figure-eights. The shadow of a bead on a pin tells the clock's own time, with the equation of time and the longitude already worked in."
+    notes:
+      - "A sundial tells the sun's time; a clock tells mean time, which runs evenly. The difference is the equation of time. The sun is up to about 16½ minutes fast in early November and 14¼ minutes slow in mid-February, and the two agree near 15 April, 13 June, 1 September, and 25 December."
+      - "It has two causes, which add: the earth moves faster near perihelion in early January (a yearly swing of about 7½ minutes), and the sun's path is tilted 23.4° to the equator (a half-yearly swing of about 10 minutes). Huygens published the first essentially correct tables in 1665, and Flamsteed in 1672–73."
+      - "This dial does the correction for you. Instead of straight hour lines it carries a figure-eight (an analemma) for each clock hour: where the bead's shadow falls at that standard time on each day of the year. The house computes them from the sun's real position for wherever the house stands, so the shadow reads standard time directly. Read the left or right loop according to the season."
+      - "In 1906 the firm of Pilkington and Gibbs in Preston, England, began making the heliochronometer, which builds the same correction into a shaped gnomon and a sliding scale. They stood at railway stations and public buildings, and were said to keep time to about thirty seconds."
+    sources:
+      - "Wikipedia, <i>Equation of time</i>."
+      - "North American Sundial Society, the Sundial Registry: Pilkington & Gibbs heliochronometers."
+      - "Jean Meeus, <i>Astronomical Algorithms</i>, 1991."
+  meridiana:
+    name: The glass sphere
+    blurb: "A glass ball on a column throws a spot of sun on the paving; at clock noon it crosses the figure-eight, at sun noon the straight line."
+    notes:
+      - "This is a meridiana: a noon mark laid along the north–south line, crossed by a spot of sunlight at the moment of local noon. The great ones were built inside churches, where a small hole high in the roof throws an image of the sun onto a brass line in the floor."
+      - "In Bologna, Gian Domenico Cassini laid a meridian across the basilica of San Petronio in 1655. The hole is 27.07 meters above the floor, exactly 1000 Paris inches, and is one-thousandth of that height across. With it Cassini timed the equinoxes and measured the changing size of the sun's image, which gave evidence for Kepler's account of the earth's orbit: the sun's distance changes through the year, and the earth moves faster when it is closer."
+      - "In Paris, the gnomon of Saint-Sulpice was begun by the clockmaker Henry Sully in 1727 and completed by Pierre Charles Le Monnier, who added the marble obelisk in 1743. It was built to fix the date of the spring equinox, and so of Easter; Le Monnier also used it to watch the tilt of the earth's axis change. (It is not the pagan relic of <i>The Da Vinci Code</i>.)"
+      - "Here a glass ball does the work of the hole. The month marks show where the spot falls at sun noon on the first of each month, high in summer and long in winter; the red figure-eight shows where it falls at clock noon, so the gap between them is the equation of time and the longitude, drawn on the stone."
+    sources:
+      - "Basilica di San Petronio, <i>La meridiana</i>."
+      - "J. L. Heilbron, <i>The Sun in the Church: Cathedrals as Solar Observatories</i>, 1999."
+      - "Wikipedia, <i>Gnomon of Saint-Sulpice</i>."
+  cannon:
+    name: The noon cannon
+    blurb: "A burning glass over the touch-hole: when the sun crosses the meridian on a clear day, it fires."
+    notes:
+      - "In 1786 a watchmaker named Rousseau, who kept a shop in the Galerie de Beaujolais, set a small cannon in the garden of the Palais-Royal in Paris with a lens above it. At the sun's noon the lens focused the light on the powder, and the gun fired, loud enough to be heard most of a kilometer away. Parisians set their watches by it; the phrase <i>midi pétant</i>, noon on the dot, is said to come from it."
+      - "It fired on every sunny day until 1911, when France changed from Paris time to Greenwich time and noon by the sun stopped being noon by the clock. Its lens was stolen in 1998, and it is now fired by hand on a few days a year."
+      - "A noon gun is a meridian instrument that keeps no record: it tells you only that the sun has just crossed the meridian, and only if the sky is clear. The house's cannon fires the same way, at local apparent noon, and only for those standing in the court."
+    sources:
+      - "Sortir à Paris, <i>The small cannon of the Palais-Royal</i>."
+      - "Atlas Obscura, <i>Small Cannon of the Palais Royal</i>."
+
 renovation:
   note: "Closed for renovation. The house is being rebuilt a few rooms at a time; this one will open again when it's ready. — W. K."
 
@@ -1022,10 +1082,12 @@ rooms:
   wing: court
   floor: stone
   ceiling: open
+  size: 22
+  walk: true
   decor: [sundial, cloister, dialcabinet]
   at: [5, 8]
   text: >-
-    An open court with the real sky over it and a brass sundial in the middle, laid out for the latitude where the house stands (Appleton, unless the astrolabe has carried it off). The shadow on the plate is the actual shadow for this moment, or for whatever moment the hourglass says. Look up: the sky is the sky over the court right now, sun or stars, the moon in its true phase, and as much cloud as the weather says.
+    A wide open court, twenty-two meters across, with the real sky over it and a sundial in the middle, laid out for the latitude where the house stands (Appleton, unless the astrolabe has carried it off). Walk anywhere on the paving, and click the sky to go up into it. The shadow on the plate is the actual shadow for this moment, or for whatever moment the hourglass says. Look up: the sky is the sky over the court right now, sun or stars, the moon in its true phase, and as much cloud as the weather says.
 
     Under the colonnade stands a glass-fronted cabinet of dials: the horizontal dial, an armillary sphere, a mean-time dial of figure-eights, a glass sphere that throws a spot of sun across the paving, and a little noon cannon. Open it and choose which one stands in the court.
 

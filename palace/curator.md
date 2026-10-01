@@ -276,6 +276,23 @@ Under the court's colonnade (on its left-hand wall) stands a glass-fronted cabin
 - **The glass sphere.** A ball on a column at the equator side of the court throws a spot of sun on the paving. A brass meridian line and month marks show sun noon; a red figure-eight shows where the spot falls at clock noon through the year. This is the cathedral meridiana, in a courtyard.
 - **The noon cannon.** A burning glass over the touch-hole. When the sun crosses the meridian on a clear day and you're in the court, it fires: a puff of smoke, a boom, and a toast. Its reading counts down to sun noon.
 
+**What each dial teaches.** Under the reading, each dial has a fold-out *About…* note: what kind of instrument it is, its history, how to read it, and where the facts come from. These live in `_data/palace.yml` under `dials:`. Each type (`horizontal`, `armillary`, `meantime`, `meridiana`, `cannon`) has a `name`, a `blurb`, `notes` (paragraphs) and `sources` (title and URL). Edit them there; a key you leave out keeps the built-in text.
+
+### The big court, and walking in it
+
+The Sundial Court is now a wide court, 22 m across, with a longer colonnade, more urns, and the dial in the middle. Two keys on any room in `_data/palace.yml` control this:
+- `size: 22` sets the room's width in meters (the default is about 8).
+- `walk: true` lets visitors walk anywhere on the floor: click the paving to walk there, or use W/↑ and S/↓ to step forward and back. They stop short of the dial and the walls. Doors still work as usual.
+
+### Going up into the sky
+
+In the court, look up (or move to the top of the picture) and click the sky: *The sky: go up into it.* The view tilts up to the real sky over the house for the moment shown, and a panel opens in the corner of the picture with three tabs:
+- **Tonight:** the sun and when it rises or sets, the moon's phase, which planets and bright stars are up and where, the constellations overhead, and the next meteor shower.
+- **Explorations:** switches for the constellation figures, names, planet tracks, an altitude-and-direction grid, the celestial equator, the ecliptic (the sun’s road, in gold), and the pole. There is also a time-lapse (ten minutes or an hour a second, and *Back to real time*) and links to the planet book and the astrolabe.
+- **Notes:** short notes on what the lines mean and where the star data come from (Olaf Frohn's d3-celestial).
+
+Drag to look around. The bottom of the picture says *Come back down*.
+
 ### The house's notices, from the log book
 
 Signed in as the archivist, the log book has a tab called **The house**. It edits:
