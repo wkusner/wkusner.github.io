@@ -9,14 +9,15 @@ if(!P || !P.rooms){ $("rname").textContent="The palace data did not load."; retu
 const NS = "http://www.w3.org/2000/svg";
 const ROOMS = {}; P.rooms.forEach(r => { ROOMS[String(r.id)] = r; });
 const WINGS = P.wings || {};
-const START = String(P.start || P.rooms[0].id);
+const START = String(P.start!=null ? P.start : P.rooms[0].id);
 const RANKS = P.ranks || [{name:"Visitor",at:0,color:"#d9d2c0"}];
 const LAT = P.latitude || 44.26;
 const Q = new URLSearchParams(location.search);
 
 /* ---------- state ---------- */
 const KEY = "palace-v1";
-const blank = () => ({visits:{}, log:[], edges:{}, frame:[0,0], frames:{}, inv:[], solved:{}, named:[], light:"auto", steps:0, walk:[], showAll:false});
+const blank = () => ({visits:{}, log:[], edges:{}, frame:[0,0], frames:{}, inv:[], solved:{}, named:[], light:"auto", steps:0, walk:[], showAll:false,
+  face:0, close:null, mode:null, xp:0, awards:{}, sheets:{}, clock:null, wx:null});
 let S = blank();
 /* ink: "two" (a spot color per wing) or "1bit" */
 try { const s = JSON.parse(localStorage.getItem(KEY)); if(s) S = Object.assign(blank(), s); } catch(e) {}
@@ -41,6 +42,7 @@ const WALLNAME = ["on the left","ahead","on the right","behind you"];
 
 /* ---------- time ---------- */
 function now(){
+  if(S.clock && !Q.has("hour") && !Q.has("date")){ const c=S.clock; return new Date(c.pal + (Date.now()-c.base)*(c.rate==null?1:c.rate)); }
   const d = new Date();
   if(Q.has("hour")) { d.setHours(+Q.get("hour"), +(Q.get("min")||0)); }
   if(Q.has("date")) { const t = new Date(Q.get("date")+"T"+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")); if(!isNaN(t)) return t; }
@@ -129,7 +131,13 @@ function drawSky(g, cx, cy, R, opts){
 
 /* ---------- ranks, conditions ---------- */
 const seen = () => Object.keys(S.visits).filter(k => ROOMS[k]).length;
-function rankIndex(){ let i=0; RANKS.forEach((r,j)=>{ if(seen()>=r.at) i=j; }); return i; }
+function rankIndex(){ let i=0; RANKS.forEach((r,j)=>{ if((r.xp!=null ? S.xp : seen()) >= (r.xp!=null ? r.xp : r.at)) i=j; }); return i; }
+function award(key, pts, why){
+  if(S.awards[key]) return false; S.awards[key]=1; const before=rankIndex(); S.xp += pts; save();
+  const after=rankIndex(); if(after>before) setTimeout(()=>toast(`Level ${after}: ${RANKS[after].name}. ${RANKS[after].gift||""}`), 900);
+  else if(why) toast(`+${pts} · ${why}`);
+  return true;
+}
 function cond(c, room){
   if(c==null || c==="") return true;
   if(Array.isArray(c)) return c.every(x => cond(x, room));
@@ -155,11 +163,15 @@ function cond(c, room){
     case "has": return S.inv.includes(val);
     case "solved": return !!S.solved[val];
     case "seen": return seen() >= +val;
+    case "mode": return (S.mode||"wanderer")===val;
+    case "level": return rankIndex() >= +val;
+    case "sheet": { const m = val.match(/^(\w+)(=|!=|<|>)(-?\d+)$/); if(!m) return true; const v=S.sheets[m[1]]||0, n=+m[3];
+      return m[2]==="=" ? v===n : m[2]==="!=" ? v!==n : m[2]==="<" ? v<n : v>n; }
     default: return true;
   }
 }
 const visible = (x, room) => S.showAll || (!x.hidden && cond(x.when, room) && !(x.to!=null && !Array.isArray(x.to) && ROOMS[String(x.to)] && ROOMS[String(x.to)].closed));
-const open = (x, room) => S.showAll || (cond(x.needs, room) && (!x.riddle || S.solved[x.riddle.id]));
+const open = (x, room) => S.showAll || (S.inv.includes("master-key") && !x.hardlock) || (cond(x.needs, room) && (!x.riddle || S.solved[x.riddle.id]));
 
 /* ---------- door targets ---------- */
 let randomPick = {};
@@ -235,8 +247,21 @@ function drawRoom(room, svg, light){
   E("polygon",{points:`${lx},${LO.yt} ${BX0},${BY0} ${BX0},${BY1} ${lx},${LO.yb}`, fill:"url(#h-mid)"},g);
   E("polygon",{points:`${rx},${LO.yt} ${BX1},${BY0} ${BX1},${BY1} ${rx},${LO.yb}`, fill:"url(#h-light)"},g);
   if(lx>0){ E("polygon",{points:`0,0 ${lx},${LO.yt} ${lx},${LO.yb} 0,${H}`,fill:"url(#h-dark)"},g); E("polygon",{points:`${W},0 ${rx},${LO.yt} ${rx},${LO.yb} ${W},${H}`,fill:"url(#h-mid)"},g); }
-  // ceiling ribs: toward each corner of the back face
-  for(let k=1;k<6;k++){ const t=k/6; L(g, W*t, 0, BX0+(BX1-BX0)*t, BY0, 1.6); }
+  // the ceiling: beams by default, coffers or a ribbed vault where the room calls for it
+  const ceil = room.ceiling || "beams";
+  if(ceil==="open"){
+    const sk = skyNow(), dk = sk.sun.alt < -6, R2 = rng(7);
+    E("polygon",{points:`0,0 ${W},0 ${rx},${LO.yt} ${BX1},${BY0} ${BX0},${BY0} ${lx},${LO.yt}`, fill: dk ? "#0d0c0b" : "url(#s-hz)"},g);
+    if(dk) for(let i=0;i<60;i++){ const x=R2()*W, y=R2()*BY0*.95; if(y<ceilY(x)-3) E("circle",{cx:x,cy:y,r:.6+R2()*1.4,fill:"#F4EFE2"},g); }
+    L(g,0,2,W,2,3);
+  } else if(ceil==="coffers"){
+    for(let k=1;k<8;k++){ const t=k/8; L(g, W*t, 0, BX0+(BX1-BX0)*t, BY0, 2.2,{stroke:"var(--paper)"}); L(g, W*t, 0, BX0+(BX1-BX0)*t, BY0, .8); }
+    for(let j=1;j<5;j++){ const f = 1 - Math.pow(.62,j), y = BY0*f, xl = (lx>0? lx*(1-f)+BX0*f : BX0*f), xr = W - (W - (lx>0?W-lx:W))*0 - (W-BX1)*f; L(g, BX0*f, y, W-(W-BX1)*f, y, 2.2,{stroke:"var(--paper)"}); L(g, BX0*f, y, W-(W-BX1)*f, y, .8);
+      for(let k=0;k<8;k++){ const t=(k+.5)/8, x = BX0*f*(1) + ((W-(W-BX1)*f) - BX0*f)*t, f2 = 1-Math.pow(.62,j-.5); const yy=BY0*f2, x2 = BX0*f2 + ((W-(W-BX1)*f2)-BX0*f2)*t; E("circle",{cx:x2,cy:yy,r:Math.max(1.5,5*(1-f2)+1.2),fill:"var(--paper)",stroke:"var(--ink)","stroke-width":.8},g); } }
+  } else if(ceil==="vault"){
+    for(let k=0;k<=8;k++){ const t=k/8, x=W*t, xb=BX0+(BX1-BX0)*t; E("path",{d:`M${x},0 Q${(x+xb)/2},${BY0*.2} ${xb},${BY0}`,fill:"none",stroke:"var(--paper)","stroke-width":3},g); E("path",{d:`M${x},0 Q${(x+xb)/2},${BY0*.2} ${xb},${BY0}`,fill:"none",stroke:"var(--ink)","stroke-width":1.1},g); }
+    E("path",{d:`M0,${BY0*.15} Q400,${BY0*1.25} ${W},${BY0*.15}`,fill:"none",stroke:"var(--ink)","stroke-width":1.4},g);
+  } else for(let k=1;k<6;k++){ const t=k/6; L(g, W*t, 0, BX0+(BX1-BX0)*t, BY0, 1.6); }
   // back face: courses of cut stone
   for(let y=BY0+22, row=0; y<BY1; y+=22, row++){
     L(g,BX0,y,BX1,y,.9);
@@ -250,6 +275,17 @@ function drawRoom(room, svg, light){
     const yh = (BY0+BY1)/2 - 10, k = H - yh;
     for(let z=1; ; z+=.28){ const y = yh + k/z; if(y<=BY1+1) break; const t=(H-y)/(H-BY1); L(g, BX0*t, y, W-(W-BX1)*t, y, 1.1); }
     for(let i=-3;i<=3;i++) L(g, 400+i*(BX1-BX0)/7, BY1, 400+i*130, H, .9);
+  } else if((room.floor||"")==="checker" || (room.floor||"")==="stone"){
+    // a floor laid in true perspective: squares (or flags) of equal size, shrinking with depth
+    const yh = BY0 - 40, k = H - yh, zb = k/(BY1-yh), checker = room.floor==="checker";
+    const zs=[]; for(let z=1; z<zb; z*=1.22) zs.push(z); zs.push(zb);
+    const X = (u, z) => { const y = yh + k/z, t = (H-y)/(H-BY1), xl = LO.x*(1-t)*0 + (0)*(1-t) + BX0*t, xr = W - (W-BX1)*t; return [xl + (xr-xl)*u, y]; };
+    const cols = 10;
+    for(let r=0;r<zs.length-1;r++) for(let c=0;c<cols;c++){
+      const a=X(c/cols,zs[r]), b=X((c+1)/cols,zs[r]), cc=X((c+1)/cols,zs[r+1]), d=X(c/cols,zs[r+1]);
+      if(checker){ if((r+c)%2) E("polygon",{points:[a,b,cc,d].map(p=>p.join(",")).join(" "),fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":.8},g); else E("polygon",{points:[a,b,cc,d].map(p=>p.join(",")).join(" "),fill:"var(--paper)",stroke:"var(--ink)","stroke-width":.8},g); }
+      else { L(g,a[0],a[1],b[0],b[1],1); if(R()>.35){ const m=X((c+(r%2?.5:0))/cols,zs[r]), m2=X((c+(r%2?.5:0))/cols,zs[r+1]); L(g,m[0],m[1],m2[0],m2[1],1); } }
+    }
   } else {
     const planks=[]; for(let i=-7;i<=7;i++) planks.push([400+i*(BX1-BX0)/14, 400+i*112]);
     planks.forEach(p => L(g,p[0],BY1,p[1],H,1.1));
@@ -331,7 +367,7 @@ const DECOR = {
   bigtree(g){ // a tree growing out of the floor, three branches at every fork
     const br=(x,y,len,ang,n,w)=>{ const x2=x+Math.sin(ang)*len, y2=y-Math.cos(ang)*len; L(g,x,y,x2,y2,w); if(!n){ E("circle",{cx:x2,cy:y2,r:2.6,fill:"var(--spot)"},g); return; } [-.55,0,.55].forEach(d=>br(x2,y2,len*.58,ang+d,n-1,Math.max(.8,w*.62))); };
     br(400,BY1+30,62,0,3,7); },
-  gloom(g){ E("rect",{x:0,y:0,width:W,height:H,fill:"url(#x-dark)",opacity:.55},g); E("ellipse",{cx:400,cy:330,rx:210,ry:120,fill:"var(--paper)",opacity:.35},g); },
+  gloom(g){ const lit = S.lantern && S.inv.includes("lantern"); E("rect",{x:0,y:0,width:W,height:H,fill:"url(#x-dark)",opacity:lit?.18:.55},g); E("ellipse",{cx:400,cy:330,rx:lit?330:210,ry:lit?190:120,fill:"var(--paper)",opacity:lit?.5:.35},g); },
   cot(g){ E("polygon",{points:"230,360 470,360 500,392 200,392",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g);
     E("polygon",{points:"200,392 500,392 500,402 200,402",fill:"url(#h-mid)",stroke:"var(--ink)"},g); L(g,205,402,205,428,3); L(g,495,402,495,428,3);
     E("ellipse",{cx:250,cy:368,rx:22,ry:8,fill:"var(--paper)",stroke:"var(--ink)"},g); E("path",{d:"M270,372 q90,-16 200,4",fill:"none",stroke:"var(--ink)","stroke-width":1.4},g);
@@ -365,6 +401,27 @@ const DECOR = {
       dir=(dir+1)%4; }
     E("polyline",{points:pts.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" "),fill:"none",stroke:"var(--spot)","stroke-width":2.4},g);
   },
+  pillar(g){ E("rect",{x:372,y:BY0-10,width:56,height:BY1-BY0+150,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":2.4},g); E("rect",{x:362,y:BY0-18,width:76,height:12,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g); E("rect",{x:362,y:BY1+140,width:76,height:12,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g);
+    for(let k=1;k<5;k++) L(g,372+k*11.2,BY0-6,372+k*11.2,BY1+140,.7); T("0",{x:400,y:BY0+60,"text-anchor":"middle","font-size":22,fill:"var(--spot)","font-family":"IM Fell English SC, serif"},g); },
+  thermo(g){ const wxc = weather(), t = wxc ? wxc.temperature_2m : null, p = wxc ? wxc.surface_pressure : null;
+    const x=BX1-46, y0=BY0+18, y1=BY0+150; E("rect",{x:x-16,y:y0-8,width:32,height:y1-y0+34,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g);
+    E("rect",{x:x-4,y:y0,width:8,height:y1-y0,rx:4,fill:"var(--paper2)",stroke:"var(--ink)"},g); E("circle",{cx:x,cy:y1+10,r:9,fill:"var(--spot)",stroke:"var(--ink)"},g);
+    for(let k=0;k<=12;k++){ const yy=y1-(y1-y0)*k/12; L(g,x+5,yy,x+(k%3?9:13),yy,.8); }
+    if(t!=null){ const f=Math.max(0,Math.min(1,(t+20)/120)), yy=y1-(y1-y0)*f; E("rect",{x:x-2.5,y:yy,width:5,height:y1-yy+4,fill:"var(--spot)"},g);
+      T(Math.round(t)+"°F",{x:x,y:y0-12,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},g); }
+    const bx=BX1-118, by=BY0+70; E("circle",{cx:bx,cy:by,r:34,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2.4},g); E("circle",{cx:bx,cy:by,r:28,fill:"none",stroke:"var(--ink)","stroke-width":.6},g);
+    ["RAIN","CHANGE","FAIR"].forEach((w,k)=>T(w,{x:bx+(k-1)*20,y:by+(k===1?-14:-6),"text-anchor":"middle","font-size":6,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},g));
+    if(p!=null){ const a = (-60 + 120*Math.max(0,Math.min(1,(p-980)/60)))*DEG; L(g,bx,by,bx+Math.sin(a)*24,by-Math.cos(a)*24,2,{stroke:"var(--spot)"}); T((p*0.02953).toFixed(2)+" in",{x:bx,y:by+20,"text-anchor":"middle","font-size":8,fill:"var(--ink)","font-family":"IM Fell English, serif"},g); }
+    E("circle",{cx:bx,cy:by,r:2.5,fill:"var(--ink)"},g); },
+  sundial(g){ const sk = skyNow(), Hd = (((sk.L - sk.sun.ra)%360)+540)%360-180, phi = LAT*DEG, H = Hd*DEG;
+    const cx=400, cy=372, rx=150, ry=40, Fz = (facing() + 90*S.face)*DEG;
+    const P2 = (az, rr) => { const r = az - Fz; return [cx + Math.sin(r)*rx*rr, cy - Math.cos(r)*ry*rr]; };
+    E("ellipse",{cx,cy:cy+12,rx:rx+10,ry:ry+8,fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":2},g);
+    E("ellipse",{cx,cy,rx:rx+10,ry:ry+8,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2.2},g);
+    for(let h=6; h<=18; h++){ const th = Math.atan2(Math.sin(phi)*Math.sin((h-12)*15*DEG), Math.cos((h-12)*15*DEG)); const a=P2(th,.25), b=P2(th,.95); L(g,a[0],a[1],b[0],b[1],h===12?1.6:.8);
+      const lp=P2(th,1.08); T(["VI","VII","VIII","IX","X","XI","XII","I","II","III","IV","V","VI"][h-6],{x:lp[0],y:lp[1]+3,"text-anchor":"middle","font-size":8,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},g); }
+    if(sk.sun.alt>0){ const th = Math.atan2(Math.sin(phi)*Math.sin(H), Math.cos(H)), a=P2(0,0), b=P2(th,.9); E("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:"var(--spot)","stroke-width":4,"stroke-linecap":"round"},g); }
+    const n0=P2(0,0), n1=P2(0,.7); E("polygon",{points:`${n0[0]},${n0[1]} ${n1[0]},${n1[1]} ${n1[0]},${n1[1]-30}`,fill:"url(#h-dark)",stroke:"var(--ink)","stroke-width":1.6},g); },
   woodcut(g){ const x=BX1-118, y=BY0+18; E("rect",{x,y,width:96,height:78,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":3},g);
     E("rect",{x:x+6,y:y+6,width:84,height:66,fill:"none",stroke:"var(--ink)","stroke-width":.8},g);
     for(let r=0;r<4;r++) for(let c=0;c<=r;c++){ const cx=x+48+(c-r/2)*14, cy=y+18+r*12; E("circle",{cx,cy,r:6.4,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1},g); E("path",{d:`M${cx+1},${cy-6} a6,6 0 0 1 0,12 a3,6 0 0 0 0,-12 Z`,fill:"url(#h-dark)"},g); }
@@ -409,7 +466,8 @@ const DECOR = {
 };
 
 function decor(room, svg, light, mirror){
-  const d = room.decor || [], R = rng(hash(room.id)), night = light==="night";
+  const homeAhead = pos(1)===1, R = rng(hash(room.id)), night = light==="night";
+  const d = (room.decor || []).filter(x => homeAhead || !WALL_DECOR.includes(x));
   const g = E("g", Object.assign({filter:"url(#rough)"}, mirror ? {transform:`translate(${W},0) scale(-1,1)`} : {}), svg);
   const PRE = ["sand","tilefloor","fibfloor","lattice","fibrect","chalkboard","screen","bigtree","woodcut","cases","glasshouse","lowshelves"];
   d.forEach(name => { if(PRE.includes(name) && DECOR[name]) DECOR[name](g, R, room); });
@@ -445,12 +503,20 @@ function decor(room, svg, light, mirror){
     if(dark){ for(let i=0;i<8;i++){ const x=wx+6+R()*(ww-12), y=wy+14+R()*(wh-20), r=1.2+R()*1.5; L(g,x-r,y,x+r,y,1,{stroke:"#F4EFE2"}); L(g,x,y-r,x,y+r,1,{stroke:"#F4EFE2"}); } }
     if(sk.moon.alt>0 && Math.abs(moonRel)<70){ const [mx,my]=inWin(sk.moon.alt,moonRel), p=sk.moon.phase;
       E("circle",{cx:mx,cy:my,r:7,fill:"#F4EFE2",stroke:"var(--ink)","stroke-width":.8},g); E("circle",{cx:mx + (p<.5 ? -28*p : 28*(1-p)), cy:my, r:7.4, fill:dark?"#0d0c0b":"url(#s-hz)"},g); }
-    if(sk.sun.alt>-2 && Math.abs(sunRel)<70){ const [sx,sy]=inWin(sk.sun.alt,sunRel);
+    const wxc = weather(), wk = wxc ? wxKind(wxc.weather_code) : "clear", overcast = wxc && wxc.cloud_cover>85;
+    if(sk.sun.alt>-2 && Math.abs(sunRel)<70 && !overcast){ const [sx,sy]=inWin(sk.sun.alt,sunRel);
       for(let k=0;k<12;k++){ const t=k/12*2*Math.PI; L(g,sx+Math.cos(t)*9,sy+Math.sin(t)*9,sx+Math.cos(t)*(k%2?12:15),sy+Math.sin(t)*(k%2?12:15),1.1); }
       E("circle",{cx:sx,cy:sy,r:7,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.4},g); }
+    // the weather outside, from Open-Meteo
+    const wclip = "wclip"+room.id; const cp = E("clipPath",{id:wclip},g); E("path",{d:path},cp); const wg = E("g",{"clip-path":`url(#${wclip})`},g);
+    if(wk!=="clear"){ [[.3,.32,14],[.72,.22,11],[.55,.5,9]].slice(0, overcast?3:2).forEach(([fx,fy,r]) => { const cx=wx+ww*fx, cy=wy+wh*fy; ["-1","0","1"].forEach((k,j) => E("circle",{cx:cx+(j-1)*r*.8,cy:cy+(j===1?-r*.35:0),r:r*(j===1?.8:.6),fill:dark?"#2a2724":"var(--paper)",stroke:"var(--ink)","stroke-width":.9},wg)); }); }
+    if(wk==="rain"||wk==="storm") for(let i=0;i<18;i++){ const x=wx+R()*ww, y=wy+20+R()*(wh-24); L(wg,x,y,x-3,y+8,.9,{stroke:dark?"#F4EFE2":"var(--ink)"}); }
+    if(wk==="snow") for(let i=0;i<22;i++) E("circle",{cx:wx+R()*ww,cy:wy+16+R()*(wh-18),r:1.1+R(),fill:dark?"#F4EFE2":"var(--paper)",stroke:"var(--ink)","stroke-width":.4},wg);
+    if(wk==="fog") for(let k=0;k<6;k++) L(wg,wx+2,wy+24+k*8,wx+ww-2,wy+24+k*8,1.4,{"stroke-dasharray":"6 4",opacity:.7});
+    if(wk==="storm") E("path",{d:`M${wx+ww*.6},${wy+22} l-6,12 h6 l-8,14`,fill:"none",stroke:"var(--spot)","stroke-width":2},wg);
     L(g,wx+ww/2,wy+4,wx+ww/2,wy+wh,2); L(g,wx,wy+wh*.55,wx+ww,wy+wh*.55,2);
     // a beam of sun (or full moon) on the floor
-    const src = (sk.sun.alt>2 && Math.abs(sunRel)<80) ? {alt:sk.sun.alt, rel:sunRel} : (dark && sk.moon.alt>5 && Math.abs(moonRel)<80 && Math.abs(sk.moon.phase-.5)<.2) ? {alt:sk.moon.alt, rel:moonRel, moon:true} : null;
+    const src = (sk.sun.alt>2 && Math.abs(sunRel)<80 && !overcast) ? {alt:sk.sun.alt, rel:sunRel} : (dark && sk.moon.alt>5 && Math.abs(moonRel)<80 && Math.abs(sk.moon.phase-.5)<.2) ? {alt:sk.moon.alt, rel:moonRel, moon:true} : null;
     LIGHT.beam = src;
     if(src){ const dy = Math.max(24, Math.min(150, 60/Math.tan(src.alt*DEG))), dx = Math.max(-220, Math.min(220, -Math.tan(src.rel*DEG)*dy*1.3));
       const pts = `${wx},${BY1} ${wx+ww},${BY1} ${wx+ww+dx+10},${BY1+dy} ${wx+dx-10},${BY1+dy}`;
@@ -531,6 +597,9 @@ const ICON = {
   pendulum:(g)=>{ E("line",{x1:0,y1:-22,x2:6,y2:12,stroke:"var(--ink)"},g); E("circle",{cx:6,cy:14,r:6,fill:"url(#h-mid)",stroke:"var(--ink)"},g); },
   hex:(g)=>{ E("polygon",{points:[0,1,2,3,4,5].map(i=>`${20*Math.cos(i*Math.PI/3)},${20*Math.sin(i*Math.PI/3)}`).join(" "),fill:"var(--paper)",stroke:"var(--ink)"},g); },
   door:(g)=>{ E("path",{d:"M-12,20 V-8 A12,12 0 0 1 12,-8 V20 Z",fill:"var(--ink)",stroke:"var(--ink)"},g); },
+  hourglass:(g)=>{ E("rect",{x:-16,y:-24,width:32,height:5,fill:"var(--ink)"},g); E("rect",{x:-16,y:19,width:32,height:5,fill:"var(--ink)"},g); E("path",{d:"M-12,-19 C-12,-4 -2,-4 -2,0 C-2,4 -12,4 -12,19 H12 C12,4 2,4 2,0 C2,-4 12,-4 12,-19 Z",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.6},g); E("path",{d:"M-8,17 Q0,6 8,17 Z",fill:"url(#s-dark)"},g); E("path",{d:"M-6,-12 h12 l-6,9 Z",fill:"url(#s-dark)"},g); },
+  compass:(g)=>{ E("circle",{r:20,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g); for(let k=0;k<8;k++){ const t=k*Math.PI/4; E("line",{x1:Math.sin(t)*15,y1:-Math.cos(t)*15,x2:Math.sin(t)*19,y2:-Math.cos(t)*19,stroke:"var(--ink)"},g); } E("path",{d:"M0,-15 L4,0 L0,15 L-4,0 Z",fill:"var(--paper)",stroke:"var(--ink)"},g); E("path",{d:"M0,-15 L4,0 L-4,0 Z",fill:"var(--spot)"},g); },
+  lamp:(g)=>{ E("path",{d:"M-10,-20 h20 M0,-20 v-4",stroke:"var(--ink)","stroke-width":2},g); E("path",{d:"M-12,-18 h24 l-3,30 h-18 Z",fill:"url(#hz)",stroke:"var(--ink)","stroke-width":1.6},g); E("ellipse",{cx:0,cy:-2,rx:5,ry:8,fill:"var(--spot)"},g); E("rect",{x:-14,y:12,width:28,height:6,fill:"var(--ink)"},g); },
   box:(g)=>{ E("rect",{x:-16,y:-14,width:32,height:28,fill:"var(--paper)",stroke:"var(--ink)"},g); }
 };
 const KIND_ICON = {device:"box", book:"book", paper:"scroll", ref:"book", unwritten:"unwritten", key:"key", note:"note", link:"book", page:"note"};
@@ -554,76 +623,172 @@ function effective(base){
     if(ph.widget) r.widget = ph.widget; });
   return r;
 }
+const FACES = ["n","e","s","w"], FACENAME = ["north","east","south","west"];
+const WALL_DECOR = ["window","clockface","chalkboard","screen","woodcut","fibrect","dial","sea","thermo"];
+const POSNAME = ["on your left","ahead","on your right","behind you"];
+const pos = w => (act(S.frame, w) - S.face + 4) % 4;
+function objWall(o, i, n){ if(o.wall!=null) return WALLS[o.wall]; return n>3 ? [1,2,0,3][i%4] : 1; }
+const BOOKISH = o => ["book","ref","unwritten","paper","notes","talk"].includes(o.kind);
 function render(){
   const room = effective(cur), id = String(room.id); LIGHT = {};
   const light = lightNow();
   document.documentElement.setAttribute("data-light", light);
   document.documentElement.setAttribute("data-ink", S.ink==="1bit" ? "1bit" : "two");
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
-  $("cardt").textContent = `Card ${room.label||id} of ${P.rooms.length}`;
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
-  $("b-primer").style.display = S.inv.includes("primer") ? "" : "none";
   const mirror = S.frame[1]===1;
-  // header
   $("rnum").textContent = room.label || id;
   $("rname").innerHTML = mirror ? `<span class="mirror-text" title="${esc(room.name||"")}">${esc(room.name||"")}</span>` : esc(room.name||"");
-  $("rwing").textContent = (WINGS[room.wing] && WINGS[room.wing].name) || "";
+  $("rwing").textContent = ((WINGS[room.wing] && WINGS[room.wing].name) || "") + " · facing " + FACENAME[S.face] + (S.close ? " · looking closer" : "");
   document.title = `${room.label||id} · ${room.name||"The Palace"}`;
-  statusBar(light);
-  // scene
-  const stage = $("stage"); stage.innerHTML = "";
-  const svg = E("svg",{viewBox:`0 0 ${W} ${H}`, role:"img", "aria-label":`Room ${id}: ${room.name||""}`}, stage);
-  drawRoom(room, svg, light);
-  decor(room, svg, light, mirror);
-  const doors = (room.doors||[]).filter(d => visible(d, room));
-  const byWall = [[],[],[],[]];
-  doors.forEach((d,i) => { const w0 = d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3]; byWall[act(S.frame, w0)].push(d); });
-  byWall.forEach((list, w) => list.forEach((d, i) => drawDoor(svg, room, d, w, i, list.length, mirror)));
+  tally(light);
+  // the view
+  const stage = $("stage");
+  stage.querySelectorAll("svg.view").forEach(o => { o.classList.add("fading"); setTimeout(() => o.remove(), 320); });
+  const svg = E("svg",{viewBox:`0 0 ${W} ${H}`, role:"img", class:"view", "aria-label":`Room ${id}, ${room.name||""}, facing ${FACENAME[S.face]}`}, stage);
+  const allDoors = (room.doors||[]).filter(d => visible(d, room));
+  const doorWall = (d,i) => d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3];
   const objs = (room.objects||[]).filter(o => visible(o, room) && !(o.kind==="key" && S.inv.includes(o.item)));
-  let shown = objs;
-  if(objs.length>6){ shown = objs.slice(0,5).concat([{title:`+${objs.length-5} more on the shelves`, short:`+${objs.length-5} more`, icon:"books", more:true}]); }
-  const ordered = mirror ? shown.slice().reverse() : shown;
-  ordered.forEach((o,i) => drawObject(svg, room, o, i, ordered.length, mirror));
+  const byObjWall = [[],[],[],[]]; objs.forEach((o,i) => byObjWall[act(S.frame, objWall(o,i,objs.length))].push(o));
+  const ahead = [0,1,2,3].find(w => (w - S.face + 4) % 4 === 1);
+  if(S.close!=null){ drawClose(room, svg, byObjWall[ahead] || [], mirror); }
+  else {
+    drawRoom(room, svg, light);
+    decor(room, svg, light, mirror);
+    const byPos = [[],[],[],[]];
+    allDoors.forEach((d,i) => byPos[pos(doorWall(d,i))].push(d));
+    [0,1,2].forEach(p => byPos[p].forEach((d,i) => drawDoor(svg, room, d, p, i, byPos[p].length, mirror)));
+    // furniture and things on the wall ahead; cabinets on the side walls hint at more
+    const aheadObjs = byObjWall[ahead] || [];
+    if(aheadObjs.length) drawStation(svg, room, aheadObjs, mirror);
+    [0,2].forEach(p => { const w = [0,1,2,3].find(w2 => (w2 - S.face + 4) % 4 === p); const n = (byObjWall[w]||[]).length; if(n) drawSideCabinet(svg, p, n, () => turn(p===0?-1:1)); });
+    const behind = byPos[3].length + ((byObjWall[[0,1,2,3].find(w2 => (w2 - S.face + 4) % 4 === 3)]||[]).length);
+    turnZones(svg, behind);
+  }
   // text
   const visits = S.visits[id]||0;
-  let html = (room.text||"").split(/\n+/).filter(Boolean).map(p=>`<p>${p}</p>`).join("");
-  if(visits>1 && room.again) html += `<p class="again">${room.again}</p>`;
+  let html = fillTokens((room.text||"")).split(/\n+/).filter(Boolean).map(p=>`<p>${p}</p>`).join("");
+  if(visits>1 && room.again) html += `<p class="again">${fillTokens(room.again)}</p>`;
   if(mirror && room.mirror) html += `<p class="again">${room.mirror}</p>`;
-  (room.notes||[]).forEach(n => { if(visible(n, room)) html += `<p class="again">${n.text}</p>`; });
+  (room.notes||[]).forEach(n => { if(visible(n, room)) html += `<p class="again">${fillTokens(n.text)}</p>`; });
   $("rtext").innerHTML = html;
-  // door list
+  // doors, for keyboards and screen readers
   const dl = $("doors"); dl.innerHTML = "";
-  if(!doors.length) dl.innerHTML = `<li class="note">No doors you can see. Try the map.</li>`;
-  doors.forEach(d => {
-    const w = act(S.frame, d.wall!=null ? WALLS[d.wall] : [1,0,2][(room.doors||[]).filter(x=>visible(x,room)).indexOf(d)%3]);
-    const li = document.createElement("li"), b = document.createElement("button");
+  if(!allDoors.length) dl.innerHTML = `<li class="note">No doors you can see. Try the map.</li>`;
+  allDoors.forEach((d,i) => {
+    const p = pos(doorWall(d,i)), li = document.createElement("li"), b = document.createElement("button");
     b.type="button"; b.className="doorbtn";
-    const lab = doorLabel(d, room), isOpen = open(d, room);
-    b.innerHTML = `${isOpen?"":"🔒 "}Door ${esc(lab)} <span class="note">${WALLNAME[w]}${d.title? " · "+esc(d.title):""}</span>`;
+    const lab = doorLabel(d, room), isOpen = open(d, room), nm = doorName(d);
+    b.innerHTML = `${isOpen?"":"🔒 "}${esc(lab)}${nm?" · "+esc(nm):""} <span class="note">${POSNAME[p]}${d.title? " · "+esc(d.title):""}</span>`;
     b.onclick = () => tryDoor(d, room);
     li.appendChild(b);
     if(!isOpen && d.hint) { const h=document.createElement("div"); h.className="note"; h.textContent=d.hint; li.appendChild(h); }
     dl.appendChild(li);
   });
-  // object list
   const ol = $("objects"); ol.innerHTML = "";
   if(!objs.length) ol.innerHTML = `<li class="note">Nothing here, or nothing yet.</li>`;
-  objs.forEach(o => {
-    const li = document.createElement("li");
-    const kind = o.kind || "device";
-    const t = o.href ? `<a href="${esc(o.href)}">${esc(o.title)}</a>` : (kind==="key"||o.to||o.action) ? `<a href="#" data-obj="1">${esc(o.title)}</a>` : `<b>${esc(o.title)}</b>`;
-    li.innerHTML = `<span class="k">${esc(kind)}</span>${t}${o.by? ` <span class="note">· ${esc(o.by)}</span>`:""}${o.note? `<div class="note">${o.note}</div>`:""}`;
-    const a = li.querySelector("[data-obj]"); if(a) a.onclick = e => { e.preventDefault(); useObject(o, room); };
+  objs.forEach((o,i) => {
+    const li = document.createElement("li"), kind = o.kind || "device", w = act(S.frame, objWall(o,i,objs.length)), p = (w - S.face + 4) % 4;
+    li.innerHTML = `<span class="k">${esc(kind)}</span><a href="#" data-obj="1">${esc(o.title)}</a>${o.by? ` <span class="note">· ${esc(o.by)}</span>`:""} <span class="note">(${POSNAME[p]})</span>`;
+    li.querySelector("[data-obj]").onclick = e => { e.preventDefault(); useObject(o, room); };
     ol.appendChild(li);
   });
-  // annotations: marginalia, sources, bibliography
   annotations(room);
-  // pockets
-  $("invpanel").style.display = S.inv.length ? "" : "none";
-  $("inv").textContent = S.inv.map(k => (P.items && P.items[k]) || k).join(", ");
-  // widget
+  bag(); corners(room);
   const wd = $("widget"); wd.innerHTML = ""; stopTimers();
   if(room.widget){ const spec = typeof room.widget==="string" ? {type:room.widget} : room.widget; (WIDGETS[spec.type]||(()=>{}))(wd, spec, room); }
+}
+function fillTokens(t){ return String(t).replace(/\{sheet:(\w+)\}/g, (_,k) => String(S.sheets[k]||0)).replace(/\{reader\}/g, esc(S.reader||"reader")); }
+function doorName(d){ if(Array.isArray(d.to) || d.to==="random" || d.to==="back") return d.title ? "" : ""; const r = ROOMS[String(d.to)]; if(!r) return ""; if(r.secret && !S.visits[r.id]) return ""; return (r.name||"").replace(/^The /,""); }
+function turnZones(svg, behind){
+  const zl = E("rect",{x:0,y:0,width:62,height:H,fill:"transparent",class:"turnL"},svg);
+  const zr = E("rect",{x:W-62,y:0,width:62,height:H,fill:"transparent",class:"turnR"},svg);
+  hot(zl, "Turn left", () => turn(-1)); hot(zr, "Turn right", () => turn(1));
+  zl.setAttribute("class","hot turnL"); zr.setAttribute("class","hot turnR");
+  if(behind){ const g=E("g",{},svg); E("rect",{x:W/2-70,y:H-24,width:140,height:20,fill:"var(--paper2)",stroke:"var(--ink)","stroke-width":1.2,rx:3},g);
+    T(`↶ ${behind} thing${behind>1?"s":""} behind you`,{x:W/2,y:H-10,"text-anchor":"middle","font-size":11.5,fill:"var(--ink)","font-family":"IM Fell English, serif"},g);
+    hot(g, "Turn around", () => turn(2)); g.setAttribute("class","hot turnB"); }
+}
+function drawSideCabinet(svg, p, n, fn){
+  const f = p===0 ? leftPt : rightPt, g = E("g",{},svg);
+  const a=f(.62,0), b=f(.62,.24), c=f(.86,.24), d=f(.86,0);
+  E("polygon",{points:[a,b,c,d].map(q=>q.join(",")).join(" "),fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":1.6,class:"hl"},g);
+  const m=f(.74,.12); E("circle",{cx:m[0],cy:m[1],r:9,fill:"var(--spot)",stroke:"var(--ink)"},g);
+  T(String(n),{x:m[0],y:m[1]+4,"text-anchor":"middle","font-size":11,fill:"var(--paper2)","font-family":"IM Fell English SC, serif"},g);
+  hot(g, `${n} thing${n>1?"s":""} ${p===0?"to your left":"to your right"}: turn to look`, fn);
+}
+function drawStation(svg, room, objs, mirror){
+  const n = Math.min(objs.length, 5), shown = objs.length>5 ? objs.slice(0,4).concat([{title:`${objs.length-4} more`, short:`+${objs.length-4} more`, icon:"books", more:true}]) : objs;
+  const span = Math.min(150, 520/Math.max(n,1)), x0 = 400-(n-1)*span/2, x1 = 400+(n-1)*span/2;
+  const g = E("g",{},svg), book = objs.filter(BOOKISH).length > objs.length/2;
+  // a desk, or a low bookcase for bookish things
+  const L0=x0-58, R0=x1+58, top=352, front=368;
+  E("polygon",{points:`${L0},${front+40} ${R0},${front+40} ${R0+14},${front+52} ${L0-14},${front+52}`,fill:"url(#h-dark)",opacity:.9},g);
+  E("polygon",{points:`${L0+22},${top} ${R0-22},${top} ${R0},${front} ${L0},${front}`,fill:book?"url(#h-light)":"var(--paper)",stroke:"var(--ink)","stroke-width":2,class:"hl"},g);
+  E("rect",{x:L0,y:front,width:R0-L0,height:12,fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":1.6},g);
+  if(book){ E("rect",{x:L0,y:front+12,width:R0-L0,height:30,fill:"url(#x-dark)",stroke:"var(--ink)","stroke-width":1.6},g);
+    for(let x=L0+6;x<R0-6;x+=7+((x*13)%5)) L(g,x,front+15,x,front+40,3,{stroke:"var(--paper)"}); }
+  else { [L0+8,R0-8].forEach(x=>L(g,x,front+12,x,front+48,4)); for(let k=0;k<3;k++){ const dx=L0+(R0-L0)*(k+.5)/3; E("rect",{x:dx-24,y:front+2,width:48,height:8,fill:"var(--paper)",stroke:"var(--ink)"},g); E("circle",{cx:dx,cy:front+6,r:1.6,fill:"var(--ink)"},g);} }
+  hot(g, "Look closer", () => setView(S.face, "ahead"));
+  shown.forEach((o,i) => {
+    const x = 400 + (i-(n-1)/2)*span, gg = E("g",{transform:`translate(${x},${top-8})`},svg);
+    const ig = E("g",{transform:"translate(0,-14)" + (mirror? " scale(-1,1)":"")},gg);
+    (ICON[o.icon] || ICON[KIND_ICON[o.kind]] || ICON.box)(ig);
+    const cap = o.short || (o.title.length>20 ? o.title.slice(0,19)+"…" : o.title), cw = cap.length*6.4+14;
+    E("rect",{x:-cw/2,y:58,width:cw,height:17,fill:"var(--paper2)",stroke:"var(--ink)","stroke-width":1.1},gg);
+    const t = T(cap,{x:0,y:70,"text-anchor":"middle","font-size":13,fill:"var(--ink)","font-family":"IM Fell English, serif"},gg);
+    if(mirror) t.setAttribute("transform","scale(-1,1)");
+    hot(gg, o.title, () => o.more ? setView(S.face,"ahead") : useObject(o, room));
+  });
+}
+function drawClose(room, svg, objs, mirror){
+  defs(svg);
+  const g = E("g",{filter:"url(#rough)"},svg);
+  E("rect",{x:0,y:0,width:W,height:H,fill:"url(#h-mid)"},g);
+  const book = objs.filter(BOOKISH).length > objs.length/2;
+  if(book){
+    // a bookcase, face on: spines with their titles
+    E("rect",{x:40,y:24,width:720,height:380,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":3},g);
+    const rows = 3, perRow = Math.ceil(objs.length/rows) || 1;
+    for(let r=0;r<rows;r++){ const y0 = 30 + r*124; E("rect",{x:44,y:y0+112,width:712,height:8,fill:"var(--ink)"},g); }
+    objs.forEach((o,i) => {
+      const r = Math.floor(i/perRow), c = i%perRow, y0 = 30 + r*124, w = Math.min(64, 690/perRow - 6), x = 52 + c*(w+6);
+      const sp = E("g",{},svg), dark = (hash(o.title)%3)===0, h = 92 + (hash(o.title)%18);
+      E("rect",{x,y:y0+112-h,width:w,height:h,fill:o.kind==="unwritten"?"var(--paper)":dark?"var(--ink)":(hash(o.title)%3===1?"url(#s-hatch)":"url(#h-light)"),stroke:"var(--ink)","stroke-width":1.6,"stroke-dasharray":o.kind==="unwritten"?"4 3":"none",class:"hl"},sp);
+      E("rect",{x:x+3,y:y0+112-h+8,width:w-6,height:h-16,fill:"var(--paper2)",stroke:"var(--ink)","stroke-width":.8,opacity:.92},sp);
+      const t = T(o.title.length>26?o.title.slice(0,25)+"…":o.title,{x:x+w/2+4,y:y0+112-h/2,"text-anchor":"middle","font-size":Math.min(12,w*.32),fill:"var(--ink)","font-family":"IM Fell English, serif",transform:`rotate(-90 ${x+w/2} ${y0+112-h/2})`},sp);
+      if(mirror) t.setAttribute("transform",`rotate(90 ${x+w/2} ${y0+112-h/2})`);
+      hot(sp, o.title + (o.by?", "+o.by:""), () => useObject(o, room));
+    });
+  } else {
+    // a desk top, seen from above: things laid out with their labels
+    E("polygon",{points:"30,70 770,70 800,430 0,430",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":3},g);
+    for(let k=0;k<14;k++) L(g,30+k*53,70,(k*800/13),430,.5,{opacity:.5});
+    // the furniture of a desk: a blotter, an inkwell and quill, a brass lamp, a stray card
+    E("polygon",{points:"200,110 600,110 640,400 160,400",fill:"url(#s-hatch)",stroke:"var(--ink)","stroke-width":1.6,opacity:.55},g);
+    E("ellipse",{cx:90,cy:120,rx:26,ry:12,fill:"url(#h-dark)",stroke:"var(--ink)","stroke-width":1.4},g); E("ellipse",{cx:90,cy:112,rx:18,ry:8,fill:"var(--ink)"},g);
+    E("path",{d:"M92,108 Q140,40 190,24",fill:"none",stroke:"var(--ink)","stroke-width":1.4},g); for(let k=0;k<10;k++){ const t=k/10, x=92+98*t, y=108-84*t+10*Math.sin(t*3); L(g,x,y,x+8,y-10,.7); }
+    E("ellipse",{cx:712,cy:118,rx:30,ry:12,fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":1.6},g); L(g,712,118,712,70,3); E("path",{d:"M686,72 h52 l-8,-26 h-36 Z",fill:"var(--spot)",stroke:"var(--ink)","stroke-width":1.6},g);
+    E("rect",{x:690,y:330,width:60,height:40,fill:"var(--paper2)",stroke:"var(--ink)",transform:"rotate(-8 720 350)"},g); for(let k=0;k<3;k++) L(g,698,342+k*9,740,336+k*9,.7);
+    const n = objs.length, cols = Math.min(3, n), rows = Math.ceil(n/cols);
+    objs.forEach((o,i) => {
+      const c=i%cols, r=Math.floor(i/cols), x = 400 + (c-(cols-1)/2)*240, y = 150 + r*(rows>2?100:150) - (rows-1)*20;
+      const gg = E("g",{transform:`translate(${x},${y})`},svg);
+      E("ellipse",{cx:6,cy:40,rx:60,ry:10,fill:"url(#h-dark)",opacity:.6},gg);
+      const ig = E("g",{transform:`scale(${rows>2?1.5:2.1})` + (mirror?" scale(-1,1)":"")},gg);
+      (ICON[o.icon] || ICON[KIND_ICON[o.kind]] || ICON.box)(ig);
+      const cap = o.title.length>30 ? o.title.slice(0,29)+"…" : o.title, cw = Math.max(90, cap.length*6.8+16);
+      E("rect",{x:-cw/2,y:54,width:cw,height:o.by?34:20,fill:"var(--paper2)",stroke:"var(--ink)","stroke-width":1.3},gg);
+      T(cap,{x:0,y:68,"text-anchor":"middle","font-size":13.5,fill:"var(--ink)","font-family":"IM Fell English, serif"},gg);
+      if(o.by) T(o.by,{x:0,y:83,"text-anchor":"middle","font-size":11,"font-style":"italic",fill:"var(--muted)","font-family":"IM Fell English, serif"},gg);
+      hot(gg, o.title, () => useObject(o, room));
+    });
+  }
+  const back = E("g",{},svg); E("rect",{x:0,y:H-30,width:W,height:30,fill:"transparent"},back);
+  E("rect",{x:W/2-70,y:H-26,width:140,height:20,fill:"var(--paper2)",stroke:"var(--ink)","stroke-width":1.2,rx:3},back);
+  T("↓ step back",{x:W/2,y:H-12,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English, serif"},back);
+  hot(back, "Step back", () => setView(S.face, null)); back.setAttribute("class","hot turnB");
+  award("close:"+cur.id+":"+S.face, 3);
 }
 function doorLabel(d, room){ if(d.label) return d.label; if(Array.isArray(d.to)) return "⟳"; if(d.to==="random") return "?"; if(d.to==="back") return "←"; return String(d.to); }
 function doorFill(d, fill){ return d.look==="mirror" ? "url(#hz-fine)" : d.look==="bars" ? "var(--void)" : fill; }
@@ -665,9 +830,11 @@ function drawDoor(svg, room, d, w, i, n, mirror){
   }
   hot(g, `Door ${lab}${isOpen?"":" (locked)"}`, () => tryDoor(d, room));
   function plaque(g,x,y,txt){
-    E("rect",{x:x-19,y:y-12,width:38,height:23,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.8},g);
-    E("rect",{x:x-16,y:y-9,width:32,height:17,fill:"none",stroke:"var(--ink)","stroke-width":.6},g);
-    const t = T(txt,{x:x,y:y+5,"text-anchor":"middle","font-size":15,fill:"var(--ink)","font-family":"IM Fell English SC, IM Fell English, serif"},g);
+    const nm = doorName(d), short = nm.length>16 ? nm.slice(0,15)+"…" : nm, pw = Math.max(40, short.length*5.6+14);
+    E("rect",{x:x-pw/2,y:y-13,width:pw,height:nm?34:24,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.8},g);
+    E("rect",{x:x-pw/2+3,y:y-10,width:pw-6,height:nm?28:18,fill:"none",stroke:"var(--ink)","stroke-width":.6},g);
+    const t = T(txt,{x:x,y:y+4,"text-anchor":"middle","font-size":15,fill:"var(--ink)","font-family":"IM Fell English SC, IM Fell English, serif"},g);
+    if(nm){ const t2 = T(short.toUpperCase(),{x:x,y:y+16,"text-anchor":"middle","font-size":7.5,"letter-spacing":".8",fill:"var(--ink)","font-family":"IM Fell English SC, serif"},g); if(mirror) t2.setAttribute("transform",`translate(${2*x},0) scale(-1,1)`); }
     if(mirror) t.setAttribute("transform",`translate(${2*x},0) scale(-1,1)`);
   }
 }
@@ -689,28 +856,174 @@ function drawObject(svg, room, o, i, n, mirror){
   if(mirror) t.setAttribute("transform","scale(-1,1)");
   hot(g, o.title, () => useObject(o, room));
 }
+/* ---------- things you carry ---------- */
+const ITEMS = {
+  "map":         {icon:"map",       name:"A map that fills in as you walk", use:()=>mapView()},
+  "plan":        {icon:"map",       name:"The full plan of the palace",     use:()=>mapView()},
+  "finding-aid": {icon:"scroll",    name:"The finding aid (every link)",    use:()=>catalogueView()},
+  "master-key":  {icon:"key",       name:"The porter's master key",         use:()=>toast("The master key opens every ordinary lock. A few doors want more than a key.")},
+  "golden-key":  {icon:"key",       name:"A golden key, stamped φ",         use:()=>toast("A golden key, stamped φ. Somewhere there is a lock to match.")},
+  "compass":     {icon:"compass",   name:"A compass",                       use:()=>{ S.frame=[0,0]; save(); render(); toast("The needle settles. You are facing true, and no longer mirrored."); }},
+  "lantern":     {icon:"lamp",      name:"A lantern",                       use:()=>{ S.lantern=!S.lantern; save(); render(); toast(S.lantern?"You raise the lantern.":"You shade the lantern."); }},
+  "hourglass":   {icon:"hourglass", name:"An hourglass that sets the palace's clock", use:()=>timeView()},
+  "page-left":   {icon:"note",      name:"The left half of a torn page", use:()=>toast("Half a page. The words stop in the middle.")},
+  "page-right":  {icon:"note",      name:"The right half of a torn page", use:()=>toast("Half a page. The words start in the middle.")},
+  "mended-page": {icon:"scroll",    name:"A mended page", use:()=>overlay("The mended page", `<div class="text"><p>Once mended, the page is a short poem about square roots: every number has two, and you cannot choose one consistently all the way around zero. Walk around the pillar once and you have changed your mind about which root you meant.</p><p>At the bottom, in a different hand, a warp word: <b class="mono">SHEET</b>.</p></div>`)},
+  "primer":      {icon:"book",      name:"A Young Lady's Illustrated Primer", use:()=>primerView()},
+};
+function take(item, msg){ if(S.inv.includes(item)) return; S.inv.push(item); save(); award("item:"+item, item==="golden-key"?40:15); toast(msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
 function useObject(o, room){
-  if(o.more){ $("objects").scrollIntoView({behavior:"smooth",block:"center"}); return; }
-  if(o.kind==="key"){ if(!S.inv.includes(o.item)){ S.inv.push(o.item); save(); toast(o.take || `You pocket ${o.title}.`); render(); } return; }
-  if(o.action==="map") return mapView();
-  if(o.action==="primer"){ if(o.item && !S.inv.includes(o.item)){ S.inv.push(o.item); save(); render(); toast("You take the Primer. It will travel with you (see the menu bar)."); } return primerView(); }
-  if(o.action==="catalogue") return catalogueView();
+  if(o.more) return setView(S.face, "ahead");
+  if(o.kind==="key"){ take(o.item, o.take); return; }
+  if(o.action==="mode") return modeView();
+  if(o.action==="combine"){ const uses=o.uses||[]; if(uses.every(k=>S.inv.includes(k))){ S.inv = S.inv.filter(k=>!uses.includes(k)); if(o.solve) S.solved[o.solve]=1; save(); take(o.gives, o.say); award("combine:"+o.gives, 40); } else toast(o.hint || "Something is missing."); return; }
+  if(o.action==="directory") return directoryView();
+  if(o.action==="codes") return codesView();
+  if(o.action==="time") return timeView(true);
+  if(o.action==="map") return mapView(true);
+  if(o.action==="primer"){ if(o.item && !S.inv.includes(o.item)) take(o.item, "You take the Primer. It rides in your bag now."); return primerView(); }
+  if(o.action==="catalogue") return catalogueView(true);
   if(o.action==="ranks"){ overlay("Ranks of the library",""); WIDGETS.rank($("ovb")); return; }
   if(o.to){ if(o.say) toast(o.say); move(String(o.to), o.turn, room); return; }
-  if(o.href){ location.href = o.href; return; }
-  toast(o.note ? o.note.replace(/<[^>]+>/g,"") : o.title);
+  cardView(o);
 }
-function statusBar(light){
-  const ri = rankIndex(), rk = RANKS[ri], g = S.frame;
-  const f = `<svg class="gnomon" viewBox="-14 -14 28 28" aria-hidden="true"><rect x="-13" y="-13" width="26" height="26" rx="4" fill="none" stroke="currentColor" opacity=".4"/><g transform="rotate(${90*g[0]}) scale(${g[1]?-1:1},1)"><path d="M-4,8 V-8 H6 M-4,0 H4" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/></g></svg>`;
-  const icon = {night:"☾",dawn:"◒",day:"☀",dusk:"◓"}[light];
-  $("status").innerHTML = `<span class="chip"><span class="vest" style="background:${rk.color}"></span>${esc(rk.name)}</span>
-    <span class="chip" title="Your frame: how the palace has turned you. Loops can leave you turned.">${f} facing ${nameG(g)}</span>
-    <span class="chip">${icon} ${light}${S.light!=="auto"?" (lamps)":""}</span>
-    <span class="chip">remembered ${seen()}/${P.rooms.filter(r=>!r.secret&&!r.closed).length}</span>
-    ${S.showAll? '<span class="chip warn">curator: all doors open</span>':""}`;
+function iconSVG(name, scale){ const s = document.createElementNS(NS,"svg"); s.setAttribute("viewBox","-34 -34 68 68"); s.setAttribute("width",scale||64); s.setAttribute("height",scale||64); const g=E("g",{},s); (ICON[name]||ICON.box)(g); return s; }
+function cardView(o){
+  overlay(o.title, `<div class="obcard"><div id="obi" class="obi"></div><div><p class="mono note">${esc(o.kind||"device")}${o.by?" · "+esc(o.by):""}</p>${o.note?`<p class="text" style="font-size:18px">${o.note}</p>`:""}${o.href?`<p><a class="btn primary" href="${esc(o.href)}">Open it</a></p>`:""}${o.kind==="unwritten"?`<p class="note">Not yet written. It waits on the shelf.</p>`:""}</div></div>`);
+  $("obi").appendChild(iconSVG(o.icon || KIND_ICON[o.kind] || "box", 120)); award("look:"+o.title, 2);
 }
-
+function bag(){
+  const b = $("bag"); b.innerHTML = "";
+  if(!S.inv.length){ b.innerHTML = `<span class="note">Your bag is empty. The porter at the Entry can help.</span>`; return; }
+  S.inv.forEach(k => { const it = ITEMS[k] || {icon:"box", name:(P.items&&P.items[k])||k}; const btn=document.createElement("button"); btn.type="button"; btn.className="slot"; btn.title=it.name; btn.setAttribute("aria-label",it.name);
+    btn.appendChild(iconSVG(it.icon, 40)); btn.onclick = () => it.use ? it.use() : toast(it.name); b.appendChild(btn); });
+}
+function corners(room){
+  const m = $("mini"), pr = $("primerc");
+  if(S.inv.includes("map")||S.inv.includes("plan")||S.showAll){ m.style.display=""; m.innerHTML = miniMapSVG(); m.onclick = () => mapView(); } else m.style.display="none";
+  if(S.inv.includes("primer")){ const L2 = P.primer||{}, l = L2[String(room.id)]; pr.style.display=""; pr.innerHTML = `<b>Primer:</b> ${l ? esc(l.teaser) : "turn the page for somewhere new"}`; pr.onclick = primerView; } else pr.style.display="none";
+}
+function miniMapSVG(){
+  const c = cur; if(!c || !c.at) return "";
+  const near = new Set([String(c.id)]); (c.doors||[]).forEach(d => allTargets(d).forEach(t => near.add(t)));
+  const ids = [...near].filter(i => ROOMS[i] && ROOMS[i].at && !ROOMS[i].closed && (S.visits[i] || S.inv.includes("plan") || i===String(c.id) || true));
+  const u=26, cx=c.at[0], cy=c.at[1];
+  let s = `<svg viewBox="-80 -60 160 120" width="160" height="120" aria-label="Nearby rooms">`;
+  ids.forEach(i => { if(i===String(c.id)) return; const r=ROOMS[i]; s += `<line x1="0" y1="0" x2="${(r.at[0]-cx)*u}" y2="${(r.at[1]-cy)*u}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="${S.visits[i]?"0":"2 2"}"/>`; });
+  ids.forEach(i => { const r=ROOMS[i], x=(r.at[0]-cx)*u, y=(r.at[1]-cy)*u, k=S.visits[i]||S.inv.includes("plan"), me=i===String(c.id);
+    s += `<rect x="${x-9}" y="${y-8}" width="18" height="16" fill="${me?"var(--spot)":k?"var(--ink)":"var(--paper2)"}" stroke="var(--ink)" stroke-width="1.2"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="9" fill="${me||k?"var(--paper2)":"var(--ink)"}" font-family="IM Fell English SC, serif">${(r.secret&&!S.visits[i])?"?":esc(r.label||r.id)}</text>`; });
+  const a = (facing()/90 + S.face)*90 + 180; // arrow shows which way you face on the map (north up)
+  s += `<g transform="rotate(${((facing()+90*S.face)%360)})"><path d="M0,-14 l4,7 h-8 z" fill="var(--paper2)" stroke="var(--ink)"/></g>`;
+  return s + `</svg>`;
+}
+/* ---------- the tally bar ---------- */
+function tally(light){
+  const ri = rankIndex(), rk = RANKS[ri], nx = RANKS[ri+1], g = S.frame;
+  const lo = rk.xp||0, hi = nx ? nx.xp : lo+1, frac = nx ? Math.min(1,(S.xp-lo)/(hi-lo)) : 1;
+  const f = `<svg class="gnomon" viewBox="-14 -14 28 28" aria-hidden="true"><rect x="-13" y="-13" width="26" height="26" fill="none" stroke="currentColor" opacity=".4"/><g transform="rotate(${90*g[0]}) scale(${g[1]?-1:1},1)"><path d="M-4,8 V-8 H6 M-4,0 H4" fill="none" stroke="var(--spot)" stroke-width="2.6" stroke-linecap="round"/></g></svg>`;
+  const d = now(), wx = weather(), icon = {night:"☾",dawn:"◒",day:"☀",dusk:"◓"}[light];
+  const sheets = Object.keys(S.sheets).filter(k => S.sheets[k]).map(k => `${((P.sheets||{})[k]||{}).sym||k} ${S.sheets[k]}`).join(" · ");
+  $("tally").innerHTML = `
+    <span class="chip" title="Level and experience"><span class="vest" style="background:${rk.color}"></span>L${ri} ${esc(rk.name)} <span class="xp"><span style="width:${(frac*100).toFixed(0)}%"></span></span> ${S.xp} xp</span>
+    <span class="chip" title="Your frame: how the palace has turned you">${f} ${nameG(g)}${sheets?" · "+esc(sheets):""}</span>
+    <button class="chip" id="t-time" type="button" title="${S.inv.includes("hourglass")?"Set the palace's clock with the hourglass":"The palace keeps your time"}">${icon} ${d.toLocaleDateString([], {month:"short", day:"numeric"})} ${d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}${S.clock?" ⧗":""}</button>
+    <span class="chip" title="${wx?"Weather in Appleton now (Open-Meteo)":"Weather unavailable"}">${wx? `${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F` : "· · ·"}</span>
+    <button class="chip" id="t-code" type="button" title="Save code and warp codes">⌘ ${saveCode().slice(0,9)}…</button>
+    <span class="chip">${esc((S.mode||"wanderer"))}</span>
+    ${S.showAll? '<span class="chip warn">curator</span>':""}`;
+  $("t-time").onclick = () => S.inv.includes("hourglass") ? timeView() : toast("You'd need an hourglass to change the time.");
+  $("t-code").onclick = codesView;
+}
+/* ---------- weather (Open-Meteo, no key) ---------- */
+let wxFetching = false;
+function weather(){
+  const fresh = S.wx && (Date.now()-S.wx.t < 20*60e3);
+  if(!fresh && !wxFetching && !(weather.failed && Date.now()-weather.failed < 10*60e3)){ wxFetching = true;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,wind_speed_10m,surface_pressure,is_day&temperature_unit=fahrenheit&wind_speed_unit=mph`)
+      .then(r => r.json()).then(j => { if(j && j.current){ S.wx = {t:Date.now(), c:j.current}; save(); if(cur) render(); } }).catch(()=>{ weather.failed = Date.now(); }).finally(()=>{ wxFetching=false; }); }
+  return S.wx ? S.wx.c : null;
+}
+function wxKind(code){ if(code==null) return "clear"; if(code>=95) return "storm"; if(code>=71 && code<=77 || code===85 || code===86) return "snow"; if(code>=51 && code<=67 || code>=80 && code<=82) return "rain"; if(code===45||code===48) return "fog"; if(code>=2) return "cloud"; return "clear"; }
+function wxIcon(code, day){ return {clear: day?"☀":"☾", cloud:"☁", fog:"≋", rain:"☂", snow:"❄", storm:"ϟ"}[wxKind(code)]; }
+/* ---------- the hourglass: set the palace's clock ---------- */
+function timeView(fromDesk){
+  if(!S.inv.includes("hourglass") && !fromDesk && !S.showAll){ toast("You'd need an hourglass."); return; }
+  const d = now(), pad = n => String(n).padStart(2,"0"), v = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  overlay("The hourglass", `<div class="text"><p>Turn the glass and the palace's clock follows: the light, the sky, the sundial, the pendulum, and every door that keeps hours.</p></div>
+    <div class="row widget"><input id="tv-d" type="datetime-local" value="${v}" style="width:240px"><select id="tv-r"><option value="1">runs at 1×</option><option value="60">60× (a minute a second)</option><option value="3600">3600× (an hour a second)</option><option value="0">stopped</option></select><button class="btn primary" id="tv-s" type="button">Turn the glass</button></div>
+    <div class="row"><button class="btn" id="tv-n" type="button">Return to the real time</button></div><p class="note">${S.clock?"The palace is on hourglass time now.":"The palace is on real time."}</p>`);
+  if(S.clock) $("tv-r").value = String(S.clock.rate);
+  $("tv-s").onclick = () => { const t = new Date($("tv-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("tv-r").value}; save(); closeOv(); render(); toast("The sand runs differently now."); award("hourglass-used", 10); };
+  $("tv-n").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
+}
+setInterval(() => { if(S.clock && S.clock.rate>1 && cur && !$("ov").classList.contains("open")) render(); }, 4000);
+/* ---------- modes ---------- */
+function modeView(){
+  overlay("The porter's desk", `<div class="text"><p>The porter looks up. “How would you like to walk?”</p></div>
+   <div class="modes">
+    <button class="mode" data-m="guided" type="button"><b>Guided</b><span>The master key, the full plan, the finding aid, a compass, a lantern, and the hourglass. Everything opens.</span></button>
+    <button class="mode" data-m="wanderer" type="button"><b>Wanderer</b><span>A map that fills in as you go, a compass, and a lantern. Puzzles open some doors. The finding aid is on the desk if you want it.</span></button>
+    <button class="mode" data-m="hardcore" type="button"><b>Hardcore</b><span>Nothing. No map, no list, no key. Everything must be found or earned.</span></button>
+   </div><p class="note">You can come back to the desk and change your mind. Your walk and experience are kept either way.</p>`);
+  document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
+    const m = b.dataset.m; S.mode = m;
+    const give = {guided:["map","plan","finding-aid","master-key","compass","lantern","hourglass"], wanderer:["map","compass","lantern"], hardcore:[]}[m];
+    if(m!=="guided") S.inv = S.inv.filter(k => !["plan","master-key"].includes(k) || S.awards["earned:"+k]);
+    give.forEach(k => { if(!S.inv.includes(k)) S.inv.push(k); });
+    save(); closeOv(); render(); toast({guided:"The porter hands you a heavy ring of keys.", wanderer:"The porter hands you a folded map and a compass.", hardcore:"The porter nods, and gives you nothing at all."}[m]);
+  });
+}
+function directoryView(){
+  const links = P.links || [];
+  overlay("The directory", `<p class="note">The plain way through: the rest of the site, without the walking.</p><div class="dir">${links.map(l => `<a class="dirl" href="${esc(l.href)}"><b>${esc(l.title)}</b><span>${esc(l.note||"")}</span></a>`).join("")}</div>`);
+}
+/* ---------- save codes and warp codes ---------- */
+const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+const ITEM_ORDER = ["map","plan","finding-aid","master-key","golden-key","compass","lantern","hourglass","primer","page-left","page-right","mended-page"];
+const SOLVED_ORDER = ["galois","island","mended"];
+function roomOrder(){ return P.rooms.map(r => String(r.id)); }
+function crc8(bytes){ let c=0; bytes.forEach(b => { c ^= b; for(let k=0;k<8;k++) c = (c&0x80) ? ((c<<1)^0x07)&255 : (c<<1)&255; }); return c; }
+function saveCode(){
+  const ro = roomOrder(), bytes = [1, ["wanderer","guided","hardcore"].indexOf(S.mode||"wanderer") & 3, (S.xp>>8)&255, S.xp&255];
+  const bits = (list, has) => { const out=[]; for(let i=0;i<list.length;i+=8){ let b=0; for(let j=0;j<8 && i+j<list.length;j++) if(has(list[i+j])) b|=1<<j; out.push(b); } return out; };
+  bytes.push(...bits(ro, id => !!S.visits[id]));
+  bytes.push(...bits(ITEM_ORDER, k => S.inv.includes(k)));
+  bytes.push(...bits(SOLVED_ORDER, k => !!S.solved[k]));
+  bytes.push(((S.sheets.log||0)+128)&255, (S.sheets.sqrt||0)&255, (S.frame[0]|(S.frame[1]<<2))&255);
+  bytes.push(crc8(bytes));
+  let acc=0, n=0, s="";
+  bytes.forEach(b => { acc=(acc<<8)|b; n+=8; while(n>=5){ s+=B32[(acc>>(n-5))&31]; n-=5; } acc &= (1<<n)-1; });
+  if(n>0) s+=B32[(acc<<(5-n))&31];
+  return s.match(/.{1,4}/g).join("-");
+}
+function loadCode(code){
+  const clean = code.toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/O/g,"0").replace(/[IL]/g,"1");
+  let acc=0, n=0; const bytes=[];
+  for(const ch of clean){ const v = B32.indexOf(ch); if(v<0) return false; acc=(acc<<5)|v; n+=5; if(n>=8){ bytes.push((acc>>(n-8))&255); n-=8; acc &= (1<<n)-1; } }
+  if(bytes.length<6 || bytes[0]!==1) return false;
+  const ro = roomOrder(), nb = l => Math.ceil(l/8), need = 4 + nb(ro.length) + nb(ITEM_ORDER.length) + nb(SOLVED_ORDER.length) + 3;
+  if(bytes.length < need+1) return false;
+  if(crc8(bytes.slice(0,need)) !== bytes[need]) return false;
+  let p=4; const rd = (list, f) => { for(let i=0;i<list.length;i++){ if(bytes[p+(i>>3)] & (1<<(i&7))) f(list[i]); } p += nb(list.length); };
+  S.mode = ["wanderer","guided","hardcore"][bytes[1]&3]; S.xp = (bytes[2]<<8)|bytes[3];
+  const visits = {}; rd(ro, id => visits[id] = Math.max(1, S.visits[id]||0)); S.visits = Object.assign(visits, {});
+  S.inv = []; rd(ITEM_ORDER, k => S.inv.push(k)); rd(SOLVED_ORDER, k => S.solved[k]=1);
+  S.sheets.log = bytes[p]-128; S.sheets.sqrt = bytes[p+1]; S.frame = [bytes[p+2]&3, (bytes[p+2]>>2)&1];
+  Object.keys(S.visits).forEach(id => S.awards["room:"+id]=1);
+  save(); return true;
+}
+function codesView(){
+  const code = saveCode();
+  overlay("Codes", `<div class="text"><p>Your save code records the rooms you remember, what you carry, the puzzles you've solved, your experience, and how the palace has turned you. Write it down, or type it into another browser to carry on there.</p></div>
+    <p class="savecode">${code}</p><div class="row"><button class="btn" id="cd-copy" type="button">Copy</button></div>
+    <div class="row widget"><input id="cd-in" style="width:280px" placeholder="a save code or a warp word"><button class="btn primary" id="cd-go" type="button">Enter</button></div><p class="note" id="cd-o">Warp words take you straight to a place. Some are printed in books; some are scratched on walls.</p>`);
+  $("cd-copy").onclick = () => { try { navigator.clipboard.writeText(code); toast("Copied."); } catch(e) {} };
+  const go = () => { const v = $("cd-in").value.trim(); if(!v) return; const w = (P.warps||{})[v.toUpperCase().replace(/\s+/g,"")];
+    if(w){ closeOv(); if(w.time){ const t=new Date(w.time); if(!isNaN(t)) S.clock={base:Date.now(), pal:t.getTime(), rate:1}; } award("warp:"+v.toUpperCase(), 5); S.frame=[0,0]; save(); location.hash = String(w.room) + (w.face?"/"+w.face:""); toast(w.say || "The floor tilts, and you are elsewhere."); return; }
+    if(loadCode(v)){ closeOv(); render(); toast("The palace remembers you."); return; }
+    $("cd-o").textContent = "Nothing happens. Check the code, letter by letter."; };
+  $("cd-go").onclick = go; $("cd-in").onkeydown = e => { if(e.key==="Enter") go(); };
+}
 /* ---------- annotations ---------- */
 function annotations(room){
   const on = !!S.annot; $("annwin").style.display = on ? "" : "none"; $("b-ann").textContent = on ? "Annotations ✓" : "Annotations";
@@ -722,8 +1035,11 @@ function annotations(room){
 }
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => { S.annotTab = b.dataset.tab; save(); annotations(effective(cur)); });
 
-/* ---------- movement ---------- */
+/* ---------- movement: rooms, facings, close-ups ---------- */
 let planned = null;
+const viewHash = (id, face, close) => "#" + id + (face||close ? "/" + FACES[face||0] : "") + (close ? "/" + close : "");
+function setView(face, close){ S.face = ((face%4)+4)%4; S.close = close || null; save(); planned = "view"; const h = viewHash(cur.id, S.face, S.close); if(location.hash===h) render(); else location.hash = h; }
+function turn(k){ setView(S.face + k, null); }
 function tryDoor(d, room){
   if(!open(d, room)){
     if(d.riddle && !S.solved[d.riddle.id] && cond(d.needs, room)) return riddle(d, room);
@@ -732,12 +1048,18 @@ function tryDoor(d, room){
   const t = target(d, room);
   if(!ROOMS[t]){ toast("This door opens onto a wall. (Room "+t+" isn't built yet.)"); return; }
   if(d.say) toast(d.say);
+  if(d.lift) liftSheets(d.lift);
   move(t, d.turn, room);
 }
-function move(t, turn, from){
-  S.frame = mul(S.frame, parseG(turn));
+function liftSheets(lift){
+  Object.keys(lift).forEach(k => { const spec = (P.sheets||{})[k] || {}; let v = (S.sheets[k]||0) + (+lift[k]);
+    if(spec.mod) v = ((v % spec.mod) + spec.mod) % spec.mod; S.sheets[k] = v;
+    if(v!==0) award("sheet:"+k+":"+v, 25, `${spec.name||k}: sheet ${v}`); });
+}
+function move(t, turnG, from){
+  S.frame = mul(S.frame, parseG(turnG));
   if(from){ const k = from.id+">"+t; S.edges[k] = 1; }
-  S.steps++;
+  S.steps++; S.face = 0; S.close = null;
   planned = t;
   if(location.hash === "#"+t) arrive(t); else location.hash = t;
 }
@@ -749,23 +1071,30 @@ function arrive(id){
   S.visits[id] = (S.visits[id]||0)+1;
   S.log.push(id); if(S.log.length>2000) S.log = S.log.slice(-2000);
   S.frames[id] = S.frame.slice();
-  const before = rankIndex.cache, ri = rankIndex();
-  if(before!=null && ri>before) toast(`You are now ${RANKS[ri].name}.`);
-  rankIndex.cache = ri;
+  award("room:"+id, ROOMS[id].secret ? 30 : 10);
   save(); randomPick = {};
-  render(); window.scrollTo({top:0,behavior:"smooth"});
+  render();
+  if(id===START && !S.mode) setTimeout(modeView, 400);
 }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   if(h==="curator"){ S.curator=true; save(); history.replaceState(null,"","#"+(cur?cur.id:START)); if(!cur) arrive(START); curatorView(); return; }
-  const id = h || START;
+  const [rid, f, c] = (h || START).split("/"), id = rid || START, face = Math.max(0, FACES.indexOf(f||"n")), close = c || null;
+  if(planned==="view" || (cur && String(cur.id)===id)){ planned = null; S.face = face; S.close = close; save(); render(); return; }
   if(planned === id){ planned = null; arrive(id); return; }
   planned = null;
-  // arrived by memory (map, back button, typed URL): restore the frame you last had there
-  S.frame = (S.frames[id] || [0,0]).slice();
+  S.frame = (S.frames[id] || [0,0]).slice(); S.face = face; S.close = close;
   arrive(id);
 }
 window.addEventListener("hashchange", route);
+document.addEventListener("keydown", e => {
+  if(e.target.closest && e.target.closest("input,select,textarea")) return;
+  if($("ov").classList.contains("open")) return;
+  if(e.key==="ArrowLeft"){ e.preventDefault(); turn(-1); }
+  else if(e.key==="ArrowRight"){ e.preventDefault(); turn(1); }
+  else if(e.key==="ArrowDown"){ e.preventDefault(); if(S.close) setView(S.face,null); else turn(2); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); const room=effective(cur); const ds=(room.doors||[]).filter(d=>visible(d,room)); const d=ds.find((d,i)=>pos(d.wall!=null?WALLS[d.wall]:[1,0,2][i%3])===1); if(d) tryDoor(d, room); }
+});
 
 /* ---------- riddles ---------- */
 function riddle(d, room){
@@ -774,7 +1103,7 @@ function riddle(d, room){
   const go = () => {
     const a = $("ra").value.trim().toLowerCase().replace(/\s+/g," ");
     const ok = [].concat(r.a).map(x=>String(x).toLowerCase()).includes(a);
-    if(ok){ S.solved[r.id]=1; save(); closeOv(); toast(r.yes || "The door unlatches."); render(); }
+    if(ok){ S.solved[r.id]=1; save(); closeOv(); award("riddle:"+r.id, 50); toast(r.yes || "The door unlatches."); render(); }
     else $("rn").textContent = r.no || "Nothing happens.";
   };
   $("rb").onclick = go; $("ra").onkeydown = e => { if(e.key==="Enter") go(); }; $("ra").focus();
@@ -786,8 +1115,9 @@ function closeOv(){ $("ov").classList.remove("open"); }
 $("ovx").onclick = closeOv; $("ov").onclick = e => { if(e.target.id==="ov") closeOv(); };
 document.addEventListener("keydown", e => { if(e.key==="Escape") closeOv(); });
 
-function mapView(){
-  const all = S.showAll;
+function mapView(force){
+  if(!force && !S.showAll && !S.inv.includes("map") && !S.inv.includes("plan")){ toast("You have no map. The porter at the Entry keeps them."); return; }
+  const all = S.showAll || S.inv.includes("plan");
   const known = new Set(Object.keys(S.visits).filter(k=>ROOMS[k]));
   const fringe = new Set();
   known.forEach(k => (ROOMS[k].doors||[]).forEach(d => allTargets(d).forEach(t => { if(ROOMS[t] && !known.has(t)) fringe.add(t); })));
@@ -799,7 +1129,7 @@ function mapView(){
   let s = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;max-height:70vh" role="img" aria-label="Map of the rooms you remember">`;
   const drawn = new Set();
   P.rooms.forEach(r => (r.doors||[]).forEach(d => allTargets(d).forEach(t => {
-    const T2 = ROOMS[t]; if(!r.at || !T2 || !T2.at) return;
+    const T2 = ROOMS[t]; if(!r.at || !T2 || !T2.at) return; if(!S.showAll && [r,T2].some(x => x.closed || (x.secret && !S.visits[x.id]))) return;
     const k=[r.id,t].sort().join("~"); if(drawn.has(k)) return;
     const walked = S.edges[r.id+">"+t] || S.edges[t+">"+r.id];
     const show = all || walked || (known.has(String(r.id)) && (known.has(t)||fringe.has(t)));
@@ -809,7 +1139,7 @@ function mapView(){
   })));
   P.rooms.forEach(r => {
     if(!r.at) return; const id=String(r.id), k=known.has(id), f=fringe.has(id);
-    if(!(all||k||f)) return;
+    if(!(all||k||f) || (!S.showAll && (r.closed || (r.secret && !k)))) return;
     const [x,y]=px(r), c = (WINGS[r.wing]&&WINGS[r.wing].color)||"#A77E22", here = cur && String(cur.id)===id;
     s += `<g ${k||all?`class="mapgo" data-id="${id}" style="cursor:pointer"`:""}><rect x="${x-17}" y="${y-15}" width="34" height="30" fill="${here?"var(--spot)":k||all?"var(--ink)":"var(--paper2)"}" stroke="var(--ink)" stroke-width="2" ${f&&!k&&!all?'stroke-dasharray="3 3"':""}/>${here?`<rect x="${x-21}" y="${y-19}" width="42" height="38" fill="none" stroke="var(--ink)" stroke-width="1.5"/>`:""}
       <text x="${x}" y="${y+5}" text-anchor="middle" font-family="IM Fell English SC, serif" font-size="17" fill="${k||all?"var(--paper2)":"var(--muted)"}">${k||all?esc(r.label||id):"?"}</text>
@@ -819,7 +1149,8 @@ function mapView(){
   overlay("The map, as far as you remember it", s);
   document.querySelectorAll(".mapgo").forEach(el => el.addEventListener("click", () => { closeOv(); location.hash = el.dataset.id; }));
 }
-function catalogueView(){
+function catalogueView(force){
+  if(!force && !S.showAll && !S.inv.includes("finding-aid")){ toast("The finding aid is kept at the porter\u2019s desk."); return; }
   let items = [];
   P.rooms.forEach(r => { if(r.closed && !S.showAll) return; (r.objects||[]).forEach(o => { if(o.kind!=="key" && !o.hide && (!o.hidden || S.showAll)) items.push({o, r}); }); });
   const wingOrder = Object.keys(WINGS);
@@ -913,7 +1244,7 @@ const WIDGETS = {};
 WIDGETS.pendulum = (el, spec) => {
   const lat = spec.latitude || LAT, s = Math.sin(lat*Math.PI/180);
   const rate = 360*s/23.9345; // degrees per hour, relative to the floor
-  const t0 = Date.now();
+  const t0 = now().getTime();
   el.innerHTML = `<div class="panel"><h3>The pendulum, from above</h3>
     <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
     <svg viewBox="-110 -110 220 220" width="220" height="220" aria-label="Top view of the swing plane"><circle r="100" fill="none" stroke="var(--line)"/>${Array.from({length:36},(_,i)=>{const a=i*10*Math.PI/180;return `<line x1="${95*Math.cos(a)}" y1="${95*Math.sin(a)}" x2="${(i%9?100:88)*Math.cos(a)}" y2="${(i%9?100:88)*Math.sin(a)}" stroke="var(--muted)"/>`;}).join("")}
@@ -922,7 +1253,7 @@ WIDGETS.pendulum = (el, spec) => {
     <div class="mono" style="font-size:14px;line-height:1.7">latitude ${lat.toFixed(2)}° N<br>turns ${rate.toFixed(2)}° per hour (clockwise)<br>one full turn every ${(360/rate).toFixed(1)} hours<br><span id="pt"></span></div></div>
     <p class="note">The dashed line is where the plane pointed when you walked in. The red line is where it points now. Stay a while.</p></div>`;
   const tick = () => {
-    const hrs = Date.now()/36e5, ang = (hrs*rate) % 180, since = (Date.now()-t0)/36e5*rate;
+    const tn = now().getTime(), hrs = tn/36e5, ang = (hrs*rate) % 180, since = (tn-t0)/36e5*rate;
     const a0 = ((t0/36e5*rate) % 180) * Math.PI/180, a = ang*Math.PI/180;
     $("pl").setAttribute("x1",-90*Math.cos(a)); $("pl").setAttribute("y1",-90*Math.sin(a)); $("pl").setAttribute("x2",90*Math.cos(a)); $("pl").setAttribute("y2",90*Math.sin(a));
     $("pl0").setAttribute("x1",-90*Math.cos(a0)); $("pl0").setAttribute("y1",-90*Math.sin(a0)); $("pl0").setAttribute("x2",90*Math.cos(a0)); $("pl0").setAttribute("y2",90*Math.sin(a0));
@@ -979,7 +1310,7 @@ WIDGETS.euclid = (el, spec, room) => {
     $("eu-t").innerHTML = `${lines}<br><br>gcd = <b>${steps[n-1][2]}</b> after <b>${n}</b> division${n>1?"s":""}.<br>
       Lamé's bound (as in the write-up): n ≤ ln b / ln φ + 1 = ${bound.toFixed(3)}.<br>Lamé's 1844 form: at most 5 × (digits of b) = ${5*digits}.<br>
       ${worst?`<span class="ok">This pair is a worst case: the walk is as long as the bound allows for this b.</span>`:`<span class="note">Slack: ${(bound-n).toFixed(3)}. Consecutive Fibonacci numbers leave the least.</span>`}`;
-    if(worst && spec.award && !S.inv.includes(spec.award)){ S.inv.push(spec.award); save(); toast(spec.awardText || "Something golden falls from the last square into your pocket."); render(); }
+    if(worst && spec.award && !S.inv.includes(spec.award)){ take(spec.award, spec.awardText || "Something golden falls from the last square into your bag."); }
   };
   $("eu-go").onclick = go;
   $("eu-f").onclick = () => { const k = 5+Math.floor(Math.random()*20); $("eu-a").value=fib[k+1]; $("eu-b").value=fib[k]; go(); };
@@ -1096,7 +1427,7 @@ WIDGETS.knights = (el, spec) => {
     const answer = d => {
       const right = d===pz.safe, w = pz.ok[0];
       const roles = pz.ok.length===1 ? Array.from({length:pz.n},(_,k)=>`${KN.NAMES[k]} is a ${w.r[k]?"knight":"knave"}`).join(", ") : "the islanders' kinds aren't all determined, but the door is";
-      if(right){ S.solved.knightsCount = (S.solved.knightsCount||0)+1; if(S.solved.knightsCount>=need) S.solved.island = 1; save(); }
+      if(right){ S.solved.knightsCount = (S.solved.knightsCount||0)+1; if(S.solved.knightsCount>=need) S.solved.island = 1; save(); award("knights:"+S.solved.knightsCount, 15); }
       $("kn-o").innerHTML = right ? `<span class="ok">Right. ${esc(roles)}.</span>` : `<span class="warn">That door leads back. ${esc(roles)}, so ${KN.DOOR[pz.safe]} leads on.</span>`;
       $("kn-l").disabled = $("kn-r").disabled = true;
       if(right && S.solved.knightsCount===need){ toast("Somewhere on the island, a door unbars."); render(); }
@@ -1164,6 +1495,24 @@ WIDGETS.oracle = (el) => {
   draw();
 };
 
+WIDGETS.sundial = (el) => {
+  el.innerHTML = `<div class="panel"><h3>The dial, from above</h3><svg id="sd-s" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="A horizontal sundial with today's shadow"></svg><div id="sd-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
+    <p class="note">A horizontal dial laid out for latitude ${LAT}°: each hour line makes angle θ with the noon line, where tan θ = sin φ · tan(15° × hours from noon). The style points at the celestial pole. The dial tells local apparent solar time. Your clock differs by the longitude correction (Appleton is west of its time-zone meridian), by daylight saving time, and by the equation of time.</p></div>`;
+  const draw = () => {
+    const svg=$("sd-s"); svg.innerHTML=""; const sk=skyNow(), phi=LAT*DEG, Hd=(((sk.L-sk.sun.ra)%360)+540)%360-180, H=Hd*DEG;
+    E("circle",{r:240,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":3},svg); E("circle",{r:226,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.2},svg);
+    for(let m=6*4; m<=18*4; m++){ const h=m/4, th=Math.atan2(Math.sin(phi)*Math.sin((h-12)*15*DEG), Math.cos((h-12)*15*DEG)), r0 = m%4?196:150;
+      L(svg, Math.sin(th)*r0, -Math.cos(th)*r0, Math.sin(th)*220, -Math.cos(th)*220, m%4?.6:1.4);
+      if(!(m%4)){ T(["VI","VII","VIII","IX","X","XI","XII","I","II","III","IV","V","VI"][m/4-6],{x:Math.sin(th)*176,y:-Math.cos(th)*176+5,"text-anchor":"middle","font-size":16,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg); } }
+    T("N",{x:0,y:-244,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg);
+    if(sk.sun.alt>0){ const th=Math.atan2(Math.sin(phi)*Math.sin(H), Math.cos(H)); E("polygon",{points:`0,0 ${Math.sin(th-.03)*210},${-Math.cos(th-.03)*210} ${Math.sin(th+.03)*210},${-Math.cos(th+.03)*210}`,fill:"var(--spot)",opacity:.85},svg); }
+    E("polygon",{points:"-5,0 5,0 0,-150",fill:"url(#h-dark)",stroke:"var(--ink)","stroke-width":1.5},svg); E("circle",{r:5,fill:"var(--ink)"},svg);
+    const n=sk.jd-2451545, Lm=((280.460+0.9856474*n)%360+360)%360; let eot=(Lm-sk.sun.ra); eot=((eot+540)%360-180)*4;
+    const solar = 12 + Hd/15, sh = Math.floor((solar+24)%24), sm = Math.floor(((solar%1)+1)%1*60);
+    $("sd-t").innerHTML = sk.sun.alt>0 ? `sundial time ${sh}:${String(sm).padStart(2,"0")} · clock ${sk.d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}<br>equation of time today: ${eot>=0?"+":""}${eot.toFixed(1)} min (sundial ahead of mean sun when +) · sun ${sk.sun.alt.toFixed(0)}° up` : `The sun is down. The dial is only a plate of brass until morning. (Sun ${(-sk.sun.alt).toFixed(0)}° below the horizon.)`;
+  };
+  draw(); timers.push(setInterval(draw, 30000));
+};
 WIDGETS.center = (el, spec, room) => {
   const d = bfs(START)[String(room.id)];
   const n = Math.max(0, S.walk.length-1);
@@ -1180,11 +1529,8 @@ $("b-cat").onclick = catalogueView;
 $("b-help").onclick = helpView;
 $("b-ann").onclick = () => { S.annot = !S.annot; save(); annotations(effective(cur)); if(S.annot) $("annwin").scrollIntoView({behavior:"smooth",block:"nearest"}); };
 $("ann-x").onclick = () => { S.annot = false; save(); annotations(effective(cur)); };
-$("b-primer").onclick = primerView;
 $("b-ink").onclick = () => { S.ink = S.ink==="1bit" ? "two" : "1bit"; save(); render(); toast(S.ink==="1bit" ? "Black ink only, as on a 1-bit screen." : "A second block of color, wing by wing."); };
-$("b-close").onclick = () => { location.hash = START; };
-const mclock = () => { const d=now(); $("mclock").textContent = d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}); };
-mclock(); setInterval(mclock, 20000);
+setInterval(() => { if(cur && !$("ov").classList.contains("open")) tally(lightNow()); }, 30000);
 $("b-lamp").onclick = () => { S.light = {auto:"night", night:"day", day:"auto"}[S.light] || "auto"; save(); render(); toast(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down." : "You light every lamp."); };
 rankIndex.cache = null;
 route();

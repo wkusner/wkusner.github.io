@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lily Pads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+canvas#cv{width:100%;height:auto;display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;}
+.ctlgrid{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-family:var(--mono);font-size:13px;}
+.ctlgrid input[type=range]{width:100%;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--muted);}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px;}
+.state{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Lily <span>Pads</span></h1>
+    <p class="tag">Pads grow in a pond at the same rate. When two touch, or a pad touches the shore, they stick, and the contact stays exactly tight while the clusters slide and turn and keep growing. A contact lets go only when growth is blocked and that contact is being pulled apart. When nothing can let go, the pond is jammed.</p>
+  </header>
+  <div class="inst">
+    <div class="stage">
+      <canvas id="cv" width="760" height="760" aria-label="The pond"></canvas>
+      <div class="row" style="margin-top:10px">
+        <button type="button" id="run" class="primary">Pause</button>
+        <button type="button" id="step">Step</button>
+        <button type="button" id="reset">New pond</button>
+        <label class="small"><input type="checkbox" id="sticky" checked> sticky</label>
+        <label class="small"><input type="checkbox" id="showc" checked> contacts</label>
+      </div>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--ink)"></i>compression</span><span><i style="background:#C8452B"></i>tension (held anyway)</span><span><i style="background:#E0B42F;height:6px"></i>a contact letting go</span></div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card"><h2>Pond</h2>
+        <div class="ctlgrid">
+          <label for="n">pads</label><input id="n" type="range" min="10" max="260" value="60"><span id="nv"></span>
+          <label for="spread">size spread</label><input id="spread" type="range" min="0" max="60" value="0"><span id="sv"></span>
+          <label for="speed">growth</label><input id="speed" type="range" min="1" max="40" value="12"><span id="gv"></span>
+          <label for="shape">shore</label><select id="shape"><option value="disk">a round pond</option><option value="square">a square tank</option><option value="hex">a hexagonal basin</option></select><span></span>
+        </div>
+      </div>
+      <div class="card"><h2>State</h2><div id="state" class="state">growing</div><div id="read" class="read"></div></div>
+      <div class="card"><h2>Let-go events</h2><div id="events" class="small" style="max-height:200px;overflow:auto"></div></div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>What is happening</h2>
+    <p><b>The flow.</b> Every pad has radius a<sub>i</sub>·r, and r grows at a steady rate. A held contact keeps its gap at exactly zero: pad to pad, |x<sub>i</sub> − x<sub>j</sub>| = (a<sub>i</sub> + a<sub>j</sub>) r, and pad to shore, the pad stays tangent to the wall. Pads move only as much as the held contacts force them to, and new contacts are added the moment they close.</p>
+    <p><b>Forces.</b> Each step grows r a little and then projects the positions back onto the held constraints. The total correction a contact receives is its force. A contact that has to be pushed apart is in compression, drawn dark. A contact that would separate on its own if it weren't held is in tension, drawn red. Sticky growth holds those too, which is what makes the pads clump like lily pads instead of spreading evenly.</p>
+    <p><b>When growth gets stuck.</b> Eventually the held contacts can no longer all stay tight while r grows: the contact graph carries a self-stress. If some contact in that stress is in tension, it lets go (flashed in yellow) and growth goes on. If every contact is in compression, the stress is balanced and the pond is jammed. The final picture is that balanced force network.</p>
+    <p><b>Slippery mode.</b> Turn off “sticky” and tension contacts let go as soon as they appear. The pads then spread out rather than clustering.</p>
+    <p class="small">This is a position-based approximation of the sticky growth flow from Wöden Kusner's packing notes: a sequence of projected steps rather than the exact least-norm velocity, which is enough to see the mechanism. A typical let-go event is a ring of pads closing around a center pad. The ring is compressed, the spokes are pulled, and the center gets squeezed out.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const cv=$("cv"), ctx=cv.getContext("2d"), S=760, C=S/2, SC=S*0.46;
+let P=[], H=new Map(), r=0, running=true, state="growing", events=[], flashes=[], blockedFor=0, released=0, stepCount=0, rng=null, shape="disk";
+const css=n=>getComputedStyle(document.body).getPropertyValue(n).trim()||"#222";
+function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+// the shore as a list of half-planes (for polygons) or a circle
+function walls(){ if(shape==="disk") return null; const k = shape==="square"?4:6, out=[]; for(let i=0;i<k;i++){ const t=i/k*2*Math.PI; out.push([Math.cos(t),Math.sin(t)]); } return out; }
+let WALLS=null; const WD = () => shape==="square" ? Math.SQRT1_2 : shape==="hex" ? Math.cos(Math.PI/6) : 1; // inradius-scaled offsets
+function inside(x,y,rad){ if(!WALLS) return Math.hypot(x,y) <= 1-rad; return WALLS.every(([nx,ny]) => nx*x+ny*y <= WD()-rad); }
+function reset(){
+  const n=+$("n").value, spread=+$("spread").value/100; rng=mulberry((Math.random()*1e9)|0); shape=$("shape").value; WALLS=walls();
+  P=[]; for(let i=0;i<n;i++){ let x,y,tries=0; do{ x=rng()*2-1; y=rng()*2-1; tries++; }while(!inside(x,y,.02) && tries<1000); P.push({x,y,a:1+spread*(rng()*2-1)}); }
+  const amean=P.reduce((s,p)=>s+p.a,0)/n; P.forEach(p=>p.a/=amean);
+  H=new Map(); r=0.002; state="growing"; events=[]; flashes=[]; blockedFor=0; released=0; stepCount=0; $("events").innerHTML="";
+}
+const key=(i,j)=>i<j?i+","+j:j+","+i;
+// one projected iteration over all constraints; returns the largest violation; lam accumulates held forces
+function project(lam){
+  let worst=0; const n=P.length;
+  // held pad-pad
+  H.forEach((h,k)=>{ if(h.type!=="pp") return; const a=P[h.i], b=P[h.j]; let dx=a.x-b.x, dy=a.y-b.y, d=Math.hypot(dx,dy)||1e-12; const C=d-(a.a+b.a)*r;
+    worst=Math.max(worst,Math.abs(C)); const ux=dx/d, uy=dy/d, s=C/2; a.x-=ux*s; a.y-=uy*s; b.x+=ux*s; b.y+=uy*s; lam.set(k,(lam.get(k)||0)-C); });
+  // held pad-shore
+  H.forEach((h,k)=>{ if(h.type!=="ps") return; const p=P[h.i]; const g=shoreGap(p,h.w); worst=Math.max(worst,Math.abs(g.C)); p.x+=g.nx*g.C; p.y+=g.ny*g.C; lam.set(k,(lam.get(k)||0)-g.C); });
+  // non-held: no overlaps
+  const cell = 2*r*maxA()+1e-6, grid=new Map();
+  P.forEach((p,i)=>{ const gk=Math.floor(p.x/cell)+","+Math.floor(p.y/cell); if(!grid.has(gk)) grid.set(gk,[]); grid.get(gk).push(i); });
+  P.forEach((p,i)=>{ const cx=Math.floor(p.x/cell), cy=Math.floor(p.y/cell);
+    for(let ox=-1;ox<=1;ox++) for(let oy=-1;oy<=1;oy++){ const l=grid.get((cx+ox)+","+(cy+oy)); if(!l) continue;
+      for(const j of l){ if(j<=i || H.has(key(i,j))) continue; const q=P[j]; let dx=p.x-q.x, dy=p.y-q.y, d=Math.hypot(dx,dy)||1e-12, C=d-(p.a+q.a)*r;
+        if(C<0){ worst=Math.max(worst,-C); const ux=dx/d, uy=dy/d; p.x-=ux*C/2; p.y-=uy*C/2; q.x+=ux*C/2; q.y+=uy*C/2; } } } });
+  P.forEach((p,i)=>{ for(let w=-1; w<(WALLS?WALLS.length:0); w++){ if(w===-1 && WALLS) continue; if(w>=0 || !WALLS){ if(H.has("s"+i+"/"+w)) continue; const g=shoreGap(p,w); if(g.C<0){ worst=Math.max(worst,-g.C); p.x+=g.nx*g.C; p.y+=g.ny*g.C; } } } });
+  return worst;
+}
+function maxA(){ let m=0; P.forEach(p=>m=Math.max(m,p.a)); return m; }
+// signed gap to wall w (or the round shore when w = -1), and the direction that closes it
+function shoreGap(p,w){
+  if(w===-1 || !WALLS){ const d=Math.hypot(p.x,p.y)||1e-12; return {C: (1-p.a*r)-d, nx:p.x/d, ny:p.y/d}; }
+  const [nx,ny]=WALLS[w]; return {C: (WD()-p.a*r) - (nx*p.x+ny*p.y), nx, ny};
+}
+function addContacts(tol){
+  const n=P.length;
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){ const k=key(i,j); if(H.has(k)) continue; const a=P[i], b=P[j]; const C=Math.hypot(a.x-b.x,a.y-b.y)-(a.a+b.a)*r; if(C<tol) H.set(k,{type:"pp",i,j}); }
+  P.forEach((p,i)=>{ const ws = WALLS ? WALLS.map((_,w)=>w) : [-1]; ws.forEach(w=>{ const k="s"+i+"/"+w; if(H.has(k)) return; if(shoreGap(p,w).C<tol) H.set(k,{type:"ps",i,w}); }); });
+}
+function step(){
+  if(state==="jammed") return;
+  const n=P.length, dr = (+$("speed").value)*1.5e-5, tol = 2e-5, saved=P.map(p=>({x:p.x,y:p.y})), r0=r;
+  r += dr;
+  const lam=new Map(); let worst=0;
+  for(let k=0;k<30;k++) worst=project(lam);
+  for(let k=0;k<200 && worst>tol;k++) worst=project(new Map());
+  if(worst>tol){
+    // growth is blocked: undo the step, then let a tension contact go, or declare a jam
+    P.forEach((p,i)=>{ p.x=saved[i].x; p.y=saved[i].y; }); r=r0; blockedFor++;
+    if(blockedFor>=3){
+      let minK=null, minV=0; lam.forEach((v,k)=>{ if(v<minV-1e-9){ minV=v; minK=k; } });
+      if(minK){ const h=H.get(minK); H.delete(minK); released++; blockedFor=0; flash(h);
+        log(`step ${stepCount}: ${h.type==="pp"?`pads ${h.i} and ${h.j}`:`pad ${h.i} and the shore`} let go (force ${minV.toExponential(1)})`); }
+      else { state="jammed"; log(`step ${stepCount}: jammed. Every held contact is in compression.`); }
+    }
+  } else {
+    blockedFor=0; stepCount++;
+    if(!$("sticky").checked){ lam.forEach((v,k)=>{ if(v< -1e-7 && H.has(k)){ H.delete(k); } }); }
+    addContacts(1e-6);
+    lastLam = lam;
+  }
+}
+let lastLam=new Map();
+function flash(h){ const a=P[h.i]; let x,y; if(h.type==="pp"){ const b=P[h.j]; x=(a.x+b.x)/2; y=(a.y+b.y)/2; } else { const g=shoreGap(a,h.w); x=a.x+g.nx*a.a*r; y=a.y+g.ny*a.a*r; } flashes.push({x,y,t:40}); }
+function log(s){ events.unshift(s); $("events").innerHTML = events.slice(0,60).map(e=>`<div>${e}</div>`).join(""); }
+const X=x=>C+x*SC, Y=y=>C-y*SC;
+function draw(){
+  const ink=css("--ink"), panel=css("--panel");
+  ctx.fillStyle=panel; ctx.fillRect(0,0,S,S);
+  // water
+  ctx.save(); ctx.beginPath();
+  if(!WALLS) ctx.arc(C,C,SC,0,2*Math.PI); else { const k=WALLS.length; for(let i=0;i<k;i++){ const t1=Math.atan2(WALLS[i][1],WALLS[i][0]) - Math.PI/k, R=WD()/Math.cos(Math.PI/k); const x=R*Math.cos(t1), y=R*Math.sin(t1); i?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y)); } ctx.closePath(); }
+  ctx.fillStyle="#9FC3CF"; ctx.globalAlpha=.35; ctx.fill(); ctx.globalAlpha=1; ctx.lineWidth=3; ctx.strokeStyle=ink; ctx.stroke(); ctx.clip();
+  for(let k=0;k<40;k++){ ctx.beginPath(); ctx.moveTo(0,k*20); ctx.lineTo(S,k*20+6); ctx.strokeStyle="rgba(40,70,80,.08)"; ctx.lineWidth=1; ctx.stroke(); }
+  // pads
+  P.forEach((p,i)=>{ const rad=p.a*r*SC; ctx.beginPath(); const notch=(i*2.399)%(2*Math.PI);
+    ctx.moveTo(X(p.x),Y(p.y)); ctx.arc(X(p.x),Y(p.y),rad,notch+.09,notch+2*Math.PI-.09); ctx.closePath();
+    ctx.fillStyle="#6E9E4E"; ctx.fill(); ctx.lineWidth=1.2; ctx.strokeStyle="#2E5A2A"; ctx.stroke(); });
+  // contacts
+  if($("showc").checked){ let mx=1e-12; lastLam.forEach(v=>mx=Math.max(mx,Math.abs(v)));
+    H.forEach((h,k)=>{ const v=lastLam.get(k)||0, a=P[h.i]; let x2,y2; if(h.type==="pp"){ x2=P[h.j].x; y2=P[h.j].y; } else { const g=shoreGap(a,h.w); x2=a.x+g.nx*a.a*r; y2=a.y+g.ny*a.a*r; }
+      ctx.beginPath(); ctx.moveTo(X(a.x),Y(a.y)); ctx.lineTo(X(x2),Y(y2)); ctx.strokeStyle = v<0 ? "#C8452B" : ink; ctx.lineWidth = state==="jammed" ? 0.8+4*Math.abs(v)/mx : 1.4; ctx.globalAlpha = state==="jammed"?.95:.7; ctx.stroke(); ctx.globalAlpha=1; }); }
+  flashes.forEach(f=>{ ctx.beginPath(); ctx.arc(X(f.x),Y(f.y),6+(40-f.t)*.6,0,2*Math.PI); ctx.strokeStyle="#E0B42F"; ctx.lineWidth=4; ctx.globalAlpha=f.t/40; ctx.stroke(); ctx.globalAlpha=1; f.t--; });
+  flashes=flashes.filter(f=>f.t>0);
+  ctx.restore();
+  const area = P.reduce((s,p)=>s+Math.PI*(p.a*r)**2,0), pondA = !WALLS ? Math.PI : WALLS.length*WD()*WD()*Math.tan(Math.PI/WALLS.length);
+  const pp=[...H.values()].filter(h=>h.type==="pp").length, ps=H.size-pp;
+  let tens=0; lastLam.forEach(v=>{ if(v<0) tens++; });
+  $("state").textContent = state; $("state").style.color = state==="jammed" ? "#C8452B" : "";
+  $("read").innerHTML = `r = ${r.toFixed(4)}<br>density ${(100*area/pondA).toFixed(1)}%<br>contacts ${pp} pad–pad, ${ps} shore<br>in tension ${tens}<br>let go ${released} · steps ${stepCount}`;
+}
+function loop(){ if(running && state!=="jammed") for(let k=0;k<3;k++) step(); draw(); requestAnimationFrame(loop); }
+$("run").onclick=()=>{ running=!running; $("run").textContent=running?"Pause":"Run"; };
+$("step").onclick=()=>{ running=false; $("run").textContent="Run"; step(); draw(); };
+$("reset").onclick=()=>{ reset(); draw(); };
+["n","spread","speed"].forEach(id=>$(id).oninput=()=>{ $("nv").textContent=$("n").value; $("sv").textContent=$("spread").value+"%"; $("gv").textContent=$("speed").value; });
+$("n").onchange=$("spread").onchange=$("shape").onchange=()=>{ reset(); };
+$("nv").textContent=$("n").value; $("sv").textContent=$("spread").value+"%"; $("gv").textContent=$("speed").value;
+reset(); loop();
+})();
+</script>
+
+</body>
+</html>

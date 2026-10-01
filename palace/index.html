@@ -106,24 +106,73 @@ table.cur td,table.cur th{border-bottom:1px solid var(--ink);padding:3px 6px;tex
 .ann .empty{font:400 13px var(--chrome);color:var(--muted)}
 footer{margin-top:30px;font:400 13px var(--chrome)}
 footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px}
+
+/* v2: the console around the view */
+.menubar .sep{margin:0 2px}
+.console{padding:0;margin-top:4px}
+.tally{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 8px;border-bottom:2px solid var(--ink);background:var(--paper2);font:400 13px var(--chrome)}
+.tally .chip{box-shadow:none;border-width:1.5px;font:400 13px var(--chrome);color:var(--ink);background:var(--paper2);cursor:default}
+.tally button.chip{cursor:pointer}
+.tally button.chip:hover{background:var(--ink);color:var(--paper2)}
+.xp{display:inline-block;width:70px;height:8px;border:1.5px solid var(--ink);vertical-align:middle;margin:0 4px;background:var(--paper2)}
+.xp span{display:block;height:100%;background:var(--spot)}
+.viewport{position:relative;background:var(--paper);overflow:hidden}
+#stage{position:relative;aspect-ratio:16/9}
+#stage svg.view{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--paper);transition:opacity .3s}
+#stage svg.view.fading{opacity:0}
+.corner{position:absolute;z-index:3;background:var(--paper2);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);padding:2px;cursor:pointer;color:var(--ink);font:400 13px var(--fell)}
+.corner.tr{top:8px;right:8px;opacity:.92}
+.corner.bl{left:8px;bottom:8px;max-width:46%;text-align:left;padding:4px 8px;opacity:.95}
+.corner:hover{opacity:1}
+.bagbar{display:flex;align-items:center;gap:10px;padding:6px 8px;border-top:2px solid var(--ink);background:var(--paper2);flex-wrap:wrap}
+.baglabel{font:600 13px var(--chrome);text-transform:uppercase;letter-spacing:.1em}
+.bag{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.slot{width:48px;height:48px;border:2px solid var(--ink);background:var(--paper);padding:2px;cursor:pointer;border-radius:6px}
+.slot:hover{background:var(--paper2);outline:2px solid var(--spot)}
+.hint{font:400 12px var(--chrome);color:var(--muted)}
+.stage .hot,.viewport .hot{cursor:pointer}
+.viewport .hot:hover .hl,.viewport .hot:focus .hl{stroke:var(--spot);stroke-width:4}
+.viewport .hot:focus{outline:none}
+.viewport .turnL{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M20 4 L8 16 L20 28 L20 20 L28 20 L28 12 L20 12 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 8 16, w-resize}
+.viewport .turnR{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M12 4 L24 16 L12 28 L12 20 L4 20 L4 12 L12 12 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 24 16, e-resize}
+.viewport .turnB{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M4 12 L16 24 L28 12 L20 12 L20 4 L12 4 L12 12 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 16 24, s-resize}
+.obcard{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.obi{border:2px solid var(--ink);background:var(--paper);padding:6px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:10px 0}
+@media (max-width:700px){.modes{grid-template-columns:1fr}}
+.mode{text-align:left;border:2px solid var(--ink);background:var(--paper2);padding:12px;border-radius:8px;cursor:pointer;color:var(--ink);font:400 15px/1.4 var(--fell)}
+.mode b{display:block;font:600 16px var(--chrome);margin-bottom:6px}
+.mode:hover{background:var(--ink);color:var(--paper2)}
+.savecode{font:600 24px var(--mono);letter-spacing:.06em;border:2px dashed var(--ink);padding:10px 14px;display:inline-block;background:var(--paper2);word-break:break-all}
+.dir{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.dirl{display:block;border:2px solid var(--ink);padding:10px 12px;text-decoration:none;background:var(--paper2);box-shadow:2px 2px 0 var(--ink)}
+.dirl b{display:block;font:600 16px var(--chrome)}
+.dirl span{font-size:14px;color:var(--muted)}
+.dirl:hover{background:var(--ink);color:var(--paper2)}
+.dirl:hover span{color:var(--paper2)}
 </style>
 </head>
 <body>
 <div class="menubar">
-  <a class="home" href="/">❦ <b>The Palace</b></a>
+  <a class="home" href="/">❦ <b>Wöden Kusner</b></a>
+  <span class="sep">·</span><a class="home" href="#0"><b>The Palace</b></a>
   <button type="button" id="b-map">Map</button>
-  <button type="button" id="b-cat">Catalogue</button>
+  <button type="button" id="b-cat">Finding aid</button>
   <button type="button" id="b-lamp">Lamps</button>
   <button type="button" id="b-ink">Ink</button>
   <button type="button" id="b-ann">Annotations</button>
-  <button type="button" id="b-primer" style="display:none">Primer</button>
   <button type="button" id="b-help">How to walk</button>
-  <span class="clock" id="mclock"></span>
 </div>
 <main>
-  <div class="status" id="status"></div>
   <div class="roomhead"><span class="roomnum" id="rnum"></span><span><div class="roomname" id="rname"></div><br><div class="wingname" id="rwing"></div></span></div>
-  <div class="win stage"><div class="tb"><button class="box" type="button" id="b-close" aria-label="Back to the reading room" title="Back to the reading room"></button><span class="t" id="cardt"></span></div><div id="stage"></div></div>
+  <div class="console win">
+    <div class="tally" id="tally"></div>
+    <div class="viewport"><div id="stage"></div>
+      <button class="corner tr" id="mini" type="button" aria-label="Open the map"></button>
+      <button class="corner bl" id="primerc" type="button" aria-label="Open the Primer"></button>
+    </div>
+    <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint">← → turn · ↓ step back · ↑ go through</span></div>
+  </div>
   <div class="win" id="annwin" style="display:none;margin-top:20px"><div class="tb"><button class="box" type="button" id="ann-x" aria-label="Close annotations"></button><span class="t">Annotations</span></div>
     <div class="wb"><div class="tabs" role="tablist"><button type="button" class="tab" data-tab="marginalia">Marginalia</button><button type="button" class="tab" data-tab="sources">Sources</button><button type="button" class="tab" data-tab="bib">Bibliography</button></div><div id="annb" class="ann"></div></div></div>
   <div class="cols">
@@ -131,10 +180,9 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
     <aside style="display:flex;flex-direction:column;gap:20px">
       <div class="win"><div class="tb"><span class="t">Doors</span></div><div class="wb"><ul class="list" id="doors"></ul></div></div>
       <div class="win"><div class="tb"><span class="t">In this room</span></div><div class="wb"><ul class="list" id="objects"></ul></div></div>
-      <div class="win" id="invpanel" style="display:none"><div class="tb"><span class="t">Your pockets</span></div><div class="wb"><div id="inv" class="note"></div></div></div>
     </aside>
   </div>
-  <footer><span>The palace remembers your walk in this browser only. <a href="/puzzles/">Plain list of devices</a> · <a href="/palace/curator/">Curator's guide</a></span></footer>
+  <footer><span>Your walk is kept in this browser; a save code carries it elsewhere. <a href="/puzzles/">Plain list of devices</a> · <a href="/palace/curator/">Curator's guide</a></span></footer>
 </main>
 <div class="overlay" id="ov"><div class="sheet win"><div class="tb"><button class="box" type="button" id="ovx" aria-label="Close"></button><span class="t" id="ovt"></span></div><div class="wb" id="ovb"></div></div></div>
 <div class="toast" id="toast"></div>

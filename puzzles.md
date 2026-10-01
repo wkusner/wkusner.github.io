@@ -8,7 +8,7 @@ shorttitle:
 
 ##Puzzles
 
-**[The Palace](/palace/)**: a memory palace of numbered rooms that holds all of these devices, plus talks, notes, drafts, and books. Doors keep hours, mirrors hide rooms, and loops can leave you turned. A [curator's guide](/palace/curator/) explains how it's built.
+**[The Palace](/palace/)**: a Myst-like library and memory palace that holds all of these devices, plus drafts, books, and puzzles. Doors keep hours, mirrors hide rooms, the sky and weather are real, and some loops take you somewhere else. A [curator's guide](/palace/curator/) explains how it's built.
 
 - [Defectsweeper](/defectsweeper/): find the dislocations hidden in a hexagonal crystal by walking Burgers circuits.
 - [Fifteen and the Parity Dial](/fifteen/): the 15 puzzle with its permutation, parity invariant, and commutators shown live.
@@ -22,3 +22,4 @@ shorttitle:
 - [Galois Lock](/symmetry-lock/): a lock whose moves are the Galois group of x⁴ − 2.
 - [Planimeter Bench](/planimeters/): measure area by tracing, with polar, linear, hatchet, and x–y planimeters and a running error budget.
 - [Fraction Target](/fraction-target/): make the target from four fraction cards, with every deal solvable (MATH 102 practice).
+- [Lily Pads](/lily-pads/): sticky growth in a pond, where pads grow until they jam and let go only when a contact is pulled apart.

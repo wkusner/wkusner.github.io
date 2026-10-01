@@ -124,6 +124,42 @@ Special destinations:
       no: "The dials stick."
 ```
 
+
+### Version 2: walking like Myst
+
+**Facings and close-ups.** Each room is seen one wall at a time. Click the left or right edge of the picture (or press ← →) to turn, and press ↓ to turn around. Click a desk or bookcase to look closer, and ↓ or "step back" to return. Every view has its own address: `#13` is room 13 facing its first wall, `#13/e` faces east, and `#13/n/ahead` is the close-up of what's ahead.
+
+**Where things stand.** Give an object a `wall:` (left, back, right, front) to put it on that side of the room. Without one, a room with up to three objects keeps them all ahead, and a room with more spreads them around the walls. Wall-mounted fittings (window, clockface, chalkboard, thermometer, and the like) hang on the back wall.
+
+**Floors and ceilings.** `floor: checker` or `floor: stone` lays a floor in true perspective. `ceiling: coffers`, `ceiling: vault`, or `ceiling: open` (the real sky, for courtyards) replace the default beams.
+
+**The console.** The tally bar shows your level and xp, your frame and sheets, the palace's date and time, the weather, your save code, and your mode. The bag holds what you carry; click an item to use it. With a map in the bag, a live minimap sits in the top-right corner. With the Primer, a hint sits in the bottom-left.
+
+**Modes.** The porter's desk at the Entry (room 0) offers three ways to walk:
+- *guided:* master key, plan, finding aid, compass, lantern, and hourglass;
+- *wanderer:* map, compass, and lantern;
+- *hardcore:* nothing.
+
+In hardcore, the plan is in the Gallery of Rules, the finding aid in the Archive, the compass in the Turning Room, the lantern in Funes's room, and the hourglass in the Clock Room. Use `mode:guided` and the like as conditions. A door marked `hardlock: true` ignores the master key.
+
+**Experience.** First visits, close looks, items, riddles, island puzzles, and new sheets all give xp. Ranks are set by `xp:` thresholds and can carry a `gift:` line, shown when the visitor reaches that rank.
+
+**Save codes and warp words.** The tally bar's ⌘ button shows a save code that carries a visitor's walk to another browser. Warp words are listed under `warps:` at the top of the data file:
+
+```yaml
+warps:
+  LAME: {room: 16, say: "The corridor narrows around you."}
+```
+
+**Monodromy: sheets.** Some loops change *where you are*, not just which way you face. Name the sheets at the top of the file (`sheets: {sqrt: {mod: 2}, log: {}}`). Then give a door a `lift`, such as `lift: {log: -1}`. Conditions like `sheet:log=-3` or `sheet:sqrt!=0` can then show doors, objects, and text. In room text, `{sheet:log}` prints the current value.
+
+- The Great Spiral is a log stair: each loop through 15, 17, and 16 goes down a landing, and at landing −3 a hidden door opens.
+- The Branch Cut (rooms 30 to 33) is a square root: once around the pillar puts you on the other sheet, and twice brings you back.
+
+**Live world.** The weather comes from Open-Meteo, for the palace's latitude and longitude. It shows in the windows and on the `thermo` fitting, and it can hide the sun. The hourglass (and the clock chip in the tally bar) sets the palace's date, time, and speed. The sky, sun, sundial, pendulum, light, and timed doors all follow it. The `sundial` fitting and widget show the real shadow.
+
+**Combining things.** An object with `action: combine`, `uses: [a, b]`, and `gives: c` turns two carried things into one. The torn page in the Branch Cut works this way.
+
 ### Annotations: marginalia, sources, bibliography
 
 The **Annotations** button in the menu bar opens a window under the picture with three tabs. Each room can fill any of them:

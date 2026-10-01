@@ -2,7 +2,7 @@
 # Edit this file, commit, push. See /palace/curator/ for the full guide.
 
 title: The Palace
-start: 1
+start: 0
 latitude: 44.26        # Appleton: the pendulum, the sky, the sun through the windows
 longitude: -88.41
 facing: 180            # a visitor in frame e faces south, so the windows catch the sun
@@ -19,17 +19,45 @@ wings:
   schoolroom:   {name: "The Schoolroom",             color: "#3C7A54"}
   workshop:     {name: "The Workshop",               color: "#7A4A86"}
   lectures:     {name: "The Lecture Wing",           color: "#2C7B80"}
+  branch:       {name: "The Branch Cut",             color: "#3A6E8F"}
+  court:        {name: "The Courtyards",             color: "#B07A1E"}
   archive:      {name: "The Archive",                color: "#7A4A86"}
 
-ranks:
-  - {name: "Visitor",                     at: 0,  color: "#D9D2C0"}
-  - {name: "Reader",                      at: 4,  color: "#7A9E7E"}
-  - {name: "Third Assistant Librarian",   at: 8,  color: "#B8322A"}
-  - {name: "Second Assistant Librarian",  at: 13, color: "#E0B42F"}
-  - {name: "Keeper of the Stacks",        at: 19, color: "#2F4E8C"}
+ranks:   # earned by experience (xp): rooms, close looks, puzzles, items, sheets
+  - {name: "Visitor",                     xp: 0,   color: "#D9D2C0"}
+  - {name: "Reader",                      xp: 60,  color: "#7A9E7E", gift: "The reading room's lamps burn a little brighter for you."}
+  - {name: "Third Assistant Librarian",   xp: 160, color: "#B8322A", gift: "You may borrow keys from the porter."}
+  - {name: "Second Assistant Librarian",  xp: 320, color: "#E0B42F", gift: "The closed stacks under the spiral are open to you."}
+  - {name: "Keeper of the Stacks",        xp: 600, color: "#2F4E8C", gift: "Every lamp is yours."}
+
+sheets:   # monodromy: walking some loops moves you to another sheet
+  log:  {name: "the log stair", sym: "landing"}
+  sqrt: {name: "the branch cut", sym: "√", mod: 2}
+
+warps:    # warp words, typed into the Codes dialog
+  ENTRY:    {room: 0}
+  LAME:     {room: 16, say: "The corridor narrows around you."}
+  BABEL:    {room: 18}
+  FUNES:    {room: 15}
+  DOZEN:    {room: 17}
+  KNAVE:    {room: 27}
+  BRANCH:   {room: 30}
+  SUNDIAL:  {room: 34}
+  SHEET:    {room: 29, say: "You come out between two shelves that aren't on any plan."}
+
+links:    # the directory at the Entry: the plain way through the site
+  - {title: "Home", href: "/", note: "the front page"}
+  - {title: "About", href: "/about/"}
+  - {title: "Teaching", href: "/teaching/"}
+  - {title: "Projects", href: "/projects/"}
+  - {title: "Collections", href: "/collections/"}
+  - {title: "Code", href: "/code/"}
+  - {title: "Puzzles & Devices", href: "/puzzles/", note: "every device, as a plain list"}
+  - {title: "Contact", href: "/contact/"}
 
 items:
   golden-key: "a golden key, stamped φ"
+  hourglass: "an hourglass"
   primer: "A Young Lady's Illustrated Primer"
 
 rooms:
@@ -39,6 +67,8 @@ rooms:
   name: The Hexagonal Reading Room
   wing: foyer
   shape: hex
+  floor: checker
+  ceiling: coffers
   decor: [shelves, lamp, rug, window]
   at: [5, 5]
   text: >-
@@ -65,7 +95,7 @@ rooms:
     - {to: 2,  wall: right, title: "brass and glass"}
     - {to: 8,  wall: left,  title: "a draft that turns"}
     - {to: 13, wall: back,  turn: r, title: "a stair going down", say: "The stair winds a quarter turn as it descends."}
-    - {to: 20, wall: front, title: "chalk dust"}
+    - {to: 0, wall: front, title: "out to the Entry"}
   objects:
     - {kind: unwritten, icon: lectern, title: "Lie Groups You Can Hold", note: "The book plan: slide rules as exponential maps, turned and pressed into SO(3), G₂, and their cousins. Drafts are in the Workshop."}
     - {kind: device, icon: books, title: "The card catalogue", action: catalogue, note: "Everything here, listed plainly."}
@@ -93,6 +123,7 @@ rooms:
     - {to: 3, wall: back}
     - {to: 4, wall: right, title: "a narrow stair up"}
   objects:
+    - {kind: key, item: plan, icon: map, title: "A folded plan of the palace", when: "mode:hardcore"}
     - {kind: device, icon: rule, title: "Slide Rule Cabinet", href: "/slide-rules/", note: "Straight, circular, complex, finite-field, and relativistic rules to drag and read."}
     - {kind: unwritten, icon: rule, title: "The Instruments Cabinet", note: "Sectors, Napier's bones and their descendants, log and trig tables, Gunter's scale, ruler constructions, scraping and flattening, inclinometers, and sextants."}
     - {kind: unwritten, icon: rule, title: "Elliptic slide rule", note: "A rule built on the ℘ function, using transparencies."}
@@ -165,6 +196,7 @@ rooms:
   doors:
     - {to: 3, wall: left}
     - {to: 6, wall: back}
+    - {to: 33, wall: right, title: "the arcades"}
   objects:
     - {kind: device, icon: cross, title: "Cross-Ratio Ruler", href: "/cross-ratio/", note: "Read true distances off a perspective picture."}
 
@@ -218,6 +250,7 @@ rooms:
 # ─────────────────────────── TURNINGS ───────────────────────────
 - id: 8
   name: The Turning Room
+  floor: checker
   wing: turnings
   decor: [lamp, rug]
   at: [4, 3]
@@ -238,6 +271,7 @@ rooms:
     - {to: 7, wall: back, turn: s, look: mirror, title: "a door of silvered glass", say: "Through the glass again."}
     - {to: 9, wall: left}
   objects:
+    - {kind: key, item: compass, icon: compass, title: "A compass", when: "mode:hardcore"}
     - {kind: device, icon: turns, title: "Hamilton's Turns", href: "/turns/", note: "Compose rotations by laying arcs head to tail on a sphere."}
     - {kind: device, icon: net, title: "The SO(3) slide rule", href: "/stereonet/", hide: true, note: "Also in the Observatory."}
 
@@ -322,6 +356,7 @@ rooms:
 
 - id: 12
   name: The Crystal Cellar
+  floor: stone
   wing: turnings
   decor: [lattice, lamp]
   at: [1, 3]
@@ -344,6 +379,7 @@ rooms:
 # ─────────────────────────── NUMBERS ───────────────────────────
 - id: 13
   name: The Great Spiral
+  floor: stone
   wing: numbers
   decor: [glacier, stair, shelves]
   at: [4, 6]
@@ -356,11 +392,16 @@ rooms:
     - "The Great Library of the Clayr in Garth Nix's <i>Lirael</i>, cut into a glacier, with its spiral ramp, its ranked assistant librarians, and its dangerous lower stacks."
   bib:
     - "Garth Nix, <i>Lirael</i>, 2001."
+  phases:
+    - {when: "sheet:log!=0", text: "This is landing {sheet:log}. The stair has turned under you: you came round a loop, and the loop came out a floor away."}
+    - when: "sheet:log=-3"
+      text: "The lowest landing you have found. There is a door here that the plan doesn't show."
+      doors: [{to: 29, wall: right, title: "the door on the lowest landing", say: "Three landings down, the shelves stop pretending."}]
   doors:
     - {to: 1, wall: back, turn: r3, title: "up, to the reading room", say: "The stair unwinds you."}
     - {to: 14, wall: left}
     - {to: 15, wall: right}
-    - {to: 16, wall: front, title: "further down"}
+    - {to: 16, wall: front, title: "further down", lift: {log: 1}}
     - {to: 22, wall: back, needs: "rank:3", hint: "Closed stacks. Second Assistant Librarians and above. Remember more rooms.", title: "the closed stacks"}
   objects:
     - {kind: device, icon: books, title: "Ranks of the library", action: ranks, note: "Every rank comes from remembering more rooms."}
@@ -425,6 +466,7 @@ rooms:
     - {to: 14, wall: back}
     - {to: 17, wall: left}
   objects:
+    - {kind: key, item: lantern, icon: lamp, title: "A lantern", when: "not:has:lantern"}
     - {kind: ref, icon: book, title: "Funes the Memorious", by: "Jorge Luis Borges", href: "https://vigeland.caltech.edu/ist4/lectures/funes%20borges.pdf", note: "The English translation quoted here. In it, the poncho full of meat is a “meat blanket.”"}
 
 - id: 16
@@ -450,7 +492,7 @@ rooms:
     - "Jeffrey Shallit, “Origins of the analysis of the Euclidean algorithm,” <i>Historia Mathematica</i> 21 (1994)."
     - "Donald E. Knuth, <i>The Art of Computer Programming</i>, vol. 2, §4.5.3."
   doors:
-    - {to: 13, wall: front, title: "back up the stair"}
+    - {to: 13, wall: front, title: "back up the stair", lift: {log: -1}}
     - {to: 17, wall: back}
   objects:
     - {kind: paper, icon: scroll, title: "Run time of the Euclidean algorithm", by: "W. Kusner", note: "My write-up of Lamé's theorem, by way of Sierpiński, Grossman, and Nathanson."}
@@ -478,11 +520,13 @@ rooms:
     - {to: 16, wall: front}
     - {to: [18, 19, 21, 23], wall: back, label: "⟳", oneway: true, title: "the door on the clock's hand"}
   objects:
+    - {kind: key, item: hourglass, icon: hourglass, title: "An hourglass", take: "You take the hourglass. Turn it (from your bag, or the clock in the tally bar) to set the palace's time."}
     - {kind: unwritten, icon: clock, title: "The Number Systems Museum", note: "Tallies, Roman, Babylonian, Egyptian, Maya, Kaktovik, bases, the French counting words, dozen and gross, and Archimedes's Sand Reckoner."}
     - {kind: unwritten, icon: scroll, title: "Continued fractions and nested radicals", note: "Euclid's algorithm, written down differently."}
 
 - id: 18
   name: The Hexagon
+  floor: checker
   wing: numbers
   shape: hex
   decor: [shelves, lamp]
@@ -499,6 +543,8 @@ rooms:
     - "Jonathan Basile's online Library of Babel, which, like this room, can find any page you type."
   bib:
     - "William Goldbloom Bloch, <i>The Unimaginable Mathematics of Borges' Library of Babel</i>, 2008."
+  phases:
+    - {when: "sheet:log!=0", text: "These shelves belong to landing {sheet:log}. The books are the same as upstairs, with every letter shifted."}
   doors:
     - {to: 17, wall: right}
     - {to: random, wall: left, label: "?", look: shelves, title: "folded shelves", say: "The shelves fold, and the corridor is shorter than it should be."}
@@ -513,7 +559,7 @@ rooms:
   decor: [pool, window, woodcut]
   at: [6, 8]
   text: >-
-    Lily pads crowd the water, as many as will fit without overlapping. How tightly can they pack, and how do you prove it? On the wall are Kepler's woodcuts of stacked cannonballs. Barlow's plans show the ways to stack layers of spheres, and the skeletons of FCC and HCP are drawn beside them. The machinery for the lily pads is still being brought over from another wing.
+    Lily pads crowd the water, as many as will fit without overlapping. How tightly can they pack, and how do you prove it? On the wall are Kepler's woodcuts of stacked cannonballs. Barlow's plans show the ways to stack layers of spheres, and the skeletons of FCC and HCP are drawn beside them. On a table by the water, the pads grow until they jam.
   phases:
     - {when: day, text: "By day the lilies are open, and the packing is loose: every flower wants a little more room than its pad."}
     - {when: "night|dusk", text: "At night the lilies close. The pads lie flat and tight, and the packing is as good as it gets."}
@@ -530,9 +576,10 @@ rooms:
     - {to: 21, wall: left}
     - {to: 17, wall: front}
     - {to: 26, wall: back, title: "the model room"}
+    - {to: 34, wall: right, title: "the garden gate"}
   objects:
     - {hidden: true, kind: page, icon: pond, title: "Packing Problems", href: "/packing/", note: "The packing page, still being furnished."}
-    - {kind: unwritten, icon: pond, title: "The lily pads", note: "The packing-problem machinery from the old papers."}
+    - {kind: device, icon: pond, title: "Lily Pads", href: "/lily-pads/", note: "Sticky growth: pads grow until they jam, letting go only when a contact is pulled apart."}
     - {hidden: true, kind: figure, icon: hex, title: "Kepler's woodcuts", href: "/assets/figures/keplerwoodcut1.pdf", note: "<a href='/assets/figures/keplerwoodcut1.pdf'>one</a>, <a href='/assets/figures/keplerwoodcut2.pdf'>two</a>, <a href='/assets/figures/woodcutabcde.pdf'>lettered</a>"}
     - {hidden: true, kind: figure, icon: hex, title: "Barlow's plans", href: "/assets/figures/barlowplans.pdf", note: "<a href='/assets/figures/barlow.pdf'>Barlow</a>, <a href='/assets/figures/barlowplans5.pdf'>plans 5</a>, <a href='/assets/figures/barlowplanse.pdf'>plans e</a>"}
     - {hidden: true, kind: figure, icon: crystal, title: "FCC and HCP", href: "/assets/figures/fccskel.pdf", note: "<a href='/assets/figures/fccskel.pdf'>FCC skeleton</a>, <a href='/assets/figures/hcpskel.pdf'>HCP skeleton</a>, <a href='/assets/figures/icoskel.pdf'>icosahedral</a>, <a href='/assets/figures/FCCstress.pdf'>FCC stress</a>, <a href='/assets/figures/HCPstress.pdf'>HCP stress</a>"}
@@ -554,7 +601,7 @@ rooms:
   sources:
     - "Practice games for MATH 102; Fraction Target is a fraction-card cousin of the game 24."
   doors:
-    - {to: 1, wall: back}
+    - {to: 0, wall: back, title: "the Entry"}
     - {to: 6, wall: right}
     - {to: 19, wall: left}
     - {to: 24, wall: front, title: "the lecture wing"}
@@ -596,6 +643,8 @@ rooms:
 # ─────────────────────────── SECRET ───────────────────────────
 - id: 22
   name: The Archive
+  floor: stone
+  ceiling: vault
   wing: archive
   secret: true
   shape: oct
@@ -615,6 +664,7 @@ rooms:
     - {to: 23, wall: back, needs: "has:golden-key", oneway: true, look: gold, hint: "A small gold lock with a φ on it."}
     - {to: 29, wall: front, title: "the stacks beyond the stacks"}
   objects:
+    - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:hardcore"}
     - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/"}
     - {hidden: true, kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
     - {kind: ref, title: "The Art of Memory", by: "Frances Yates", note: "Where memory palaces come from."}
@@ -806,6 +856,8 @@ rooms:
 
 - id: 29
   name: The Hall of Impossible Libraries
+  floor: stone
+  ceiling: vault
   wing: archive
   secret: true
   shape: oct
@@ -851,6 +903,122 @@ rooms:
     - {kind: ref, icon: books, title: "The Library of Alexandria", note: "Real, and lost."}
     - {kind: ref, icon: scroll, title: "The Voynich manuscript", note: "Real, and still unread."}
     - {kind: unwritten, icon: hex, title: "Llull's wheels", note: "A working volvelle of Llull's combinatorial wheels."}
+
+- id: 0
+  name: The Entry
+  wing: foyer
+  floor: checker
+  ceiling: coffers
+  decor: [thermo, window, lamp, rug]
+  at: [5, 7]
+  text: >-
+    A high hall with a porter's desk, a thermometer and barometer that read the real weather outside, and a window onto the real sky. The porter keeps maps, keys, lanterns, and a finding aid, and asks each visitor how they would like to walk.
+
+    Turn left or right at the edges of the picture. Click a door to go through it, and click a desk or a case to look closer. The directory on the wall is the plain way to the rest of the site.
+  again: The porter nods. You know your way by now, or think you do.
+  doors:
+    - {to: 1, wall: back, title: "the reading room"}
+    - {to: 34, wall: left, title: "out to the sundial court"}
+    - {to: 20, wall: right, title: "the schoolroom"}
+  objects:
+    - {kind: device, icon: lectern, title: "The porter's desk", action: mode, note: "Choose how you'd like to walk: guided, wanderer, or hardcore."}
+    - {kind: key, item: map, icon: map, title: "A folded map", when: "not:mode:hardcore"}
+    - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:wanderer"}
+    - {kind: device, icon: map, title: "The directory", action: directory, wall: right, note: "Every page of the site, plainly."}
+    - {kind: device, icon: note, title: "The codes ledger", action: codes, wall: left, note: "Your save code, and a place to type warp words."}
+  marginalia:
+    - "This is the front door: the plain links are on the right wall, and the porter will hand you everything you need to skip the puzzles."
+  sources:
+    - "The porter's lodge of an old college, and the opening of Myst, where you are dropped on a dock with nothing in your hands."
+
+- id: 34
+  name: The Sundial Court
+  wing: court
+  floor: stone
+  ceiling: open
+  decor: [sundial]
+  at: [5, 8]
+  text: >-
+    An open court with the real sky over it and a brass sundial in the middle, laid out for Appleton's latitude. The shadow on the plate is the actual shadow for this moment, or for whatever moment the hourglass says.
+
+    The dial tells sun time, which is not clock time. The difference is the longitude, the time zone, daylight saving, and the equation of time, the wobble that comes from the earth's tilted, elliptical orbit.
+  widget: sundial
+  doors:
+    - {to: 0, wall: right, title: "back to the Entry"}
+    - {to: 19, wall: back, title: "the garden gate"}
+  objects:
+    - {kind: unwritten, icon: clock, wall: right, title: "A bowstring equatorial dial", note: "A second dial whose hour lines are evenly spaced, for comparison."}
+  marginalia:
+    - "Hour lines: tan θ = sin φ · tan h. At the pole they'd be evenly spaced; at the equator they all crowd toward six o'clock."
+  bib:
+    - "René R. J. Rohr, <i>Sundials: History, Theory, and Practice</i>, 1970."
+    - "Albert E. Waugh, <i>Sundials: Their Theory and Construction</i>, 1973."
+
+- id: 30
+  name: The North Arcade
+  wing: branch
+  floor: checker
+  decor: [pillar, lamp]
+  at: [9, 2]
+  text: >-
+    Four arcades surround a single pillar marked 0. It is a branch point. Every number has two square roots, and as you walk around zero you cannot keep choosing the same one. Go around the pillar once and you are on the other sheet. Go around again and you are back.
+  phases:
+    - {when: "sheet:sqrt=1", name: "The North Arcade, other sheet", text: "This is the other sheet. The arcade looks the same, but the lettering on the pillar runs the other way."}
+  doors:
+    - {to: 31, wall: right}
+    - {to: 33, wall: left, lift: {sqrt: -1}}
+  objects:
+    - {kind: device, icon: scroll, title: "A table for mending paper", action: combine, uses: [page-left, page-right], gives: mended-page, solve: mended, say: "The two halves fit. The torn edge disappears.", hint: "You need both halves of the torn page. They are on different sheets."}
+  marginalia:
+    - "Monodromy, not holonomy: the loop doesn't turn you, it changes which room you arrive in. The square root's Riemann surface has two sheets glued along a cut."
+
+- id: 31
+  name: The East Arcade
+  wing: branch
+  floor: checker
+  decor: [pillar, lamp]
+  at: [10, 2]
+  text: >-
+    The second side of the pillar. A plaque reads: √1 = 1, but it is also −1.
+  phases:
+    - {when: "sheet:sqrt=1", name: "The East Arcade, other sheet", text: "On this sheet, someone has crossed out the 1 and written −1."}
+  doors:
+    - {to: 32, wall: right}
+    - {to: 30, wall: left}
+  objects:
+    - {kind: ref, icon: book, title: "Visual Complex Analysis", by: "Tristan Needham", note: "Chapter 2 walks around branch points with pictures."}
+
+- id: 32
+  name: The South Arcade
+  wing: branch
+  floor: checker
+  decor: [pillar, lamp]
+  at: [10, 3]
+  text: >-
+    The third side. Half a page is pinned to the pillar.
+  phases:
+    - {when: "sheet:sqrt=1", name: "The South Arcade, other sheet", text: "On this sheet, the other half of the page is pinned where the first half was."}
+  doors:
+    - {to: 33, wall: right}
+    - {to: 31, wall: left}
+  objects:
+    - {kind: key, item: page-left, icon: note, title: "The left half of a torn page", when: "sheet:sqrt=0"}
+    - {kind: key, item: page-right, icon: note, title: "The right half of a torn page", when: "sheet:sqrt=1"}
+
+- id: 33
+  name: The West Arcade
+  wing: branch
+  floor: checker
+  decor: [pillar, lamp]
+  at: [9, 3]
+  text: >-
+    The last side of the pillar, and the way out to the perspective corridor. The step from here to the North Arcade crosses the cut.
+  phases:
+    - {when: "sheet:sqrt=1", name: "The West Arcade, other sheet", text: "You are on the other sheet. The way out is the same, but you may come back to a different palace."}
+  doors:
+    - {to: 30, wall: right, lift: {sqrt: 1}, title: "across the cut"}
+    - {to: 32, wall: left}
+    - {to: 5, wall: front, title: "the perspective corridor"}
 
 primer:
   "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}
