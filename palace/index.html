@@ -128,7 +128,7 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
 .bagbar{display:flex;align-items:center;gap:10px;padding:6px 8px;border-top:2px solid var(--ink);background:var(--paper2);flex-wrap:wrap}
 .baglabel{font:600 13px var(--chrome);text-transform:uppercase;letter-spacing:.1em}
 .bag{display:flex;gap:6px;flex-wrap:wrap;flex:1}
-.slot{width:48px;height:48px;border:2px solid var(--ink);background:var(--paper);padding:2px;cursor:pointer;border-radius:6px}
+.slot{width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--ink);background:var(--paper);padding:2px;cursor:pointer;border-radius:6px}
 .slot:hover{background:var(--paper2);outline:2px solid var(--spot)}
 .hint{font:400 12px var(--chrome);color:var(--muted)}
 .stage .hot,.viewport .hot{cursor:pointer}
@@ -214,6 +214,7 @@ html.skin-myst .bagbar{background:linear-gradient(#120d09,#1b140e); border-top:1
 html.skin-myst .baglabel, html.skin-myst .hint{font:400 13px var(--fellsc); color:var(--sepia2); color:#a8916c}
 html.skin-myst .slot{background:radial-gradient(#2a2016,#140f0a); border:1px solid #5a4630; border-radius:50%; box-shadow:inset 0 0 8px #000}
 html.skin-myst .slot:hover{outline:1px solid var(--brass2)}
+.slot svg{display:block;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.55))} .slot:hover svg{transform:scale(1.08)} .slot.on{outline:2px solid var(--spot)} html.skin-myst .slot.on{outline:1px solid var(--brass2);box-shadow:inset 0 0 8px #000,0 0 10px rgba(224,196,138,.45)}
 html.skin-myst .corner{background:rgba(20,15,10,.82); color:var(--parch2); border:1px solid #5a4630; box-shadow:0 4px 18px rgba(0,0,0,.6); font:italic 13px var(--fell)}
 /* every other window becomes a page of a journal */
 html.skin-myst .win:not(.console), html.skin-myst .toast{--paper2:var(--parch); --paper:var(--parch2); --ink:var(--sepia); --muted:var(--sepia2); --line:#8a7350; color:var(--sepia)}
@@ -276,6 +277,12 @@ html.skin-myst .tip3d{background:rgba(14,11,8,.86); color:var(--parch); border:1
 .linkveil.on{opacity:1}
 @media (max-width:640px){ .linkbook{grid-template-columns:1fr} }
 .dialabout{margin-top:12px;border-top:1px solid var(--line,#999);padding-top:8px}.dialabout summary{cursor:pointer;font:400 14px var(--fellsc);letter-spacing:.08em}.dialabout p{font-size:15px;line-height:1.5}
+.compasshud{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;pointer-events:none;text-align:center;font-family:var(--fellsc,"IM Fell English SC",serif)}
+.compasshud svg{display:block;background:linear-gradient(#1b140cdd,#0d0a06dd);border:1px solid #6b5230;border-radius:3px;box-shadow:0 2px 10px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,230,170,.18)}
+.compasshud text{font-size:10px;fill:#e9d6a6;font-family:"IM Fell English SC","IM Fell English",Georgia,serif} .compasshud text.c{font-size:12.5px;fill:#fff1cf} .compasshud text.deg{font-size:7.5px;fill:#b89a62}
+.compasshud .ch-read{display:inline-block;margin-top:3px;padding:1px 9px;background:#0d0a06cc;border:1px solid #6b5230;border-radius:2px;color:#e9d6a6;font-size:12.5px;letter-spacing:.06em} .compasshud .ch-read b{font-weight:400;color:#fff1cf}
+@media (max-width:700px){ .compasshud svg{width:240px} }
+.viewport:has(.skypanel.open) .compasshud{left:calc(50% - 210px)} @media (max-width:700px){ .viewport:has(.skypanel.open) .compasshud{left:50%} }
 .skypanel,html.skin-myst .skypanel.win{position:absolute} .skypanel{position:absolute;top:10px;right:10px;width:min(380px,46%);max-height:calc(100% - 20px);overflow:auto;z-index:5;display:none}
 .skypanel.open{display:block} .skypanel .wb{padding:8px 16px 14px;font-size:14.5px;line-height:1.45} .skypanel h4{font:400 12px var(--fellsc);letter-spacing:.14em;margin:12px 0 2px}
 html .skypanel button.chip{font:400 13px var(--fellsc);letter-spacing:.06em;background:transparent;color:var(--sepia,#2e2216);border:1px solid #8a7350;border-radius:12px;padding:2px 10px;cursor:pointer} html .skypanel button.chip.on{background:var(--sepia,#2e2216);color:var(--parch,#efe3c6)} .skypanel .sk-card{border-top:1px solid var(--line,#999);padding-top:6px;margin-top:8px} .skypanel .sk-t input{width:auto}
@@ -306,7 +313,7 @@ html .skypanel button.chip{font:400 13px var(--fellsc);letter-spacing:.06em;back
       <button class="corner tr" id="mini" type="button" aria-label="Open the map"></button>
       <button class="corner bl" id="primerc" type="button" aria-label="Open the Primer"></button>
     </div>
-    <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint">drag to look · ← → or A D turn · ↑ W go through · ↓ S step back · ⇧↑ ⇧↓ look up, down · F full view</span></div>
+    <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint">drag to look · ← → or A D turn · ↑ W go through · ↓ S step back · ⇧↑ ⇧↓ look up, down · F full view · C compass</span></div>
   </div>
   <div class="win" id="annwin" style="display:none;margin-top:20px"><div class="tb"><button class="box" type="button" id="ann-x" aria-label="Close annotations"></button><span class="t">Annotations</span></div>
     <div class="wb"><div class="tabs" role="tablist"><button type="button" class="tab" data-tab="marginalia">Marginalia</button><button type="button" class="tab" data-tab="sources">Sources</button><button type="button" class="tab" data-tab="bib">Bibliography</button></div><div id="annb" class="ann"></div></div></div>

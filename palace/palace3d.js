@@ -316,7 +316,7 @@ export function create(container, hooks){
   let prevRoom = null, plan0 = null, R0 = Math.random;
   function show(p){
     plan = p; peeking = false;
-    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.wxKind, Math.floor(p.minuteKey/10)]);
+    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
     if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); }
     // where to stand and where to look
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5)};
@@ -540,7 +540,7 @@ export function create(container, hooks){
       c.lerp(grey, cc*.88); col.push(c.r, c.g, c.b); }
     geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
     const domeM = on1(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({vertexColors:true, side:THREE.BackSide, fog:false, depthWrite:false})));
-    domeM.userData.hit = {kind:"look", label: skyOn ? "The sky" : "The sky: go up into it", onClick:()=>{ if(!skyOn){ skyMode(true); hooks.sky && hooks.sky(); } }}; picks.push(domeM);
+    domeM.userData.hit = {kind:"look", get label(){ return skyOn ? "The sky: open its notes" : "The sky: go up into it"; }, onClick:()=>{ if(!skyOn) skyMode(true); hooks.sky && hooks.sky(); }}; picks.push(domeM);
     // the guides an observer would draw in: the alt-azimuth grid, the celestial equator, the ecliptic, the pole and the zenith
     const O = p.skyOpts || {}, guide = (pts, color, op, closed) => { if(pts.length < 2) return; const g2 = new THREE.BufferGeometry().setFromPoints(pts); on1(new (closed ? THREE.LineLoop : THREE.Line)(g2, new THREE.LineBasicMaterial({color, transparent:true, opacity:op, fog:false, depthWrite:false}))); };
     const ring = (alt) => Array.from({length:121}, (_, k) => dir(alt, k*3).multiplyScalar(RS-.8));
@@ -1410,5 +1410,5 @@ export function create(container, hooks){
 
   // a small picture of the room as it is now, for the linking books' panels
   function thumb(){ const c = document.createElement("canvas"); c.width = 480; c.height = 270; c.getContext("2d").drawImage(canvas, 0, 0, 480, 270); return c.toDataURL("image/jpeg", .82); }
-  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, snapshot:()=>canvas.toDataURL("image/png")};
+  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
 }

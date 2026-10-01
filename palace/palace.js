@@ -736,7 +736,7 @@ function render(){
     ol.appendChild(li);
   });
   annotations(room);
-  bag(); corners(room);
+  bag(); corners(room); compassHud();
   const wd = $("widget"); wd.innerHTML = ""; stopTimers();
   if(room.widget){ const spec = typeof room.widget==="string" ? {type:room.widget} : room.widget; (WIDGETS[spec.type]||(()=>{}))(wd, spec, room); }
 }
@@ -1051,7 +1051,7 @@ const ITEMS = {
   "finding-aid": {icon:"scroll",    name:"The finding aid (every link)",    use:()=>catalogueView()},
   "master-key":  {icon:"key",       name:"The porter's master key",         use:()=>toast("The master key opens every ordinary lock. A few doors want more than a key.")},
   "golden-key":  {icon:"key",       name:"A golden key, stamped φ",         use:()=>toast("A golden key, stamped φ. Somewhere there is a lock to match.")},
-  "compass":     {icon:"compass",   name:"A compass",                       use:()=>{ S.frame=[0,0]; save(); render(); toast("The needle settles. You are facing true, and no longer mirrored."); }},
+  "compass":     {icon:"compass",   name:"A compass: click to hold it up in view (C); it also sets you facing true", use:()=>{ if(S.frame[0] || S.frame[1]){ S.frame=[0,0]; S.compassOn=true; save(); render(); toast("The needle settles. You are facing true, and no longer mirrored."); } else toggleCompass(); }},
   "lantern":     {icon:"lamp",      name:"A lantern",                       use:()=>{ S.lantern=!S.lantern; save(); render(); toast(S.lantern?"You raise the lantern.":"You shade the lantern."); }},
   "hourglass":   {icon:"hourglass", name:"An hourglass that sets the house's clock", use:()=>timeView()},
   "page-left":   {icon:"note",      name:"The left half of a torn page", use:()=>toast("Half a page. The words stop in the middle.")},
@@ -1099,11 +1099,134 @@ function cardView(o){
   else $("obi").appendChild(iconSVG(o.icon || KIND_ICON[o.kind] || "box", 120));
   award("look:"+o.title, 2);
 }
+/* ---------- the compass, held up in front of you: a bearing tape across the top of the view ---------- */
+const POINTS16 = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+function heading(){
+  const n = a => ((a % 360) + 360) % 360;
+  if(VIEW3D && S.gfx !== "2d" && VIEW3D.view){ const v = VIEW3D.view(); return {az: n(v.F - v.yaw*180/Math.PI), alt: v.pitch*180/Math.PI, mirror: v.mirror, sky: VIEW3D.isSky && VIEW3D.isSky()}; }
+  return {az: n(facing() + 90*S.face), alt: null, mirror: S.frame[1] === 1};
+}
+let hudRAF = 0, hudLast = "";
+function compassHud(){
+  let h = $("compasshud"); const vp = document.querySelector(".viewport");
+  if(!S.compassOn || !S.inv.includes("compass") || !vp){ if(h) h.remove(); cancelAnimationFrame(hudRAF); hudRAF = 0; return; }
+  if(!h || h.parentNode !== vp){
+    if(h) h.remove(); h = document.createElement("div"); h.id = "compasshud"; h.className = "compasshud"; h.setAttribute("aria-live","off");
+    const ppd = 2.4, W = 320; let ticks = "";
+    for(let d = -360; d <= 720; d += 5){ const x = (d*ppd).toFixed(1), a = ((d % 360) + 360) % 360, big = a % 45 === 0, mid = a % 15 === 0;
+      ticks += `<line x1="${x}" y1="${big?14:mid?18:21}" x2="${x}" y2="27" stroke="${big?"#f3dc9a":"#cdb07a"}" stroke-width="${big?1.6:1}"/>`;
+      if(big) ticks += `<text x="${x}" y="11" text-anchor="middle" class="${a%90===0?"c":"ic"}">${POINTS16[a/22.5]}</text>`;
+      else if(mid) ticks += `<text x="${x}" y="13" text-anchor="middle" class="deg">${a}</text>`; }
+    h.innerHTML = `<svg viewBox="0 0 ${W} 34" width="${W}" height="34"><defs><linearGradient id="chf" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity="1"/><stop offset=".18" stop-color="#000" stop-opacity="0"/><stop offset=".82" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="1"/></linearGradient></defs>
+      <g id="ch-tape">${ticks}</g><rect width="${W}" height="34" fill="url(#chf)" opacity=".85"/><path d="M${W/2} 30 l-5 4 h10 Z" fill="#c8402f"/><line x1="${W/2}" y1="6" x2="${W/2}" y2="30" stroke="#c8402f" stroke-width="1.6"/></svg>
+      <div class="ch-read"><b id="ch-az"></b> <span id="ch-alt"></span></div>`;
+    h.dataset.ppd = ppd; h.dataset.w = W; vp.appendChild(h); hudLast = "";
+  }
+  if(!hudRAF) hudRAF = requestAnimationFrame(hudTick);
+}
+function hudTick(){
+  hudRAF = 0; const h = $("compasshud"); if(!h || !S.compassOn) return;
+  const v = heading(), wob = v.mirror ? 9*Math.sin(performance.now()/260) + 4*Math.sin(performance.now()/97) : 0, az = ((v.az + wob) % 360 + 360) % 360;
+  const key = az.toFixed(1) + ":" + (v.alt == null ? "" : v.alt.toFixed(0)) + v.mirror;
+  if(key !== hudLast){ hudLast = key; const ppd = +h.dataset.ppd, W = +h.dataset.w;
+    $("ch-tape").setAttribute("transform", `translate(${(W/2 - az*ppd).toFixed(1)} 0)`);
+    $("ch-az").textContent = v.mirror ? "the needle won't settle" : `${POINTS16[Math.round(az/22.5) % 16]} ${Math.round(az)}°`;
+    $("ch-alt").textContent = v.alt == null || v.mirror ? "" : Math.abs(v.alt) < 3 ? "level" : v.alt > 0 ? `looking up ${Math.round(v.alt)}°` : `looking down ${Math.round(-v.alt)}°`; }
+  hudRAF = requestAnimationFrame(hudTick);
+}
+function toggleCompass(){ if(!S.inv.includes("compass")) return toast("You haven't a compass. There's one on the porter's desk at the Entry.");
+  S.compassOn = !S.compassOn; save(); compassHud(); bag(); toast(S.compassOn ? "You hold the compass up where you can see it. (C puts it away.)" : "You put the compass back in your bag."); }
+/* ---------- the bag's icons: small engraved pictures in brass, parchment, wood, and leather ---------- */
+let BAGU = 0;
+const BAGDEFS = u => `<defs>
+<linearGradient id="br${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbe7a8"/><stop offset=".45" stop-color="#d4a650"/><stop offset="1" stop-color="#7a5320"/></linearGradient>
+<radialGradient id="brr${u}" cx=".36" cy=".3" r=".8"><stop offset="0" stop-color="#fff0bf"/><stop offset=".5" stop-color="#d1a04a"/><stop offset="1" stop-color="#6e4a1c"/></radialGradient>
+<linearGradient id="au${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4c0"/><stop offset=".5" stop-color="#eebb3e"/><stop offset="1" stop-color="#8a5a10"/></linearGradient>
+<linearGradient id="pa${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbf2dc"/><stop offset="1" stop-color="#d6bd8b"/></linearGradient>
+<linearGradient id="wd${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a86c3c"/><stop offset="1" stop-color="#55311a"/></linearGradient>
+<linearGradient id="lt${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a84c34"/><stop offset="1" stop-color="#4f1d12"/></linearGradient>
+<radialGradient id="gl${u}" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#fff8d0"/><stop offset=".45" stop-color="#f4b648"/><stop offset="1" stop-color="#b3641c" stop-opacity=".25"/></radialGradient>
+<radialGradient id="hal${u}" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd27a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>
+<linearGradient id="gs${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs>`;
+const BINK = "#2b1d10";
+const bagLines = (x1, x2, y1, y2, step, extra="") => { let s = ""; for(let y=y1; y<=y2; y+=step){ const w = (x2-x1) * (.7 + .3*Math.abs(Math.sin(y*1.7))); s += `<line x1="${x1}" y1="${y}" x2="${(x1+w).toFixed(1)}" y2="${y}" stroke="${BINK}" stroke-opacity=".55" stroke-width=".9" ${extra}/>`; } return s; };
+const bagKey = (u, fill, big) => `<g stroke="${BINK}" stroke-width="1" stroke-linejoin="round"><circle cy="0" r="${big?5.5:4.5}" fill="none" stroke="url(#${fill}${u})" stroke-width="${big?3:2.6}"/><circle cy="0" r="${big?5.5:4.5}" fill="none" stroke-width=".6"/><rect x="-1.5" y="${big?5:4}" width="3" height="${big?22:18}" fill="url(#${fill}${u})"/><path d="M1.5 ${big?20:16} h5 v3 h-2 v2 h2 v3 h-5" fill="url(#${fill}${u})"/></g>`;
+const BAGICON = {
+  map: u => `<g transform="rotate(-5 32 32)"><path d="M8 16 L22 12 L36 16 L50 12 L54 48 L40 52 L26 48 L12 52 Z" fill="url(#pa${u})" stroke="${BINK}" stroke-width="1.3" stroke-linejoin="round"/>
+    <path d="M22 12 L36 16 L40 52 L26 48 Z" fill="#6b4a24" opacity=".13"/><path d="M22 12 L26 48 M36 16 L40 52" stroke="${BINK}" stroke-width=".7" opacity=".6"/>
+    <rect x="12" y="20" width="6" height="6" fill="none" stroke="${BINK}" stroke-width=".9"/><rect x="13" y="29" width="8" height="5" fill="none" stroke="${BINK}" stroke-width=".9"/><rect x="25" y="22" width="6" height="7" fill="none" stroke="${BINK}" stroke-width=".9"/>
+    <path d="M15 42 Q20 34 27 37 T40 30 T46 21" fill="none" stroke="#8c3f2f" stroke-width="1.4" stroke-dasharray="2.2 2"/><path d="M44 18 l5 5 M49 18 l-5 5" stroke="#8c3f2f" stroke-width="1.8"/>
+    <path d="M40 34 h10 M42 40 h7 M41 45 h9" stroke="${BINK}" stroke-width=".7" stroke-dasharray="1 2" opacity=".5"/></g>`,
+  plan: u => `<path d="M11 12 H53 V50 L46 55 H11 Z" fill="url(#pa${u})" stroke="${BINK}" stroke-width="1.3"/><path d="M53 50 L46 55 L47 49 Z" fill="#c9ad78" stroke="${BINK}" stroke-width=".8"/>
+    <rect x="8" y="8" width="48" height="6" rx="3" fill="url(#wd${u})" stroke="${BINK}" stroke-width="1"/><circle cx="8" cy="11" r="2.6" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/><circle cx="56" cy="11" r="2.6" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/>
+    <g fill="none" stroke="#24364f" stroke-width="1.1"><rect x="16" y="19" width="13" height="11"/><rect x="29" y="19" width="15" height="11"/><rect x="16" y="30" width="9" height="15"/><rect x="25" y="30" width="19" height="15"/><circle cx="34.5" cy="37.5" r="4"/></g>
+    <g stroke="url(#pa${u})" stroke-width="2.2"><path d="M21 30 h3 M29 23 v3 M25 36 v3 M36 30 h3"/></g><path d="M16 49 h24" stroke="${BINK}" stroke-width=".8" opacity=".6"/><circle cx="20" cy="40" r="1.8" fill="#b0302a"/>`,
+  scroll: u => `<path d="M16 11 H48 V53 H16 Z" fill="url(#pa${u})" stroke="${BINK}" stroke-width="1.2"/>
+    ${[0,1,2,3,4,5].map(i => `<path d="M20 ${18+i*5.4} h${10+(i*7)%9}" stroke="${BINK}" stroke-width=".9" opacity=".65"/><path d="M${32+(i*7)%9} ${18+i*5.4} H40" stroke="${BINK}" stroke-width=".8" stroke-dasharray=".8 1.6" opacity=".55"/><path d="M41 ${18+i*5.4} h4" stroke="${BINK}" stroke-width="1" opacity=".75"/>`).join("")}
+    <rect x="12" y="6" width="40" height="6" rx="3" fill="url(#wd${u})" stroke="${BINK}"/><rect x="12" y="52" width="40" height="6" rx="3" fill="url(#wd${u})" stroke="${BINK}"/>
+    <circle cx="11" cy="9" r="2.5" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/><circle cx="53" cy="9" r="2.5" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/><circle cx="11" cy="55" r="2.5" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/><circle cx="53" cy="55" r="2.5" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/>
+    <path d="M40 52 l-2 8 l3 -2 l3 2 l-1 -8" fill="#8c3f2f" stroke="${BINK}" stroke-width=".6"/>`,
+  "master-key": u => `<circle cx="32" cy="17" r="10" fill="none" stroke="url(#br${u})" stroke-width="3"/><circle cx="32" cy="17" r="10" fill="none" stroke="${BINK}" stroke-width=".7"/>
+    <g transform="translate(26 27) rotate(28)">${bagKey(u,"br",false)}</g><g transform="translate(38 27) rotate(-28)">${bagKey(u,"br",false)}</g><g transform="translate(32 28)">${bagKey(u,"br",true)}</g>`,
+  "golden-key": u => `<circle cx="32" cy="32" r="24" fill="url(#hal${u})"/><g transform="translate(32 32) rotate(-42) translate(0 -20)" stroke="${BINK}" stroke-width="1" stroke-linejoin="round">
+    <circle r="9" fill="url(#au${u})"/><circle r="5.2" fill="#3a2810"/><text y="3.6" text-anchor="middle" font-size="10" font-family="IM Fell English, Georgia, serif" fill="#f7d36b" stroke="none">φ</text>
+    <rect x="-2" y="9" width="4" height="27" fill="url(#au${u})"/><path d="M2 27 h6 v3 h-3 v2 h3 v4 h-6" fill="url(#au${u})"/><rect x="-3.2" y="11" width="6.4" height="2" fill="url(#au${u})"/></g>
+    <path d="M48 40 l1.6 -4 l1.6 4 l4 1.6 l-4 1.6 l-1.6 4 l-1.6 -4 l-4 -1.6 Z" fill="#fff8d8" opacity=".9"/>`,
+  compass: u => `<circle cx="32" cy="9" r="4" fill="none" stroke="url(#br${u})" stroke-width="2.4"/><circle cx="32" cy="34" r="23" fill="url(#brr${u})" stroke="${BINK}" stroke-width="1.2"/>
+    <circle cx="32" cy="34" r="18" fill="#f3e8cf" stroke="${BINK}" stroke-width="1"/>
+    ${Array.from({length:32}, (_,k) => { const t=k/32*Math.PI*2, r1 = k%8===0 ? 13.5 : k%2 ? 16 : 15; return `<line x1="${(32+Math.sin(t)*r1).toFixed(2)}" y1="${(34-Math.cos(t)*r1).toFixed(2)}" x2="${(32+Math.sin(t)*17.6).toFixed(2)}" y2="${(34-Math.cos(t)*17.6).toFixed(2)}" stroke="${BINK}" stroke-width="${k%8===0?1:.6}"/>`; }).join("")}
+    <g font-family="IM Fell English, Georgia, serif" font-size="6" fill="${BINK}" text-anchor="middle"><text x="32" y="25">N</text><text x="32" y="47.5">S</text><text x="42.5" y="36">E</text><text x="21.5" y="36">W</text></g>
+    <g transform="rotate(14 32 34)"><path d="M32 18 L35.2 34 L28.8 34 Z" fill="#b0302a" stroke="${BINK}" stroke-width=".6"/><path d="M32 50 L35.2 34 L28.8 34 Z" fill="#33302c" stroke="${BINK}" stroke-width=".6"/></g><circle cx="32" cy="34" r="2" fill="url(#br${u})" stroke="${BINK}" stroke-width=".6"/>
+    <path d="M17 26 A17 17 0 0 1 36 17" fill="none" stroke="url(#gs${u})" stroke-width="4" stroke-linecap="round" opacity=".8"/>`,
+  lamp: u => `<circle cx="32" cy="36" r="24" fill="url(#hal${u})"/><path d="M24 14 Q32 2 40 14" fill="none" stroke="url(#br${u})" stroke-width="2.4"/><path d="M24 14 Q32 2 40 14" fill="none" stroke="${BINK}" stroke-width=".6"/>
+    <path d="M22 18 L26 13 H38 L42 18 Z" fill="url(#br${u})" stroke="${BINK}" stroke-width="1"/><rect x="21" y="18" width="22" height="4" fill="url(#br${u})" stroke="${BINK}" stroke-width="1"/>
+    <rect x="22.5" y="22" width="19" height="22" fill="url(#gl${u})" stroke="${BINK}" stroke-width="1"/><path d="M32 26 C35.5 31 35 37 32 39 C29 37 28.5 31 32 26 Z" fill="#fffbe6" stroke="#e08a2a" stroke-width=".8"/><rect x="31" y="38.5" width="2" height="4" fill="#5a3a1a"/>
+    <path d="M22.5 22 V44 M41.5 22 V44 M32 22 V25" stroke="url(#br${u})" stroke-width="2"/><path d="M24.5 23 L27 43" stroke="#fff" stroke-opacity=".5" stroke-width="1.2"/>
+    <path d="M20 44 H44 L41 50 H23 Z" fill="url(#br${u})" stroke="${BINK}" stroke-width="1"/><rect x="19" y="50" width="26" height="3" rx="1" fill="url(#br${u})" stroke="${BINK}" stroke-width=".8"/>`,
+  hourglass: u => `<rect x="13" y="7" width="38" height="6" rx="1.5" fill="url(#wd${u})" stroke="${BINK}"/><rect x="13" y="51" width="38" height="6" rx="1.5" fill="url(#wd${u})" stroke="${BINK}"/>
+    <path d="M17 13 V51 M47 13 V51" stroke="url(#wd${u})" stroke-width="3"/><path d="M17 13 V51 M47 13 V51" stroke="${BINK}" stroke-width=".5"/>
+    <path d="M22 13 C22 26 30 28 31 32 C30 36 22 38 22 51 H42 C42 38 34 36 33 32 C34 28 42 26 42 13 Z" fill="#dfeef2" fill-opacity=".35" stroke="${BINK}" stroke-width="1"/>
+    <path d="M25 22 C27 27 30 29 32 31.2 C34 29 37 27 39 22 Q32 24.5 25 22 Z" fill="#dcb46a" stroke="#8a6630" stroke-width=".5"/><path d="M32 31 V47" stroke="#dcb46a" stroke-width=".9"/>
+    <path d="M23 51 Q32 39.5 41 51 Z" fill="#dcb46a" stroke="#8a6630" stroke-width=".5"/><path d="M24.5 15 C24.5 23 27 26 29 28" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.1"/>`,
+  "page-left": u => `<path d="M12 10 H38 L35 15 L39 20 L34 26 L38 31 L33 37 L37 42 L34 48 L38 54 H12 Z" fill="url(#pa${u})" stroke="${BINK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <rect x="16" y="15" width="6" height="7" fill="#8c3f2f"/>${bagLines(24,32,16,21,5)}${bagLines(16,31,26,50,4.5)}`,
+  "page-right": u => `<path d="M52 10 H28 L31 15 L27 20 L32 26 L28 31 L33 37 L29 42 L32 48 L28 54 H52 Z" fill="url(#pa${u})" stroke="${BINK}" stroke-width="1.2" stroke-linejoin="round"/>
+    ${bagLines(35,48,16,50,4.5)}<path d="M41 53 h8" stroke="${BINK}" stroke-width=".8"/>`,
+  "mended-page": u => `<path d="M10 10 H54 V54 H10 Z" fill="url(#pa${u})" stroke="${BINK}" stroke-width="1.2"/><rect x="14" y="14" width="6" height="7" fill="#8c3f2f"/>
+    ${bagLines(22,30,15,20,5)}${bagLines(14,29,25,50,4.5)}${bagLines(35,50,15,50,4.5)}
+    <path d="M32 10 L29.5 15 L33 20 L29 26 L33 31 L28.8 37 L32.5 42 L29.5 48 L32 54" fill="none" stroke="${BINK}" stroke-width=".8" opacity=".7"/>
+    ${[13,19,25,31,37,43,49].map(y => `<path d="M28 ${y} l6 2 M28 ${y+2} l6 -2" stroke="#8c3f2f" stroke-width=".9"/>`).join("")}`,
+  book: u => `<rect x="44" y="10" width="6" height="45" fill="#efe2c4" stroke="${BINK}" stroke-width=".8"/>${[13,16,19,22,25,28,31,34,37,40,43,46,49,52].map(y=>`<path d="M45 ${y} h4" stroke="${BINK}" stroke-width=".3" opacity=".6"/>`).join("")}
+    <rect x="13" y="8" width="33" height="49" rx="2" fill="url(#lt${u})" stroke="${BINK}" stroke-width="1.2"/><rect x="13" y="8" width="6" height="49" rx="2" fill="#3e140b" opacity=".55"/>
+    <rect x="22" y="12" width="20" height="41" fill="none" stroke="url(#au${u})" stroke-width="1"/><rect x="24" y="14" width="16" height="37" fill="none" stroke="url(#au${u})" stroke-width=".5"/>
+    <g transform="translate(32 28)" stroke="url(#au${u})" stroke-width="1" fill="none"><circle r="4"/>${[0,1,2,3,4,5,6,7].map(k=>{const t=k*Math.PI/4;return `<line x1="${(Math.sin(t)*5.5).toFixed(2)}" y1="${(-Math.cos(t)*5.5).toFixed(2)}" x2="${(Math.sin(t)*8.5).toFixed(2)}" y2="${(-Math.cos(t)*8.5).toFixed(2)}"/>`;}).join("")}<ellipse rx="10" ry="3.2" transform="rotate(-20)" stroke-width=".6"/></g>
+    <rect x="25" y="41" width="14" height="4" fill="url(#au${u})"/><rect x="44" y="28" width="5" height="8" rx="1" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/>`,
+  musicbox: u => `<path d="M10 33 L15 12 H54 L50 33 Z" fill="url(#wd${u})" stroke="${BINK}" stroke-width="1.1"/><ellipse cx="32.5" cy="22" rx="10" ry="6" fill="#efe2c4" stroke="url(#au${u})" stroke-width="1.2"/><path d="M28 24 q4.5 -6 9 0" fill="none" stroke="#8c3f2f" stroke-width=".9"/>
+    <rect x="10" y="33" width="40" height="5" fill="#3a2414" stroke="${BINK}" stroke-width=".8"/><rect x="15" y="33.5" width="22" height="4" rx="2" fill="url(#br${u})" stroke="${BINK}" stroke-width=".5"/>${[17,20,23,26,29,32,35].map(x=>`<circle cx="${x}" cy="${35.5+((x*3)%3-1)*.8}" r=".5" fill="${BINK}"/>`).join("")}
+    <rect x="10" y="38" width="40" height="15" fill="url(#wd${u})" stroke="${BINK}" stroke-width="1.1"/><rect x="13" y="40.5" width="34" height="10" fill="none" stroke="url(#au${u})" stroke-width=".8"/><path d="M30 44 a1.4 1.4 0 1 1 0.01 0 M30 45 v3" stroke="${BINK}" stroke-width="1"/>
+    <path d="M50 45 L56 41 L56 37" fill="none" stroke="url(#br${u})" stroke-width="2"/><circle cx="56" cy="36" r="2" fill="url(#br${u})" stroke="${BINK}" stroke-width=".6"/>
+    <text x="8" y="16" font-size="12" fill="url(#au${u})" stroke="${BINK}" stroke-width=".3" font-family="Georgia, serif">♪</text><text x="54" y="10" font-size="9" fill="url(#au${u})" stroke="${BINK}" stroke-width=".3" font-family="Georgia, serif">♫</text>`,
+  astrolabe: u => `<circle cx="32" cy="7.5" r="3.6" fill="none" stroke="url(#br${u})" stroke-width="2.2"/><path d="M26 15 Q32 8 38 15 Z" fill="url(#br${u})" stroke="${BINK}" stroke-width=".8"/>
+    <circle cx="32" cy="35" r="22" fill="url(#brr${u})" stroke="${BINK}" stroke-width="1.2"/><circle cx="32" cy="35" r="18.5" fill="#e3c27a" stroke="${BINK}" stroke-width=".8"/>
+    ${Array.from({length:36}, (_,k) => { const t=k/36*Math.PI*2; return `<line x1="${(32+Math.sin(t)*18.5).toFixed(2)}" y1="${(35-Math.cos(t)*18.5).toFixed(2)}" x2="${(32+Math.sin(t)*(k%3?20:21.5)).toFixed(2)}" y2="${(35-Math.cos(t)*(k%3?20:21.5)).toFixed(2)}" stroke="${BINK}" stroke-width=".6"/>`; }).join("")}
+    <g fill="none" stroke="${BINK}" stroke-width=".55" opacity=".55"><circle cx="32" cy="30" r="5"/><circle cx="32" cy="31" r="9"/><circle cx="32" cy="32.5" r="13"/><path d="M14 35 H50 M32 17 V53"/></g>
+    <g fill="none" stroke="#3a2a14" stroke-width="1.5"><circle cx="32" cy="37" r="11"/><circle cx="32" cy="35" r="15" stroke-width=".9"/></g>
+    ${[[0.4,15],[1.6,12],[2.7,14.5],[3.9,13],[5.2,15]].map(([t,r])=>`<path d="M${(32+Math.sin(t)*(r-4)).toFixed(1)} ${(35-Math.cos(t)*(r-4)).toFixed(1)} L${(32+Math.sin(t)*r).toFixed(1)} ${(35-Math.cos(t)*r).toFixed(1)}" stroke="#3a2a14" stroke-width="1.6" stroke-linecap="round"/>`).join("")}
+    <g transform="rotate(32 32 35)"><rect x="11" y="33.5" width="42" height="3" rx="1" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/><rect x="15" y="31" width="2.5" height="8" fill="url(#br${u})" stroke="${BINK}" stroke-width=".5"/><rect x="46.5" y="31" width="2.5" height="8" fill="url(#br${u})" stroke="${BINK}" stroke-width=".5"/></g>
+    <circle cx="32" cy="35" r="2" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/>`,
+};
+const BAGMAP = {"map":"map","plan":"plan","finding-aid":"scroll","master-key":"master-key","golden-key":"golden-key","compass":"compass","lantern":"lamp","hourglass":"hourglass","page-left":"page-left","page-right":"page-right","mended-page":"mended-page","primer":"book","musicbox":"musicbox","astrolabe":"astrolabe"};
+function bagIcon(item, size){
+  const k = BAGMAP[item], f = k && BAGICON[k]; if(!f) return null; const u = "bi" + (++BAGU);
+  const w = document.createElement("span"); w.className = "bagicon";
+  w.innerHTML = `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true">${BAGDEFS(u)}${f(u)}</svg>`; return w.firstChild;
+}
 function bag(){
   const b = $("bag"); b.innerHTML = "";
   if(!S.inv.length){ b.innerHTML = `<span class="note">Your bag is empty. The porter at the Entry can help.</span>`; return; }
   S.inv.forEach(k => { const it = ITEMS[k] || {icon:"box", name:(P.items&&P.items[k])||k}; const btn=document.createElement("button"); btn.type="button"; btn.className="slot"; btn.title=it.name; btn.setAttribute("aria-label",it.name);
-    btn.appendChild(iconSVG(it.icon, 40)); btn.onclick = () => it.use ? it.use() : toast(it.name); b.appendChild(btn); });
+    btn.appendChild(bagIcon(k, 42) || iconSVG(it.icon, 40)); if(k==="compass" && S.compassOn) btn.classList.add("on"); btn.onclick = () => it.use ? it.use() : toast(it.name); b.appendChild(btn); });
 }
 function corners(room){
   const m = $("mini"), pr = $("primerc");
@@ -1241,6 +1364,8 @@ function drawSkyPanel(){
     <h4>Next meteor shower</h4><p>The ${next.m[0]}, peaking about ${next.t.toLocaleDateString([], {month:"long", day:"numeric"})}, radiating from ${next.m[3]}: up to about ${next.m[4]} an hour under a dark sky, after midnight. ${lit > 60 && Math.abs(next.t - d) < 5*864e5 ? "The moon will wash out the fainter ones." : ""}</p>
     ${!dark && sk.sun.alt > -6 ? `<p class="note">It's light out, so the stars are hidden. To see the day's stars, put the sun out with the astrolabe's storm glass, or let time run on.</p>` : ""}`;
   if(tab === "explore") body = `
+    <div class="sk-card"><h4>Put out the lights</h4><p>Put the sun out and the daytime stars appear, exactly where they are behind the blue; put the moon out and the faint stars come back on a bright night. (The astrolabe's storm glass does the same.)</p>
+      <div class="row"><label class="note sk-t"><input type="checkbox" data-lamp="sun" ${skyOff("sun") ? "" : "checked"}> the sun</label> <label class="note sk-t"><input type="checkbox" data-lamp="moon" ${skyOff("moon") ? "" : "checked"}> the moon</label></div></div>
     <div class="sk-card"><h4>The turning sky</h4><p>The whole sky turns once in 23 hours 56 minutes, a sidereal day, about the celestial pole. Let time run and watch the stars wheel, rising in the east and setting in the west, while the pole stays put.</p>
       <div class="row"><button class="btn" data-rate="600" type="button">Run time: 10 minutes a second</button><button class="btn" data-rate="3600" type="button">an hour a second</button>${timeRate ? `<button class="btn primary" data-rate="0" type="button">Back to real time</button>` : ""}</div></div>
     <div class="sk-card"><h4>Find the pole</h4><p>The celestial pole stands ${Math.abs(LAT).toFixed(1)}° above the ${LAT >= 0 ? "northern" : "southern"} horizon, exactly your latitude. ${LAT >= 0 ? "Polaris, at the end of the Little Dipper's handle, is within a degree of it: follow the two stars at the end of the Big Dipper's bowl, Merak and Dubhe, about five times their spacing." : "No bright star marks the south pole; find it from the Southern Cross."}</p>
@@ -1253,12 +1378,14 @@ function drawSkyPanel(){
     <p>The sky over the court is computed, not photographed. The stars come from the data files of Olaf Frohn's d3-celestial, down to magnitude 4.7, about what a dark suburban sky shows. Their positions are precessed to today's date.</p>
     <p>The sun, the moon, and the planets are worked out from their orbits, with the moon's parallax, the planets' light-time, and the atmosphere's refraction near the horizon. Checked against a professional ephemeris (pyephem), they agree to about a hundredth of a degree for the sun, a few hundredths for the planets, and a third of a degree for the moon.</p>
     <p>The constellation figures are the IAU's modern constellations, drawn as d3-celestial draws them. The clouds come from the weather now (Open-Meteo), unless the storm glass says otherwise.</p>`;
-  sp.innerHTML = `<div class="tb"><span class="t">The sky</span><button class="box" type="button" id="sk-x" aria-label="Come back down"></button></div><div class="wb">
+  sp.innerHTML = `<div class="tb"><span class="t">The sky</span><button class="box" type="button" id="sk-x" aria-label="Close the notes" title="Close the notes (you stay up in the sky)"></button></div><div class="wb">
     <div class="chips">${[["tonight","Tonight"],["explore","Explorations"],["notes","Notes"]].map(([k,l]) => `<button class="chip ${tab===k?"on":""}" data-tab="${k}" type="button">${l}</button>`).join(" ")}</div>
     ${body}<div class="row" style="margin-top:8px">${tog("lines","figures")} ${tog("names","names")}</div>
-    <p class="note">Drag to look around; the bottom of the picture brings you back down.</p></div>`;
-  sp.querySelector("#sk-x").onclick = () => { sp.classList.remove("open"); if(VIEW3D && VIEW3D.skyMode) VIEW3D.skyMode(false); };
+    <div class="row" style="margin-top:6px"><button class="btn" id="sk-down" type="button">Come back down</button></div><p class="note">Drag to look around. Close these notes with the box and stay up here; click the sky to open them again. The bottom of the picture, or the button, brings you back down.</p></div>`;
+  sp.querySelector("#sk-x").onclick = () => sp.classList.remove("open");
+  sp.querySelector("#sk-down").onclick = () => { sp.classList.remove("open"); if(VIEW3D && VIEW3D.skyMode) VIEW3D.skyMode(false); };
   sp.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { S.skyTab = b.dataset.tab; save(); drawSkyPanel(); });
+  sp.querySelectorAll("[data-lamp]").forEach(c => c.onchange = () => { const k = c.dataset.lamp; S.skyOff = Object.assign({}, S.skyOff, {[k]: !c.checked}); save(); render(); toast(c.checked ? `The ${k} is lit again.` : `The ${k} goes out.`); });
   sp.querySelectorAll("[data-o]").forEach(c => c.onchange = () => { S.skyOpts = Object.assign({lines:true, names:true, tracks:true}, S.skyOpts||{}, {[c.dataset.o]: c.checked}); save(); render(); });
   sp.querySelectorAll("[data-rate]").forEach(b => b.onclick = () => { const r = +b.dataset.rate; if(r){ S.clock = {base:Date.now(), pal:now().getTime(), rate:r}; toast(r === 600 ? "Ten minutes a second." : "An hour a second."); } else { S.clock = null; toast("Back to real time."); } save(); render(); drawSkyPanel(); });
   sp.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "planets" ? planetsView() : astrolabeView());
@@ -1828,6 +1955,7 @@ document.addEventListener("keydown", e => {
   if((e.shiftKey && k==="ArrowUp") || k==="PageUp"){ e.preventDefault(); setView(S.face, S.close==="down" ? null : "up"); return; }
   if((e.shiftKey && k==="ArrowDown") || k==="PageDown"){ e.preventDefault(); setView(S.face, S.close==="up" ? null : "down"); return; }
   if(k==="f"){ e.preventDefault(); fullView(); return; }
+  if(k==="c"){ e.preventDefault(); toggleCompass(); return; }
   if(k==="ArrowLeft" || k==="a"){ e.preventDefault(); turn(-1); }
   else if(k==="ArrowRight" || k==="d"){ e.preventDefault(); turn(1); }
   else if((k==="ArrowDown" || k==="s") && VIEW3D && VIEW3D.canWalk && VIEW3D.canWalk() && !S.close){ e.preventDefault(); VIEW3D.step(-1); }
@@ -2237,7 +2365,7 @@ WIDGETS.oracle = (el) => {
 };
 
 WIDGETS.sundial = (el) => {
-  const t = dialType(); if(t === "meantime" || t === "meridiana" || t === "cannon") return dialWidget2(el, t);
+  const t = dialType(); if(t === "meantime" || t === "meridiana" || t === "cannon" || t === "armillary") return dialWidget2(el, t);
   el.innerHTML = `<div class="panel"><h3>${esc(DIALS[t].name)}, ${t === "armillary" ? "read as a horizontal dial" : "from above"}</h3><svg id="sd-s" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="A horizontal sundial with today's shadow"></svg><div id="sd-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
     <p class="note">A horizontal dial laid out for latitude ${LAT}° (${esc(placeName())}): each hour line makes angle θ with the noon line, where tan θ = sin φ · tan(15° × hours from noon). The style points at the celestial pole. The dial tells local apparent solar time. Your clock differs by the longitude correction (in Appleton, which is west of its time-zone meridian), by daylight saving time, and by the equation of time.</p>${dialAbout(t)}</div>`;
   const draw = () => {
@@ -2303,9 +2431,88 @@ function dialWidget2(el, t){
       const mins = Math.round(toNoon*60);
       $("sd2-t").innerHTML = sunOK ? `The spot of sun ${Math.abs(mins) < 2 ? "is crossing the straight line now: <b>sun noon</b>" : mins > 0 ? `will cross the straight line in <b>${Math.floor(mins/60) ? Math.floor(mins/60)+" h " : ""}${mins%60} min</b> (sun noon)` : `crossed the straight line ${Math.floor(-mins/60) ? Math.floor(-mins/60)+" h " : ""}${(-mins)%60} min ago`}, and the figure-eight at ${hm(12 + (toNoon > 0 ? 0 : 0))} standard time, ${(() => { const mn = (12 - stdH)*60; return Math.abs(mn) < 2 ? "now" : mn > 0 ? `in ${Math.floor(mn/60) ? Math.floor(mn/60)+" h " : ""}${Math.round(mn%60)} min` : `${Math.floor(-mn/60) ? Math.floor(-mn/60)+" h " : ""}${Math.round(-mn%60)} min ago`; })()}.<br><span class="note">The gap between the two is the longitude and the equation of time (${eot>=0?"+":""}${eot.toFixed(1)} min today). The month marks are where the spot falls at sun noon on the first of each month.</span>` : `No spot today: ${sk.sun.alt <= 0 ? "the sun is down" : skyOff("sun") ? "the storm glass has put the sun out" : "too much cloud"}.`;
     }
+    if(t === "armillary"){
+      // an engraving of the sphere itself, seen from the south-east and a little above, with today's sun and the rod's shadow on the band
+      const phi = LAT*DEG, sgn = LAT >= 0 ? 1 : -1, R = 150, cx = 0, cy = -40;
+      const pole = [0, Math.cos(phi)*sgn, Math.sin(phi)*sgn], s0 = [0, -Math.sin(phi)*sgn, Math.cos(phi)*sgn], ea = [1,0,0];   // pole, the noon direction in the equator, east
+      const vAz = (sunOK ? sk.sun.az - 105 : 150)*DEG, vEl = 24*DEG, w = [Math.sin(vAz)*Math.cos(vEl), Math.cos(vAz)*Math.cos(vEl), Math.sin(vEl)], up = [0,0,1];
+      const cr = (a,b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]], dot = (a,b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2], nz = a => { const l = Math.hypot(...a); return a.map(x=>x/l); };
+      const rt = nz(cr(up, w)), uu = cr(w, rt), pr = v => [cx + dot(v,rt), cy - dot(v,uu), dot(v,w)];
+      const add = (...vs) => vs.reduce((a,b) => [a[0]+b[0],a[1]+b[1],a[2]+b[2]]), mul = (v,k) => v.map(x=>x*k);
+      const circle = (a, b, r, off=[0,0,0]) => Array.from({length:97}, (_,i) => { const t2 = i/96*Math.PI*2; return pr(add(off, mul(a, r*Math.cos(t2)), mul(b, r*Math.sin(t2)))); });
+      const front = [], back = [];
+      const ring = (pts, st) => { let run = [], f = null; const flush = () => { if(run.length > 1) (f ? front : back).push([run.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "), st, f]); };
+        pts.forEach(p => { const isF = p[2] >= -2; if(f === null) f = isF; if(isF !== f){ run.push(p); flush(); run = [p]; f = isF; } else run.push(p); }); flush(); };
+      E("rect",{x:-250,y:-250,width:500,height:500,fill:"url(#h-light)",opacity:.35},svg);
+      // the pedestal
+      const foot = pr([0,0,-R*1.38]), neck = pr([0,0,-R*1.07]);
+      E("path",{d:`M${foot[0]-62},${foot[1]+14} L${foot[0]+62},${foot[1]+14} L${foot[0]+50},${foot[1]} L${foot[0]-50},${foot[1]} Z`,fill:"#7b6a54",stroke:"var(--ink)"},svg);
+      E("path",{d:`M${foot[0]-16},${foot[1]} L${neck[0]-7},${neck[1]} L${neck[0]+7},${neck[1]} L${foot[0]+16},${foot[1]} Z`,fill:"#b89a62",stroke:"var(--ink)"},svg);
+      const north = [0,sgn,0], zen = [0,0,1], eqB = cr(pole, ea);   // eqB lies in the equator, perpendicular to east
+      ring(circle(ea, north, R), {w:2, c:"var(--ink)"});                         // the horizon
+      ring(circle(north, zen, R*1.04), {w:3, c:"var(--ink)"});                   // the meridian
+      const bw = R*.1;
+      const hourDir = h => { const H = (h-12)*15*DEG; return nz(add(mul(s0, -Math.cos(H)), mul(ea, Math.sin(H)))); };
+      back.forEach(([pts, st]) => E("polyline",{points:pts, fill:"none", stroke:st.c, "stroke-width":st.w, "stroke-dasharray":st.dash||"none", opacity:.3},svg));
+      const bandQ = isFront => { for(let i = 0; i < 72; i++){ const t1 = i/72*Math.PI*2, t2 = (i+1)/72*Math.PI*2, c1 = add(mul(ea, R*.9*Math.cos(t1)), mul(s0, R*.9*Math.sin(t1))), c2 = add(mul(ea, R*.9*Math.cos(t2)), mul(s0, R*.9*Math.sin(t2)));
+          const q = [add(c1, mul(pole, bw)), add(c2, mul(pole, bw)), add(c2, mul(pole, -bw)), add(c1, mul(pole, -bw))].map(pr), dep = (q[0][2]+q[1][2]+q[2][2]+q[3][2])/4; if((dep >= 0) !== isFront) continue;
+          E("polygon",{points:q.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "), fill: isFront ? "#e9d9ae" : "#cdb88a", stroke: isFront ? "#e9d9ae" : "#cdb88a", "stroke-width":.6, opacity: isFront ? .95 : .55},svg); } };
+      const bandEdges = isFront => [bw, -bw].forEach(o => { const pts = circle(ea, s0, R*.9, mul(pole, o)); let run = []; pts.forEach(p => { if((p[2] >= 0) === isFront) run.push(p); else { if(run.length > 1) E("polyline",{points:run.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "),fill:"none",stroke:"var(--ink)","stroke-width":1.3,opacity:isFront?1:.4},svg); run = []; } }); if(run.length > 1) E("polyline",{points:run.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "),fill:"none",stroke:"var(--ink)","stroke-width":1.3,opacity:isFront?1:.4},svg); });
+      const ticks = isFront => { for(let q = 6*4; q <= 18*4; q++){ const h = q/4, dv = hourDir(h), a = pr(add(mul(dv, R*.9), mul(pole, bw))), b = pr(add(mul(dv, R*.9), mul(pole, q%4 ? bw*.35 : -bw))); if((a[2] >= 0) !== isFront) continue;
+        E("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:"var(--ink)","stroke-width":q%4?.5:1.2,opacity:isFront ? 1 : .45},svg);
+        if(!(q%4) && h%2===0){ const l = pr(add(mul(dv, R*.9), mul(pole, bw*2.3))); T(["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"][h%12],{x:l[0],y:l[1]+4,"text-anchor":"middle","font-size":isFront ? 13 : 11,fill:"var(--ink)",opacity:isFront ? 1 : .5,"font-family":"IM Fell English SC, serif"},svg); } } };
+      bandQ(false); bandEdges(false); ticks(false);
+      // hour marks on the band: the shadow of the rod at hour h lands opposite the sun's direction in the equator
+      // the sun, its ray, and the rod's shadow on the band
+      const sd = [Math.cos(sk.sun.alt*DEG)*Math.sin(sk.sun.az*DEG), Math.cos(sk.sun.alt*DEG)*Math.cos(sk.sun.az*DEG), Math.sin(sk.sun.alt*DEG)], dec = Math.asin(Math.max(-1, Math.min(1, dot(sd, pole))))/DEG;
+      let shadowSeg = null; const rodA = pr(mul(pole, R*1.22)), rodB = pr(mul(pole, -R*1.22));
+      if(sunOK){ const eqp = nz(add(mul(s0, dot(sd,s0)), mul(ea, dot(sd,ea)))), sh = mul(eqp, -1), Z = mul(pole, R*.9*Math.tan(dec*DEG)), sp = pr(add(Z, mul(sd, R*1.45))), hit = pr(add(Z, mul(sd, -R*.9/Math.cos(dec*DEG))));
+        E("line",{x1:sp[0],y1:sp[1],x2:hit[0],y2:hit[1],stroke:"var(--spot)","stroke-width":1,"stroke-dasharray":"5 4",opacity:.8},svg);
+        shadowSeg = [pr(add(mul(sh, R*.9), mul(pole, bw))), pr(add(mul(sh, R*.9), mul(pole, -bw)))];
+        E("circle",{cx:sp[0],cy:sp[1],r:11,fill:"#fff2b8",stroke:"var(--ink)"},svg); for(let k=0;k<12;k++){ const a = k/12*Math.PI*2; L(svg, sp[0]+Math.cos(a)*14, sp[1]+Math.sin(a)*14, sp[0]+Math.cos(a)*19, sp[1]+Math.sin(a)*19, .8); } }
+      E("line",{x1:rodA[0],y1:rodA[1],x2:rodB[0],y2:rodB[1],stroke:"var(--ink)","stroke-width":3.2},svg); E("circle",{cx:rodA[0],cy:rodA[1],r:3.5,fill:"var(--ink)"},svg);
+      if(shadowSeg && shadowSeg[0][2] < 0) E("line",{x1:shadowSeg[0][0],y1:shadowSeg[0][1],x2:shadowSeg[1][0],y2:shadowSeg[1][1],stroke:"#3a2a14","stroke-width":7,"stroke-linecap":"round",opacity:.8},svg);
+      bandQ(true); bandEdges(true); ticks(true);
+      if(shadowSeg && shadowSeg[0][2] >= 0) E("line",{x1:shadowSeg[0][0],y1:shadowSeg[0][1],x2:shadowSeg[1][0],y2:shadowSeg[1][1],stroke:"#3a2a14","stroke-width":7,"stroke-linecap":"round",opacity:.8},svg);
+      front.forEach(([pts, st]) => E("polyline",{points:pts, fill:"none", stroke:st.c, "stroke-width":st.w, "stroke-dasharray":st.dash||"none"},svg));
+      const lab = (v, s, dx=0, dy=0, sz=11) => { const p = pr(v); T(s,{x:p[0]+dx,y:p[1]+dy,"text-anchor":"middle","font-size":sz,fill:"var(--ink)","font-family":"IM Fell English, serif","font-style":"italic"},svg); };
+      lab(mul(north, R*1.12), LAT >= 0 ? "N" : "S", 0, 4, 12); lab(mul(north, -R*1.12), LAT >= 0 ? "S" : "N", 0, 12, 12); lab(mul(ea, R*1.1), "E", 8, 4, 12); lab(mul(ea, -R*1.1), "W", -8, 4, 12);
+      lab(mul(pole, R*1.22), "to the pole", 0, -9); lab(add(mul(s0, -R*.9), mul(pole,-bw)), "the equatorial band", 0, 26);
+      // the band, unrolled: equal hours
+      const y0 = 210, x0 = -210, x1 = 210, hx = h => x0 + (h-6)/12*(x1-x0);
+      E("rect",{x:x0,y:y0,width:x1-x0,height:22,fill:"var(--paper)",stroke:"var(--ink)"},svg);
+      for(let q = 24; q <= 72; q++){ const x = hx(q/4); L(svg, x, y0, x, y0 + (q%4 ? 6 : 12), q%4 ? .5 : 1.2); if(!(q%4)) T(["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"][(q/4)%12],{x,y:y0+36,"text-anchor":"middle","font-size":11,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg); }
+      const hNow = 12 + ha/15; if(sunOK && hNow >= 6 && hNow <= 18) E("rect",{x:hx(hNow)-2.5,y:y0,width:5,height:22,fill:"var(--spot)"},svg);
+      T("the band unrolled: every hour the same width, fifteen degrees",{x:0,y:y0-6,"text-anchor":"middle","font-size":11,fill:"var(--ink)","font-style":"italic","font-family":"IM Fell English, serif"},svg);
+      const clock = d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}), zone = -d.getTimezoneOffset()/60, lonMin = (LON - zone*15)*4;
+      $("sd2-t").innerHTML = sunOK
+        ? `The rod's shadow lies across the band at <b>${hm(hNow)}</b>, the sun's own time here. The clock says ${clock}.<br><span class="note">The band lies in the plane of the earth's equator, so the sun's daily circle is parallel to it and the shadow moves along it at an even fifteen degrees an hour; that is why the hours on the band are equal, while a horizontal dial's are crowded near noon. The sun's declination today is ${dec >= 0 ? "+" : ""}${dec.toFixed(1)}°, and the sunlight reaches the inside of the band from ${dec >= 0 ? "the polar side" : "the side away from the pole"} (the dashed ray).${Math.abs(dec) < 1.5 ? " Today the sun is nearly in the band's own plane, so the band's edge shades its own face: the one week each spring and autumn when an armillary is hard to read." : ""} To get clock time, add the longitude (${lonMin >= 0 ? "+" : ""}${lonMin.toFixed(0)} min from the zone's meridian) and the equation of time (${eot >= 0 ? "+" : ""}${eot.toFixed(1)} min today), and daylight saving if it's in force.</span>`
+        : `No shadow on the band just now: ${sk.sun.alt <= 0 ? "the sun is down" : skyOff("sun") ? "the storm glass has put the sun out" : "too much cloud"}. The engraving shows the sphere as it stands: the horizon and meridian rings, the polar rod, and the equatorial band with its equal hours.`;
+    }
     if(t === "cannon"){ const mins = Math.round(toNoon*60), next = mins >= 0 ? mins : mins + 24*60 - 4;
-      E("circle",{r:200,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":2},svg); E("path",{d:"M-120,40 L110,10 L120,40 L-110,70 Z",fill:"url(#s-dark)",stroke:"var(--ink)"},svg); E("circle",{cx:-120,cy:55,r:26,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":3},svg);
-      E("ellipse",{cx:60,cy:-70,rx:42,ry:14,fill:"#e9f0f2",stroke:"var(--ink)"},svg); E("line",{x1:60,y1:-56,x2:62,y2:18,stroke:"var(--spot)","stroke-dasharray":"4 3"},svg);
+      // seen from the south, looking north (east on the right): the plinth with its meridian line, the little cannon, and the burning glass on its bracket over the touch-hole
+      const tx = -86, ty = 19;
+      E("rect",{x:-250,y:-250,width:500,height:500,fill:"url(#h-light)",opacity:.35},svg);
+      E("path",{d:"M-170,70 H170 L182,92 H-182 Z",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.4},svg);
+      E("rect",{x:-160,y:92,width:320,height:82,fill:"#d8c69c",stroke:"var(--ink)","stroke-width":1.4},svg); E("rect",{x:-182,y:174,width:364,height:16,fill:"var(--paper)",stroke:"var(--ink)"},svg);
+      E("line",{x1:tx-3,y1:70,x2:tx+5,y2:92,stroke:"var(--spot)","stroke-width":2},svg); T("the meridian line runs north, into the picture",{x:60,y:110,"text-anchor":"middle","font-size":11,fill:"var(--ink)","font-style":"italic","font-family":"IM Fell English, serif"},svg);
+      E("path",{d:"M-70,70 L-62,50 H40 L48,70 Z",fill:"#7b6a54",stroke:"var(--ink)"},svg);
+      E("path",{d:"M-104,18 C-108,26 -108,46 -104,54 L118,46 L118,26 Z",fill:"#6a5232",stroke:"var(--ink)","stroke-width":1.6},svg);
+      [-80,-30,40,100,112].forEach(x => { const t2 = (x+104)/222, hh = 36 - t2*16; E("line",{x1:x,y1:36-hh/2-2,x2:x,y2:36+hh/2+2,stroke:"#d4a650","stroke-width":x>100?3:2},svg); });
+      E("circle",{cx:-116,cy:36,r:7,fill:"#6a5232",stroke:"var(--ink)"},svg); E("ellipse",{cx:118,cy:36,rx:4,ry:10,fill:"var(--ink)"},svg); E("circle",{cx:-20,cy:44,r:7,fill:"#a68d63",stroke:"var(--ink)"},svg);
+      E("circle",{cx:tx,cy:ty,r:2.6,fill:"var(--ink)"},svg); T("touch-hole",{x:tx-64,y:ty+4,"text-anchor":"end","font-size":11,fill:"var(--ink)","font-style":"italic","font-family":"IM Fell English, serif"},svg);
+      // the bracket and the glass
+      const lx = tx, ly = -120; E("path",{d:`M${lx-58},70 V${ly} M${lx+58},70 V${ly}`,stroke:"var(--ink)","stroke-width":3,fill:"none"},svg);
+      E("path",{d:`M${lx-58},${ly} A58,22 0 0 1 ${lx+58},${ly}`,stroke:"var(--ink)","stroke-width":2,fill:"none"},svg);
+      E("ellipse",{cx:lx,cy:ly,rx:44,ry:9,fill:"#e4eef0",stroke:"var(--ink)","stroke-width":1.6},svg); E("line",{x1:lx-58,y1:ly,x2:lx-44,y2:ly,stroke:"var(--ink)","stroke-width":2},svg); E("line",{x1:lx+44,y1:ly,x2:lx+58,y2:ly,stroke:"var(--ink)","stroke-width":2},svg);
+      T("the burning glass",{x:lx+70,y:ly-14,"font-size":11,fill:"var(--ink)","font-style":"italic","font-family":"IM Fell English, serif"},svg);
+      // the sun's hour angle swings the focus along the barrel; at sun noon it sits on the touch-hole
+      const haD = Math.max(-60, Math.min(60, ha)), slope = Math.tan(haD*DEG), fx = tx + slope*(ty - ly), sx = lx - slope*(ly + 215) , sy = -215;
+      if(sunOK){ E("circle",{cx:Math.max(-235,Math.min(235,sx)),cy:sy,r:13,fill:"#fff2b8",stroke:"var(--ink)"},svg);
+        [-36,-18,0,18,36].forEach(o => { const ex = lx + o, ey = ly; E("line",{x1:ex - slope*(ly - sy) ,y1:sy+18,x2:ex,y2:ey,stroke:"var(--spot)","stroke-width":.8,opacity:.55},svg); E("line",{x1:ex,y1:ey,x2:fx,y2:ty,stroke:"var(--spot)","stroke-width":.9,opacity:.8},svg); });
+        E("circle",{cx:fx,cy:ty,r:Math.abs(mins) < 3 ? 6 : 4,fill:"#fff8c8",stroke:"var(--spot)"},svg);
+        if(mins <= 0 && mins > -6) for(let k=0;k<5;k++) E("circle",{cx:130+k*16,cy:30-k*9,r:10+k*5,fill:"var(--paper)",stroke:"var(--ink)",opacity:.75-k*.12},svg); }
+      T(sunOK ? (Math.abs(mins) < 3 ? "noon: the focus is on the touch-hole" : mins > 0 ? "the focus creeps toward the touch-hole" : "the focus has passed the touch-hole") : "no sun, no focus",{x:0,y:226,"text-anchor":"middle","font-size":13,fill:"var(--ink)","font-style":"italic","font-family":"IM Fell English, serif"},svg);
       $("sd2-t").innerHTML = `${sunOK ? `The cannon fires at sun noon, in <b>${Math.floor(next/60) ? Math.floor(next/60)+" h " : ""}${next%60} min</b>${next > 12*60 ? " (tomorrow)" : ""}, if the sky stays clear.` : "No firing today unless the sky clears: the glass needs the sun."}<br><span class="note">Sun noon is ${hm(stdH + toNoon)} by the standard clock today. The Palais-Royal's noon cannon in Paris fired this way from 1786; the cannon in the Wending House is smaller and fires only for those in the court.</span>`;
     }
   };

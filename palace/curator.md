@@ -291,7 +291,20 @@ In the court, look up (or move to the top of the picture) and click the sky: *Th
 - **Explorations:** switches for the constellation figures, names, planet tracks, an altitude-and-direction grid, the celestial equator, the ecliptic (the sun’s road, in gold), and the pole. There is also a time-lapse (ten minutes or an hour a second, and *Back to real time*) and links to the planet book and the astrolabe.
 - **Notes:** short notes on what the lines mean and where the star data come from (Olaf Frohn's d3-celestial).
 
-Drag to look around. The bottom of the picture says *Come back down*.
+Drag to look around. The box at the top of the panel closes the notes and leaves you up in the sky; click the sky to open them again. *Come back down* (in the panel, or at the bottom of the picture) brings you back to the court. The Explorations tab also has switches for the sun and the moon: put the sun out to see the daytime stars.
+
+### The compass in view
+
+If you're carrying the compass, press **C** (or click it in the bag) to hold it up: a brass bearing tape across the top of the picture shows which way you're looking, with the true bearing and how far up or down you're looking. It reads true north, and agrees with the sky. In a mirrored room the needle won't settle. Using the compass in a turned or mirrored room still sets you straight, as before, and holds it up too.
+
+### What the dial's picture shows
+
+The picture in the notes now matches the dial standing in the court:
+- the horizontal dial, seen from above;
+- the armillary, drawn as the sphere itself (horizon, meridian, polar rod, and the equatorial band with its hours), turned so the sun stands to one side, with its ray past the rod and the shadow on the band, and the band unrolled underneath to show its equal hours;
+- the mean-time dial's figure-eights;
+- the meridiana's line and noon figure-eight;
+- the noon cannon from the south, with the burning glass's focus creeping along the barrel to the touch-hole at sun noon.
 
 ### The house's notices, from the log book
 
