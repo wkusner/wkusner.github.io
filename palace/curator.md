@@ -160,6 +160,39 @@ warps:
 
 **Combining things.** An object with `action: combine`, `uses: [a, b]`, and `gives: c` turns two carried things into one. The torn page in the Branch Cut works this way.
 
+
+### Version 3: the engraved view
+
+On any browser with WebGL, the Palace builds each room in three dimensions and prints it through an engraving pass:
+- hatching that follows the surfaces: floors across, walls up, curved things around;
+- ink outlines where depth jumps;
+- paper grain and a vignette;
+- muted color.
+
+Lettering, the window skies, and the sky ceiling print on top, so they stay legible. The menu's **View** button switches between the engraved 3D view and the flat woodcut drawings, which are also the fallback when WebGL is missing.
+
+- **Built from the same data.** Walls come from `shape`, floors and ceilings from `floor` and `ceiling`, doors and plates from `doors`, and furniture from `decor`. Objects become small models on a desk or a low bookcase against their wall.
+- **Light is real.** The sun comes in through the windows from its actual direction and casts real shadows, the sundial's shadow among them. Lamps light at dusk and flicker. The lantern follows you. Night prints as a white-line engraving.
+- **Looking around.** Click the left or right edge (or ← →) to turn; the camera swings round, as in Myst. Click near the top to look up and near the bottom to look down. Click furniture to look closer, and click a thing to open its own card, where the object turns slowly on a plinth.
+- **The cursor shows what a click will do:**
+  - an arrow for a door, a padlock for a locked one;
+  - turning arrows at the edges, up and down arrows at the top and bottom;
+  - a magnifier for furniture;
+  - an open hand for things you can take, a pointing hand for things that open.
+
+  A HyperCard-style label names whatever is under the cursor.
+- **Animation.**
+  - The pendulum swings, and its plane turns at Appleton's rate on palace time.
+  - The lily pads bob.
+  - The lamps flicker.
+  - The icosahedron in the model room turns.
+  - The alethiometer's needle wanders.
+  - Funes's cigarette glows.
+- **Icons become models.** Each `icon` name (rule, net, lock, cards, tiles, crystal, tree, book, books, scroll, lectern, clock, hourglass, compass, lamp, key, pond, fraction, note, map, pendulum, hex, plant, turns, cross, planimeter) has a matching 3D model. Unknown icons get a plain box.
+- **For checking the light,** `?raw=1` in the address shows the room without the engraving pass.
+
+The 3D code lives in `palace/palace3d.js`. It uses three.js (MIT license), vendored in `palace/lib/` so the site doesn't depend on a CDN.
+
 ### Annotations: marginalia, sources, bibliography
 
 The **Annotations** button in the menu bar opens a window under the picture with three tabs. Each room can fill any of them:

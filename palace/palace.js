@@ -636,6 +636,7 @@ function render(){
   document.documentElement.setAttribute("data-ink", S.ink==="1bit" ? "1bit" : "two");
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
+  $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : "View: engraved";
   const mirror = S.frame[1]===1;
   $("rnum").textContent = room.label || id;
   $("rname").innerHTML = mirror ? `<span class="mirror-text" title="${esc(room.name||"")}">${esc(room.name||"")}</span>` : esc(room.name||"");
@@ -645,13 +646,16 @@ function render(){
   // the view
   const stage = $("stage");
   stage.querySelectorAll("svg.view").forEach(o => { o.classList.add("fading"); setTimeout(() => o.remove(), 320); });
-  const svg = E("svg",{viewBox:`0 0 ${W} ${H}`, role:"img", class:"view", "aria-label":`Room ${id}, ${room.name||""}, facing ${FACENAME[S.face]}`}, stage);
+  const use3d = VIEW3D && S.gfx!=="2d";
+  stage.classList.toggle("is3d", !!use3d);
+  const svg = use3d ? document.createElementNS(NS,"svg") : E("svg",{viewBox:`0 0 ${W} ${H}`, role:"img", class:"view", "aria-label":`Room ${id}, ${room.name||""}, facing ${FACENAME[S.face]}`}, stage);
   const allDoors = (room.doors||[]).filter(d => visible(d, room));
   const doorWall = (d,i) => d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3];
   const objs = (room.objects||[]).filter(o => visible(o, room) && !(o.kind==="key" && S.inv.includes(o.item)));
   const byObjWall = [[],[],[],[]]; objs.forEach((o,i) => byObjWall[act(S.frame, objWall(o,i,objs.length))].push(o));
   const ahead = [0,1,2,3].find(w => (w - S.face + 4) % 4 === 1);
-  if(S.close!=null){ drawClose(room, svg, byObjWall[ahead] || [], mirror); }
+  if(use3d){ VIEW3D.show(plan3d(room, allDoors, doorWall, objs, light, mirror)); VIEW3D.snap = false; }
+  else if(S.close==="ahead"){ drawClose(room, svg, byObjWall[ahead] || [], mirror); }
   else {
     drawRoom(room, svg, light);
     decor(room, svg, light, mirror);
@@ -697,6 +701,64 @@ function render(){
   bag(); corners(room);
   const wd = $("widget"); wd.innerHTML = ""; stopTimers();
   if(room.widget){ const spec = typeof room.widget==="string" ? {type:room.widget} : room.widget; (WIDGETS[spec.type]||(()=>{}))(wd, spec, room); }
+}
+/* ---------- the engraved, three-dimensional view ---------- */
+let VIEW3D = null, skyCache = {key:null, canvas:null, waiting:[]};
+function plan3d(room, allDoors, doorWall, objs, light, mirror){
+  const sk = skyNow(), F = facing(), rel = a => ((a - F + 540) % 360) - 180, wx = weather(), wk = wx ? wxKind(wx.weather_code) : "clear";
+  const sunRel = rel(sk.sun.az), moonRel = rel(sk.moon.az), overcast = !!(wx && wx.cloud_cover > 85);
+  const inWin = (alt, r) => Math.abs(r) < 70 && alt > -2 ? [Math.max(-1,Math.min(1,r/60)), Math.max(0,Math.min(1,alt/50))] : null;
+  const names = room.widget && room.widget.names;
+  return {
+    room, frame:S.frame, mirror, band:light, spot:wingColor(room), F, lat:LAT,
+    ahead:(1+S.face)%4, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
+    decor: room.decor || [], names,
+    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look:d.look||"", onClick:()=>tryDoor(d, room)})),
+    objects: objs.map((o,i) => ({raw:o, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
+    lampLit: light==="night" || light==="dusk" || S.light==="night" || !!room.dark,
+    sunUp: sk.sun.alt > 0 && !overcast, sunAlt: sk.sun.alt, sunRel, overcast,
+    sunInWindow: sk.sun.alt > -2 && !overcast ? inWin(sk.sun.alt, sunRel) : null, moonInWindow: sk.moon.alt > 0 ? inWin(sk.moon.alt, moonRel) : null,
+    wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
+    temp: wx ? wx.temperature_2m : null,
+    lantern: !!(S.lantern && S.inv.includes("lantern")), gloom: (room.decor||[]).includes("gloom"),
+    sheetKey: JSON.stringify(S.sheets), minuteKey: Math.floor(now().getTime()/60000),
+    snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
+    skyCanvas: (room.decor||[]).includes("sky") || room.ceiling==="open" ? skyCanvasFor : null,
+  };
+}
+function skyCanvasFor(cb){
+  // draw the sky chart as a picture, then hand it to the 3D view as a texture
+  const key = Math.floor(now().getTime()/300000) + ":" + S.frame.join(",");
+  if(skyCache.key === key && skyCache.canvas) return cb(skyCache.canvas);
+  skyCache.waiting.push(cb); if(skyCache.busy) return; skyCache.busy = true;
+  const svg = document.createElementNS(NS,"svg"); svg.setAttribute("xmlns", NS); svg.setAttribute("viewBox","0 0 1024 1024"); svg.setAttribute("width","1024"); svg.setAttribute("height","1024");
+  const style = getComputedStyle(document.documentElement);
+  defs(svg); const g = E("g",{},svg); E("rect",{x:0,y:0,width:1024,height:1024,fill:"#1d1a16"},g);
+  drawSky(g, 512, 512, 470, {big:true, names:true, cons:true, tag:"tex"});
+  let src = new XMLSerializer().serializeToString(svg);
+  ["--paper","--paper2","--ink","--spot","--muted","--line","--void"].forEach(v => { src = src.split(`var(${v})`).join(style.getPropertyValue(v).trim() || "#888"); });
+  const img = new Image(), cv = document.createElement("canvas"); cv.width = cv.height = 1024;
+  img.onload = () => { cv.getContext("2d").drawImage(img,0,0); skyCache = {key, canvas:cv, waiting:[], busy:false}; const w = skyCache.waiting; (w.length?w:[]).forEach(f=>f(cv)); };
+  const waiting = skyCache.waiting;
+  img.onload = () => { cv.getContext("2d").drawImage(img,0,0); skyCache.key = key; skyCache.canvas = cv; skyCache.busy = false; waiting.splice(0).forEach(f => f(cv)); };
+  img.onerror = () => { skyCache.busy = false; };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(src);
+}
+function start3d(){
+  if(S.gfx==="2d") return;
+  try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
+  import("./palace3d.js").then(m => {
+    VIEW3D = m.create($("stage"), {
+      turn, toast, now,
+      look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
+      closer: slot => { const f = (slot + 3) % 4; if(f===S.face) setView(S.face, "ahead"); else setView(f, null); },
+      stepBack: () => setView(S.face, null),
+      useObject: o => useObject(o.raw, effective(cur)),
+      palaceSeconds: () => now().getTime()/1000,
+      pendulumPlane: () => { const rate = 360*Math.sin(LAT*DEG)/23.9345; return -((now().getTime()/36e5*rate) % 180)*DEG; },
+    });
+    if(cur) render();
+  }).catch(e => { console.warn("3D view unavailable", e); });
 }
 function fillTokens(t){ return String(t).replace(/\{sheet:(\w+)\}/g, (_,k) => String(S.sheets[k]||0)).replace(/\{reader\}/g, esc(S.reader||"reader")); }
 function doorName(d){ if(Array.isArray(d.to) || d.to==="random" || d.to==="back") return d.title ? "" : ""; const r = ROOMS[String(d.to)]; if(!r) return ""; if(r.secret && !S.visits[r.id]) return ""; return (r.name||"").replace(/^The /,""); }
@@ -890,7 +952,9 @@ function useObject(o, room){
 function iconSVG(name, scale){ const s = document.createElementNS(NS,"svg"); s.setAttribute("viewBox","-34 -34 68 68"); s.setAttribute("width",scale||64); s.setAttribute("height",scale||64); const g=E("g",{},s); (ICON[name]||ICON.box)(g); return s; }
 function cardView(o){
   overlay(o.title, `<div class="obcard"><div id="obi" class="obi"></div><div><p class="mono note">${esc(o.kind||"device")}${o.by?" · "+esc(o.by):""}</p>${o.note?`<p class="text" style="font-size:18px">${o.note}</p>`:""}${o.href?`<p><a class="btn primary" href="${esc(o.href)}">Open it</a></p>`:""}${o.kind==="unwritten"?`<p class="note">Not yet written. It waits on the shelf.</p>`:""}</div></div>`);
-  $("obi").appendChild(iconSVG(o.icon || KIND_ICON[o.kind] || "box", 120)); award("look:"+o.title, 2);
+  if(VIEW3D && S.gfx!=="2d") VIEW3D.inspect($("obi"), Object.assign({icon:o.icon || KIND_ICON[o.kind] || "box"}, o), wingColor(effective(cur)));
+  else $("obi").appendChild(iconSVG(o.icon || KIND_ICON[o.kind] || "box", 120));
+  award("look:"+o.title, 2);
 }
 function bag(){
   const b = $("bag"); b.innerHTML = "";
@@ -1533,6 +1597,8 @@ $("b-ink").onclick = () => { S.ink = S.ink==="1bit" ? "two" : "1bit"; save(); re
 setInterval(() => { if(cur && !$("ov").classList.contains("open")) tally(lightNow()); }, 30000);
 $("b-lamp").onclick = () => { S.light = {auto:"night", night:"day", day:"auto"}[S.light] || "auto"; save(); render(); toast(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down." : "You light every lamp."); };
 rankIndex.cache = null;
+$("b-gfx").onclick = () => { S.gfx = S.gfx==="2d" ? "3d" : "2d"; save(); if(S.gfx==="3d" && !VIEW3D) start3d(); render(); };
 route();
+start3d();
 if(S.curator && location.hash!=="#curator") { /* stay quiet; the office opens on #curator */ }
 })();

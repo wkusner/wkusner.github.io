@@ -150,6 +150,22 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
 .dirl span{font-size:14px;color:var(--muted)}
 .dirl:hover{background:var(--ink);color:var(--paper2)}
 .dirl:hover span{color:var(--paper2)}
+
+#stage.is3d{aspect-ratio:auto}
+#stage canvas.view3d{display:none}
+#stage.is3d canvas.view3d{display:block;width:100%;height:auto;background:#EEE8DA}
+#stage canvas.view3d[data-cursor=door]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16 3 L28 17 L20 17 L20 29 L12 29 L12 17 L4 17 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 16 4, pointer}
+#stage canvas.view3d[data-cursor=locked]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect x='7' y='14' width='18' height='14' fill='white' stroke='black' stroke-width='2'/%3E%3Cpath d='M11 14 V9 A5 5 0 0 1 21 9 V14' fill='none' stroke='black' stroke-width='2.5'/%3E%3C/svg%3E") 16 16, not-allowed}
+#stage canvas.view3d[data-cursor=turnL]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M20 4 L8 16 L20 28 L20 20 L28 20 L28 12 L20 12 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 8 16, w-resize}
+#stage canvas.view3d[data-cursor=turnR]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M12 4 L24 16 L12 28 L12 20 L4 20 L4 12 L12 12 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 24 16, e-resize}
+#stage canvas.view3d[data-cursor=up]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16 4 L28 16 L20 16 L20 28 L12 28 L12 16 L4 16 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 16 4, n-resize}
+#stage canvas.view3d[data-cursor=down],#stage canvas.view3d[data-cursor=back]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16 28 L28 16 L20 16 L20 4 L12 4 L12 16 L4 16 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 16 28, s-resize}
+#stage canvas.view3d[data-cursor=closer],#stage canvas.view3d[data-cursor=look]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='13' cy='13' r='8' fill='white' stroke='black' stroke-width='2.5'/%3E%3Cpath d='M19 19 L28 28' stroke='black' stroke-width='4'/%3E%3C/svg%3E") 13 13, zoom-in}
+#stage canvas.view3d[data-cursor=take]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M9 16 V8 a2 2 0 0 1 4 0 V15 V6 a2 2 0 0 1 4 0 V15 V7 a2 2 0 0 1 4 0 V16 V10 a2 2 0 0 1 4 0 V20 C25 26 21 29 16 29 C11 29 8 26 6 22 L4 17 a2 2 0 0 1 4 -1 Z' fill='white' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") 14 6, grab}
+#stage canvas.view3d[data-cursor=open],#stage canvas.view3d[data-cursor=use]{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M11 4 a2 2 0 0 1 4 0 V14 L16 13 a2 2 0 0 1 4 1 V15 a2 2 0 0 1 4 1 V17 a2 2 0 0 1 4 1 V22 C27 27 23 30 18 30 C13 30 11 28 8 24 L5 18 a2 2 0 0 1 4 -1 L11 19 Z' fill='white' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") 12 2, pointer}
+.tip3d{position:absolute;z-index:4;pointer-events:none;background:var(--paper2);color:var(--ink);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);padding:2px 8px;font:400 13px var(--chrome);opacity:0;transition:opacity .12s;max-width:240px}
+.tip3d.on{opacity:1}
+.inspect3d{display:block;width:100%;max-width:520px;height:auto;border:2px solid var(--ink)}
 </style>
 </head>
 <body>
@@ -160,6 +176,7 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
   <button type="button" id="b-cat">Finding aid</button>
   <button type="button" id="b-lamp">Lamps</button>
   <button type="button" id="b-ink">Ink</button>
+  <button type="button" id="b-gfx">View</button>
   <button type="button" id="b-ann">Annotations</button>
   <button type="button" id="b-help">How to walk</button>
 </div>
