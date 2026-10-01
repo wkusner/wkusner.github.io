@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fraction Target</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.levels{display:flex;flex-wrap:wrap;gap:6px;}
+.levels button{font-size:13px;}
+.table{display:flex;flex-direction:column;gap:16px;align-items:stretch;}
+.targetbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.tlabel{font-family:var(--display);font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.hand{display:flex;flex-wrap:wrap;gap:14px;min-height:150px;align-items:flex-start;}
+.fc{width:104px;height:140px;border-radius:14px;background:var(--panel);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;position:relative;box-shadow:0 2px 0 var(--line);transition:transform .12s;}
+.fc:hover{transform:translateY(-2px);}
+.fc.sel{border-color:var(--a);box-shadow:0 0 0 4px color-mix(in srgb,var(--a) 25%,transparent);}
+.fc.made{border-style:dashed;}
+.fc.target{cursor:default;border-color:var(--brass);background:color-mix(in srgb,var(--brass) 10%,var(--panel));}
+.fc.target:hover{transform:none;}
+.frac{display:inline-flex;flex-direction:column;align-items:center;font-family:var(--display);font-weight:700;line-height:1;color:var(--ink);}
+.frac .n,.frac .d{font-size:40px;padding:0 6px;}
+.frac .bar{height:3px;background:currentColor;align-self:stretch;margin:4px 0;border-radius:2px;}
+.frac.whole .n{font-size:52px;}
+.mixed{display:inline-flex;align-items:center;gap:4px;font-family:var(--display);font-weight:700;}
+.mixed .w{font-size:44px;}
+.mixed .frac .n,.mixed .frac .d{font-size:28px;}
+.neg{color:var(--hair);}
+.ops{display:flex;gap:10px;flex-wrap:wrap;}
+.ops button{width:64px;height:56px;font-size:28px;font-family:var(--display);font-weight:700;}
+.ops button.on{background:var(--a);color:var(--accent-ink);border-color:var(--a);}
+.work{font-family:var(--mono);font-size:14px;line-height:1.8;}
+.work .step{padding:4px 0;border-bottom:1px dashed var(--line);}
+.work .step:last-child{border-bottom:0;}
+.stats{display:flex;gap:24px;flex-wrap:wrap;}
+.stats div{display:flex;flex-direction:column;}
+.stats b{font-family:var(--display);font-size:30px;line-height:1;}
+.stats span{font-size:12px;color:var(--muted);}
+.banner{font-family:var(--display);font-size:24px;font-weight:700;color:var(--c);min-height:30px;}
+@media (prefers-reduced-motion:reduce){.fc{transition:none;}}
+
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Fraction <span>Target</span></h1>
+    <p class="tag">Use every card exactly once to make the target. Pick a card, pick an operation, pick another card: they combine into a new card, and the work shows how the common denominator was found.</p>
+  </header>
+  <div class="levels" id="levels" role="group" aria-label="Level">
+    <button type="button" data-l="1">1 · Same denominators</button>
+    <button type="button" data-l="2">2 · Related denominators</button>
+    <button type="button" data-l="3">3 · Any denominators</button>
+    <button type="button" data-l="4">4 · All four operations</button>
+  </div>
+  <div class="inst">
+    <div class="table">
+      <div class="targetbox">
+        <span class="tlabel">Target</span>
+        <div class="fc target" id="target" aria-label="Target"></div>
+        <div class="banner" id="banner" role="status"></div>
+      </div>
+      <div class="hand" id="hand" aria-label="Your cards"></div>
+      <div class="ops" id="ops"></div>
+      <div class="row">
+        <button type="button" id="undo">Undo</button>
+        <button type="button" id="reset">Start over</button>
+        <button type="button" id="hint">Hint</button>
+        <button type="button" id="show">Show a solution</button>
+        <button type="button" id="next" class="primary">New cards</button>
+        <label class="small"><input type="checkbox" id="mixed"> show mixed numbers</label>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card"><h2>Score</h2><div class="stats"><div><b id="sSolved">0</b><span>solved</span></div><div><b id="sStreak">0</b><span>streak</span></div><div><b id="sBest">0</b><span>best streak</span></div><div><b id="sHints">0</b><span>hints</span></div></div></div>
+      <div class="card"><h2>Your work</h2><div id="work" class="work"></div></div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>How to play</h2>
+    <p><b>The goal.</b> Combine all the cards into one card that equals the target. Every deal can be solved; many have more than one solution.</p>
+    <p><b>A move.</b> Tap a card, tap +, −, × or ÷, then tap a second card. The two cards are replaced by their result, written in lowest terms. Dealt cards are not always in lowest terms (4/6, 6/10), which is part of the practice. Undo takes back one move.</p>
+    <p><b>Adding and subtracting.</b> The work panel rewrites both fractions over their least common denominator before adding: 2/3 + 3/4 = 8/12 + 9/12 = 17/12. Watch for when the answer reduces.</p>
+    <p><b>Levels.</b> Level 1 uses one denominator. Level 2 uses denominators where one divides another, such as 4 and 8, or 3 and 6. Level 3 mixes unrelated denominators with four cards. Level 4 adds × and ÷, like the classic game of 24.</p>
+    <p><b>Hints.</b> A hint shows one move that still leads to the target from where you are. Using a hint keeps your streak but is counted.</p>
+    <p><b>Play on paper too.</b> The same game works with index cards: deal three or four fraction cards and a target card, and the first person to say a correct expression takes the round.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;};
+const lcm=(a,b)=>a/gcd(a,b)*b;
+const R=(n,d)=>{if(d===0)return null;if(d<0){n=-n;d=-d;}const g=gcd(n,d);return{n:n/g,d:d/g};};
+const eq=(x,y)=>x.n===y.n&&x.d===y.d;
+const OPS={"+":(a,b)=>R(a.n*b.d+b.n*a.d,a.d*b.d),"−":(a,b)=>R(a.n*b.d-b.n*a.d,a.d*b.d),"×":(a,b)=>R(a.n*b.n,a.d*b.d),"÷":(a,b)=>b.n===0?null:R(a.n*b.d,a.d*b.n)};
+const LEVELS={1:{k:3,ops:["+","−"]},2:{k:3,ops:["+","−"]},3:{k:4,ops:["+","−"]},4:{k:4,ops:["+","−","×","÷"]}};
+const str=x=>x.d===1?String(x.n):`${x.n}/${x.d}`;
+let level=1, deal=null, cards=[], target=null, history=[], steps=[], sel=null, op=null, solved=0, streak=0, best=0, hints=0, done=false, usedHintThisDeal=false;
+try{best=+localStorage.getItem("ft-best")||0;}catch(e){}
+// ---------- solver ----------
+function key(list){return list.map(c=>c.v.n+"/"+c.v.d).sort().join(",");}
+function solve(list,tgt,ops,memo=new Map()){ // list of {v,e}
+  if(list.length===1) return eq(list[0].v,tgt)?list[0].e:null;
+  const k=key(list); if(memo.has(k)) return memo.get(k);
+  for(let i=0;i<list.length;i++)for(let j=0;j<list.length;j++){if(i===j)continue;
+    for(const o of ops){ if((o==="+"||o==="×")&&j<i) continue; const v=OPS[o](list[i].v,list[j].v); if(!v) continue;
+      const rest=list.filter((_,t)=>t!==i&&t!==j); rest.push({v,e:`(${list[i].e} ${o} ${list[j].e})`});
+      const r=solve(rest,tgt,ops,memo); if(r){memo.set(k,r);return r;}}}
+  memo.set(k,null); return null;}
+function reach(list,ops,out=new Map()){ if(list.length===1){out.set(str(list[0]),list[0]);return out;}
+  for(let i=0;i<list.length;i++)for(let j=0;j<list.length;j++){if(i===j)continue;for(const o of ops){if((o==="+"||o==="×")&&j<i)continue;const v=OPS[o](list[i],list[j]);if(!v)continue;const rest=list.filter((_,t)=>t!==i&&t!==j);rest.push(v);reach(rest,ops,out);}}
+  return out;}
+function firstMove(list,tgt,ops){ // returns [i,o,j] leading to a solution
+  for(let i=0;i<list.length;i++)for(let j=0;j<list.length;j++){if(i===j)continue;for(const o of ops){const v=OPS[o](list[i].v,list[j].v);if(!v)continue;
+    const rest=list.filter((_,t)=>t!==i&&t!==j).map(c=>({v:c.v,e:str(c.v)}));rest.push({v,e:str(v)});
+    if(rest.length===1?eq(v,tgt):solve(rest,tgt,ops)) return [i,o,j];}}
+  return null;}
+// ---------- dealing ----------
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function dealCards(){ const L=LEVELS[level]; let out=[];
+  if(level===1){const d=pick([3,4,5,6,8,10,12]);for(let i=0;i<L.k;i++)out.push({n:1+Math.floor(Math.random()*(d-1)),d});}
+  else if(level===2){const fam=pick([[2,4,8],[3,6,12],[2,3,6],[2,5,10],[2,4,12],[3,6,9]]);for(let i=0;i<L.k;i++){const d=pick(fam);out.push({n:1+Math.floor(Math.random()*(d-1)),d});}}
+  else {const D=[2,3,4,5,6,8,10,12];for(let i=0;i<L.k;i++){const d=pick(D);out.push({n:1+Math.floor(Math.random()*(d-1)),d});}}
+  return out;}
+function newDeal(){
+  for(let tries=0;tries<200;tries++){
+    const cs=dealCards(); const vals=[...reach(cs,LEVELS[level].ops).values()];
+    const maxDen=level===1?cs[0].d:(level===2?12:24);
+    const good=vals.filter(v=>v.n>0&&v.d<=maxDen&&!cs.some(c=>eq(c,v))&&v.n/v.d<=4);
+    if(!good.length) continue;
+    // prefer targets with small denominators
+    good.sort((a,b)=>a.d-b.d); const pool=good.slice(0,Math.max(3,Math.ceil(good.length/2)));
+    target=pick(pool); deal=cs.map((v,i)=>({v,id:i,made:false})); cards=deal.map(c=>({...c})); history=[];steps=[];sel=null;op=null;done=false;usedHintThisDeal=false;
+    $("banner").textContent=""; msg("Pick a card to start."); render(); return;}
+}
+// ---------- rendering ----------
+function fracHTML(x){ if(!x) return "";
+  const neg=x.n<0, a=Math.abs(x.n);
+  if(x.d===1) return `<span class="frac whole${neg?" neg":""}"><span class="n">${neg?"−":""}${a}</span></span>`;
+  if($("mixed").checked&&a>x.d){const w=Math.floor(a/x.d),r=a%x.d;return `<span class="mixed${neg?" neg":""}"><span class="w">${neg?"−":""}${w}</span><span class="frac"><span class="n">${r}</span><span class="bar"></span><span class="d">${x.d}</span></span></span>`;}
+  return `<span class="frac${neg?" neg":""}"><span class="n">${neg?"−":""}${a}</span><span class="bar"></span><span class="d">${x.d}</span></span>`;}
+function render(){
+  $("target").innerHTML=fracHTML(target);
+  const h=$("hand"); h.innerHTML="";
+  cards.forEach((c,i)=>{const b=document.createElement("button");b.type="button";b.className="fc"+(sel===i?" sel":"")+(c.made?" made":"");b.innerHTML=fracHTML(c.v);b.setAttribute("aria-label","card "+str(c.v));b.onclick=()=>tapCard(i);h.appendChild(b);});
+  const o=$("ops"); o.innerHTML="";
+  for(const s of LEVELS[level].ops){const b=document.createElement("button");b.type="button";b.textContent=s;b.className=op===s?"on":"";b.setAttribute("aria-label",{"+":"plus","−":"minus","×":"times","÷":"divided by"}[s]);b.onclick=()=>{if(done)return;if(sel===null){msg("Pick a card first.");return;}op=op===s?null:s;render();};o.appendChild(b);}
+  $("work").innerHTML=steps.length?steps.map(s=>`<div class="step">${s}</div>`).join(""):'<span class="small">Each move you make is written out here.</span>';
+  $("sSolved").textContent=solved;$("sStreak").textContent=streak;$("sBest").textContent=best;$("sHints").textContent=hints;
+  document.querySelectorAll("#levels button").forEach(b=>b.classList.toggle("on",+b.dataset.l===level));
+  $("undo").disabled=!history.length;
+}
+function msg(t,c){$("status").textContent=t;$("status").className="status "+(c||"");}
+function workText(a,o,b,r){
+  if(o==="+"||o==="−"){ if(a.d===b.d){const top=o==="+"?a.n+b.n:a.n-b.n;const red=!(r.n===top&&r.d===a.d);return `${str(a)} ${o} ${str(b)} = ${top}/${a.d}${red?` = ${str(r)}`:""} <span class="small">(same denominator)</span>`;}
+    const L=lcm(a.d,b.d), an=a.n*L/a.d, bn=b.n*L/b.d, top=o==="+"?an+bn:an-bn;
+    const reduced=R(top,L); const red=!(reduced.n===top&&reduced.d===L);
+    return `${str(a)} ${o} ${str(b)} = ${an}/${L} ${o} ${bn}/${L} = ${top}/${L}${red?` = ${str(r)}`:""} <span class="small">(common denominator ${L})</span>`;}
+  if(o==="×"){const top=a.n*b.n,bot=a.d*b.d,red=!(r.n===top&&r.d===bot);return `${str(a)} × ${str(b)} = ${top}/${bot}${red?` = ${str(r)}`:""}`;}
+  const top=a.n*b.d,bot=a.d*b.n; const t2=bot<0?-top:top,b2=Math.abs(bot); const red=!(r.n===t2&&r.d===b2);
+  return `${str(a)} ÷ ${str(b)} = ${str(a)} × ${b.d}/${b.n} = ${t2}/${b2}${red?` = ${str(r)}`:""}`;}
+function tapCard(i){
+  if(done) return;
+  if(sel===null||op===null){ sel=sel===i?null:i; op=null; msg(sel===null?"Pick a card.":"Now pick an operation."); render(); return; }
+  if(i===sel){ sel=null; op=null; render(); return; }
+  const a=cards[sel].v,b=cards[i].v,r=OPS[op](a,b);
+  if(!r){msg("You can't divide by zero.","warn");return;}
+  history.push({cards:cards.map(c=>({...c})),steps:steps.slice()});
+  steps.push(workText(a,op,b,r));
+  const nc=cards.filter((_,t)=>t!==sel&&t!==i); nc.push({v:r,made:true}); cards=nc; sel=null; op=null;
+  if(cards.length===1){ if(eq(cards[0].v,target)){done=true;solved++;streak++;if(streak>best){best=streak;try{localStorage.setItem("ft-best",best);}catch(e){}}$("banner").textContent="Target made!";msg("Solved. Press New cards for another.","good");}
+    else {msg(`That makes ${str(cards[0].v)}, not ${str(target)}. Undo or start over.`,"warn");}}
+  else msg("Pick the next card.");
+  render();}
+$("undo").onclick=()=>{const h=history.pop();if(!h)return;cards=h.cards;steps=h.steps;sel=null;op=null;done=false;$("banner").textContent="";msg("Took back one move.");render();};
+$("reset").onclick=()=>{cards=deal.map(c=>({...c}));history=[];steps=[];sel=null;op=null;done=false;$("banner").textContent="";msg("Back to the original cards.");render();};
+$("hint").onclick=()=>{if(done)return;const mv=firstMove(cards.map(c=>({v:c.v,e:str(c.v)})),target,LEVELS[level].ops);hints++;usedHintThisDeal=true;
+  if(!mv){msg("There's no way to reach the target from here. Undo a move or start over.","warn");render();return;}
+  const [i,o,j]=mv; msg(`Try ${str(cards[i].v)} ${o} ${str(cards[j].v)}.`); sel=null; render();};
+$("show").onclick=()=>{const s=solve(deal.map(c=>({v:c.v,e:str(c.v)})),target,LEVELS[level].ops);streak=0;msg(s?`One solution: ${s.replace(/^\((.*)\)$/,"$1")} = ${str(target)}. Streak reset.`:"No solution found.");render();};
+$("next").onclick=()=>{if(!done&&cards.length) streak=0; newDeal();};
+$("mixed").onchange=render;
+document.querySelectorAll("#levels button").forEach(b=>b.onclick=()=>{level=+b.dataset.l;newDeal();});
+newDeal();
+})();
+</script>
+
+</body>
+</html>

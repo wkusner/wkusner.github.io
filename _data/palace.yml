@@ -1,0 +1,542 @@
+# The Palace — the one file that furnishes every room.
+# Edit this file, commit, push. See /palace/curator/ for the full guide.
+
+title: The Palace
+start: 1
+latitude: 44.26        # Appleton, for the pendulum
+
+help: >-
+  <p>This is a memory palace for my instruments, games, drafts, and books. Every room keeps something. You can also skip the walking and use the Catalogue.</p>
+
+wings:
+  foyer:        {name: "The Foyer",                  color: "#A77E22"}
+  instruments:  {name: "The Instrument Gallery",     color: "#8C6A2E"}
+  turnings:     {name: "The Turnings",               color: "#8A3B23"}
+  numbers:      {name: "The Numbers, below",         color: "#3B5A7A"}
+  pond:         {name: "The Lily Pond",              color: "#3E7A4F"}
+  schoolroom:   {name: "The Schoolroom",             color: "#5E6B3A"}
+  workshop:     {name: "The Workshop",               color: "#6B4E8C"}
+  lectures:     {name: "The Lecture Wing",           color: "#2E6B6B"}
+  archive:      {name: "The Archive",                color: "#4B3B5E"}
+
+ranks:
+  - {name: "Visitor",                     at: 0,  color: "#D9D2C0"}
+  - {name: "Reader",                      at: 4,  color: "#7A9E7E"}
+  - {name: "Third Assistant Librarian",   at: 8,  color: "#B8322A"}
+  - {name: "Second Assistant Librarian",  at: 13, color: "#E0B42F"}
+  - {name: "Keeper of the Stacks",        at: 19, color: "#2F4E8C"}
+
+items:
+  golden-key: "a golden key, stamped φ"
+
+rooms:
+
+# ───────────────────────────── FOYER ─────────────────────────────
+- id: 1
+  name: The Hexagonal Reading Room
+  wing: foyer
+  shape: hex
+  decor: [shelves, lamp, rug, window]
+  at: [5, 5]
+  text: >-
+    Six walls, four of them doors. Every reading room should be a hexagon. The lamp is on whether or not anyone is reading.
+
+    On the lectern lies the plan of a book that isn't written yet. The card catalogue in the corner knows where everything is. It is the honest way through, and the walking is the other way.
+  again: The rug has worn a little where you keep crossing it.
+  doors:
+    - {to: 2,  wall: right, title: "brass and glass"}
+    - {to: 8,  wall: left,  title: "a draft that turns"}
+    - {to: 13, wall: back,  turn: r, title: "a stair going down", say: "The stair winds a quarter turn as it descends."}
+    - {to: 20, wall: front, title: "chalk dust"}
+  objects:
+    - {kind: unwritten, icon: lectern, title: "Lie Groups You Can Hold", note: "The book plan: slide rules as exponential maps, turned and pressed into SO(3), G₂, and their cousins. Drafts are in the Workshop."}
+    - {kind: device, icon: books, title: "The card catalogue", action: catalogue, note: "Everything here, listed plainly."}
+    - {kind: device, icon: map, title: "A map, mostly blank", action: map, note: "It fills in as you walk."}
+
+# ─────────────────────────── INSTRUMENTS ───────────────────────────
+- id: 2
+  name: The Gallery of Rules
+  wing: instruments
+  decor: [shelves, lamp]
+  at: [6, 4]
+  text: >-
+    Long cases line the walls, and every one holds a rule: straight, circular, complex, finite-field, relativistic. A slide rule is the exponential map you can hold. Sliding adds logarithms, and reading multiplies numbers.
+
+    One case is empty. Its card says <i>Instruments Cabinet: sectors, Napier's bones, Gunter's scale, sextants. In preparation.</i>
+  doors:
+    - {to: 1, wall: left}
+    - {to: 3, wall: back}
+    - {to: 4, wall: right, title: "a narrow stair up"}
+  objects:
+    - {kind: device, icon: rule, title: "Slide Rule Cabinet", href: "/slide-rules/", note: "Straight, circular, complex, finite-field, and relativistic rules to drag and read."}
+    - {kind: unwritten, icon: rule, title: "The Instruments Cabinet", note: "Sectors, Napier's bones and their descendants, log and trig tables, Gunter's scale, ruler constructions, scraping and flattening, inclinometers, and sextants."}
+    - {kind: unwritten, icon: rule, title: "Elliptic slide rule", note: "A rule built on the ℘ function, using transparencies."}
+
+- id: 3
+  name: The Bench
+  wing: instruments
+  decor: [lamp, window]
+  at: [7, 3]
+  text: >-
+    A drafting bench with four instruments that measure area by walking around it. The polar planimeter turns its wheel, the Prytz hatchet drags a blade, and the x–y encoder counts. Each has its own way of being wrong.
+  doors:
+    - {to: 2, wall: left}
+    - {to: 5, wall: right}
+  objects:
+    - {kind: device, icon: planimeter, title: "Planimeter Bench", href: "/planimeters/", note: "Polar, linear, hatchet, and x–y planimeters, with a running error budget."}
+
+- id: 4
+  name: The Observatory
+  wing: instruments
+  shape: round
+  decor: [stars, window]
+  at: [6, 2]
+  text: >-
+    A small dome. The great net on the table is a Wulff net, the sphere pressed flat by stereographic projection so that circles stay circles. Turn the overlay and you have turned the sky.
+  notes:
+    - {when: night, text: "The dome is open. Below it, a second door has appeared in the floor, and the pendulum hall shows through it."}
+    - {when: "moon:full", text: "Full moon. Even the net's grid lines cast shadows."}
+  doors:
+    - {to: 2, wall: left}
+    - {to: 7, wall: front, when: "night|dusk", title: "a trapdoor, open after dark"}
+  objects:
+    - {kind: device, icon: net, title: "Stereonet Slide Rule", href: "/stereonet/", note: "The SO(3) slide rule: a Wulff net with a turning overlay and a frame-matching challenge."}
+
+- id: 5
+  name: The Perspective Corridor
+  wing: instruments
+  decor: [lamp]
+  at: [8, 3]
+  text: >-
+    The corridor is longer than it looks, or shorter. The floorboards are evenly spaced, and that is the only thing you can trust. Four points on a line keep their cross-ratio under any picture of them.
+  doors:
+    - {to: 3, wall: left}
+    - {to: 6, wall: back}
+  objects:
+    - {kind: device, icon: cross, title: "Cross-Ratio Ruler", href: "/cross-ratio/", note: "Read true distances off a perspective picture."}
+
+- id: 6
+  name: The Hothouse
+  wing: instruments
+  decor: [window]
+  at: [8, 5]
+  text: >-
+    It's warm, and the arithmetic has gone tropical. As the base of the logarithm grows, addition melts into max and multiplication into plus. The plants don't mind.
+  doors:
+    - {to: 5, wall: left}
+    - {to: 20, wall: right, title: "a door that smells of chalk"}
+  objects:
+    - {kind: device, icon: plant, title: "Tropical Slide Rule", href: "/tropical/", note: "Watch addition turn into max."}
+
+- id: 7
+  name: The Pendulum Hall
+  wing: instruments
+  decor: [pendulum, lamp]
+  at: [5, 2]
+  text: >-
+    A long wire from the ceiling, a brass bob, and a ring of pegs on the floor. The plane of the swing turns, slowly, clockwise. Nothing pushes it. The floor is turning underneath, and the pendulum is the one thing in the building that isn't.
+
+    At latitude φ the plane comes around by 360° · sin φ in a sidereal day. Equivalently, carrying a vector once around the circle of latitude, keeping it as straight as the sphere allows, brings it back turned by the area of the cap above you, 2π(1 − sin φ). That turn is holonomy, and this hall has some of its own: one of its doors is a mirror.
+  mirror: In the mirror, the pendulum still turns clockwise. Of everything here, it is the one thing that doesn't care which way you are facing.
+  widget: pendulum
+  doors:
+    - {to: 4, wall: right, title: "up, to the dome"}
+    - {to: 8, wall: left, turn: s, title: "a door of silvered glass", say: "You step through the glass. Left and right trade places."}
+  objects:
+    - {kind: ref, icon: book, title: "Foucault's Pendulum", by: "Umberto Eco", note: "The novel opens beside the real one, in Paris."}
+
+# ─────────────────────────── TURNINGS ───────────────────────────
+- id: 8
+  name: The Turning Room
+  wing: turnings
+  decor: [lamp, rug]
+  at: [4, 3]
+  text: >-
+    A square room, on purpose. Its symmetries are the eight in the corner of your screen: four turns and four flips. Hamilton's arcs are painted on a globe in the middle. Lay them head to tail and you have composed two rotations.
+
+    Some of the doors in this wing turn you as you pass through them. Watch the F.
+  mirror: You came in through glass. The room is the same room, but the F in the corner is reversed, and something in the cellar is now visible that wasn't before.
+  doors:
+    - {to: 1, wall: right}
+    - {to: 7, wall: back, turn: s, title: "a door of silvered glass", say: "Through the glass again."}
+    - {to: 9, wall: left}
+  objects:
+    - {kind: device, icon: turns, title: "Hamilton's Turns", href: "/turns/", note: "Compose rotations by laying arcs head to tail on a sphere."}
+    - {kind: device, icon: net, title: "The SO(3) slide rule", href: "/stereonet/", hide: true, note: "Also in the Observatory."}
+
+- id: 9
+  name: The Card Room
+  wing: turnings
+  decor: [lamp, rug]
+  at: [3, 3]
+  text: >-
+    A green baize table, and a deck with only eight kinds of card: ±1, ±i, ±j, ±k. The left hand and the right hand play different games, since ij = k but ji = −k.
+
+    A second table is set for a card game no one has invented yet. It's war, but the cards are group elements, and you win by making your stack equal to your opponent's.
+  doors:
+    - {to: 8, wall: right}
+    - {to: 10, wall: back}
+    - {to: 11, wall: left}
+  objects:
+    - {kind: device, icon: cards, title: "Quaternion Cards", href: "/quaternion-cards/", note: "A card game in the quaternion group."}
+    - {kind: unwritten, icon: cards, title: "Group War", note: "Klein, ℤ₄, Q₈, S₃, D₄, octonions. In simulation, the chance of being able to equalize on a turn runs from about 0.56 (ℤ₄) down to about 0.12 (S₄)."}
+
+- id: 10
+  name: The Lock Room
+  wing: turnings
+  decor: [lamp]
+  at: [2, 2]
+  text: >-
+    A brass lock with four dials, and on its lid three equations. The dials hold the four roots of x⁴ − 2. Only the moves that keep the lid true are allowed, and those moves make up the Galois group.
+
+    The far door has the same lock built into it.
+  doors:
+    - {to: 9, wall: right}
+    - to: 12
+      wall: left
+      title: "the locked door"
+      hint: "Its lock asks a question. Try the Galois Lock first."
+      riddle:
+        id: galois
+        q: "How many arrangements of the four dials will the lock ever reach?"
+        a: ["8", "eight"]
+        yes: "Eight. The dials spin through the symmetries of a square, and the door swings open."
+        no: "The dials stick. Count again, or go play with the lock on the table."
+  objects:
+    - {kind: device, icon: lock, title: "Galois Lock", href: "/symmetry-lock/", note: "A lock whose moves are the Galois group of x⁴ − 2."}
+    - {kind: unwritten, icon: lock, title: "The General Galois Lock", note: "Choose a polynomial and get a different lock."}
+
+- id: 11
+  name: The Tile Room
+  wing: turnings
+  decor: [lamp]
+  at: [2, 4]
+  text: >-
+    The floor is a fifteen puzzle, tiles you can slide. Half of the arrangements can never be reached from the other half. A dial on the wall shows the sign of the permutation times (−1) to the distance of the blank, and that number never changes.
+
+    The door to the cellar turns you half around.
+  doors:
+    - {to: 9, wall: right}
+    - {to: 12, wall: back, turn: r2, title: "a door that turns you around", say: "You come out facing the way you came."}
+  objects:
+    - {kind: device, icon: tiles, title: "Fifteen and the Parity Dial", href: "/fifteen/", note: "The 15 puzzle with its permutation, parity invariant, and commutators shown live."}
+
+- id: 12
+  name: The Crystal Cellar
+  wing: turnings
+  decor: [lamp]
+  at: [1, 3]
+  text: >-
+    The walls are a crystal, one atom after another in a hexagonal lattice, except where they aren't. Walk a loop that would close in a perfect crystal. If it doesn't close, you have circled a dislocation, and the gap is the Burgers vector. It's a kind of holonomy too.
+  mirror: In the mirror, one wall of the cellar is a door.
+  doors:
+    - {to: 10, wall: right}
+    - {to: 11, wall: back, turn: r2}
+    - {to: 22, wall: left, when: mirror, twist: true, title: "a door only mirrors show", say: "You go through the door the mirror showed you."}
+  objects:
+    - {kind: device, icon: crystal, title: "Defectsweeper", href: "/defectsweeper/", note: "Find dislocations hidden in a hexagonal crystal by walking Burgers circuits."}
+
+# ─────────────────────────── NUMBERS ───────────────────────────
+- id: 13
+  name: The Great Spiral
+  wing: numbers
+  decor: [glacier, stair, shelves]
+  at: [4, 6]
+  text: >-
+    A stair cut into ice winds down past shelf after shelf. The deeper the shelves, the older the numbers on them. Doors open off the landings. Some are marked for librarians of a certain rank. A visitor may look, but not take.
+  again: You know these landings now. The ice remembers your footprints longer than you would think.
+  doors:
+    - {to: 1, wall: back, turn: r3, title: "up, to the reading room", say: "The stair unwinds you."}
+    - {to: 14, wall: left}
+    - {to: 15, wall: right}
+    - {to: 16, wall: front, title: "further down"}
+    - {to: 22, wall: back, needs: "rank:3", hint: "Closed stacks. Second Assistant Librarians and above. Remember more rooms.", title: "the closed stacks"}
+  objects:
+    - {kind: device, icon: books, title: "Ranks of the library", action: ranks, note: "Every rank comes from remembering more rooms."}
+
+- id: 14
+  name: The Tree of Distances
+  wing: numbers
+  decor: [glacier, lamp]
+  at: [3, 7]
+  text: >-
+    A tree grows out of the ice, branching p ways at every level. Two numbers are close when they share a long trunk, that is, when their difference is divisible by a high power of p. In this room, 1 + 2 + 4 + 8 + … converges, to −1.
+  doors:
+    - {to: 13, wall: right}
+    - {to: 15, wall: left}
+  objects:
+    - {kind: device, icon: tree, title: "p-adic Ruler", href: "/p-adic/", note: "A branching-tree ruler for p-adic distance."}
+
+- id: 15
+  name: Funes's Room
+  wing: numbers
+  shape: square
+  decor: [lamp]
+  at: [2, 6]
+  text: >-
+    A dark room. In Borges's story, Ireneo Funes lies here, unable to forget anything. He invented a numbering of his own in 1886 and soon passed twenty-four thousand. It began with his annoyance that the famous Thirty-Three gauchos took two signs and two words, not one. So every number got its own name.
+
+    The narrator objected, rightly, that this was the opposite of a number system. Saying 365 means three hundreds, six tens, and five ones. Funes's names have no place value, so they have no arithmetic. They are pure memory.
+  again: Funes remembers your last visit, and every step you took to get back here.
+  widget:
+    type: funes
+    names:
+      - {n: 7013, name: "Máximo Pérez"}
+      - {n: 7014, name: "The Railroad"}
+      - {n: 500,  name: "nine"}
+      - {n: 33,   name: "(the Thirty-Three: two signs, two words, the first irritation)"}
+      - {name: "Luis Melián Lafinur"}
+      - {name: "Olimar"}
+      - {name: "sulphur"}
+      - {name: "the reins"}
+      - {name: "the whale"}
+      - {name: "the gas"}
+      - {name: "the caldron"}
+      - {name: "Napoleon"}
+      - {name: "Agustín de Vedia"}
+      - {name: "meat blanket"}
+  doors:
+    - {to: 13, wall: right}
+    - {to: 14, wall: back}
+    - {to: 17, wall: left}
+  objects:
+    - {kind: ref, icon: book, title: "Funes the Memorious", by: "Jorge Luis Borges", href: "https://vigeland.caltech.edu/ist4/lectures/funes%20borges.pdf", note: "The English translation quoted here. In it, the poncho full of meat is a “meat blanket.”"}
+
+- id: 16
+  name: Lamé's Corridor
+  wing: numbers
+  decor: [glacier, lamp]
+  at: [4, 8]
+  text: >-
+    The corridor is an a × b rectangle. Each time you cut off the largest square that fits, the corridor narrows, and the squares are the steps of Euclid's algorithm. In 1844 Gabriel Lamé proved the first worst-case bound on an algorithm's running time: the number of steps is never more than five times the number of decimal digits of the smaller number.
+
+    The sharper form: at most ln b / ln φ + 1 steps. The longest corridors come from neighboring Fibonacci numbers, since each quotient is 1 and each square is as small as it can be. Find a corridor as long as the bound allows, and the last square drops something into your hand.
+  widget: {type: euclid, a: 89, b: 34, award: golden-key, awardText: "A golden key, stamped φ, falls out of the last square."}
+  doors:
+    - {to: 13, wall: front, title: "back up the stair"}
+    - {to: 17, wall: back}
+  objects:
+    - {kind: paper, icon: scroll, title: "Run time of the Euclidean algorithm", by: "W. Kusner", note: "My write-up of Lamé's theorem, by way of Sierpiński, Grossman, and Nathanson."}
+
+- id: 17
+  name: The Clock Room
+  wing: numbers
+  decor: [clockface, lamp, shelves]
+  at: [2, 8]
+  text: >-
+    A clock with twelve hours, counted by twelves: dozens, grosses, great grosses. Bakers and hours both like twelve, because it divides by 2, 3, 4, and 6.
+
+    One door turns with the hour hand. It leads somewhere different every hour, and once in every four hours it leads to the center.
+  widget: clock
+  doors:
+    - {to: 15, wall: right}
+    - {to: 16, wall: front}
+    - {to: [18, 19, 21, 23], wall: back, label: "⟳", oneway: true, title: "the door on the clock's hand"}
+  objects:
+    - {kind: unwritten, icon: clock, title: "The Number Systems Museum", note: "Tallies, Roman, Babylonian, Egyptian, Maya, Kaktovik, bases, the French counting words, dozen and gross, and Archimedes's Sand Reckoner."}
+    - {kind: unwritten, icon: scroll, title: "Continued fractions and nested radicals", note: "Euclid's algorithm, written down differently."}
+
+- id: 18
+  name: The Hexagon
+  wing: numbers
+  shape: hex
+  decor: [shelves, lamp]
+  at: [1, 7]
+  text: >-
+    Another hexagon, or the same one. Shelves on four walls, five shelves to a wall, thirty-two books to a shelf. The books are all different, and almost all of them are noise.
+
+    The shelves here fold. Take the door marked “?” and you could come out anywhere in the palace.
+  widget: babel
+  doors:
+    - {to: 17, wall: right}
+    - {to: random, wall: left, label: "?", title: "folded shelves", say: "The shelves fold, and the corridor is shorter than it should be."}
+    - {to: 23, wall: back, needs: "has:golden-key", hint: "A small gold lock with a φ on it.", title: "the golden door"}
+  objects:
+    - {kind: ref, icon: book, title: "The Library of Babel", by: "Jorge Luis Borges"}
+
+# ─────────────────────────── POND, SCHOOL, WORKSHOP ───────────────────────────
+- id: 19
+  name: The Lily Pond
+  wing: pond
+  decor: [pool, window]
+  at: [6, 8]
+  text: >-
+    Lily pads crowd the water, as many as will fit without overlapping. How tightly can they pack, and how do you prove it? On the wall are Kepler's woodcuts of stacked cannonballs. Barlow's plans show the ways to stack layers of spheres, and the skeletons of FCC and HCP are drawn beside them. The machinery for the lily pads is still being brought over from another wing.
+  doors:
+    - {to: 20, wall: right}
+    - {to: 21, wall: left}
+    - {to: 17, wall: front}
+    - {to: 26, wall: back, title: "the model room"}
+  objects:
+    - {kind: page, icon: pond, title: "Packing Problems", href: "/packing/", note: "The packing page, still being furnished."}
+    - {kind: unwritten, icon: pond, title: "The lily pads", note: "The packing-problem machinery from the old papers."}
+    - {kind: figure, icon: hex, title: "Kepler's woodcuts", href: "/assets/figures/keplerwoodcut1.pdf", note: "<a href='/assets/figures/keplerwoodcut1.pdf'>one</a>, <a href='/assets/figures/keplerwoodcut2.pdf'>two</a>, <a href='/assets/figures/woodcutabcde.pdf'>lettered</a>"}
+    - {kind: figure, icon: hex, title: "Barlow's plans", href: "/assets/figures/barlowplans.pdf", note: "<a href='/assets/figures/barlow.pdf'>Barlow</a>, <a href='/assets/figures/barlowplans5.pdf'>plans 5</a>, <a href='/assets/figures/barlowplanse.pdf'>plans e</a>"}
+    - {kind: figure, icon: crystal, title: "FCC and HCP", href: "/assets/figures/fccskel.pdf", note: "<a href='/assets/figures/fccskel.pdf'>FCC skeleton</a>, <a href='/assets/figures/hcpskel.pdf'>HCP skeleton</a>, <a href='/assets/figures/icoskel.pdf'>icosahedral</a>, <a href='/assets/figures/FCCstress.pdf'>FCC stress</a>, <a href='/assets/figures/HCPstress.pdf'>HCP stress</a>"}
+    - {kind: figure, icon: hex, title: "Contact graphs, n = 3 to 14", href: "/assets/figures/n12.pdf", note: "<a href='/assets/figures/n3.pdf'>3</a> <a href='/assets/figures/n6.pdf'>6</a> <a href='/assets/figures/n9.pdf'>9</a> <a href='/assets/figures/n12.pdf'>12</a> <a href='/assets/figures/n13.pdf'>13</a> <a href='/assets/figures/n14.pdf'>14</a>"}
+    - {kind: figure, icon: crystal, title: "Bottlenecks", href: "/assets/figures/bottleneck1.pdf"}
+
+- id: 20
+  name: The Schoolroom
+  wing: schoolroom
+  decor: [window, lamp]
+  at: [7, 6]
+  text: >-
+    Desks, a chalkboard, and a box of cards. This is where the devices get used for practice: fractions first, then whatever MATH 102 and 103 need next.
+  doors:
+    - {to: 1, wall: back}
+    - {to: 6, wall: right}
+    - {to: 19, wall: left}
+    - {to: 24, wall: front, title: "the lecture wing"}
+  objects:
+    - {kind: device, icon: fraction, title: "Fraction Target", href: "/fraction-target/", note: "Make the target from four fraction cards. Every deal can be solved."}
+    - {kind: unwritten, icon: fraction, title: "Coefficient Knobs", note: "Turn a, b, and c on a quadratic and watch the vertex trace its locus. Then cubics, and the cusp 4p³ + 27q² = 0."}
+
+- id: 21
+  name: The Workshop
+  wing: workshop
+  decor: [lamp, window, shelves]
+  at: [6, 7]
+  text: >-
+    Sawdust, plaster, and drafts. The shelf by the door holds the books that aren't written yet. They are real books in every respect except that they don't exist.
+
+    A linking book lies open on the bench. Touch the picture and you're back in the reading room.
+  doors:
+    - {to: 19, wall: right}
+    - {to: 16, wall: left, oneway: true}
+  objects:
+    - {kind: link, icon: book, title: "A linking book: the reading room", to: 1, say: "The picture swallows you."}
+    - {kind: unwritten, icon: unwritten, title: "SO(3) Lab Manual", note: "Building the stereonet slide rule, with printables. A draft exists."}
+    - {kind: unwritten, icon: unwritten, title: "The Handbook", note: "Circular rules, root systems, Dynkin diagrams, and finite fields. 37 pages of draft."}
+    - {kind: unwritten, icon: unwritten, title: "Plaster molds", note: "3D-printed molds for plaster models of the objects in the book."}
+    - {kind: unwritten, icon: unwritten, title: "The G₂ rule and the sl(3) rule", note: "Root-system slide rules on transparencies."}
+
+# ─────────────────────────── SECRET ───────────────────────────
+- id: 22
+  name: The Archive
+  wing: archive
+  secret: true
+  shape: oct
+  decor: [shelves, lamp, rug]
+  at: [0, 5]
+  text: >-
+    The room the plan doesn't show. You reach it through a mirror or by rank. Here are the books the rest of the palace stands on, and the books about palaces like this one.
+  doors:
+    - {to: 12, wall: right, turn: s, twist: true, title: "back through the mirror"}
+    - {to: 13, wall: left, title: "the closed stacks"}
+    - {to: 23, wall: back, needs: "has:golden-key", oneway: true, hint: "A small gold lock with a φ on it."}
+  objects:
+    - {kind: paper, icon: scroll, title: "My papers", href: "/research/"}
+    - {kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
+    - {kind: ref, title: "The Art of Memory", by: "Frances Yates", note: "Where memory palaces come from."}
+    - {kind: ref, title: "Elements", by: "Euclid"}
+    - {kind: ref, title: "Mathematical Gems II", by: "Ross Honsberger"}
+    - {kind: ref, title: "Elementary Methods in Number Theory", by: "Melvyn Nathanson"}
+    - {kind: ref, title: "An Introduction to the Theory of Numbers", by: "Niven, Zuckerman, and Montgomery"}
+    - {kind: ref, title: "Abstract Algebra", by: "Dummit and Foote"}
+    - {kind: ref, title: "Naive Lie Theory", by: "John Stillwell"}
+    - {kind: ref, title: "On Quaternions and Octonions", by: "Conway and Smith"}
+    - {kind: ref, title: "Geometry and the Imagination", by: "Hilbert and Cohn-Vossen"}
+    - {kind: ref, title: "Visual Complex Analysis", by: "Tristan Needham"}
+    - {kind: ref, title: "The Sand Reckoner", by: "Archimedes"}
+    - {kind: ref, title: "Ficciones", by: "Jorge Luis Borges"}
+    - {kind: ref, title: "The Name of the Rose", by: "Umberto Eco"}
+    - {kind: ref, title: "Maze", by: "Christopher Manson"}
+    - {kind: ref, title: "Lirael", by: "Garth Nix"}
+    - {kind: ref, title: "Invisible Cities", by: "Italo Calvino"}
+    - {kind: ref, title: "The Discworld library and L-space", by: "Terry Pratchett"}
+
+- id: 23
+  name: The Center
+  wing: archive
+  secret: true
+  shape: round
+  decor: [lamp, rug, stars]
+  at: [-1, 6]
+  text: >-
+    A round room with nothing in it but a count. Every maze is really a question about its shortest path.
+  widget: center
+  doors:
+    - {to: 1, wall: back, oneway: true, title: "straight out to the reading room"}
+    - {to: 18, wall: left}
+  objects:
+    - {kind: note, icon: note, title: "A note in my hand", note: "If you got here, write and tell me which way you came."}
+
+# ─────────────────────────── RESEARCH ───────────────────────────
+- id: 24
+  name: The Lecture Hall
+  wing: lectures
+  shape: round
+  decor: [lamp, window]
+  at: [8, 7]
+  text: >-
+    Tiered benches and a chalk tray. Slides from fifteen years of talks are stacked in the projection booth, by date, which is the only order a speaker can keep.
+  doors:
+    - {to: 20, wall: left}
+    - {to: 25, wall: right}
+    - {to: 26, wall: back}
+  objects:
+    - {kind: talk, icon: scroll, title: "Isaac Newton Institute, November 2012", href: "/assets/2012_3NovINITalk.pdf"}
+    - {kind: talk, icon: scroll, title: "An overview, November 2013", href: "/assets/2013_11Overview.pdf"}
+    - {kind: talk, icon: scroll, title: "Dissertation defense, May 2014", href: "/assets/2014_5Defense.pdf"}
+    - {kind: talk, icon: scroll, title: "ESI Vienna, October 2014", href: "/assets/2014_10ESI.pdf"}
+    - {kind: talk, icon: scroll, title: "Aalto, November 2014", href: "/assets/2014_11Aalto.pdf"}
+    - {kind: talk, icon: scroll, title: "ICERM, discrepancy, April 2015", href: "/assets/2015_4ICERMDISCREPANCY.pdf"}
+    - {kind: talk, icon: scroll, title: "Doctoral seminar, December 2015", href: "/assets/2015_12DocZTSeminar.pdf"}
+    - {kind: talk, icon: scroll, title: "Advanced topics, January 2016", href: "/assets/2016_1JanAdvancedTopics.pdf"}
+    - {kind: talk, icon: scroll, title: "AMS, March 2016", href: "/assets/2016_3AMSTalk.pdf"}
+    - {kind: talk, icon: scroll, title: "Pittsburgh, August 2016", href: "/assets/2016_8PittTalk.pdf"}
+    - {kind: talk, icon: scroll, title: "Stanford, August 2016", href: "/assets/2016_8StanfordTalk/StanfordTalk.pdf"}
+    - {kind: talk, icon: scroll, title: "AIM, September 2016", href: "/assets/2016_9AIMTALK.pdf"}
+    - {kind: talk, icon: scroll, title: "Geometry talk, September 2016", href: "/assets/2016_9GeometryTalk/2016GeometryTalk.pdf"}
+    - {kind: talk, icon: scroll, title: "Spain, April 2017", href: "/assets/2017_4Spain.pdf"}
+    - {kind: talk, icon: scroll, title: "Leoben, June 2017", href: "/assets/2017_6LeobenTalk.pdf"}
+    - {kind: talk, icon: scroll, title: "ICERM, March 2018", href: "/assets/2018_3ICERM.pdf"}
+    - {kind: talk, icon: scroll, title: "ICERM, April 2018", href: "/assets/2018_4ICERM.pdf"}
+    - {kind: talk, icon: scroll, title: "ICERM, 2018 (slides with point sets)", href: "/assets/2018ICERM/slides.pdf"}
+    - {kind: talk, icon: scroll, title: "CMO Oaxaca, October 2019", href: "/assets/2019_10CMO.pdf"}
+
+- id: 25
+  name: The Seminar Room
+  wing: lectures
+  decor: [shelves, lamp]
+  at: [9, 8]
+  text: >-
+    A long table, and the notes from a graduate course spread across it in the order the lectures went: classification, ensembles, and the rest. Along with them are a problem book and the statements I wrote to explain what I was doing.
+  doors:
+    - {to: 24, wall: left}
+    - {to: 26, wall: back}
+  objects:
+    - {kind: paper, icon: scroll, title: "Research statement", href: "/assets/KusnerResearchStatement.pdf"}
+    - {kind: paper, icon: scroll, title: "Research statement, short", href: "/assets/KusnerResearchStatementShort.pdf"}
+    - {kind: paper, icon: scroll, title: "Bounds via slicing", href: "/assets/Boundsviaslicing.pdf"}
+    - {kind: paper, icon: book, title: "Problem book", href: "/assets/Problembook.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, notes 1", href: "/assets/MAT670_1.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, notes 2", href: "/assets/MAT670_2.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, notes 3", href: "/assets/MAT670_3.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, notes 4–6", href: "/assets/MAT670_46.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, notes 7–8", href: "/assets/MAT670_78.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, notes 9–10", href: "/assets/MAT670_9X.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, notes 11", href: "/assets/MAT670_XI.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, classification", href: "/assets/MAT670_classification.pdf"}
+    - {kind: notes, icon: note, title: "MAT 670, ensembles", href: "/assets/MAT670_emsemble.pdf"}
+
+- id: 26
+  name: The Model Room
+  wing: lectures
+  decor: [lamp, window, stars]
+  at: [7, 9]
+  text: >-
+    Things that move or can be printed. A snub 24-cell turns in a loop. Points spread over a sphere, some at random, some on a Fibonacci spiral, and some on purpose, and their discrepancy is graphed underneath. On the shelf is a printable solid.
+  doors:
+    - {to: 24, wall: back}
+    - {to: 25, wall: right}
+    - {to: 19, wall: left, title: "toward the water"}
+  objects:
+    - {kind: model, icon: hex, title: "The snub 24-cell, turning", href: "/assets/2016_9GeometryTalk/snub24.mov"}
+    - {kind: model, icon: net, title: "Point sets on the sphere (movie)", href: "/assets/2018ICERM/32movie.mov"}
+    - {kind: model, icon: box, title: "A printable solid (HRT.stl)", href: "/assets/HRT.stl"}
+    - {kind: figure, icon: net, title: "Fibonacci points, 5000", href: "/assets/2018ICERM/fib5000.pdf"}
+    - {kind: figure, icon: net, title: "Spiral discrepancy", href: "/assets/2018ICERM/spiraldiscrepancy.pdf"}
+    - {kind: figure, icon: net, title: "Random discrepancy", href: "/assets/2018ICERM/randomdiscrepancy.pdf"}
+    - {kind: figure, icon: net, title: "Discrepancy samples", href: "/assets/2018ICERM/discrepancysamples.pdf"}

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Palace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3EEE1; --paper2:#E9E1CD; --ink:#1F1A12; --muted:#6B6250; --line:#B9AD92;
+  --brass:#A77E22; --accent:#8A3B23; --glow:#F2C14E; --sky:#BFD6E6; --wall:#E6DCC4; --floor:#D8CBAA;
+  --display:"Barlow Condensed",system-ui,sans-serif; --serif:"IBM Plex Serif",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+:root[data-light="dusk"]{ --paper:#EADFC8; --wall:#D9C7A3; --floor:#C9B488; --sky:#E7A673; }
+:root[data-light="dawn"]{ --paper:#F1E9DC; --wall:#E3D6C0; --floor:#D3C3A2; --sky:#F2C9B8; }
+:root[data-light="night"]{
+  --paper:#1B2027; --paper2:#232A33; --ink:#E9E3D3; --muted:#A39A86; --line:#4A4F57;
+  --brass:#D8AE4E; --accent:#E08B6A; --glow:#F7CB62; --sky:#0E1A2E; --wall:#2A303A; --floor:#22272F;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);transition:background .6s,color .6s}
+a{color:var(--accent)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.top .home{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.04em;text-decoration:none;color:var(--ink)}
+.top .home span{color:var(--brass)}
+.top nav{display:flex;gap:8px;flex-wrap:wrap}
+.top button,.btn{font:500 13px var(--mono);background:var(--paper2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+.top button:hover,.btn:hover{border-color:var(--brass)}
+.btn.primary{background:var(--brass);color:#1F1A12;border-color:var(--brass)}
+main{max-width:1100px;margin:0 auto;padding:14px 16px 60px}
+.status{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font:13px var(--mono);color:var(--muted);margin-bottom:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.vest{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
+.gnomon{width:26px;height:26px}
+.roomhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:4px 0 8px}
+.roomnum{font-family:var(--display);font-weight:700;font-size:56px;line-height:1;color:var(--brass)}
+.roomname{font-family:var(--display);font-weight:500;font-size:28px;letter-spacing:.02em}
+.wingname{font:12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.stage{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--wall)}
+.stage svg{display:block;width:100%;height:auto}
+.stage .hot{cursor:pointer}
+.stage .hot:hover .hl,.stage .hot:focus .hl{stroke:var(--glow);stroke-width:3}
+.stage .hot:focus{outline:none}
+.cols{display:grid;grid-template-columns:1fr 300px;gap:18px;margin-top:14px}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+.text p{font-size:17px;line-height:1.6;margin:.2em 0 .8em}
+.text p.again{font-style:italic;color:var(--muted)}
+.panel{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--paper2)}
+.panel h3{font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 8px}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.list li{font-size:15px;line-height:1.35}
+.list .k{font:11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-right:6px}
+.doorbtn{font:500 14px var(--mono);background:transparent;border:1px solid var(--line);border-radius:6px;padding:5px 9px;color:var(--ink);cursor:pointer;text-align:left;width:100%}
+.doorbtn:hover{border-color:var(--brass)}
+.doorbtn[disabled]{opacity:.55;cursor:not-allowed}
+.note{font-size:14px;color:var(--muted);line-height:1.45}
+.widget{margin-top:16px}
+.widget input{font:15px var(--mono);padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);width:120px}
+.widget .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.mono{font-family:var(--mono)}
+.big{font:700 30px var(--display)}
+.overlay{position:fixed;inset:0;background:rgba(10,10,10,.55);display:none;align-items:flex-start;justify-content:center;padding:4vh 12px;z-index:20;overflow:auto}
+.overlay.open{display:flex}
+.sheet{background:var(--paper);color:var(--ink);border-radius:12px;max-width:900px;width:100%;padding:16px 18px;border:1px solid var(--line)}
+.sheet header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sheet h2{font:700 26px var(--display);margin:0}
+.cat-wing{margin:14px 0 4px;font:600 13px var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--brass)}
+.cat-item{padding:6px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}
+.cat-item .t{font-size:16px}
+.cat-item .m{font:12px var(--mono);color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;font:14px var(--mono);opacity:0;transition:opacity .4s;pointer-events:none;z-index:30;max-width:90vw}
+.toast.on{opacity:.95}
+.mirror-text{display:inline-block;transform:scaleX(-1)}
+.warn{color:var(--accent)}
+.ok{color:#3E7A4F}
+:root[data-light="night"] .ok{color:#7FD8A4}
+table.cur{border-collapse:collapse;font:13px var(--mono);width:100%}
+table.cur td,table.cur th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+.babel{font:13px/1.5 var(--mono);white-space:pre-wrap;word-break:break-all;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px;max-height:240px;overflow:auto}
+.babel mark{background:var(--glow);color:#1F1A12}
+footer{margin-top:28px;font:12px var(--mono);color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="home" href="/">Wöden Kusner · <span>The Palace</span></a>
+  <nav>
+    <button type="button" id="b-map">Map</button>
+    <button type="button" id="b-cat">Catalogue</button>
+    <button type="button" id="b-lamp">Lamps</button>
+    <button type="button" id="b-help">How to walk</button>
+  </nav>
+</div>
+<main>
+  <div class="status" id="status"></div>
+  <div class="roomhead"><span class="roomnum" id="rnum"></span><span><div class="roomname" id="rname"></div><div class="wingname" id="rwing"></div></span></div>
+  <div class="stage" id="stage"></div>
+  <div class="cols">
+    <div>
+      <div class="text" id="rtext"></div>
+      <div class="widget" id="widget"></div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:12px">
+      <div class="panel"><h3>Doors</h3><ul class="list" id="doors"></ul></div>
+      <div class="panel"><h3>In this room</h3><ul class="list" id="objects"></ul></div>
+      <div class="panel" id="invpanel" style="display:none"><h3>Your pockets</h3><div id="inv" class="note"></div></div>
+    </aside>
+  </div>
+  <footer>The palace remembers your walk in this browser only. <a href="/puzzles/">Plain list of devices</a> · <a href="/palace/curator/">Curator's guide</a></footer>
+</main>
+<div class="overlay" id="ov"><div class="sheet"><header><h2 id="ovt"></h2><button class="btn" type="button" id="ovx">Close</button></header><div id="ovb"></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="data.js"></script>
+<script src="palace.js"></script>
+</body>
+</html>

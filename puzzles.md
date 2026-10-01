@@ -8,6 +8,8 @@ shorttitle:
 
 ##Puzzles
 
+**[The Palace](/palace/)**: a memory palace of numbered rooms that holds all of these devices, plus talks, notes, drafts, and books. Doors keep hours, mirrors hide rooms, and loops can leave you turned. A [curator's guide](/palace/curator/) explains how it's built.
+
 - [Defectsweeper](/defectsweeper/): find the dislocations hidden in a hexagonal crystal by walking Burgers circuits.
 - [Fifteen and the Parity Dial](/fifteen/): the 15 puzzle with its permutation, parity invariant, and commutators shown live.
 - [Slide Rule Cabinet](/slide-rules/): straight, circular, complex, finite-field, and relativistic slide rules to drag and read.
@@ -19,3 +21,4 @@ shorttitle:
 - [p-adic Ruler](/p-adic/): a branching-tree ruler for p-adic distance.
 - [Galois Lock](/symmetry-lock/): a lock whose moves are the Galois group of x⁴ − 2.
 - [Planimeter Bench](/planimeters/): measure area by tracing, with polar, linear, hatchet, and x–y planimeters and a running error budget.
+- [Fraction Target](/fraction-target/): make the target from four fraction cards, with every deal solvable (MATH 102 practice).
