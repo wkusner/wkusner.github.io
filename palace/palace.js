@@ -201,8 +201,10 @@ function cond(c, room){
     default: return true;
   }
 }
-const visible = (x, room) => S.showAll || (!x.hidden && cond(x.when, room) && !(x.to!=null && !Array.isArray(x.to) && ROOMS[String(x.to)] && ROOMS[String(x.to)].closed));
-const open = (x, room) => S.showAll || (S.inv.includes("master-key") && !x.hardlock) || (cond(x.needs, room) && (!x.riddle || S.solved[x.riddle.id]));
+// rooms being rebuilt keep their doors, boarded up with a note; rooms closed outright vanish from the plan
+const reno = x => !!(x && x.to!=null && !Array.isArray(x.to) && ROOMS[String(x.to)] && ROOMS[String(x.to)].closed === "renovation");
+const visible = (x, room) => S.showAll || (!x.hidden && cond(x.when, room) && (reno(x) || !(x.to!=null && !Array.isArray(x.to) && ROOMS[String(x.to)] && ROOMS[String(x.to)].closed)));
+const open = (x, room) => !reno(x) && (S.showAll || (S.inv.includes("master-key") && !x.hardlock) || (cond(x.needs, room) && (!x.riddle || S.solved[x.riddle.id])));
 
 /* ---------- door targets ---------- */
 let randomPick = {};
@@ -666,7 +668,7 @@ function objWall(o, i, n){ if(o.wall!=null) return WALLS[o.wall]; return n>3 ? [
 const BOOKISH = o => ["book","ref","unwritten","paper","notes","talk"].includes(o.kind);
 function render(){
   const room = effective(cur), id = String(room.id); LIGHT = {};
-  const light = lightNow();
+  const light = lightNow(); soundScene(room);
   document.documentElement.setAttribute("data-light", light);
   document.documentElement.setAttribute("data-ink", S.ink==="1bit" ? "1bit" : "two");
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
@@ -687,7 +689,7 @@ function render(){
   const svg = use3d ? document.createElementNS(NS,"svg") : E("svg",{viewBox:`0 0 ${W} ${H}`, role:"img", class:"view", "aria-label":`Room ${id}, ${room.name||""}, facing ${FACENAME[S.face]}`}, stage);
   const allDoors = (room.doors||[]).filter(d => visible(d, room));
   const doorWall = (d,i) => d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3];
-  const objs = (room.objects||[]).filter(o => visible(o, room) && !(o.kind==="key" && S.inv.includes(o.item)));
+  const objs = (room.objects||[]).filter(o => visible(o, room) && !((o.kind==="key" || o.portable) && S.inv.includes(o.item)));
   const byObjWall = [[],[],[],[]]; objs.forEach((o,i) => byObjWall[act(S.frame, objWall(o,i,objs.length))].push(o));
   const ahead = [0,1,2,3].find(w => (w - S.face + 4) % 4 === 1);
   if(use3d){ VIEW3D.show(plan3d(room, allDoors, doorWall, objs, light, mirror)); VIEW3D.snap = false; }
@@ -749,7 +751,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     room, frame:S.frame, mirror, band:light, spot:wingColor(room), F, lat:LAT,
     ahead:(1+S.face)%4, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
     decor: room.decor || [], names,
-    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look:d.look||"", onClick:()=>tryDoor(d, room)})),
+    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), onClick:()=>tryDoor(d, room)})),
     objects: objs.map((o,i) => ({raw:o, mount:o.mount||null, board: o.mount ? boardContent(o) : null, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
     lampLit: light==="night" || light==="dusk" || S.light==="night" || !!room.dark,
     sunUp: sk.sun.alt > 0 && !overcast && !skyOff("sun"), sunAlt: sk.sun.alt, sunRel, overcast,
@@ -758,13 +760,14 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
     temp: wx ? wx.temperature_2m : null,
     lantern: !!(S.lantern && S.inv.includes("lantern")), gloom: (room.decor||[]).includes("gloom"),
-    sheetKey: JSON.stringify(S.sheets), minuteKey: Math.floor(now().getTime()/60000),
+    sheetKey: JSON.stringify(S.sheets) + ":" + (CATALOG ? CATALOG.length : -1), minuteKey: Math.floor(now().getTime()/60000),
     snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
     skyCanvas: (room.decor||[]).includes("sky") ? skyCanvasFor : null,
     // the moon: where it is, how much of it is lit, and how much the clouds let through
     moonAlt: sk.moon.alt, moonRel, moonLit: (1 - Math.cos(2*Math.PI*sk.moon.phase))/2, cloud: wx ? (wx.cloud_cover||0) : 0,
     dome: room.ceiling==="open" ? domeData(sk) : null, place: placeName(),
     orrery: (room.decor||[]).includes("orrery") ? orreryData(sk.jd) : null,
+    catalog: (room.decor||[]).includes("catalogshelves") ? (CATALOG||[]).filter(it => ["book","paper","physical","digital","ephemera","art"].includes(it.type)).map(it => ({id:it.id, title:it.title, creator:((it.creators||[])[0]||{}).name||"", type:it.type, pages:it.pages})) : null,
   };
 }
 /* ---------- the planets, tracked ---------- */
@@ -870,6 +873,8 @@ function start3d(){
       useObject: o => useObject(o.raw, effective(cur)),
       palaceSeconds: () => now().getTime()/1000,
       planets: () => planetsView(),
+      openItem: id => catalogView("item/" + id),
+      openCatalog: h => catalogView(h || ""),
       dial: () => { const w = $("widget"); if(w && w.firstChild){ w.scrollIntoView({behavior:"smooth", block:"center"}); w.classList.add("flash"); setTimeout(() => w.classList.remove("flash"), 1400); } },
       pendulumPlane: () => { const rate = 360*Math.sin(LAT*DEG)/23.9345; return -((now().getTime()/36e5*rate) % 180)*DEG; },
     });
@@ -877,7 +882,7 @@ function start3d(){
   }).catch(e => { console.warn("3D view unavailable", e); });
 }
 function fillTokens(t){ return String(t).replace(/\{sheet:(\w+)\}/g, (_,k) => String(S.sheets[k]||0)).replace(/\{reader\}/g, esc(S.reader||"reader")); }
-function doorName(d){ if(Array.isArray(d.to) || d.to==="random" || d.to==="back") return ""; const r = ROOMS[String(d.to)]; if(!r) return ""; if(r.secret && !S.visits[r.id]) return ""; const nm = (r.name||"").replace(/^The /,""); return r.hours ? nm + " · " + (officeStatus().open ? "open" : "closed") : nm; }
+function doorName(d){ if(Array.isArray(d.to) || d.to==="random" || d.to==="back") return ""; const r = ROOMS[String(d.to)]; if(!r) return ""; if(r.secret && !S.visits[r.id]) return ""; const nm = (r.name||"").replace(/^The /,""); return r.closed === "renovation" ? nm + " · closed for renovation" : r.hours ? nm + " · " + (officeStatus().open ? "open" : "closed") : nm; }
 function turnZones(svg, behind){
   const zl = E("rect",{x:0,y:0,width:62,height:H,fill:"transparent",class:"turnL"},svg);
   const zr = E("rect",{x:W-62,y:0,width:62,height:H,fill:"transparent",class:"turnR"},svg);
@@ -1048,9 +1053,10 @@ const ITEMS = {
   "page-right":  {icon:"note",      name:"The right half of a torn page", use:()=>toast("Half a page. The words start in the middle.")},
   "mended-page": {icon:"scroll",    name:"A mended page", use:()=>overlay("The mended page", `<div class="text"><p>Once mended, the page is a short poem about square roots: every number has two, and you cannot choose one consistently all the way around zero. Walk around the pillar once and you have changed your mind about which root you meant.</p><p>At the bottom, in a different hand, a warp word: <b class="mono">SHEET</b>.</p></div>`)},
   "primer":      {icon:"book",      name:"A Young Lady's Illustrated Primer", use:()=>primerView()},
+  "musicbox":    {icon:"musicbox",  name:"A music box: the house's music, and how loud everything is", use:()=>musicView()},
   "astrolabe":   {icon:"astrolabe", name:"An astrolabe with a storm glass: sets the place, the date, and the weather", use:()=>astrolabeView()},
 };
-function take(item, msg){ if(S.inv.includes(item)) return; S.inv.push(item); save(); award("item:"+item, item==="golden-key"?40:15); toast(msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
+function take(item, msg){ if(S.inv.includes(item)) return; S.inv.push(item); sound.take(); save(); award("item:"+item, item==="golden-key"?40:15); toast(msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
 function useObject(o, room){
   if(o.more) return setView(S.face, "ahead");
   if(o.kind==="key"){ take(o.item, o.take); return; }
@@ -1065,6 +1071,9 @@ function useObject(o, room){
   if(o.action==="officehours") return officeHoursView();
   if(o.action==="search") return searchView();
   if(o.action==="planets") return planetsView();
+  if(o.action==="logbook") return catalogView("");
+  if(o.action==="link") return linkView(o, room);
+  if(o.action==="music") return musicView(o);
   if(o.action==="clock") return clockView();
   if(o.action==="astrolabe"){ if(o.item && !S.inv.includes(o.item)) take(o.item, "You lift the astrolabe off its hook. The storm glass in its throne clouds and clears."); return astrolabeView(); }
   if(o.action==="combine"){ const uses=o.uses||[]; if(uses.every(k=>S.inv.includes(k))){ S.inv = S.inv.filter(k=>!uses.includes(k)); if(o.solve) S.solved[o.solve]=1; save(); take(o.gives, o.say); award("combine:"+o.gives, 40); } else toast(o.hint || "Something is missing."); return; }
@@ -1158,6 +1167,32 @@ function timeView(fromDesk){
   $("tv-s").onclick = () => { const t = new Date($("tv-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("tv-r").value}; save(); closeOv(); render(); toast("The sand runs differently now."); award("hourglass-used", 10); };
   $("tv-n").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
 }
+/* ---------- the Archive's log book: the catalogue, read inside the house ---------- */
+let CATALOG = null;
+function loadCatalog(){ const url = (P.catalog && P.catalog.url) || "/catalog/index.json";
+  fetch(url + "?t=" + Math.floor(Date.now()/6e4)).then(r => r.ok ? r.json() : {items:[]}).then(j => { CATALOG = (j.items||[]).filter(it => !it.private); if(cur && (effective(cur).decor||[]).includes("catalogshelves")) render(); }).catch(() => { CATALOG = []; }); }
+loadCatalog();
+function catalogView(hash){
+  let lb = $("logbook-ov");
+  if(!lb){ lb = document.createElement("div"); lb.id = "logbook-ov"; lb.className = "logbook-ov"; lb.innerHTML = `<button type="button" class="lbx" aria-label="Close the log book">×</button><iframe title="The log book" allow="camera"></iframe>`; document.body.appendChild(lb);
+    lb.querySelector(".lbx").onclick = () => { lb.classList.remove("open"); lb.querySelector("iframe").src = "about:blank"; sound.page && sound.page(); };
+    document.addEventListener("keydown", e => { if(e.key === "Escape" && lb.classList.contains("open")) lb.querySelector(".lbx").click(); }); }
+  lb.querySelector("iframe").src = "catalog/" + (hash ? "#" + hash : ""); lb.classList.add("open"); sound.page && sound.page(); award("logbook", 5);
+}
+/* ---------- linking books: a moving picture of somewhere else; touch it and you're there ---------- */
+const SHOTS = {}; try { Object.assign(SHOTS, JSON.parse(sessionStorage.getItem("wending-shots") || "{}")); } catch(e) {}
+function keepShot(id){ setTimeout(() => { if(!VIEW3D || !VIEW3D.thumb || !cur || String(cur.id) !== String(id)) return; try { SHOTS[id] = VIEW3D.thumb(); const keys = Object.keys(SHOTS); if(keys.length > 8) delete SHOTS[keys[0]]; sessionStorage.setItem("wending-shots", JSON.stringify(SHOTS)); } catch(e) {} }, 2500); }
+function linkView(o, room){
+  const t = String(o.to), dest = ROOMS[t]; if(!dest) return;
+  const shot = SHOTS[t];
+  overlay("A linking book", `<div class="linkbook"><div class="lpage"><h3>${esc(dest.name)}</h3><p>${esc(((dest.text||"").split(/\n|\. /)[0]||"").slice(0,180))}.</p><p class="note">The book is warm. The picture on the right-hand page moves, very slightly, like a window seen through water.</p></div>
+    <div class="rpage"><button type="button" class="panel" id="lk-go" aria-label="Touch the panel to link to ${esc(dest.name)}">${shot ? `<img src="${shot}" alt="">` : `<span class="dark">${esc(dest.name)}</span>`}</button><p class="note">Touch the panel.</p></div></div>`);
+  sound.page && sound.page();
+  $("lk-go").onclick = () => { const veil = document.createElement("div"); veil.className = "linkveil"; document.body.appendChild(veil); sound.link && sound.link();
+    requestAnimationFrame(() => veil.classList.add("on"));
+    setTimeout(() => { closeOv(); S.frame = [0,0]; move(t, null, room); award("link:"+t, 10); }, 1300);
+    setTimeout(() => { veil.classList.remove("on"); setTimeout(() => veil.remove(), 1400); }, 1900); };
+}
 /* ---------- the carriage clock: chimes on house time ---------- */
 // sequences from the standard chime tables: bells numbered from the lowest; four changes make the hour
 const midiHz = n => 440*Math.pow(2, (n-69)/12);   // MIDI note to hertz
@@ -1173,16 +1208,139 @@ const CHIMES = {
   hours:       {name:"The hours only", bells:[], hour:midiHz(55), q:[[],[],[],[]]},
   silent:      {name:"Silent", silent:true},
 };
+/* ---------- sound: one audio graph for the whole house ----------
+   master ─┬─ effects (steps, doors, pages, the link)        each bus also sends to a hall reverb
+           ├─ ambience (rain, wind, birds, crickets, thunder, room tone, the clock's tick)
+           ├─ music (the house's own: slow chords and a few notes, in a mode for each wing)
+           └─ chimes (the carriage clock)
+   Browsers allow sound only after the visitor has clicked something; it starts on the first click. */
 let AC = null;
-const audio = () => { if(!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return null; } } if(AC.state === "suspended") AC.resume(); return AC; };
-document.addEventListener("pointerdown", () => { if(S.chime && S.chime !== "silent") audio(); }, {once:true});
-// a struck rod gong: the free bar's partials, 1 : 2.756 : 5.404 : 8.933, each dying away at its own rate
-function gong(ac, f, t, vol, long){
-  const out = ac.createGain(); out.gain.value = vol; out.connect(ac.destination);
-  [[1,1,long?6:3.2],[2.756,.42,1.4],[5.404,.22,.7],[8.933,.1,.35]].forEach(([k,a,dec]) => { if(f*k > 16000) return;
-    const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f*k; o.type = "sine";
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(a, t + .004); g.gain.exponentialRampToValueAtTime(1e-4, t + dec);
-    o.connect(g); g.connect(out); o.start(t); o.stop(t + dec + .05); });
+S.snd = Object.assign({on:true, master:.8, amb:.7, music:.35, sfx:.7, mode:"house"}, S.snd || {});
+const sound = (() => {
+  let ac = null, master, rev, buses = {}, noise = {}, amb = {}, scene = {}, musicT = null, tickT = null;
+  const mk = (type, opts={}) => Object.assign(ac["create" + type](), opts);
+  function g(v){ const x = ac.createGain(); x.gain.value = v; return x; }
+  function impulse(sec, decay){ const n = Math.round(ac.sampleRate*sec), b = ac.createBuffer(2, n, ac.sampleRate);
+    for(let c=0;c<2;c++){ const d = b.getChannelData(c); for(let i=0;i<n;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/n, decay) * (i < ac.sampleRate*.012 ? i/(ac.sampleRate*.012) : 1); } return b; }
+  function noiseBuf(kind){ const n = ac.sampleRate*4, b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0); let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0, last=0;
+    for(let i=0;i<n;i++){ const w = Math.random()*2-1;
+      if(kind === "pink"){ b0=.99886*b0+w*.0555179; b1=.99332*b1+w*.0750759; b2=.969*b2+w*.153852; b3=.8665*b3+w*.3104856; b4=.55*b4+w*.5329522; b5=-.7616*b5-w*.016898; d[i]=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.11; b6=w*.115926; }
+      else { last = (last + .02*w)/1.02; d[i] = last*3.5; } } return b; }
+  function loop(buf){ const src = mk("BufferSource"); src.buffer = buf; src.loop = true; src.start(); return src; }
+  function init(){
+    if(ac) { if(ac.state === "suspended") ac.resume(); return ac; }
+    if(navigator.userActivation && !navigator.userActivation.hasBeenActive) return null;   // wait for the visitor's first click
+    try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return null; }
+    AC = ac;
+    master = g(S.snd.on ? S.snd.master : 0); const comp = mk("DynamicsCompressor"); comp.threshold.value = -18; comp.ratio.value = 3; master.connect(comp); comp.connect(ac.destination);
+    rev = mk("Convolver"); rev.buffer = impulse(3.4, 2.4); const wet = g(.5); rev.connect(wet); wet.connect(master);
+    [["sfx", S.snd.sfx, .22], ["amb", S.snd.amb, .12], ["music", S.snd.music, .55], ["chime", 1, .45]].forEach(([k, v, send]) => { const b = g(v); b.connect(master); const sd = g(send); b.connect(sd); sd.connect(rev); buses[k] = b; buses[k + "Send"] = sd; });
+    noise.pink = noiseBuf("pink"); noise.brown = noiseBuf("brown");
+    // continuous layers, silent until the scene asks for them
+    const layer = (buf, filt) => { const src = loop(buf), f = mk("BiquadFilter", filt), out = g(0); src.connect(f); f.connect(out); out.connect(buses.amb); return {f, out}; };
+    amb.rain = layer(noise.pink, {type:"bandpass"}); amb.rain.f.frequency.value = 2600; amb.rain.f.Q.value = .5;
+    amb.rainLow = layer(noise.brown, {type:"lowpass"}); amb.rainLow.f.frequency.value = 500;
+    amb.wind = layer(noise.brown, {type:"bandpass"}); amb.wind.f.frequency.value = 420; amb.wind.f.Q.value = .8;
+    amb.room = layer(noise.brown, {type:"lowpass"}); amb.room.f.frequency.value = 160;
+    // the wind gusts
+    setInterval(() => { if(!ac || !scene.windK) return; const t = ac.currentTime; amb.wind.f.frequency.setTargetAtTime(260 + Math.random()*700*scene.windK, t, 1.2); amb.wind.out.gain.setTargetAtTime(scene.windK*(.25 + Math.random()*.5)*(scene.open ? 1 : .35), t, 1.5); }, 1800);
+    // drops, birds, crickets, thunder
+    setInterval(tickAmbience, 120);
+    setScene(scene); startMusic();
+    return ac;
+  }
+  function env(node, t, a, peak, d){ node.gain.setValueAtTime(0, t); node.gain.linearRampToValueAtTime(peak, t + a); node.gain.exponentialRampToValueAtTime(1e-4, t + a + d); }
+  function burst(bus, t, {freq=1200, q=1, type="bandpass", a=.003, d=.08, v=.3, buf="pink", rate=1}={}){ const src = mk("BufferSource"); src.buffer = noise[buf]; src.playbackRate.value = rate; const f = mk("BiquadFilter"); f.type = type; f.frequency.value = freq; f.Q.value = q; const e = g(0); src.connect(f); f.connect(e); e.connect(buses[bus]); env(e, t, a, v, d); src.start(t, Math.random()*3); src.stop(t + a + d + .05); }
+  function tone(bus, t, f, {type="sine", a=.005, d=1, v=.2, detune=0}={}){ const o = mk("Oscillator"); o.type = type; o.frequency.value = f; o.detune.value = detune; const e = g(0); o.connect(e); e.connect(buses[bus]); env(e, t, a, v, d); o.start(t); o.stop(t + a + d + .05); return o; }
+  let lastDrop = 0, nextBird = 0, nextCricket = 0, nextThunder = 0;
+  function tickAmbience(){
+    if(!ac || ac.state !== "running") return; const t = ac.currentTime;
+    if(scene.rainK > .05){ const n = Math.round(scene.rainK * (scene.open ? 6 : 2)); for(let k=0;k<n;k++) burst("amb", t + Math.random()*.12, {freq: scene.open ? 2000 + Math.random()*5000 : 900 + Math.random()*1200, q: 3, d:.02 + Math.random()*.03, v: (scene.open ? .14 : .05)*Math.random()}); }
+    if(scene.birds && t > nextBird){ nextBird = t + 2.5 + Math.random()*7; const f0 = 2400 + Math.random()*2200, n = 2 + Math.floor(Math.random()*5);
+      for(let k=0;k<n;k++){ const tt = t + k*(.09 + Math.random()*.06), o = tone("amb", tt, f0, {a:.004, d:.07 + Math.random()*.06, v:.05}); o.frequency.setValueAtTime(f0*(1 + Math.random()*.3), tt); o.frequency.exponentialRampToValueAtTime(f0*(.7 + Math.random()*.6), tt + .08); } }
+    if(scene.crickets && t > nextCricket){ nextCricket = t + .9 + Math.random()*1.4; for(let k=0;k<3;k++) tone("amb", t + k*.05, 4300 + Math.random()*200, {a:.002, d:.035, v:.025}); }
+    if(scene.storm && t > nextThunder){ nextThunder = t + 18 + Math.random()*40; const delay = 1 + Math.random()*4;
+      window.dispatchEvent(new CustomEvent("wending-lightning")); burst("amb", t + delay, {buf:"brown", type:"lowpass", freq:140, q:.7, a:.08, d:4.5 + Math.random()*3, v: scene.open ? .9 : .5, rate:.5}); burst("amb", t + delay, {buf:"pink", type:"lowpass", freq:900, a:.01, d:.6, v:.25}); }
+  }
+  function setScene(sc){
+    scene = sc || {}; if(!ac) return; const t = ac.currentTime, open = !!scene.open;
+    const rk = scene.rainK || 0;
+    amb.rain.out.gain.setTargetAtTime(rk * (open ? .55 : .14), t, 1.2); amb.rain.f.frequency.setTargetAtTime(open ? 2600 : 900, t, .5);
+    amb.rainLow.out.gain.setTargetAtTime(rk * (open ? .35 : .22), t, 1.2);
+    amb.room.out.gain.setTargetAtTime(open ? 0 : .12, t, 1);
+    if(!scene.windK) amb.wind.out.gain.setTargetAtTime(0, t, 1);
+    buses.ambSend.gain.setTargetAtTime(open ? .03 : .14, t, .5); buses.sfxSend.gain.setTargetAtTime(open ? .05 : scene.big ? .35 : .22, t, .5);
+    clearInterval(tickT); if(scene.clock) tickT = setInterval(() => { if(ac.state === "running"){ const tt = ac.currentTime; burst("amb", tt, {freq:3200, q:6, d:.012, v:.05}); } }, 1000);
+  }
+  /* the house's own music: slow chords in a mode, a few bell-like notes over them */
+  const MODES = {foyer:[0,2,3,5,7,9,10], court:[0,2,4,6,7,9,11], archive:[0,2,3,5,7,8,10], garden:[0,2,4,7,9], default:[0,2,4,5,7,9,11]};
+  const ROOTS = {foyer:50, court:53, archive:45, garden:55, default:48};
+  function startMusic(){
+    clearTimeout(musicT); if(!ac) return;
+    const step = () => { musicT = setTimeout(step, 7000 + Math.random()*5000);
+      if(!S.snd.on || S.snd.mode === "quiet" || ac.state !== "running") return;
+      const wing = scene.wing && MODES[scene.wing] ? scene.wing : "default", mode = MODES[wing], root = ROOTS[wing], t = ac.currentTime + .1;
+      const deg = Math.floor(Math.random()*mode.length), chord = [0,2,4].map(k => root + mode[(deg+k) % mode.length] + 12*Math.floor((deg+k)/mode.length));
+      if(S.snd.mode === "house"){ // a pad: two detuned saws through a slow low-pass, per note
+        chord.forEach((m, k) => { const f = midiHz(m - 12); [-7, 7].forEach(dt => { const o = mk("Oscillator"); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = dt; const lp = mk("BiquadFilter"); lp.type = "lowpass"; lp.frequency.value = 500 + k*120; const e = g(0); o.connect(lp); lp.connect(e); e.connect(buses.music);
+          e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(.035, t + 3); e.gain.setValueAtTime(.035, t + 6); e.gain.linearRampToValueAtTime(0, t + 11); o.start(t); o.stop(t + 11.2); }); }); }
+      const notes = S.snd.mode === "box" ? 7 + Math.floor(Math.random()*6) : 1 + Math.floor(Math.random()*3);
+      for(let k=0;k<notes;k++){ const m = root + 12 + mode[Math.floor(Math.random()*mode.length)] + (Math.random() < .3 ? 12 : 0), tt = t + (S.snd.mode === "box" ? k*.32 : 1 + Math.random()*7);
+        pluck(m, tt, S.snd.mode === "box" ? .12 : .08); }
+    };
+    step();
+  }
+  function pluck(m, t, v){ const f = midiHz(m); // a bell or music-box tooth: a few inharmonic partials
+    [[1, 1, 2.2], [2.01, .35, 1.2], [3.98, .12, .6], [5.4, .06, .3]].forEach(([k, a, d]) => tone("music", t, f*k, {a:.003, d, v:v*a})); }
+  /* the clock's gongs, fuller than before: detuned pairs, a soft mallet, a lower body, a long tail into the hall */
+  function gong(f, t, vol, long){
+    if(!init()) return;
+    const out = g(vol); const lp = mk("BiquadFilter"); lp.type = "lowpass"; lp.frequency.value = 5200; out.connect(lp); lp.connect(buses.chime);
+    [[.5, .35, long ? 7 : 3.5], [1, 1, long ? 8 : 4.2], [2.0, .3, 2.4], [2.756, .38, 1.8], [4.07, .14, 1.0], [5.404, .1, .7]].forEach(([k, a, d]) => {
+      [-3, 3].forEach(dt => { const o = mk("Oscillator"); o.frequency.value = f*k; o.detune.value = dt*(k > 1 ? 2 : 1); const e = g(0); o.connect(e); e.connect(out); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(a*.5, t + .006); e.gain.exponentialRampToValueAtTime(1e-4, t + d); o.start(t); o.stop(t + d + .05); }); });
+    const src = mk("BufferSource"); src.buffer = noise.pink; const bp = mk("BiquadFilter"); bp.type = "bandpass"; bp.frequency.value = f*3; bp.Q.value = 2; const e = g(0); src.connect(bp); bp.connect(e); e.connect(out); env(e, t, .001, .25, .05); src.start(t); src.stop(t + .1);
+  }
+  const fx = {
+    step(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; [0, .38].forEach(dt => burst("sfx", t + dt, {buf:"brown", type:"lowpass", freq: scene.open ? 700 : 380, a:.004, d:.13, v:.5, rate:.8})); },
+    door(){ if(!init() || !S.snd.on) return; const t = ac.currentTime, o = mk("Oscillator"); o.type = "sawtooth"; o.frequency.setValueAtTime(90, t); o.frequency.linearRampToValueAtTime(140 + Math.random()*60, t + .5);
+      const bp = mk("BiquadFilter"); bp.type = "bandpass"; bp.frequency.value = 900; bp.Q.value = 9; const e = g(0); o.connect(bp); bp.connect(e); e.connect(buses.sfx); env(e, t, .08, .07, .55); o.start(t); o.stop(t + .7);
+      burst("sfx", t + .62, {buf:"brown", type:"lowpass", freq:220, d:.25, v:.5}); },
+    page(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; for(let k=0;k<3;k++) burst("sfx", t + k*.05, {freq:4200 + Math.random()*2000, q:.8, type:"highpass", d:.06 + Math.random()*.05, v:.12}); },
+    take(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; [2100, 3170, 4600].forEach((f, k) => tone("sfx", t, f, {a:.002, d:.25 - k*.05, v:.05})); },
+    link(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; // a rising rush of air, a shimmer, and quiet
+      const src = mk("BufferSource"); src.buffer = noise.pink; const bp = mk("BiquadFilter"); bp.type = "bandpass"; bp.Q.value = 1.2; bp.frequency.setValueAtTime(200, t); bp.frequency.exponentialRampToValueAtTime(3800, t + 1.2); bp.frequency.exponentialRampToValueAtTime(600, t + 2.4);
+      const e = g(0); src.connect(bp); bp.connect(e); e.connect(buses.sfx); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(.6, t + .9); e.gain.exponentialRampToValueAtTime(1e-4, t + 2.6); src.start(t); src.stop(t + 2.7);
+      [62, 69, 74, 78, 81].forEach((m, k) => tone("sfx", t + .5 + k*.08, midiHz(m), {a:.4, d:1.8, v:.04, detune: (k%2 ? 8 : -8)})); },
+  };
+  function levels(){ if(!ac) return; const t = ac.currentTime; master.gain.setTargetAtTime(S.snd.on ? S.snd.master : 0, t, .1); buses.amb.gain.setTargetAtTime(S.snd.amb, t, .1); buses.music.gain.setTargetAtTime(S.snd.mode === "quiet" ? 0 : S.snd.music, t, .3); buses.sfx.gain.setTargetAtTime(S.snd.sfx, t, .1); }
+  return Object.assign({init, setScene, levels, gong, pluck, get ac(){ return ac; }}, fx);
+})();
+const audio = () => sound.init();
+document.addEventListener("pointerdown", () => { if(S.snd.on) sound.init(); }, {once:true});
+document.addEventListener("keydown", () => { if(S.snd.on) sound.init(); }, {once:true});
+// what the room sounds like: weather, the hour, whether it's open to the sky
+function soundScene(room){
+  const wx = weather(), wk = wx ? wxKind(wx.weather_code) : "clear", open = room.ceiling === "open", band = lightNow(), sk = skyNow();
+  const rainK = wk === "storm" ? 1 : wk === "rain" ? .7 : 0;
+  sound.setScene({open, wing: room.wing === "foyer" || room.wing === "court" || room.wing === "archive" || room.wing === "garden" ? room.wing : "default", big: room.shape === "oct" || room.shape === "round",
+    rainK, storm: wk === "storm", windK: wx ? Math.min(1, (wx.wind_speed_10m||0)/25) : .1,
+    birds: open && sk.sun.alt > 2 && rainK === 0 && wk !== "snow", crickets: open && sk.sun.alt < -4 && rainK === 0 && (!wx || wx.temperature_2m > 55),
+    clock: String(room.id) === "0"});
+}
+function gong(ac, f, t, vol, long){ sound.gong(f, t, vol*2.2, long); }
+function musicView(o){
+  if(o && o.item && !S.inv.includes(o.item)) take(o.item, "You lift the music box. It fits in the bag, and it hums a little.");
+  sound.init();
+  const sl = (id, label, v) => `<label class="note" style="display:flex;align-items:center;gap:10px;margin:6px 0"><span style="width:120px">${label}</span><input id="${id}" type="range" min="0" max="1" step=".05" value="${v}" style="flex:1"></label>`;
+  overlay("The music box", `<div class="text"><p>A walnut box with a brass cylinder and a steel comb. Open, it plays the house's music; turned over, its little dials set how loud everything is: the rain, the wind, the birds in the court, your own footsteps, the clock.</p></div>
+    <div class="row widget"><label class="note"><input type="checkbox" id="mb-on" ${S.snd.on?"checked":""}> sound in the house</label>
+      <select id="mb-mode"><option value="house" ${S.snd.mode==="house"?"selected":""}>the house's own music</option><option value="box" ${S.snd.mode==="box"?"selected":""}>the music box</option><option value="quiet" ${S.snd.mode==="quiet"?"selected":""}>no music, only the house</option></select></div>
+    ${sl("mb-master","everything",S.snd.master)}${sl("mb-amb","weather and rooms",S.snd.amb)}${sl("mb-music","music",S.snd.music)}${sl("mb-sfx","footsteps, doors, pages",S.snd.sfx)}
+    <div class="row"><button class="btn" id="mb-clock" type="button">The clock's chimes…</button></div>
+    <p class="note">The music is made as it plays, slow chords in a mode for each part of the house: Dorian in the foyer, Lydian in the court, Aeolian in the archive.</p>`);
+  const upd = () => { S.snd.on = $("mb-on").checked; S.snd.mode = $("mb-mode").value; ["master","amb","music","sfx"].forEach(k => S.snd[k] = +$("mb-" + k).value); save(); sound.levels(); };
+  ["mb-on","mb-mode","mb-master","mb-amb","mb-music","mb-sfx"].forEach(id => $(id).oninput = $(id).onchange = upd);
+  $("mb-clock").onclick = clockView;
 }
 // what the clock strikes at a given moment (quarter 1–4, with the hour on the fourth)
 function chimeScore(kind, d){
@@ -1442,7 +1600,7 @@ function wrapText(s, n){ const out=[]; let line=""; s.split(/\s+/).forEach(w => 
 
 /* ---------- save codes and warp codes ---------- */
 const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-const ITEM_ORDER = ["map","plan","finding-aid","master-key","golden-key","compass","lantern","hourglass","primer","page-left","page-right","mended-page","astrolabe"];
+const ITEM_ORDER = ["map","plan","finding-aid","master-key","golden-key","compass","lantern","hourglass","primer","page-left","page-right","mended-page","astrolabe","musicbox"];
 const SOLVED_ORDER = ["galois","island","mended"];
 function roomOrder(){ return P.rooms.map(r => String(r.id)); }
 function crc8(bytes){ let c=0; bytes.forEach(b => { c ^= b; for(let k=0;k<8;k++) c = (c&0x80) ? ((c<<1)^0x07)&255 : (c<<1)&255; }); return c; }
@@ -1504,7 +1662,9 @@ let planned = null;
 const viewHash = (id, face, close) => "#" + id + (face||close ? "/" + FACES[face||0] : "") + (close ? "/" + close : "");
 function setView(face, close){ S.face = ((face%4)+4)%4; S.close = close || null; save(); planned = "view"; const h = viewHash(cur.id, S.face, S.close); if(location.hash===h) render(); else location.hash = h; }
 function turn(k){ setView(S.face + k, null); }
+const RENO_NOTE = () => (P.renovation && P.renovation.note) || "Closed for renovation. The house is being rebuilt a few rooms at a time; this one will open again when it's ready. — W. K.";
 function tryDoor(d, room){
+  if(reno(d)){ toast("A note is pinned to the boards: " + RENO_NOTE()); return; }
   if(!open(d, room)){
     if(d.riddle && !S.solved[d.riddle.id] && cond(d.needs, room)) return riddle(d, room);
     toast(d.hint || "The door will not open. Not yet, anyway."); return;
@@ -1512,6 +1672,7 @@ function tryDoor(d, room){
   const t = target(d, room);
   if(!ROOMS[t]){ toast("This door opens onto a wall. (Room "+t+" isn't built yet.)"); return; }
   if(d.say) toast(d.say);
+  sound.door();
   if(d.lift) liftSheets(d.lift);
   move(t, d.turn, room);
 }
@@ -1536,6 +1697,7 @@ function arrive(id){
   S.log.push(id); if(S.log.length>2000) S.log = S.log.slice(-2000);
   S.frames[id] = S.frame.slice();
   award("room:"+id, ROOMS[id].secret ? 30 : 10);
+  keepShot(id); sound.step();
   save(); randomPick = {};
   render();
   if(id===START && S.visits[id]===1) setTimeout(letterView, 500);
@@ -1581,7 +1743,7 @@ function riddle(d, room){
 }
 
 /* ---------- overlays ---------- */
-function overlay(title, html){ $("ovt").textContent=title; $("ovb").innerHTML=html; $("ov").classList.add("open"); }
+function overlay(title, html){ if(typeof sound !== "undefined" && sound.ac) sound.page(); $("ovt").textContent=title; $("ovb").innerHTML=html; $("ov").classList.add("open"); }
 function closeOv(){ $("ov").classList.remove("open"); }
 $("ovx").onclick = closeOv; $("ov").onclick = e => { if(e.target.id==="ov") closeOv(); };
 document.addEventListener("keydown", e => { if(e.key==="Escape") closeOv(); });

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Log Book · The Wending House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#0e0c0a; --leather:#2a1d14; --leather2:#3a2919; --brass:#b8955a; --brass2:#e0c48a;
+  --parch:#efe3c6; --parch2:#e4d3ab; --sepia:#2e2216; --sepia2:#6b5640; --rule:#a68d63; --spot:#8C3F2F; --ok:#4b6b3f;
+  --fell:"IM Fell English",Georgia,serif; --sc:"IM Fell English SC","IM Fell English",Georgia,serif;
+}
+*{box-sizing:border-box}
+html{background:var(--page)}
+body{margin:0;min-height:100vh;color:var(--sepia);font:17px/1.45 var(--fell);
+  background:radial-gradient(ellipse at 50% 20%, #1c1712 0%, #0e0c0a 60%, #070605 100%) fixed}
+body.embedded{background:transparent}
+a{color:var(--spot)}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:14px 22px 0;color:var(--parch2)}
+.top h1{margin:0;font:italic 400 30px var(--fell);color:var(--parch)}
+.top .sub{font:400 13px var(--sc);letter-spacing:.2em;color:var(--brass)}
+.top nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.top nav a, .top nav button{background:none;border:0;color:var(--parch2);font:400 15px var(--sc);letter-spacing:.05em;cursor:pointer;padding:4px 8px;text-decoration:none}
+.top nav a:hover, .top nav button:hover, .top nav .on{color:#fff1cf;text-decoration:underline;text-decoration-color:var(--brass);text-underline-offset:5px}
+body.embedded .top{padding-top:4px}
+/* the book: two pages on a wide screen, one on a narrow one */
+.book{margin:16px auto 30px;max-width:1280px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);border:14px solid var(--leather);border-radius:8px;outline:1px solid var(--brass);outline-offset:-9px;box-shadow:0 30px 90px rgba(0,0,0,.85)}
+.pg{min-height:72vh;padding:22px 26px 30px;position:relative;
+  background-color:var(--parch);
+  background-image:radial-gradient(ellipse at 20% 0%, rgba(255,250,235,.55), transparent 60%), radial-gradient(ellipse at 100% 100%, rgba(120,90,50,.18), transparent 55%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .26 0 0 0 0 .15 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+.pg.left{box-shadow:inset -26px 0 30px -18px rgba(60,40,20,.45)}
+.pg.right{box-shadow:inset 26px 0 30px -18px rgba(60,40,20,.45)}
+@media (max-width:860px){ .book{grid-template-columns:1fr;border-width:8px;margin:10px 6px} .pg{min-height:auto} .pg.left{box-shadow:none;border-bottom:1px solid var(--rule)} }
+h2{font:italic 400 26px var(--fell);margin:0 0 10px;text-align:center}
+h2::before,h2::after{content:"";display:inline-block;width:30px;border-top:1px solid var(--rule);vertical-align:middle;margin:0 10px}
+h3{font:400 13px var(--sc);letter-spacing:.16em;margin:16px 0 6px;color:var(--sepia2)}
+.note{color:var(--sepia2);font-size:14.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+input[type=text],input[type=search],input[type=number],input[type=url],input[type=password],select,textarea{background:rgba(255,250,235,.55);border:0;border-bottom:1px solid #8a7350;padding:5px 6px;border-radius:0;min-width:0}
+textarea{width:100%;min-height:64px;border:1px solid #c2ab80;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(184,149,90,.6);outline-offset:1px}
+.btn{font:400 15px var(--sc);letter-spacing:.03em;background:transparent;color:var(--sepia);border:1px solid #8a7350;border-radius:2px;padding:5px 12px;cursor:pointer}
+.btn:hover{background:rgba(90,60,30,.12)}
+.btn.primary{background:linear-gradient(#cdb07a,#a8854c);color:#1d140b;border-color:#6b5230;box-shadow:inset 0 1px 0 rgba(255,240,200,.6)}
+.btn.primary:hover{background:linear-gradient(#d9bf8b,#b59157)}
+.btn.danger{color:#7a2a1e;border-color:#a0574a}
+.btn:disabled{opacity:.45;cursor:default}
+.scan{display:flex;gap:8px;align-items:center;margin:4px 0 10px}
+.scan input{flex:1;font:22px var(--fell);letter-spacing:.06em;padding:8px 10px;border:1px solid #8a7350;background:rgba(255,250,235,.7)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{font:400 13px var(--sc);letter-spacing:.06em;border:1px solid #a68d63;background:transparent;padding:2px 9px;border-radius:12px;cursor:pointer;color:var(--sepia2)}
+.chip.on{background:var(--sepia);color:var(--parch);border-color:var(--sepia)}
+.results{list-style:none;margin:10px 0 0;padding:0}
+.results li{display:grid;grid-template-columns:46px 1fr;gap:10px;padding:8px 4px;border-bottom:1px solid rgba(166,141,99,.45);cursor:pointer}
+.results li:hover,.results li.on{background:rgba(90,60,30,.08)}
+.thumb{width:46px;height:62px;object-fit:cover;background:var(--parch2);border:1px solid #b39a72;display:flex;align-items:center;justify-content:center;font:400 11px var(--sc);color:var(--sepia2);text-align:center;overflow:hidden}
+.results .t{font-size:17px;line-height:1.2}
+.results .m{font-size:13.5px;color:var(--sepia2)}
+.kind{font:400 11px var(--sc);letter-spacing:.12em;color:var(--spot)}
+.detail .cover{float:left;max-width:42%;margin:0 18px 10px 0;border:1px solid #8a7350;box-shadow:0 6px 16px rgba(40,25,10,.35);background:#fff}
+.detail .cover img{display:block;max-width:100%}
+.detail dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:8px 0}
+.detail dt{font:400 12px var(--sc);letter-spacing:.12em;color:var(--sepia2);padding-top:3px}
+.detail dd{margin:0}
+.gallery{display:flex;gap:8px;flex-wrap:wrap;clear:both;margin-top:10px}
+.gallery img{height:110px;border:1px solid #b39a72;cursor:zoom-in}
+.form{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;align-items:center}
+.form label{font:400 13px var(--sc);letter-spacing:.08em;color:var(--sepia2);text-align:right}
+.form .wide{grid-column:1/-1}
+.form input,.form select{width:100%}
+@media (max-width:560px){ .form{grid-template-columns:1fr} .form label{text-align:left} }
+.cands{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:8px 0}
+.cand{border:1px solid #b39a72;padding:6px;background:rgba(255,250,235,.45);cursor:pointer;font-size:13.5px;line-height:1.25}
+.cand:hover{background:rgba(255,250,235,.85)}
+.cand img{width:100%;height:120px;object-fit:contain;background:var(--parch2);margin-bottom:4px}
+.imgs{display:flex;gap:8px;flex-wrap:wrap}
+.imgs figure{margin:0;position:relative}
+.imgs img{height:96px;border:1px solid #b39a72}
+.imgs button{position:absolute;top:2px;right:2px;background:rgba(20,15,10,.75);color:#fff;border:0;width:22px;height:22px;border-radius:11px;cursor:pointer}
+.status{min-height:22px;font:italic 15px var(--fell);color:var(--sepia2)}
+.status.err{color:#8a2b1e} .status.ok{color:var(--ok)}
+.lock{border:1px dashed #a68d63;padding:10px 12px;background:rgba(255,250,235,.35)}
+#cam{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:50;color:var(--parch)}
+#cam.on{display:flex}
+#cam video{max-width:92vw;max-height:70vh;border:2px solid var(--brass)}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:60;cursor:zoom-out}
+#zoom.on{display:flex} #zoom img{max-width:94vw;max-height:94vh}
+.empty{font-style:italic;color:var(--sepia2);text-align:center;margin-top:40px}
+.count{font:400 12px var(--sc);letter-spacing:.14em;color:var(--sepia2);text-align:right}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>The Log Book</h1><span class="sub">The Wending House · its catalogue</span>
+  <nav><a href="#search" id="n-search">Search</a><a href="#add" id="n-add" hidden>Write an entry</a><a href="#curator" id="n-cur">Archivist</a><a href="/palace/#22" id="n-back" target="_top">Back to the house</a></nav>
+</div>
+<div class="book">
+  <section class="pg left" id="left"></section>
+  <section class="pg right" id="right"></section>
+</div>
+<div id="cam"><p>Hold the barcode up to the camera.</p><video id="camv" playsinline muted></video><p><button class="btn" id="cam-x" type="button" style="color:var(--parch);border-color:var(--brass)">Close</button></p></div>
+<div id="zoom"><img alt=""></div>
+<script src="catalog.js"></script>
+</body>
+</html>

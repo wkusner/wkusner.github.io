@@ -267,6 +267,57 @@ The **Skin** button switches the frame around the picture between two looks:
 - Shift with ↑ ↓ (or Page Up, Page Down) looks up and down.
 - / searches.
 
+### Renovation: what's open
+
+For now only four rooms are open: the Entry (0), the Office (35), the Sundial Court (34), and the Archive (22). Every other room has `closed: renovation`: its doors stay where they were, boarded across with a pinned note, and a click reads the note aloud. Change the note under `renovation:` at the top of the data file. To open a room again, delete its `closed: renovation` line. (`closed: true` still hides a room and its doors completely, as for the lecture wing.)
+
+### Linking books
+
+A linking book is an object with `action: link` and `to:` a room. With `mount: pedestal` it stands on a brass stand in front of its wall, its panel glowing faintly. Its page shows a moving picture of the destination: the last view the visitor had there, or the room's name in the dark if they've never been. Touch the panel to link, with a fade to black and a rush of air. The Office has one to the Archive, and the Archive has one back.
+
+### The Archive and the log book
+
+The Archive's shelves are the catalogue itself (`catalogshelves` in `decor`). Every catalogued book, paper, record, disc, piece of ephemera, or artwork stands there with its title on the spine, filling the eye-level shelves first. Click the shelving to step up to it, a book to take it down and read its entry, and the bottom of the picture to step back. The card catalogue (`cardcatalog`) and the log book on its podium (`mount: center`, `action: logbook`) both open the catalogue.
+
+**The catalogue lives at `/palace/catalog/`.** Anyone can read it, search it (by any word, or by scanning a barcode), and filter it by kind. The data is one file, `catalog/index.json` at the top of the repository, with photographs in `catalog/images/`. The Entry's 20 reference books are its first entries.
+
+**Writing in it: the archivist's key.** GitHub Pages can only serve files; it can't run a login. So writing goes straight to GitHub. Signing in means pasting a GitHub fine-grained personal access token into the catalogue's *Archivist* page. The page sends it only to api.github.com, and every entry you save becomes a commit. Nobody without a token that can write to the repository can change anything, and the public page itself holds no secrets.
+- Make the token at GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens.
+- Give it **only** the `wkusner.github.io` repository, with **Contents: Read and write**, and an expiry date.
+- On the Archivist page, choose "until this tab closes" or "on this device." If a token is ever exposed, delete it on GitHub and make another.
+- Each saved entry is a commit to `master` on GitHub, so **pull in GitHub Desktop before you push** your own changes. GitHub rebuilds the site in a minute or two; until then you see your new entries straight from the repository.
+- The repository is public, so every entry is public too, including ones marked "keep off the public site". That flag only hides an entry from the page. If you want truly private entries later, the log can point at a separate private repository (the Archivist page has the settings), though visitors then can't see any of it.
+
+**Entering things.** Choose *Write an entry*. A USB or Bluetooth barcode scanner works anywhere on the page: scan a book and it opens a new entry and looks it up. On a phone or a Chrome browser, the *Camera* button reads barcodes too. What it looks up:
+- ISBNs from Open Library and Google Books (title, authors, publisher, date, pages, subjects, description, cover);
+- other UPC and EAN barcodes from MusicBrainz, for records, CDs, and tapes;
+- DOIs from Crossref;
+- by title and creator: books from Open Library and Google Books, records from MusicBrainz, papers from Crossref.
+
+Pick a match and it fills the form; then check it, add photographs (shrunk to 1600 pixels), and *Write it in the log*.
+
+There are seven kinds, each with its own fields: book, paper or article, physical media (LP, CD, DVD, cassette…), digital media, ephemera, object, and art. Every entry can also have a location, a condition, when and where it was acquired, subjects, notes, and a room in the house. *Revise* and *Strike it out* edit and delete entries. The Archivist page can download the whole log as JSON or CSV.
+
+### Sound and weather
+
+Sound starts with the first click; browsers allow nothing before that.
+- **Rooms:** a quiet room tone indoors, and the carriage clock's tick in the Entry.
+- **Weather:** rain (muffled indoors, loud in the court), gusting wind as strong as the real wind, birds by day and crickets on warm nights in open courts, and thunder in storms with lightning in the windows.
+- **You:** footsteps when you walk, a creak and a thump at doors, pages when a book or card opens, and a rush of air when you link.
+- **Music:** the house's own music plays softly: slow chords and a few bell notes, in a mode for each part of the house.
+- **The clock:** its gongs are fuller and lower now, with detuned pairs, a soft mallet, and the hall's reverb.
+
+The **music box** on the Entry's side table goes in the bag. It sets the music (the house's own, the music box, or none) and the loudness of everything, weather, music, and footsteps separately. It also opens the clock's chimes.
+
+Weather shows plainly now. Rain runs down the window glass, falls in long streaks in the court, rings on the wet stones, and darkens and shines the floor. Snow drifts past the glass and lies on the court. Fog closes in, and storms flash.
+
+### Moving and looking
+
+Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. Tables: click one to look down at what's on it. The Entry's takeable things lie on the green baize of the return tray and vanish from it as you take them. Drag to look around anywhere.
+
+The palette is warmer: sepia ink on cream paper, with each surface's own colour kept as a muted wash. The wing colours are oxblood (foyer), ochre (court), and plum (archive). The small models are drawn with finer curves.
+
+
 ### The gardens
 
 Through the court's front gate (36–41), all open to the sky with hedge walls (`hedges` in `decor`) and gravel or lawn floors (`floor: gravel`, `floor: lawn`):

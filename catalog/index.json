@@ -1,0 +1,428 @@
+{
+ "version": 1,
+ "updated": "2026-10-03T12:00:00Z",
+ "count": 20,
+ "items": [
+  {
+   "id": "the-art-of-memory-seed5",
+   "type": "book",
+   "title": "The Art of Memory",
+   "creators": [
+    {
+     "name": "Frances Yates",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22,
+   "notes": "Where memory palaces come from."
+  },
+  {
+   "id": "elements-seed6",
+   "type": "book",
+   "title": "Elements",
+   "creators": [
+    {
+     "name": "Euclid",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "mathematical-gems-ii-seed7",
+   "type": "book",
+   "title": "Mathematical Gems II",
+   "creators": [
+    {
+     "name": "Ross Honsberger",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "elementary-methods-in-number-theory-seed8",
+   "type": "book",
+   "title": "Elementary Methods in Number Theory",
+   "creators": [
+    {
+     "name": "Melvyn Nathanson",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "an-introduction-to-the-theory-of-numbers-seed9",
+   "type": "book",
+   "title": "An Introduction to the Theory of Numbers",
+   "creators": [
+    {
+     "name": "Niven",
+     "role": "author"
+    },
+    {
+     "name": "Zuckerman",
+     "role": "author"
+    },
+    {
+     "name": "Montgomery",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "abstract-algebra-seed10",
+   "type": "book",
+   "title": "Abstract Algebra",
+   "creators": [
+    {
+     "name": "Dummit",
+     "role": "author"
+    },
+    {
+     "name": "Foote",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "naive-lie-theory-seed11",
+   "type": "book",
+   "title": "Naive Lie Theory",
+   "creators": [
+    {
+     "name": "John Stillwell",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "on-quaternions-and-octonions-seed12",
+   "type": "book",
+   "title": "On Quaternions and Octonions",
+   "creators": [
+    {
+     "name": "Conway",
+     "role": "author"
+    },
+    {
+     "name": "Smith",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "geometry-and-the-imagination-seed13",
+   "type": "book",
+   "title": "Geometry and the Imagination",
+   "creators": [
+    {
+     "name": "Hilbert",
+     "role": "author"
+    },
+    {
+     "name": "Cohn-Vossen",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "visual-complex-analysis-seed14",
+   "type": "book",
+   "title": "Visual Complex Analysis",
+   "creators": [
+    {
+     "name": "Tristan Needham",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "the-sand-reckoner-seed15",
+   "type": "book",
+   "title": "The Sand Reckoner",
+   "creators": [
+    {
+     "name": "Archimedes",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "ficciones-seed16",
+   "type": "book",
+   "title": "Ficciones",
+   "creators": [
+    {
+     "name": "Jorge Luis Borges",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "the-name-of-the-rose-seed17",
+   "type": "book",
+   "title": "The Name of the Rose",
+   "creators": [
+    {
+     "name": "Umberto Eco",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "maze-seed18",
+   "type": "book",
+   "title": "Maze",
+   "creators": [
+    {
+     "name": "Christopher Manson",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "what-is-the-name-of-this-book-seed19",
+   "type": "book",
+   "title": "What Is the Name of This Book?",
+   "creators": [
+    {
+     "name": "Raymond Smullyan",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "to-mock-a-mockingbird-seed20",
+   "type": "book",
+   "title": "To Mock a Mockingbird",
+   "creators": [
+    {
+     "name": "Raymond Smullyan",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "the-diamond-age-seed21",
+   "type": "book",
+   "title": "The Diamond Age",
+   "creators": [
+    {
+     "name": "Neal Stephenson",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "lirael-seed22",
+   "type": "book",
+   "title": "Lirael",
+   "creators": [
+    {
+     "name": "Garth Nix",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "invisible-cities-seed23",
+   "type": "book",
+   "title": "Invisible Cities",
+   "creators": [
+    {
+     "name": "Italo Calvino",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  },
+  {
+   "id": "the-discworld-library-and-l-space-seed24",
+   "type": "book",
+   "title": "The Discworld library and L-space",
+   "creators": [
+    {
+     "name": "Terry Pratchett",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "reference",
+    "the archive"
+   ],
+   "ids": {},
+   "added": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-03T12:00:00Z",
+   "source": "the Archive's first shelf",
+   "room": 22
+  }
+ ]
+}

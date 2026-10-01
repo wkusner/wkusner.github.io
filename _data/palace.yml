@@ -11,7 +11,7 @@ help: >-
   <p>This is a memory palace for my instruments, games, drafts, and books. Every room keeps something. You can also skip the walking and use the Catalogue.</p>
 
 wings:
-  foyer:        {name: "The Foyer",                  color: "#B5452B"}
+  foyer:        {name: "The Foyer",                  color: "#8C3F2F"}
   instruments:  {name: "The Instrument Gallery",     color: "#B07A1E"}
   turnings:     {name: "The Turnings",               color: "#B5452B"}
   numbers:      {name: "The Numbers, below",         color: "#2F5E9E"}
@@ -20,9 +20,9 @@ wings:
   workshop:     {name: "The Workshop",               color: "#7A4A86"}
   lectures:     {name: "The Lecture Wing",           color: "#2C7B80"}
   branch:       {name: "The Branch Cut",             color: "#3A6E8F"}
-  court:        {name: "The Courtyards",             color: "#B07A1E"}
+  court:        {name: "The Courtyards",             color: "#A3803F"}
   garden:       {name: "The Gardens",                color: "#5E7A3A"}
-  archive:      {name: "The Archive",                color: "#7A4A86"}
+  archive:      {name: "The Archive",                color: "#5E4A6E"}
 
 ranks:   # earned by experience (xp): rooms, close looks, puzzles, items, sheets
   - {name: "Visitor",                     xp: 0,   color: "#D9D2C0"}
@@ -61,6 +61,13 @@ items:
   hourglass: "an hourglass"
   primer: "A Young Lady's Illustrated Primer"
   astrolabe: "an astrolabe with a storm glass"
+  musicbox: "a music box"
+
+catalog:   # the Archive's log book; the archivist writes to it from /palace/catalog/
+  url: /catalog/index.json
+
+renovation:
+  note: "Closed for renovation. The house is being rebuilt a few rooms at a time; this one will open again when it's ready. — W. K."
 
 letter: |
   Visitor,
@@ -71,6 +78,8 @@ letter: |
 
   On the desk: a ring of keys and the full plan, if you'd like every door open; a folded map and a compass, if you'd rather find your way; or leave everything where it is and walk in with nothing. You can always come back and change your mind.
 
+  Most of the house is closed while I rebuild it. The office is open, and there is a linking book in it that will take you to the archive.
+
   The board on the right goes everywhere directly. The board on the left has this week's problem. Out the left-hand door is a court with a sundial and the open sky; there is an astrolabe hanging there, if you want the sky over somewhere else.
 
   W. K.
@@ -78,6 +87,7 @@ letter: |
   P.S. To wend is to turn, or to go one's way. Here it means both.
 
 news:     # newest first is fine; the notice board sorts by date
+  - {date: "2026-10-03", text: "Most of the house is closed for renovation. The Entry, the Office, the Sundial Court, and the Archive are open, and the Archive's log book is the new catalogue.", href: "#22"}
   - {date: "2026-10-02", text: "The palace has a name: the Wending House. Also: gardens, a carriage clock, and the planets tracked.", href: "#0"}
   - {date: "2026-10-01", text: "The Entry gets a notice board, a link board, and an almanac.", href: "#0"}
   - {date: "2026-10-01", text: "The engraved view: rooms in three dimensions, lit by the real sun.", href: "#1"}
@@ -112,6 +122,7 @@ rooms:
 
 # ───────────────────────────── FOYER ─────────────────────────────
 - id: 1
+  closed: renovation
   name: The Hexagonal Reading Room
   wing: foyer
   shape: hex
@@ -151,6 +162,7 @@ rooms:
 
 # ─────────────────────────── INSTRUMENTS ───────────────────────────
 - id: 2
+  closed: renovation
   name: The Gallery of Rules
   wing: instruments
   decor: [cases, lamp]
@@ -177,6 +189,7 @@ rooms:
     - {kind: unwritten, icon: rule, title: "Elliptic slide rule", note: "A rule built on the ℘ function, using transparencies."}
 
 - id: 3
+  closed: renovation
   name: The Bench
   wing: instruments
   decor: [bench, lamp, window]
@@ -197,6 +210,7 @@ rooms:
     - {kind: device, icon: planimeter, title: "Planimeter Bench", href: "/planimeters/", note: "Polar, linear, hatchet, and x–y planimeters, with a running error budget."}
 
 - id: 4
+  closed: renovation
   name: The Observatory
   wing: instruments
   shape: round
@@ -228,6 +242,7 @@ rooms:
     - {kind: device, icon: orrery, title: "The planet book", action: planets, note: "Every planet tracked: where it is now, rising and setting, brightness, distance, and constellation."}
 
 - id: 5
+  closed: renovation
   name: The Perspective Corridor
   shape: corridor
   wing: instruments
@@ -250,6 +265,7 @@ rooms:
     - {kind: device, icon: cross, title: "Cross-Ratio Ruler", href: "/cross-ratio/", note: "Read true distances off a perspective picture."}
 
 - id: 6
+  closed: renovation
   name: The Hothouse
   wing: instruments
   decor: [glasshouse, window]
@@ -272,6 +288,7 @@ rooms:
     - {kind: device, icon: plant, title: "Tropical Slide Rule", href: "/tropical/", note: "Watch addition turn into max."}
 
 - id: 7
+  closed: renovation
   name: The Pendulum Hall
   wing: instruments
   decor: [pendulum, lamp]
@@ -298,6 +315,7 @@ rooms:
 
 # ─────────────────────────── TURNINGS ───────────────────────────
 - id: 8
+  closed: renovation
   name: The Turning Room
   floor: checker
   wing: turnings
@@ -325,6 +343,7 @@ rooms:
     - {kind: device, icon: net, title: "The SO(3) slide rule", href: "/stereonet/", hide: true, note: "Also in the Observatory."}
 
 - id: 9
+  closed: renovation
   name: The Card Room
   wing: turnings
   decor: [cardtables, lamp]
@@ -349,6 +368,7 @@ rooms:
     - {kind: unwritten, icon: cards, title: "Group War", note: "Klein, ℤ₄, Q₈, S₃, D₄, octonions. In simulation, the chance of being able to equalize on a turn runs from about 0.56 (ℤ₄) down to about 0.12 (S₄)."}
 
 - id: 10
+  closed: renovation
   name: The Lock Room
   wing: turnings
   decor: [lamp]
@@ -382,6 +402,7 @@ rooms:
     - {kind: unwritten, icon: lock, title: "The General Galois Lock", note: "Choose a polynomial and get a different lock."}
 
 - id: 11
+  closed: renovation
   name: The Tile Room
   wing: turnings
   decor: [tilefloor, dial, lamp]
@@ -404,6 +425,7 @@ rooms:
     - {kind: device, icon: tiles, title: "Fifteen and the Parity Dial", href: "/fifteen/", note: "The 15 puzzle with its permutation, parity invariant, and commutators shown live."}
 
 - id: 12
+  closed: renovation
   name: The Crystal Cellar
   floor: stone
   wing: turnings
@@ -427,6 +449,7 @@ rooms:
 
 # ─────────────────────────── NUMBERS ───────────────────────────
 - id: 13
+  closed: renovation
   name: The Great Spiral
   floor: stone
   wing: numbers
@@ -456,6 +479,7 @@ rooms:
     - {kind: device, icon: books, title: "Ranks of the library", action: ranks, note: "Every rank comes from remembering more rooms."}
 
 - id: 14
+  closed: renovation
   name: The Tree of Distances
   wing: numbers
   decor: [glacier, bigtree]
@@ -475,6 +499,7 @@ rooms:
     - {kind: device, icon: tree, title: "p-adic Ruler", href: "/p-adic/", note: "A branching-tree ruler for p-adic distance."}
 
 - id: 15
+  closed: renovation
   name: Funes's Room
   wing: numbers
   shape: square
@@ -519,6 +544,7 @@ rooms:
     - {kind: ref, icon: book, title: "Funes the Memorious", by: "Jorge Luis Borges", href: "https://vigeland.caltech.edu/ist4/lectures/funes%20borges.pdf", note: "The English translation quoted here. In it, the poncho full of meat is a “meat blanket.”"}
 
 - id: 16
+  closed: renovation
   name: Lamé's Corridor
   shape: corridor
   wing: numbers
@@ -547,6 +573,7 @@ rooms:
     - {kind: paper, icon: scroll, title: "Run time of the Euclidean algorithm", by: "W. Kusner", note: "My write-up of Lamé's theorem, by way of Sierpiński, Grossman, and Nathanson."}
 
 - id: 17
+  closed: renovation
   name: The Clock Room
   wing: numbers
   decor: [clockface, lamp, shelves]
@@ -574,6 +601,7 @@ rooms:
     - {kind: unwritten, icon: scroll, title: "Continued fractions and nested radicals", note: "Euclid's algorithm, written down differently."}
 
 - id: 18
+  closed: renovation
   name: The Hexagon
   floor: checker
   wing: numbers
@@ -603,6 +631,7 @@ rooms:
 
 # ─────────────────────────── POND, SCHOOL, WORKSHOP ───────────────────────────
 - id: 19
+  closed: renovation
   name: The Lily Pond
   wing: pond
   decor: [pool, window, woodcut]
@@ -636,6 +665,7 @@ rooms:
     - {hidden: true, kind: figure, icon: crystal, title: "Bottlenecks", href: "/assets/figures/bottleneck1.pdf"}
 
 - id: 20
+  closed: renovation
   name: The Schoolroom
   wing: schoolroom
   decor: [chalkboard, desks, lamp]
@@ -660,6 +690,7 @@ rooms:
     - {kind: unwritten, icon: fraction, title: "Coefficient Knobs", note: "Turn a, b, and c on a quadratic and watch the vertex trace its locus. Then cubics, and the cusp 4p³ + 27q² = 0."}
 
 - id: 21
+  closed: renovation
   name: The Workshop
   wing: workshop
   decor: [workbench, lamp, window, shelves]
@@ -695,12 +726,15 @@ rooms:
   floor: stone
   ceiling: vault
   wing: archive
-  secret: true
   shape: oct
-  decor: [shelves, lamp, rug]
+  decor: [catalogshelves, lamp, rug, cardcatalog]
   at: [0, 5]
   text: >-
-    The room the plan doesn't show. You reach it through a mirror or by rank. Here are the books the rest of the house stands on, and the books about houses like this one.
+    An eight-sided vault lined with shelves, and the shelves are the catalogue: every book, record, object, and scrap the house holds has a place here, and its spine says what it is. Take one down to read its entry.
+
+    In the middle, on a podium, lies the log book. Anyone may read it and search it. Only the archivist can write in it.
+
+    The other doors are boarded for now. The way back is the linking book on its stand.
   marginalia:
     - "Secret rooms count toward rank but not toward the room total."
   sources:
@@ -713,31 +747,14 @@ rooms:
     - {to: 23, wall: back, needs: "has:golden-key", oneway: true, look: gold, hint: "A small gold lock with a φ on it."}
     - {to: 29, wall: front, title: "the stacks beyond the stacks"}
   objects:
+    - {kind: device, icon: logbook, mount: center, title: "The log book", action: logbook, note: "The catalogue of everything in the house: search it, read the entries, and, if you're the archivist, add to it."}
+    - {kind: device, icon: linkbook, mount: pedestal, wall: front, title: "A linking book: the Office", action: link, to: 35, note: "Its panel shows the office, moving faintly. Touch it to go there."}
     - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:hardcore"}
     - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/"}
     - {hidden: true, kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
-    - {kind: ref, title: "The Art of Memory", by: "Frances Yates", note: "Where memory palaces come from."}
-    - {kind: ref, title: "Elements", by: "Euclid"}
-    - {kind: ref, title: "Mathematical Gems II", by: "Ross Honsberger"}
-    - {kind: ref, title: "Elementary Methods in Number Theory", by: "Melvyn Nathanson"}
-    - {kind: ref, title: "An Introduction to the Theory of Numbers", by: "Niven, Zuckerman, and Montgomery"}
-    - {kind: ref, title: "Abstract Algebra", by: "Dummit and Foote"}
-    - {kind: ref, title: "Naive Lie Theory", by: "John Stillwell"}
-    - {kind: ref, title: "On Quaternions and Octonions", by: "Conway and Smith"}
-    - {kind: ref, title: "Geometry and the Imagination", by: "Hilbert and Cohn-Vossen"}
-    - {kind: ref, title: "Visual Complex Analysis", by: "Tristan Needham"}
-    - {kind: ref, title: "The Sand Reckoner", by: "Archimedes"}
-    - {kind: ref, title: "Ficciones", by: "Jorge Luis Borges"}
-    - {kind: ref, title: "The Name of the Rose", by: "Umberto Eco"}
-    - {kind: ref, title: "Maze", by: "Christopher Manson"}
-    - {kind: ref, title: "What Is the Name of This Book?", by: "Raymond Smullyan"}
-    - {kind: ref, title: "To Mock a Mockingbird", by: "Raymond Smullyan"}
-    - {kind: ref, title: "The Diamond Age", by: "Neal Stephenson"}
-    - {kind: ref, title: "Lirael", by: "Garth Nix"}
-    - {kind: ref, title: "Invisible Cities", by: "Italo Calvino"}
-    - {kind: ref, title: "The Discworld library and L-space", by: "Terry Pratchett"}
 
 - id: 23
+  closed: renovation
   name: The Center
   wing: archive
   secret: true
@@ -855,6 +872,7 @@ rooms:
 
 # ─────────────────────────── LATER ADDITIONS ───────────────────────────
 - id: 27
+  closed: renovation
   name: The Island of Two Kinds
   wing: turnings
   decor: [sand, window, sea]
@@ -883,6 +901,7 @@ rooms:
     - {kind: unwritten, icon: tree, title: "The Mockingbird Forest", note: "Smullyan's birds as combinators: S, K, and the mockingbird M, where Mx = xx. A device for composing them."}
 
 - id: 28
+  closed: renovation
   name: The Nursery
   wing: schoolroom
   decor: [lowshelves, window, lamp, rug]
@@ -904,6 +923,7 @@ rooms:
     - {kind: ref, icon: book, title: "The Diamond Age", by: "Neal Stephenson"}
 
 - id: 29
+  closed: renovation
   name: The Hall of Impossible Libraries
   floor: stone
   ceiling: vault
@@ -976,18 +996,19 @@ rooms:
     - {to: 20, wall: right, title: "the schoolroom"}
     - {to: 35, wall: front, title: "the office"}
   objects:
-    - {kind: letter, icon: note, title: "A letter, left on the desk", action: letter}
-    - {kind: key, item: master-key, icon: key, title: "A ring of keys", take: "You take the ring of keys. Every ordinary lock will open for you now."}
-    - {kind: key, item: plan, icon: map, title: "The full plan", take: "You take the full plan of the house."}
-    - {kind: key, item: map, icon: map, title: "A folded map", take: "You take the folded map. It fills in as you walk."}
-    - {kind: key, item: compass, icon: compass, title: "A compass", take: "You take the compass. It will always tell you which way is true."}
-    - {kind: device, icon: book, title: "The guest book", action: register, note: "Sign it, and the Primer will know your name."}
-    - {kind: device, icon: bell, title: "A brass bell", action: bell}
-    - {kind: device, icon: box, title: "A tray for putting things back", action: return, note: "Return what you took from the desk."}
+    - {wall: back, kind: letter, icon: note, title: "A letter, left on the desk", action: letter}
+    - {wall: back, kind: key, item: master-key, icon: key, title: "A ring of keys", take: "You take the ring of keys. Every ordinary lock will open for you now."}
+    - {wall: back, kind: key, item: plan, icon: map, title: "The full plan", take: "You take the full plan of the house."}
+    - {wall: back, kind: key, item: map, icon: map, title: "A folded map", take: "You take the folded map. It fills in as you walk."}
+    - {wall: back, kind: key, item: compass, icon: compass, title: "A compass", take: "You take the compass. It will always tell you which way is true."}
+    - {wall: back, kind: device, icon: book, title: "The guest book", action: register, note: "Sign it, and the Primer will know your name."}
+    - {wall: back, kind: device, icon: bell, title: "A brass bell", action: bell}
+    - {wall: back, kind: device, icon: tray, title: "A tray for putting things back", action: return, note: "Return what you took from the desk."}
     - {kind: device, mount: board, wall: left, icon: note, title: "The notice board", action: notices, note: "The problem of the week, the calendar, news, and a wanted card."}
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
+    - {kind: device, icon: musicbox, wall: right, item: musicbox, portable: true, action: music, title: "A music box", note: "Take it with you: it plays the house's music, and its dials set how loud the rain, the wind, the clock, and your footsteps are."}
     - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
     - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook"}
     - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly."}
@@ -1016,7 +1037,7 @@ rooms:
     - {to: 36, wall: front, title: "the garden gate", look: gate}
   objects:
     - {kind: unwritten, icon: clock, wall: right, title: "A bowstring equatorial dial", note: "A second dial whose hour lines are evenly spaced, for comparison."}
-    - {kind: device, icon: astrolabe, wall: right, item: astrolabe, action: astrolabe, title: "An astrolabe with a storm glass", note: "Turn the rete to stand somewhere else under the sky, or at another hour; tap the storm glass to change the weather."}
+    - {kind: device, icon: astrolabe, wall: right, item: astrolabe, portable: true, action: astrolabe, title: "An astrolabe with a storm glass", note: "Turn the rete to stand somewhere else under the sky, or at another hour; tap the storm glass to change the weather."}
   marginalia:
     - "Hour lines: tan θ = sin φ · tan h. At the pole they'd be evenly spaced; at the equator they all crowd toward six o'clock."
   bib:
@@ -1025,6 +1046,7 @@ rooms:
     - "Albert E. Waugh, <i>Sundials: Their Theory and Construction</i>, 1973."
 
 - id: 30
+  closed: renovation
   name: The North Arcade
   wing: branch
   floor: checker
@@ -1043,6 +1065,7 @@ rooms:
     - "Monodromy, not holonomy: the loop doesn't turn you, it changes which room you arrive in. The square root's Riemann surface has two sheets glued along a cut."
 
 - id: 31
+  closed: renovation
   name: The East Arcade
   wing: branch
   floor: checker
@@ -1059,6 +1082,7 @@ rooms:
     - {kind: ref, icon: book, title: "Visual Complex Analysis", by: "Tristan Needham", note: "Chapter 2 walks around branch points with pictures."}
 
 - id: 32
+  closed: renovation
   name: The South Arcade
   wing: branch
   floor: checker
@@ -1076,6 +1100,7 @@ rooms:
     - {kind: key, item: page-right, icon: note, title: "The right half of a torn page", when: "sheet:sqrt=1"}
 
 - id: 33
+  closed: renovation
   name: The West Arcade
   wing: branch
   floor: checker
@@ -1102,11 +1127,13 @@ rooms:
   doors:
     - {to: 0, wall: back, title: "back to the Entry"}
   objects:
+    - {kind: device, icon: linkbook, mount: pedestal, wall: left, title: "A linking book: the Archive", action: link, to: 22, note: "A small book on a stand. Its panel shows the archive, moving faintly. Touch it to go there."}
     - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours}
     - {kind: unwritten, icon: lectern, wall: left, title: "The real office, measured", note: "A model of the actual office: the desk, the shelves, the whiteboard, the window."}
     - {kind: device, icon: note, wall: left, title: "The calendar", action: notices}
 
 - id: 36
+  closed: renovation
   name: The Knot Garden
   wing: garden
   floor: gravel
@@ -1135,6 +1162,7 @@ rooms:
     - "Clifford Ashley, <i>The Ashley Book of Knots</i>, 1944."
 
 - id: 37
+  closed: renovation
   name: The Hedge Maze
   wing: garden
   floor: gravel
@@ -1157,6 +1185,7 @@ rooms:
     - "Jorge Luis Borges, “The Garden of Forking Paths,” 1941."
 
 - id: 41
+  closed: renovation
   name: The Heart of the Maze
   wing: garden
   floor: lawn
@@ -1177,6 +1206,7 @@ rooms:
     - "The hand-on-the-wall rule works exactly when the maze's walls are connected, a tree, as graph theorists say. A loop of hedge you can't reach from the outer wall defeats it."
 
 - id: 38
+  closed: renovation
   name: The Sunflower Bed
   wing: garden
   floor: gravel
@@ -1200,6 +1230,7 @@ rooms:
     - "Jonathan Swinton and others, “Novel Fibonacci and non-Fibonacci structure in the sunflower,” <i>Royal Society Open Science</i>, 2016."
 
 - id: 39
+  closed: renovation
   name: The Moon Garden
   wing: garden
   floor: gravel
@@ -1222,6 +1253,7 @@ rooms:
     - "Albert E. Waugh, <i>Sundials: Their Theory and Construction</i>, 1973."
 
 - id: 40
+  closed: renovation
   name: The Orrery Lawn
   wing: garden
   floor: lawn
