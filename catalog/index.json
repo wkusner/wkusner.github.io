@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updated": "2026-10-01T18:14:37.709Z",
+ "updated": "2026-10-01T18:16:50.163Z",
  "count": 22,
  "items": [
   {
@@ -431,11 +431,22 @@
     "reference",
     "the archive"
    ],
-   "ids": {},
+   "ids": {
+    "isbn": ""
+   },
    "added": "2026-10-03T12:00:00Z",
-   "updated": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-01T18:16:47.891Z",
    "source": "the Archive's first shelf",
-   "room": 22
+   "room": 22,
+   "acquired": {
+    "date": "",
+    "source": ""
+   },
+   "cover": "https://covers.openlibrary.org/b/id/24529-L.jpg",
+   "private": false,
+   "images": [
+    "images/lirael-seed22-cover.jpg"
+   ]
   },
   {
    "id": "invisible-cities-seed23",
