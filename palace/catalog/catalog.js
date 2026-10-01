@@ -64,9 +64,27 @@ const b64d = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\
 async function checkAccess(){
   if(!token){ canWrite = false; return "no token"; }
   try { const r = await gh(""); if(r.status === 401) { canWrite = false; return "The token was refused."; } if(!r.ok){ canWrite = false; return `GitHub answered ${r.status}.`; }
+    noteExpiry(r.headers.get("github-authentication-token-expiration"));
     const j = await r.json(); canWrite = !!(j.permissions && (j.permissions.push || j.permissions.admin)); return canWrite ? "ok" : "This token can read the repository but not write to it."; }
   catch(e){ canWrite = false; return "GitHub couldn't be reached."; }
 }
+// when the key runs out: GitHub says so in a header where the browser is allowed to see it; otherwise the archivist types the date
+function noteExpiry(h){ if(!h) return; const m = String(h).match(/(\d{4})-(\d\d)-(\d\d)[ T](\d\d):(\d\d)(?::(\d\d))?/); if(!m) return;
+  const d = new Date(Date.UTC(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +(m[6]||0))); if(!isNaN(d)){ cfg.tokenExpires = d.toISOString(); saveCfg(); } }
+function keyDial(){ // a brass dial in the log book: the arc is the key's life left, the numbers tick down
+  const ms = keyLeft(); if(ms == null) return "";
+  const start = new Date(cfg.tokenSince || Date.now()).getTime(), total = Math.max(864e5, new Date(cfg.tokenExpires) - start), frac = Math.max(0, Math.min(1, ms/total));
+  const a = frac*2*Math.PI, x = 50 + 40*Math.sin(a), y = 50 - 40*Math.cos(a), warn = ms < 14*864e5;
+  return `<div class="keydial ${warn?"warn":""}"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="#e8d9b4" stroke="#6b5230" stroke-width="2"/>
+    ${[...Array(12)].map((_,k)=>{ const t=k/12*2*Math.PI; return `<line x1="${50+38*Math.sin(t)}" y1="${50-38*Math.cos(t)}" x2="${50+44*Math.sin(t)}" y2="${50-44*Math.cos(t)}" stroke="#6b5230" stroke-width="${k%3?1:2}"/>`; }).join("")}
+    ${frac > .998 ? `<circle cx="50" cy="50" r="40" fill="${warn ? "#a0473a" : "#8a7350"}" opacity=".55"/>` : frac > 0 ? `<path d="M50 50 L50 10 A40 40 0 ${frac > .5 ? 1 : 0} 1 ${x.toFixed(2)} ${y.toFixed(2)} Z" fill="${warn ? "#a0473a" : "#8a7350"}" opacity=".55"/>` : ""}
+    <circle cx="50" cy="50" r="3" fill="#2e2216"/><line x1="50" y1="50" x2="${x.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#2e2216" stroke-width="2"/></svg>
+    <div><h3 style="margin-top:0">The archivist's key</h3><p class="big" id="kd-left">${esc(keyLeftText(true))}</p><p class="note">expires ${esc(new Date(cfg.tokenExpires).toLocaleString([], {dateStyle:"long", timeStyle:"short"}))}${warn ? `. Time to make a new one: <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">GitHub's token page</a>, then paste it on the <a href="#curator">Archivist</a> page.` : "."}</p></div></div>`;
+}
+function keyLeft(){ if(!cfg.tokenExpires) return null; const ms = new Date(cfg.tokenExpires) - Date.now(); return ms; }
+function keyLeftText(exact){ const ms = keyLeft(); if(ms == null) return ""; if(ms <= 0) return "the key has expired";
+  if(exact){ const d = Math.floor(ms/864e5), h = Math.floor(ms%864e5/36e5), m = Math.floor(ms%36e5/6e4), sec = Math.floor(ms%6e4/1e3); return `${d} day${d===1?"":"s"}, ${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`; }
+  const d = Math.floor(ms/864e5), h = Math.floor(ms%864e5/36e5); return d ? `${d} day${d===1?"":"s"}${d < 7 ? `, ${h} hour${h===1?"":"s"}` : ""}` : `${h} hour${h===1?"":"s"}, ${Math.floor(ms%36e5/6e4)} minutes`; }
 async function readIndex(){
   const r = await gh(`contents/${cfg.path}/index.json?ref=${encodeURIComponent(cfg.branch)}`);
   if(r.status === 404) return {items:[], sha:null};
@@ -385,7 +403,9 @@ function renderCurator(){
     <div class="form">
       <label for="tok">Access token</label><input id="tok" type="password" autocomplete="off" placeholder="${token ? "a key is set; paste a new one to replace it" : "github_pat_…"}">
       <label for="keep">Keep it</label><select id="keep"><option value="session">until this tab closes</option><option value="local">on this device</option></select>
+      <label for="kexp">Key expires</label><input id="kexp" type="date" value="${cfg.tokenExpires ? cfg.tokenExpires.slice(0,10) : ""}">
     </div>
+    ${cfg.tokenExpires ? `<p class="note">The key runs out in <b>${esc(keyLeftText())}</b>. A countdown hangs in the Archive.</p>` : `<p class="note">Enter the expiry date you chose on GitHub (GitHub often fills it in by itself), and a countdown will hang in the Archive.</p>`}
     <div class="row"><button class="btn primary" id="signin" type="button">Sign in</button>${token ? `<button class="btn" id="signout" type="button">Sign out and forget the key</button>` : ""}</div>
     <div class="status" id="st"></div>
     <h3>Where the log is kept</h3>
@@ -404,9 +424,11 @@ function renderCurator(){
       Each entry is a commit to the repository, so pull in GitHub Desktop before you push your own changes.</div>`;
   $("signin").onclick = async () => { const v = $("tok").value.trim(); if(v){ token = v; } if(!token){ status("Paste a key first.", "err"); return; }
     try { sessionStorage.removeItem("wending-token"); localStorage.removeItem("wending-token"); ($("keep").value === "local" ? localStorage : sessionStorage).setItem("wending-token", token); } catch(e) {}
+    const kx = $("kexp").value; if(kx){ cfg.tokenExpires = new Date(kx + "T23:59:00").toISOString(); } if(!cfg.tokenSince || $("tok").value.trim()) cfg.tokenSince = new Date().toISOString(); saveCfg();
     status("Checking the key…"); const r = await checkAccess();
     if(r === "ok"){ status("Signed in. Reading the log from the repository…", "ok"); try { await loadLive(); } catch(e) {} nav(); route(); } else status(r, "err"); };
-  if($("signout")) $("signout").onclick = () => { token = null; canWrite = false; try { sessionStorage.removeItem("wending-token"); localStorage.removeItem("wending-token"); } catch(e) {} loadPublic().then(() => { nav(); route(); }); };
+  $("kexp").onchange = e => { cfg.tokenExpires = e.target.value ? new Date(e.target.value + "T23:59:00").toISOString() : ""; saveCfg(); nav(); };
+  if($("signout")) $("signout").onclick = () => { token = null; canWrite = false; cfg.tokenExpires = ""; saveCfg(); try { sessionStorage.removeItem("wending-token"); localStorage.removeItem("wending-token"); } catch(e) {} loadPublic().then(() => { nav(); route(); }); };
   $("c-save").onclick = () => { cfg.owner = $("c-owner").value.trim(); cfg.repo = $("c-repo").value.trim(); cfg.branch = $("c-branch").value.trim(); cfg.path = $("c-path").value.trim().replace(/^\/|\/$/g,""); cfg.publicUrl = $("c-pub").value.trim(); saveCfg(); status("Kept.", "ok"); };
   $("exp").onclick = () => download("wending-log.json", JSON.stringify({version:1, exported:new Date().toISOString(), items}, null, 1), "application/json");
   $("csv").onclick = () => { const cols = ["id","type","title","subtitle","creators","date","publisher","format","isbn","barcode","doi","url","tags","location","condition","notes"];
@@ -417,7 +439,8 @@ function renderCurator(){
 function download(name, text, type){ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
 
 /* ---------- routing ---------- */
-function nav(){ $("n-add").hidden = !canWrite; ["n-search","n-add","n-cur"].forEach(i => $(i).classList.remove("on")); }
+function nav(){ $("n-add").hidden = !canWrite;
+  const kc = $("n-key"), ms = keyLeft(); if(kc){ kc.hidden = !(canWrite || token) || ms == null; kc.textContent = ms != null && ms <= 0 ? "key expired" : "key: " + keyLeftText(); kc.classList.toggle("warn", ms != null && ms < 14*864e5); } ["n-search","n-add","n-cur"].forEach(i => $(i).classList.remove("on")); }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1)), [view, ...rest] = h.split("/"), arg = rest.join("/");
   nav();
@@ -432,7 +455,9 @@ function route(){
   if(view === "curator"){ renderSearch(); renderCurator(); $("n-cur").classList.add("on"); return; }
   renderSearch(); $("n-search").classList.add("on");
   if(!selected) $("right").innerHTML = `<h2>The log book</h2><p>Every book, record, paper, object, picture, and scrap in the house is entered here. Search on the left, or scan a barcode: a scanner works anywhere on this page.</p>
-    <p class="note">${canWrite ? "You're signed in as the archivist: choose “Write an entry” above, or just scan." : "Only the archivist can write in it."}</p>`;
+    <p class="note">${canWrite ? "You're signed in as the archivist: choose “Write an entry” above, or just scan." : "Only the archivist can write in it."}</p>
+    ${(canWrite || token) ? keyDial() : ""}`;
+  clearInterval(route.tick); if((canWrite || token) && cfg.tokenExpires) route.tick = setInterval(() => { const el = $("kd-left"); if(el) el.textContent = keyLeftText(true); else clearInterval(route.tick); }, 1000);
 }
 window.addEventListener("hashchange", route);
 

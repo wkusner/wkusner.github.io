@@ -90,13 +90,16 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(184,149,90,.6);ou
 #zoom{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:60;cursor:zoom-out}
 #zoom.on{display:flex} #zoom img{max-width:94vw;max-height:94vh}
 .empty{font-style:italic;color:var(--sepia2);text-align:center;margin-top:40px}
+.keydial{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;margin-top:22px;padding:14px;border:1px solid #a68d63;background:rgba(255,250,235,.4)}
+.keydial svg{width:120px;height:120px} .keydial .big{font:italic 26px var(--fell);margin:4px 0} .keydial.warn .big{color:#8a2b1e}
+#n-key{font-style:italic;font-family:var(--fell);letter-spacing:0} #n-key.warn{color:#ffb38a}
 .count{font:400 12px var(--sc);letter-spacing:.14em;color:var(--sepia2);text-align:right}
 </style>
 </head>
 <body>
 <div class="top">
   <h1>The Log Book</h1><span class="sub">The Wending House · its catalogue</span>
-  <nav><a href="#search" id="n-search">Search</a><a href="#add" id="n-add" hidden>Write an entry</a><a href="#curator" id="n-cur">Archivist</a><a href="/palace/#22" id="n-back" target="_top">Back to the house</a></nav>
+  <nav><a href="#search" id="n-search">Search</a><a href="#add" id="n-add" hidden>Write an entry</a><a href="#curator" id="n-cur">Archivist</a><a href="#curator" id="n-key" hidden title="When the archivist's key runs out"></a><a href="/palace/#22" id="n-back" target="_top">Back to the house</a></nav>
 </div>
 <div class="book">
   <section class="pg left" id="left"></section>
