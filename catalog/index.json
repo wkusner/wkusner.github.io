@@ -1,8 +1,46 @@
 {
  "version": 1,
- "updated": "2026-10-03T12:00:00Z",
- "count": 20,
+ "updated": "2026-10-01T18:13:15.702Z",
+ "count": 21,
  "items": [
+  {
+   "id": "the-craft-of-community-engaged-teaching--ur8c0",
+   "type": "book",
+   "title": "The Craft of Community-Engaged Teaching and Learning",
+   "creators": [
+    {
+     "name": "Marshall Welch",
+     "role": "author"
+    },
+    {
+     "name": "Star Plaxton-Moore",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "Education"
+   ],
+   "ids": {
+    "isbn": "9781733902830",
+    "url": "https://openlibrary.org/works/OL25425905W"
+   },
+   "acquired": {
+    "date": "September 29 2026",
+    "source": "Deanna Donohoue"
+   },
+   "images": [
+    "images/the-craft-of-community-engaged-teaching--ur8c0-cover.jpg"
+   ],
+   "publisher": "Stylus",
+   "date": "2019",
+   "pages": 240,
+   "notes": "For CEL Reading Group, Lawrence University, 2026-2027",
+   "cover": "https://covers.openlibrary.org/b/id/12381872-L.jpg",
+   "private": false,
+   "source": "Open Library",
+   "added": "2026-10-01T18:13:13.584Z",
+   "updated": "2026-10-01T18:13:13.584Z"
+  },
   {
    "id": "the-art-of-memory-seed5",
    "type": "book",
