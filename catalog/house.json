@@ -1,0 +1,120 @@
+{
+ "version": 1,
+ "updated": "2026-10-01T18:32:25.338Z",
+ "office": {
+  "where": "",
+  "unset": "Office hours for the term will be posted here.",
+  "note": "Or Tuesday and Thursday mornings by appointment."
+ },
+ "office_hours": [
+  {
+   "days": [
+    "Mon",
+    "Fri"
+   ],
+   "start": "15:00",
+   "end": "16:00",
+   "where": "Hall Commons"
+  }
+ ],
+ "events": [],
+ "news": [
+  {
+   "date": "2026-10-03",
+   "text": "Most of the house is closed for renovation. The Entry, the Office, the Sundial Court, and the Archive are open, and the Archive's log book is the new catalogue.",
+   "href": "#22"
+  },
+  {
+   "date": "2026-10-02",
+   "text": "The palace has a name: the Wending House. Also: gardens, a carriage clock, and the planets tracked.",
+   "href": "#0"
+  },
+  {
+   "date": "2026-10-01",
+   "text": "The Entry gets a notice board, a link board, and an almanac.",
+   "href": "#0"
+  },
+  {
+   "date": "2026-10-01",
+   "text": "The engraved view: rooms in three dimensions, lit by the real sun.",
+   "href": "#1"
+  },
+  {
+   "date": "2026-10-01",
+   "text": "Lily Pads: sticky growth in a pond.",
+   "href": "/lily-pads/"
+  },
+  {
+   "date": "2026-09-30",
+   "text": "The Wending House opens.",
+   "href": "#0"
+  }
+ ],
+ "puzzles": [
+  {
+   "q": "A bat and a ball cost $1.10 together. The bat costs $1.00 more than the ball. What does the ball cost?",
+   "a": "Five cents. (Not ten: then the bat would cost $1.10 and the pair $1.20.)",
+   "source": "a classic"
+  },
+  {
+   "q": "Remove two opposite corners from a chessboard. Can the remaining 62 squares be tiled by 31 dominoes?",
+   "a": "No. Opposite corners have the same color, so 32 squares of one color remain and 30 of the other, but each domino covers one of each.",
+   "source": "a classic"
+  },
+  {
+   "q": "A hundred lockers stand closed. Student k toggles every k-th locker, for k = 1 to 100. Which lockers end up open?",
+   "a": "The perfect squares, 1, 4, 9, …, 100: ten lockers. A locker is toggled once per divisor, and only squares have an odd number of divisors.",
+   "source": "a classic"
+  },
+  {
+   "q": "How many zeros does 100! end in?",
+   "a": "24: there are 20 multiples of 5 up to 100, and 4 multiples of 25 contribute one more 5 each.",
+   "source": "a classic"
+  },
+  {
+   "q": "What is the last digit of 7<sup>2026</sup>?",
+   "a": "9. The last digits of powers of 7 cycle 7, 9, 3, 1, and 2026 leaves remainder 2 when divided by 4.",
+   "source": "a classic"
+  },
+  {
+   "q": "In how many ways can a 2 × 10 strip be tiled by 1 × 2 dominoes?",
+   "a": "89, a Fibonacci number: a tiling of a 2 × n strip ends either in one upright domino or in two flat ones, so the counts satisfy the Fibonacci recurrence.",
+   "source": "a classic"
+  },
+  {
+   "q": "Which positive integers can be written as a sum of two or more consecutive positive integers?",
+   "a": "Exactly those that are not powers of 2.",
+   "source": "after Richard Guy"
+  },
+  {
+   "q": "How many squares, of all sizes, are there on a chessboard?",
+   "a": "204 = 1² + 2² + … + 8².",
+   "source": "a classic"
+  },
+  {
+   "q": "Below 100, which pair of numbers makes Euclid's algorithm take the most steps?",
+   "a": "89 and 55, consecutive Fibonacci numbers, which take 9 steps. (See Lamé's Corridor.)",
+   "source": "after Lamé, 1844"
+  },
+  {
+   "q": "On the island of knights and knaves, A says: “We are both knaves.” What are A and B?",
+   "a": "A is a knave and B is a knight. A knight could never say it, so A lies, and the statement is false, so not both are knaves.",
+   "source": "in the manner of Smullyan"
+  },
+  {
+   "q": "On the same island, A says: “At least one of us is a knave.” What are A and B?",
+   "a": "A is a knight and B is a knave. If A were a knave, the statement would be true, which is impossible; so A tells the truth, and B must be the knave.",
+   "source": "in the manner of Smullyan"
+  },
+  {
+   "q": "Ten people meet, and each shakes hands once with each of the others. How many handshakes are there?",
+   "a": "45 = 10 · 9 / 2.",
+   "source": "a classic"
+  },
+  {
+   "q": "What is the sum of the first 100 odd numbers?",
+   "a": "10,000. The first n odd numbers always sum to n², as an L-shaped layer added to a square.",
+   "source": "a classic"
+  }
+ ]
+}
