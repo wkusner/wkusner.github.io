@@ -23,6 +23,7 @@ wings:
   court:        {name: "The Courtyards",             color: "#A3803F"}
   garden:       {name: "The Gardens",                color: "#5E7A3A"}
   archive:      {name: "The Archive",                color: "#5E4A6E"}
+  hall:         {name: "The Great Hall",             color: "#4F6A5A"}
 
 ranks:   # earned by experience (xp): rooms, close looks, puzzles, items, sheets
   - {name: "Visitor",                     xp: 0,   color: "#D9D2C0"}
@@ -1048,10 +1049,11 @@ rooms:
   text: >-
     A high, empty hall. Someone has just left: there is a letter on the desk, a lamp still lit, and the things they meant you to have laid out beside it. A compass rose in the floor points to true north. The thermometer and the window show the real weather outside.
 
-    On the left wall hangs the notice board with this week's problem. On the right are the link board, which goes everywhere directly, and the almanac. The reading room is ahead; the office is behind you.
+    On the left wall hangs the notice board with this week's problem. On the right are the link board, which goes everywhere directly, and the almanac. Ahead are two doors: the reading room, and the tall arch into the Great Hall. The office is behind you.
   again: The hall is as you left it. The letter is still on the desk.
   doors:
     - {to: 1, wall: back, title: "the reading room"}
+    - {to: 42, wall: back, title: "the great hall"}
     - {to: 34, wall: left, title: "out to the sundial court"}
     - {to: 20, wall: right, title: "the schoolroom"}
     - {to: 35, wall: front, title: "the office"}
@@ -1337,6 +1339,144 @@ rooms:
   bib:
     - "E. M. Standish, “Keplerian Elements for Approximate Positions of the Major Planets,” JPL."
     - "Jean Meeus, <i>Astronomical Algorithms</i>, 1991."
+
+
+# ─────────────────────────── THE GREAT HALL ───────────────────────────
+- id: 42
+  name: The Great Hall
+  wing: hall
+  floor: slate
+  ceiling: gothic
+  size: 30
+  length: 46
+  height: 16
+  bays: 6
+  walk: true
+  at: [6, 6]
+  text: >-
+    A stone hall four storeys high, forty-six meters long, with the vault lost in shadow overhead. Clustered piers march down both sides in six bays, their capitals carved with leaves, and from them the ribs spring up and cross: transverse arches, diagonals, and a single ridge rib running the length of the nave, with a gilt boss at every crossing. The floor is green slate. Long oak tables stand down the middle under iron lanterns on long chains.
+
+    Down each side, four tall pointed arches open into alcoves, all of them boarded up for now: they are for later. Above them run the galleries, three lancets to a bay behind an iron railing. At the far end a great traceried window stands over a wrought-iron gate, and cut in the stone over the gate is a line of Robert Bridges.
+
+    Walk anywhere on the slate: click the floor, or use W and S. The Entry is behind you.
+  again: The lanterns are still lit. Somewhere up in the galleries a chair scrapes.
+  marginalia:
+    - "This hall is a homage to the Commons Room of the University of Pittsburgh's Cathedral of Learning: a fifteenth-century English Perpendicular Gothic hall, four storeys and about 52 feet (16 m) high, covering almost half an acre, ringed by three floors of classrooms."
+    - "The real arches are true arches. No steel holds them up: each is Indiana limestone, and the vault ribs are lined with Guastavino acoustic tile to keep the room quiet."
+    - "Samuel Yellin made the real room's wrought-iron gates, railings, and lanterns. The gates carry the line from Robert Bridges cut over the gate here."
+    - "Joseph Gattoni designed the real stonework, carving the plants of western Pennsylvania into it. The leaves on these capitals are a nod to his."
+    - "The alcoves stand where the Cathedral's Nationality Rooms would be: rooms each fitted out in a different country's style. Here they are empty, and may become rooms in different styles for the whole house."
+  sources:
+    - "The Commons Room of the Cathedral of Learning, University of Pittsburgh (Charles Klauder, architect; the building completed in the 1930s)."
+  bib:
+    - "“Cathedral of Learning,” Wikipedia: en.wikipedia.org/wiki/Cathedral_of_Learning."
+    - "University of Pittsburgh, “Cathedral Commons Room,” tour.pitt.edu."
+  doors:
+    - {to: 43, wall: left,  title: "the first alcove"}
+    - {to: 44, wall: left,  title: "the second alcove"}
+    - {to: 45, wall: left,  title: "the third alcove"}
+    - {to: 46, wall: left,  title: "the fourth alcove"}
+    - {to: 47, wall: right, title: "the fifth alcove"}
+    - {to: 48, wall: right, title: "the sixth alcove"}
+    - {to: 49, wall: right, title: "the seventh alcove"}
+    - {to: 50, wall: right, title: "the eighth alcove"}
+    - {to: 0,  wall: front, title: "back to the Entry"}
+
+- id: 43
+  closed: renovation
+  name: The First Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 2]
+  text: >-
+    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 44
+  closed: renovation
+  name: The Second Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 3]
+  text: >-
+    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 45
+  closed: renovation
+  name: The Third Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 4]
+  text: >-
+    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 46
+  closed: renovation
+  name: The Fourth Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 5]
+  text: >-
+    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 47
+  closed: renovation
+  name: The Fifth Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 6]
+  text: >-
+    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 48
+  closed: renovation
+  name: The Sixth Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 7]
+  text: >-
+    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 49
+  closed: renovation
+  name: The Seventh Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 8]
+  text: >-
+    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 50
+  closed: renovation
+  name: The Eighth Alcove
+  wing: hall
+  floor: slate
+  ceiling: vault
+  at: [11, 9]
+  text: >-
+    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "back to the Great Hall"}
 
 primer:
   "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}

@@ -14,6 +14,11 @@ function mat(color, opts={}){ const m = new THREE.MeshStandardMaterial(Object.as
   const k = typeof color === "string" && SURFACES_ON ? surfaceFor(color, opts) : null;
   if(k){ const sf = surface(k); m.map = sf.map; m.normalMap = sf.normalMap; m.roughnessMap = sf.roughnessMap; m.normalScale = new THREE.Vector2(k === "brass" ? .4 : .8, k === "brass" ? .4 : .8); if(k === "brass"){ m.metalness = Math.max(.75, m.metalness); m.roughness = .55; } else m.roughness = 1; }
   return m; }
+// a pointed arch (a two-centred arch, drawn as a stretched equilateral one) or a round one: points from the right springing over to the left, x about the centre
+function archPts(w, h, pointed, n){ const out = [], a = pointed ? w*.62 : w/2, y1 = h - a, ptd = u => Math.sqrt(4 - (2-u)*(2-u))/Math.sqrt(3);
+  for(let i=0;i<=n;i++){ const u = i/n; out.push(pointed ? [w/2 - u*w/2, y1 + a*ptd(u)] : [Math.cos(Math.PI*u/2)*w/2, y1 + Math.sin(Math.PI*u/2)*w/2]); }
+  for(let i=n-1;i>=0;i--){ const [x,y] = out[i]; out.push([-x, y]); } return out; }
+const archPts2 = (w, h, pointed, n) => [[w/2, 0], ...archPts(w, h, pointed, n), [-w/2, 0]];
 let SURFACES_ON = true;
 let TEXK = 1;
 /* ---------- surfaces: procedural wood, leather, brass, stone, plaster, and cloth, each with a colour map, a bump (normal) map and a roughness map.
@@ -264,9 +269,9 @@ export function create(container, hooks){
   let skyOn = false;
   function skyMode(on){ skyOn = !!on; if(on){ peeking = false; goal.pitch = 1.2; look.pitch = 0; dirty = 3; } else { look.pitch = 0; if(plan) show(plan); } }
   // in a court you can walk: to where you click on the paving, or a few steps forward and back
-  function walkTo(pt){ if(!plan || !plan.room.walk || !pt) return; const lim = (plan.half || 5.5) - 1.1;
-    walkPos = new THREE.Vector3(Math.max(-lim, Math.min(lim, pt.x)), EYE, Math.max(-lim, Math.min(lim, pt.z)));
-    if(walkPos.length() < 1.9) walkPos.setLength(1.9);   // not into the dial
+  function walkTo(pt){ if(!plan || !plan.room.walk || !pt) return; const lx = (plan.halfX || plan.half || 5.5) - 1.1, lz = (plan.halfZ || plan.half || 5.5) - 1.1;
+    walkPos = new THREE.Vector3(Math.max(-lx, Math.min(lx, pt.x)), EYE, Math.max(-lz, Math.min(lz, pt.z)));
+    if((plan.decor||[]).includes("sundial") && walkPos.length() < 1.9) walkPos.setLength(1.9);   // not into the dial
     peeking = false; goal.pos.copy(walkPos); dirty = 3; hooks.footstep && hooks.footstep(); }
   function step(dir){ const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); walkTo(goal.pos.clone().addScaledVector(f, 2.4*dir)); }
   // step up to something without leaving where you are: the shelves, a picture; any other move steps back
@@ -327,7 +332,7 @@ export function create(container, hooks){
     const nav = JSON.stringify([p.room.id, p.ahead, p.close, p.pitch, p.frame]);
     if(nav !== prevRoom && (performance.now() - keepLook > 400 || p.room.id !== (plan0 && plan0.room.id))){ look.yaw = 0; look.pitch = 0; }
     prevRoom = nav; plan0 = p;
-    if(p.room.walk && walkRoom === p.room.id && walkPos && !p.close) pos = walkPos.clone(); else if(walkRoom !== p.room.id) walkPos = null; walkRoom = p.room.id;
+    if(p.room.walk && !p.close){ if(walkRoom !== p.room.id || !walkPos) walkPos = pos.clone(); pos = walkPos.clone(); } else if(walkRoom !== p.room.id) walkPos = null; walkRoom = p.room.id;   // in rooms you can walk, a turn turns you where you stand
     if(skyOn && !(p.room.ceiling === "open")) skyOn = false;
     goal.pos.copy(pos); goal.yaw = yaw; goal.pitch = skyOn ? 1.2 : pitch;
     if(p.snap){ cam.pos.copy(pos); cam.yaw = yaw; cam.pitch = pitch; }
@@ -342,11 +347,12 @@ export function create(container, hooks){
     scene = new THREE.Scene(); picks = []; anims = [];
     if(isPhoto()){ scene.environment = roomEnvironment(); scene.environmentIntensity = p.band === "night" ? .15 : .45; } stations = {}; slots = {}; labelDim = p.band==="night" ? .72 : p.band==="dusk" ? .9 : 1;
     const hedged = (p.room.decor||[]).includes("hedges");
-    WALL_H = hedged ? 2.9 : (p.room.ceiling==="open") ? 3.3 : 4.2;
+    WALL_H = p.room.height || (hedged ? 2.9 : (p.room.ceiling==="open") ? 3.3 : 4.2);
     const R = rng(hashStr("room"+p.room.id)); R0 = R;
     const spot = muted(p.spot, .6), night = p.band==="night", dusk = p.band==="dusk"||p.band==="dawn";
     const shape = p.room.shape || "square";
-    const faces = shell(shape, p.room.size); p.half = (p.room.size || 11)/2;
+    const faces = shell(shape, p.room.size, p.room.length); p.halfX = (p.room.size || 11)/2; p.halfZ = (p.room.length || p.room.size || 11)/2; p.half = Math.max(p.halfX, p.halfZ);
+    const gothic = p.room.ceiling === "gothic";
     const wallMat = mat(p.room.decor && p.room.decor.includes("glacier") ? "#dfe7ea" : "#d6cdbb", {roughness:.95});
     const stoneTex = canvasTex(512, 512, (g,w,h) => { g.fillStyle="#cfc6b3"; g.fillRect(0,0,w,h); g.strokeStyle="#9c927f"; g.lineWidth=3;
       for(let y=0,row=0;y<h;y+=64,row++){ g.beginPath(); g.moveTo(0,y); g.lineTo(w,y); g.stroke(); for(let x=(row%2)*64;x<w;x+=128){ g.beginPath(); g.moveTo(x,y); g.lineTo(x,y+64); g.stroke(); } }
@@ -363,13 +369,17 @@ export function create(container, hooks){
       const holes = [];
       // doors spaced across the wall; a window on the back wall if the room has one
       const nd = ds.length;
-      ds.forEach((d,i) => { const at = len*(i+1)/(nd+1); holes.push({kind:"door", at, w:Math.min(DOOR_W, len/(nd+1)*.8), h:DOOR_H, sill:0, d}); });
+      ds.forEach((d,i) => { if(gothic){ const nb = p.room.bays || 6, side = f.slot === 0 || f.slot === 2, at = side && nd <= nb ? ((nb - nd)/2 + i + .5)*len/nb : len*(i+1)/(nd+1);
+          holes.push({kind:"door", at, w: side ? 3.5 : 4.2, h: side ? 6.5 : 7.8, sill:0, d, pointed:true}); return; }
+        const at = len*(i+1)/(nd+1); holes.push({kind:"door", at, w:Math.min(DOOR_W, len/(nd+1)*.8), h:DOOR_H, sill:0, d}); });
       if(f.slot===1 && p.decor.includes("window") && len > 3){
         const free = freeSpot(len, holes, 1.2); if(free!=null) holes.push({kind:"window", at:free, w:1.15, h:1.7, sill:1.25});
       }
       f.holes = holes;
       const shapeW = new THREE.Shape(); shapeW.moveTo(0,0); shapeW.lineTo(len,0); shapeW.lineTo(len,WALL_H); shapeW.lineTo(0,WALL_H); shapeW.lineTo(0,0);
-      holes.forEach(hh => { const hp = new THREE.Path(), x0 = hh.at - hh.w/2, x1 = hh.at + hh.w/2, y0 = hh.sill, y1 = hh.sill + hh.h - hh.w/2;
+      holes.forEach(hh => { const hp = new THREE.Path(), x0 = hh.at - hh.w/2, x1 = hh.at + hh.w/2, y0 = hh.sill;
+        if(hh.pointed){ const ap = archPts(hh.w, hh.h, true, 14); hp.moveTo(x0,y0); hp.lineTo(x1,y0); ap.forEach(([x,y]) => hp.lineTo(hh.at + x, y0 + y)); hp.lineTo(x0,y0); shapeW.holes.push(hp); return; }
+        const y1 = hh.sill + hh.h - hh.w/2;
         hp.moveTo(x0,y0); hp.lineTo(x1,y0); hp.lineTo(x1,y1); hp.absarc(hh.at, y1, hh.w/2, 0, Math.PI, false); hp.lineTo(x0,y0); shapeW.holes.push(hp); });
       const geo = new THREE.ExtrudeGeometry(shapeW, {depth:.3, bevelEnabled:false, curveSegments:18});
       // UVs for the stone texture: world-ish meters
@@ -415,7 +425,7 @@ export function create(container, hooks){
     if(ceilKind !== "open" && !p.decor.includes("sky")){
       const cg = new THREE.ShapeGeometry(floorShape); cg.rotateX(Math.PI/2); cg.translate(0, WALL_H, 0);
       const ceil = new THREE.Mesh(cg, mat("#bdb4a2", {side:THREE.DoubleSide})); ceil.receiveShadow = true; scene.add(ceil);
-      ceilingDetail(ceilKind, faces, R);
+      if(gothic){ ceil.material.color.set("#5d564b"); buildGothicHall(p, faces, R); } else ceilingDetail(ceilKind, faces, R);
     } else skyCeiling(p, faces);
     // ---- light
     const openSky = (p.room.ceiling||"") === "open", cloudK = 1 - .7*Math.min(1, (p.cloud||0)/100);
@@ -458,21 +468,21 @@ export function create(container, hooks){
       boards.forEach((o,i) => buildBoard(sl, o, i, boards.length, p, spot));
       stands.forEach((o,i) => buildPedestal(sl, o, i, p, spot));
       if(loose.length) buildStation(+sk, sl, loose, p, R, spot); });
-    scene.fog = (p.wxKind === "fog" && (p.room.ceiling||"") === "open") ? new THREE.Fog(night ? "#24262a" : "#d8d8d2", 2.5, 16) : night ? new THREE.Fog("#0d0c0b", 10, 30) : null;
+    scene.fog = (p.wxKind === "fog" && (p.room.ceiling||"") === "open") ? new THREE.Fog(night ? "#24262a" : "#d8d8d2", 2.5, 16) : night ? new THREE.Fog("#0d0c0b", p.half > 12 ? 30 : 10, p.half > 12 ? 85 : 30) : null;
   }
 
   function mid(f){ return f.a.clone().add(f.b).multiplyScalar(.5); }
   function freeSpot(len, holes, w){ const cands = [len*.25, len*.75, len*.5, len*.15, len*.85]; return cands.find(c => !holes.some(h => Math.abs(h.at-c) < h.w/2 + w/2 + .25)) ?? null; }
 
   // room outlines in plan: faces in order, each with its inward normal and which compass slot it serves
-  function shell(shape, size){
+  function shell(shape, size, length){
     let pts = [], slotOf = null;
     const poly = (n, r, rot) => { const out = []; for(let i=0;i<n;i++){ const t = rot + i*TAU/n; out.push(new THREE.Vector3(Math.sin(t)*r, 0, -Math.cos(t)*r)); } return out; };
     if(shape==="hex"){ pts = poly(6, 6.4, -Math.PI/6); }
     else if(shape==="oct"){ pts = poly(8, 6.6, -Math.PI/8); }
     else if(shape==="round"){ pts = poly(20, 6.3, -Math.PI/20); }
     else if(shape==="corridor"){ pts = [new THREE.Vector3(-2.3,0,-11), new THREE.Vector3(2.3,0,-11), new THREE.Vector3(2.3,0,3), new THREE.Vector3(-2.3,0,3)]; }
-    else { const hs = size ? size/2 : 5.5; pts = [new THREE.Vector3(-hs,0,-hs), new THREE.Vector3(hs,0,-hs), new THREE.Vector3(hs,0,hs), new THREE.Vector3(-hs,0,hs)]; }
+    else { const hs = size ? size/2 : 5.5, hz = length ? length/2 : hs; pts = [new THREE.Vector3(-hs,0,-hz), new THREE.Vector3(hs,0,-hz), new THREE.Vector3(hs,0,hz), new THREE.Vector3(-hs,0,hz)]; }
     const faces = pts.map((a,i) => { const b = pts[(i+1)%pts.length]; const m = a.clone().add(b).multiplyScalar(.5); const u = b.clone().sub(a).normalize(); let n = new THREE.Vector3(-u.z, 0, u.x); if(n.dot(m) > 0) n.negate(); return {a, b, n, m}; });
     // assign the four compass slots to the faces nearest -x, -z, +x, +z (left, back, right, front)
     const want = [new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,-1), new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,1)];
@@ -490,6 +500,13 @@ export function create(container, hooks){
   function floorTexture(kind, R){
     return canvasTex(1024, 1024, (g,w,h) => {
       if(kind==="gravel"){ g.fillStyle = "#cdc4b0"; g.fillRect(0,0,w,h); for(let i=0;i<26000;i++){ const k = R(); g.fillStyle = k<.3 ? "#9c927e" : k<.6 ? "#e4dcca" : k<.8 ? "#b3a892" : "#7d735f"; g.fillRect(R()*w, R()*h, 2+R()*4, 2+R()*3); } return; }
+      if(kind==="slate"){ // green Vermont slate, laid in long flags
+        g.fillStyle = "#4f5c53"; g.fillRect(0,0,w,h); let y = 0, row = 0;
+        while(y < h){ const rh = 120 + Math.floor(R()*3)*30; let x = row%2 ? -R()*160 : 0;
+          while(x < w){ const ww = 180 + R()*200, tone = R(); g.fillStyle = tone < .3 ? "#56655a" : tone < .6 ? "#4a574f" : tone < .85 ? "#5c6a5c" : "#46514a"; g.fillRect(x + 3, y + 3, ww - 6, rh - 6);
+            for(let k=0;k<26;k++){ g.fillStyle = `rgba(${R() < .5 ? "20,28,24" : "120,135,120"},${.05 + R()*.07})`; g.fillRect(x + R()*ww, y + R()*rh, 8 + R()*40, 1 + R()*2); }
+            x += ww; } y += rh; row++; }
+        g.strokeStyle = "#2e3631"; g.lineWidth = 3; return; }
       if(kind==="lawn"){ for(let i=0;i<8;i++){ g.fillStyle = i%2 ? "#71864f" : "#7d9258"; g.fillRect(i*128, 0, 128, h); } for(let i=0;i<30000;i++){ g.fillStyle = R()<.5 ? "rgba(50,70,30,.35)" : "rgba(170,190,120,.3)"; g.fillRect(R()*w, R()*h, 1.5, 3+R()*4); } return; }
       if(kind==="checker"){ for(let i=0;i<8;i++) for(let j=0;j<8;j++){ g.fillStyle = (i+j)%2 ? "#5d5649" : "#e2dccd"; g.fillRect(i*128,j*128,128,128); } g.strokeStyle="#3a352c"; g.lineWidth=3; for(let i=0;i<=8;i++){ g.beginPath(); g.moveTo(i*128,0); g.lineTo(i*128,h); g.stroke(); g.beginPath(); g.moveTo(0,i*128); g.lineTo(w,i*128); g.stroke(); } }
       else if(kind==="stone"){ g.fillStyle="#c9c0ad"; g.fillRect(0,0,w,h); g.strokeStyle="#7a705f"; g.lineWidth=4;
@@ -505,6 +522,122 @@ export function create(container, hooks){
       for(let i=-4;i<=4;i++) for(let j=-4;j<=4;j++){ const ro = new THREE.Mesh(new THREE.CylinderGeometry(.13,.16,.08,10), mat("#e6dfcf")); ro.position.set(i*1.2+.6, WALL_H-.04, j*1.2+.6); scene.add(ro); } }
     else if(kind==="vault"){ for(let i=-5;i<=5;i++){ const rib = new THREE.Mesh(new THREE.TorusGeometry(6, .12, 6, 30, Math.PI), mat("#cfc6b2")); rib.position.set(0, WALL_H-6+.2, i*1.15); rib.scale.set(1,.12,1); scene.add(rib); } }
     else { for(let i=-5;i<=5;i++){ const b = new THREE.Mesh(new THREE.BoxGeometry(.32,.42,span), mat("#7b6a54")); b.position.set(i*1.3, WALL_H-.21, 0); b.castShadow = true; scene.add(b); } }
+  }
+  /* ---- a great Gothic hall, after the Commons Room of Pittsburgh's Cathedral of Learning: clustered piers, a ribbed vault,
+          galleries over the alcoves, a great window over an iron gate, iron lanterns, and long oak tables ---- */
+  function mergeGeoms(list){
+    const pos = [], nor = [], uv = [], idx = []; let off = 0;
+    list.forEach(([g, m]) => { const gg = g.clone().applyMatrix4(m), P = gg.attributes.position, N = gg.attributes.normal, U = gg.attributes.uv;
+      for(let i=0;i<P.count;i++){ pos.push(P.getX(i), P.getY(i), P.getZ(i)); nor.push(N ? N.getX(i) : 0, N ? N.getY(i) : 1, N ? N.getZ(i) : 0); uv.push(U ? U.getX(i) : 0, U ? U.getY(i) : 0); }
+      if(gg.index) for(let i=0;i<gg.index.count;i++) idx.push(gg.index.getX(i) + off); else for(let i=0;i<P.count;i++) idx.push(i + off);
+      off += P.count; gg.dispose(); });
+    const out = new THREE.BufferGeometry(); out.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); out.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3)); out.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); out.setIndex(idx); return out; }
+  function buildGothicHall(p, faces, R){
+    const HX = p.halfX, HZ = p.halfZ, H = WALL_H, nb = p.room.bays || 6, bz = 2*HZ/nb, NX = Math.min(7, HX*.47), hs = Math.min(10, H*.62);
+    const zs = Array.from({length:nb+1}, (_,k) => -HZ + k*bz), zc = k => (zs[k] + zs[k+1])/2;
+    const ptd = u => Math.sqrt(Math.max(0, 4 - (2-u)*(2-u)))/Math.sqrt(3), prof = (v, a, b) => ptd(1 - Math.abs(2*(v - a)/(b - a) - 1));
+    const M = (x=0, y=0, z=0, rx=0, ry=0, rz=0, sx=1, sy=1, sz=1) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));
+    const stoneP = [], ribP = [], oakP = [], ironP = [], giltP = [], darkP = [];
+    // the vault: a groin vault in every bay of the nave and the aisles, each surface the higher of two pointed barrels
+    const aRise = Math.min(H - .9 - hs, (HX - NX)*.5), nRise = H - .25 - hs, cells = [];
+    for(let k=0;k<nb;k++){ cells.push({x0:-NX, x1:NX, z0:zs[k], z1:zs[k+1], rise:nRise, nave:true}); cells.push({x0:-HX, x1:-NX, z0:zs[k], z1:zs[k+1], rise:aRise}); cells.push({x0:NX, x1:HX, z0:zs[k], z1:zs[k+1], rise:aRise}); }
+    const yAt = (c, x, z) => hs + c.rise*Math.max(prof(x, c.x0, c.x1), prof(z, c.z0, c.z1));
+    const pos = [], uvs = [], idx = [], G = 20;
+    const quad = (fn, nu, nv) => { const base = pos.length/3; for(let j=0;j<=nv;j++) for(let i=0;i<=nu;i++){ const [x,y,z,u,v] = fn(i/nu, j/nv); pos.push(x,y,z); uvs.push(u,v); }
+      for(let j=0;j<nv;j++) for(let i=0;i<nu;i++){ const a = base + j*(nu+1) + i, b = a+1, c2 = a + nu+1, d = c2+1; idx.push(a, c2, b, b, c2, d); } };
+    cells.forEach(c => quad((s, t) => { const x = c.x0 + (c.x1-c.x0)*s, z = c.z0 + (c.z1-c.z0)*t; return [x, yAt(c, x, z), z, x/2.4, z/2.4]; }, G, G));
+    // the spandrels over the arcades, between the aisle vaults and the nave's
+    for(let k=0;k<nb;k++) [-NX, NX].forEach(x => quad((s, t) => { const z = zs[k] + bz*s, y0 = hs + aRise*prof(z, zs[k], zs[k+1]), y1 = hs + nRise*prof(z, zs[k], zs[k+1]); const y = y0 + (y1 - y0)*t; return [x, y, z, z/2.4, y/2.4]; }, 24, 4));
+    const vg = new THREE.BufferGeometry(); vg.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); vg.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2)); vg.setIndex(idx); vg.computeVertexNormals();
+    const vault = new THREE.Mesh(vg, mat("#d3cab7", {side:THREE.DoubleSide})); vault.receiveShadow = true; scene.add(vault);
+    // the ribs: transverse arches, wall ribs, diagonals, and an English ridge rib down the nave, with gilt bosses
+    const seen = new Set(), rib = (fn, n, r, key) => { if(key){ if(seen.has(key)) return; seen.add(key); } const pts = []; for(let i=0;i<=n;i++) pts.push(fn(i/n)); ribP.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n*2, r, 6, false), M()]); };
+    cells.forEach(c => { const r = c.nave ? .19 : .14, V = (x, z) => new THREE.Vector3(x, yAt(c, x, z) - .06, z);
+      [c.z0, c.z1].forEach(z => rib(t => V(c.x0 + (c.x1-c.x0)*t, z), 22, r, `t${c.x0},${z}`));
+      [c.x0, c.x1].forEach(x => rib(t => V(x, c.z0 + (c.z1-c.z0)*t), 22, r*.8, `l${x},${c.z0},${c.rise}`));
+      rib(t => V(c.x0 + (c.x1-c.x0)*t, c.z0 + (c.z1-c.z0)*t), 26, r*.9); rib(t => V(c.x1 + (c.x0-c.x1)*t, c.z0 + (c.z1-c.z0)*t), 26, r*.9);
+      const cx = (c.x0+c.x1)/2, cz = (c.z0+c.z1)/2, top = hs + c.rise;
+      if(c.nave){ rib(t => new THREE.Vector3(0, top - .1, c.z0 + (c.z1-c.z0)*t), 3, .15); rib(t => new THREE.Vector3(c.x0 + (c.x1-c.x0)*t, top - .1, cz), 3, .13); }
+      giltP.push([new THREE.SphereGeometry(c.nave ? .42 : .3, 14, 8), M(cx, top - .16, cz, 0, 0, 0, 1, .5, 1)]);
+      if(c.nave) for(let k=0;k<12;k++){ const a = k/12*TAU; giltP.push([new THREE.SphereGeometry(.12, 6, 4), M(cx + Math.cos(a)*.5, top - .2, cz + Math.sin(a)*.5, 0, -a, 0, 1.6, .5, .7)]); } });
+    // the piers: a core with clustered shafts, a moulded base, and a capital of carved leaves
+    const pier = (x, z, engaged) => { const core = engaged ? .42 : .62, sh = hs - .6 - .8, ns = engaged ? 5 : 8;
+      stoneP.push([new THREE.CylinderGeometry(core + .38, core + .48, .8, 8), M(x, .4, z)]);
+      stoneP.push([new THREE.TorusGeometry(core + .22, .13, 6, 24), M(x, .86, z, Math.PI/2)]);
+      stoneP.push([new THREE.CylinderGeometry(core, core, sh, 18), M(x, .8 + sh/2, z)]);
+      for(let i=0;i<ns;i++){ const a = i/8*TAU + Math.PI/8; stoneP.push([new THREE.CylinderGeometry(.17, .17, sh, 10), M(x + Math.cos(a)*core, .8 + sh/2, z + Math.sin(a)*core)]); }
+      stoneP.push([new THREE.CylinderGeometry(core + .34, core + .14, .6, 18), M(x, hs - .62, z)]);
+      for(let i=0;i<16;i++){ const a = i/16*TAU; stoneP.push([new THREE.SphereGeometry(.17, 7, 5), M(x + Math.cos(a)*(core + .27), hs - .66 + (i%2)*.08, z + Math.sin(a)*(core + .27), 0, -a, (i%2 ? .5 : -.5), 1, 1.7, .5)]); }
+      stoneP.push([new THREE.CylinderGeometry(core + .46, core + .4, .26, 8), M(x, hs - .2, z)]); };
+    for(let k=1;k<nb;k++){ pier(-NX, zs[k]); pier(NX, zs[k]); }
+    for(let k=0;k<=nb;k++){ pier(-HX + .1, zs[k], true); pier(HX - .1, zs[k], true); }
+    [-NX, NX].forEach(x => { pier(x, -HZ + .1, true); pier(x, HZ - .1, true); });
+    // the side walls: a string course, and over each alcove a gallery of three lancets behind an iron railing
+    const railTex = canvasTex(512, 128, (g, w, h) => { g.clearRect(0, 0, w, h); g.strokeStyle = "#1e1a16"; g.lineWidth = 7; g.strokeRect(4, 6, w-8, h-12); g.lineWidth = 4;
+      for(let x=30; x<w; x+=48){ g.beginPath(); g.moveTo(x, 8); g.lineTo(x, h-8); g.stroke(); g.beginPath(); g.arc(x + 24, h/2 - 14, 14, Math.PI*.1, Math.PI*1.6); g.stroke(); g.beginPath(); g.arc(x + 24, h/2 + 14, 14, Math.PI*1.1, Math.PI*2.6); g.stroke(); } });
+    const railP = [], lanc = (wx, z, y0, w, h, rot) => { const sh = new THREE.Shape(), ap = archPts2(w, h, true, 10); ap.forEach(([x,y], i) => i ? sh.lineTo(x, y) : sh.moveTo(x, y));
+      darkP.push([new THREE.ShapeGeometry(sh), M(wx, y0, z, 0, rot)]);
+      stoneP.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(archPts(w + .14, h + .07, true, 12).map(([x,y]) => new THREE.Vector3(x, y, 0))), 30, .07, 5, false), M(wx, y0, z, 0, rot)]); };
+    [-1, 1].forEach(sd => { const wx = sd*(HX - .02), rot = -sd*Math.PI/2;
+      [7.55, hs - .95].forEach(y => stoneP.push([new THREE.BoxGeometry(.34, .26, 2*HZ), M(sd*(HX - .17), y, 0)]));
+      for(let k=0;k<nb;k++) for(let j=-1;j<=1;j++) lanc(wx - sd*.01, zc(k) + j*1.6, 7.9, 1.15, Math.min(2.1, hs - 8.2), rot);
+      for(let k=0;k<nb;k++) railP.push([new THREE.PlaneGeometry(bz*.82, 1), M(sd*(HX - .32), 8.45, zc(k), 0, rot)]); });
+    const rail = new THREE.Mesh(mergeGeoms(railP), new THREE.MeshStandardMaterial({map:railTex, transparent:true, alphaTest:.4, side:THREE.DoubleSide, roughness:.6, metalness:.4})); scene.add(rail);
+    // the far end: the great window over the iron gate, with the line from Robert Bridges that is cut over the real one
+    const glassTex = (w0, h0, seed) => canvasTex(512, 512*h0/w0, (g, w, h) => { const RR = rng(seed); g.fillStyle = "#2a2622"; g.fillRect(0, 0, w, h);
+      const lights = 5, lw = w/lights, tr = h*.42; const pal = ["#e9d9a8","#efe2bd","#dcd2a6","#d6e0c8","#e7d3a0"], jewel = ["#2f4f8f","#8e2f2a","#3e6b3a","#b07a24","#5a3a7a"];
+      for(let i=0;i<lights;i++) for(let y=tr; y<h; y+=h*.145){ const x0 = i*lw + 6, x1 = (i+1)*lw - 6; g.fillStyle = pal[Math.floor(RR()*pal.length)]; g.fillRect(x0, y + 5, x1 - x0, h*.145 - 10);
+        g.strokeStyle = "rgba(60,50,40,.55)"; g.lineWidth = 1.5; for(let d=-lw; d<lw*2; d+=16){ g.beginPath(); g.moveTo(x0 + d, y + 5); g.lineTo(x0 + d + 30, y + h*.145 - 5); g.stroke(); g.beginPath(); g.moveTo(x0 + d + 30, y + 5); g.lineTo(x0 + d, y + h*.145 - 5); g.stroke(); }
+        if(RR() < .45){ g.fillStyle = jewel[Math.floor(RR()*jewel.length)]; g.beginPath(); g.ellipse((x0+x1)/2, y + h*.072, (x1-x0)*.28, h*.04, 0, 0, TAU); g.fill(); } }
+      for(let r=0;r<4;r++) for(let i=0;i<lights*2;i++){ const x0 = i*lw/2 + 4, y0 = tr*(r/4) + 4; g.fillStyle = (i + r)%3 ? "#e3d7b0" : jewel[(i + r)%jewel.length]; g.beginPath(); g.moveTo(x0, y0 + tr/4 - 8); g.lineTo(x0, y0 + 14); g.quadraticCurveTo(x0 + lw/4 - 4, y0 - 6, x0 + lw/2 - 8, y0 + 14); g.lineTo(x0 + lw/2 - 8, y0 + tr/4 - 8); g.closePath(); g.fill(); }
+      g.strokeStyle = "#2a2622"; g.lineWidth = 9; for(let i=1;i<lights;i++){ g.beginPath(); g.moveTo(i*lw, 0); g.lineTo(i*lw, h); g.stroke(); } [tr, tr + (h - tr)/2].forEach(y => { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }); });
+    const bigWindow = (z, dir, y0, w, h, seed) => { const sh = new THREE.Shape(), ap = archPts2(w, h, true, 16); ap.forEach(([x,y], i) => i ? sh.lineTo(x, y) : sh.moveTo(x, y));
+      const geo = new THREE.ShapeGeometry(sh); const uv = geo.attributes.uv, P = geo.attributes.position; for(let i=0;i<uv.count;i++) uv.setXY(i, (P.getX(i) + w/2)/w, P.getY(i)/h);
+      const night = p.band === "night", gt = glassTex(w, h, seed), m = new THREE.MeshStandardMaterial({color:"#000000", emissive: night ? "#4a4a5a" : p.band === "dusk" ? "#d8b890" : "#ffffff", emissiveMap:gt, emissiveIntensity:1, roughness:1});
+      const win = new THREE.Mesh(geo, m); win.position.set(0, y0, z + dir*.03); win.rotation.y = dir > 0 ? 0 : Math.PI; scene.add(win);
+      stoneP.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(archPts(w + .3, h + .15, true, 18).map(([x,y]) => new THREE.Vector3(x, y, 0))), 60, .22, 6, false), M(0, y0, z + dir*.08, 0, dir > 0 ? 0 : Math.PI)]); };
+    bigWindow(-HZ, 1, 8.7, Math.min(10, HX*.66), Math.min(6.8, H - 9.3), 11);
+    bigWindow(HZ, -1, 9.4, Math.min(8, HX*.52), Math.min(6, H - 10), 23);
+    // the gate: a pointed opening, dark beyond, and a wrought-iron gate of scrolls
+    { const gw = 4.6, gh = 6.8, z = -HZ + .04, sh = new THREE.Shape(); archPts2(gw, gh, true, 14).forEach(([x,y], i) => i ? sh.lineTo(x, y) : sh.moveTo(x, y));
+      darkP.push([new THREE.ShapeGeometry(sh), M(0, 0, z)]);
+      stoneP.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(archPts(gw + .3, gh + .15, true, 16).map(([x,y]) => new THREE.Vector3(x, y, 0))), 50, .2, 6, false), M(0, 0, z + .06)]);
+      const gTex = canvasTex(512, 768, (g, w, h) => { g.clearRect(0, 0, w, h); g.strokeStyle = "#1c1916"; g.lineCap = "round";
+        g.lineWidth = 10; g.strokeRect(6, 6, w - 12, h - 6); g.beginPath(); g.moveTo(w/2, 0); g.lineTo(w/2, h); g.stroke();
+        g.lineWidth = 5; for(let x=36; x<w; x+=40){ if(Math.abs(x - w/2) < 10) continue; g.beginPath(); g.moveTo(x, 10); g.lineTo(x, h); g.stroke(); }
+        g.lineWidth = 6; [h*.32, h*.62].forEach(y => { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); for(let x=20; x<w; x+=64){ g.beginPath(); g.arc(x + 16, y - 22, 18, Math.PI*.2, Math.PI*1.8); g.stroke(); g.beginPath(); g.arc(x + 48, y + 22, 18, Math.PI*1.2, Math.PI*2.8); g.stroke(); } });
+        g.lineWidth = 4; for(let x=36; x<w; x+=40){ g.beginPath(); g.moveTo(x - 7, 22); g.lineTo(x, 6); g.lineTo(x + 7, 22); g.stroke(); } });
+      const geo = new THREE.ShapeGeometry(sh), uv = geo.attributes.uv, P = geo.attributes.position; for(let i=0;i<uv.count;i++) uv.setXY(i, (P.getX(i) + gw/2)/gw, P.getY(i)/gh);
+      const gate = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({map:gTex, transparent:true, alphaTest:.4, side:THREE.DoubleSide, metalness:.5, roughness:.55, color:"#ffffff"})); gate.position.set(0, 0, z + .14); scene.add(gate);
+      const insc = canvasTex(1600, 120, (g, w, h) => { g.fillStyle = "#cfc6b2"; g.fillRect(0, 0, w, h); g.strokeStyle = "#8f8573"; g.lineWidth = 4; g.strokeRect(6, 6, w - 12, h - 12);
+        g.fillStyle = "#4a4236"; g.font = `52px ${FELLSC}`; g.textAlign = "center"; g.fillText("HERE IS ETERNAL SPRING · FOR YOU THE VERY STARS OF HEAVEN ARE NEW", w/2, 78); });
+      const ip = new THREE.Mesh(new THREE.PlaneGeometry(9.6, .72), mat("#ffffff", {map:insc})); ip.position.set(0, 7.75, -HZ + .05); scene.add(label(ip)); }
+    // the lanterns: wrought iron and amber glass, one on a long chain from each boss of the nave
+    const lanTex = canvasTex(256, 256, (g, w, h) => { const gr = g.createRadialGradient(w/2, h/2, 10, w/2, h/2, w*.7); gr.addColorStop(0, "#fff3c4"); gr.addColorStop(1, "#e2a24a"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.strokeStyle = "#1e1a16"; g.lineWidth = 9; for(let x=0; x<=w; x+=w/4){ g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } g.lineWidth = 5; [h*.33, h*.66].forEach(y => { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }); });
+    const glowP = [], lit = [];
+    for(let k=0;k<nb;k++){ const z = zc(k), top = hs + nRise - .3, ly = Math.max(6.2, hs - 3.2);
+      ironP.push([new THREE.CylinderGeometry(.035, .035, top - (ly + .95), 5), M(0, (top + ly + .95)/2, z)]);
+      glowP.push([new THREE.CylinderGeometry(.5, .4, 1.3, 8, 1, true), M(0, ly, z)]);
+      ironP.push([new THREE.ConeGeometry(.66, .55, 8), M(0, ly + .92, z)]); ironP.push([new THREE.SphereGeometry(.1, 8, 6), M(0, ly + 1.25, z)]);
+      ironP.push([new THREE.ConeGeometry(.42, .5, 8), M(0, ly - .9, z, Math.PI)]); ironP.push([new THREE.TorusGeometry(.56, .045, 5, 16), M(0, ly + .64, z, Math.PI/2)]); ironP.push([new THREE.TorusGeometry(.44, .045, 5, 16), M(0, ly - .64, z, Math.PI/2)]);
+      if(k % 2 === 1 || nb < 3) lit.push(new THREE.Vector3(0, ly, z)); }
+    const glow = new THREE.Mesh(mergeGeoms(glowP), new THREE.MeshStandardMaterial({color:"#000000", emissive: p.band === "day" ? "#d9cbb0" : "#ffffff", emissiveMap:lanTex, side:THREE.DoubleSide, roughness:1})); scene.add(glow);
+    const night = p.band === "night" || p.band === "dusk";
+    lit.forEach(v => { const pl = new THREE.PointLight("#ffcf8a", night ? 110 : 40, 0, 1.05); pl.position.copy(v); scene.add(pl); });
+    // the tables: long oak study tables with their chairs, in the middle bays of the nave
+    const table = (x, z) => { const L = Math.min(5, bz*.68), W2 = 1.15;
+      oakP.push([new THREE.BoxGeometry(W2, .09, L), M(x, .78, z)]);
+      [-1, 1].forEach(e => { oakP.push([new THREE.BoxGeometry(W2*.8, .66, .12), M(x, .4, z + e*(L/2 - .4))]); oakP.push([new THREE.BoxGeometry(W2*.95, .1, .5), M(x, .05, z + e*(L/2 - .4))]); });
+      oakP.push([new THREE.BoxGeometry(.1, .14, L - .9), M(x, .3, z)]);
+      const nc = Math.max(2, Math.floor(L/1.15)); for(let i=0;i<nc;i++){ const cz = z - L/2 + (i + .5)*L/nc; [-1, 1].forEach(sd => { const cx = x + sd*(W2/2 + .38);
+        oakP.push([new THREE.BoxGeometry(.48, .06, .46), M(cx, .46, cz)]); oakP.push([new THREE.BoxGeometry(.06, .55, .44), M(cx + sd*.22, .76, cz)]);
+        [[-.2,-.19],[.2,-.19],[-.2,.19],[.2,.19]].forEach(([a, b]) => oakP.push([new THREE.BoxGeometry(.05, .45, .05), M(cx + a, .225, cz + b)])); }); } };
+    for(let k=1;k<nb-1;k++){ table(-NX*.45, zc(k)); table(NX*.45, zc(k)); }
+    // all of it, merged by material
+    const add = (parts, m, shadow) => { if(!parts.length) return; const mesh = new THREE.Mesh(mergeGeoms(parts), m); mesh.castShadow = shadow; mesh.receiveShadow = true; scene.add(mesh); return mesh; };
+    add(stoneP, mat("#c8bea9"), true); add(ribP, mat("#b9ae98"), false); add(oakP, mat("#5e4632"), true); add(ironP, mat("#2a2622", {metalness:.6, roughness:.5}), true);
+    add(giltP, mat("#c9a35a", {metalness:.7, roughness:.35}), false); add(darkP, new THREE.MeshBasicMaterial({color:"#16120e", side:THREE.DoubleSide}), false);
   }
   function skyCeiling(p, faces){
     // the real sky: a disc of the sky chart overhead, or the open sky for courtyards
@@ -622,13 +755,13 @@ export function create(container, hooks){
     const pass = new THREE.Mesh(new THREE.BoxGeometry(hh.w, hh.h, 1.6), new THREE.MeshBasicMaterial({color: d.open ? "#0f0d0b" : "#2a241c"}));
     pass.position.copy(c).add(out.clone().multiplyScalar(1.1)); pass.position.y = hh.h/2; pass.rotation.y = yaw; g.add(pass);
     // the frame: an arch of cut stone
-    const archPts = []; for(let i=0;i<=16;i++){ const t = Math.PI*i/16; archPts.push(new THREE.Vector3(Math.cos(t)*(hh.w/2+.08), hh.h - hh.w/2 + Math.sin(t)*(hh.w/2+.08), 0)); }
+    const archPts = hh.pointed ? archPts2(hh.w + .16, hh.h + .08, true, 16).slice(1, -1).map(([x,y]) => new THREE.Vector3(x, y, 0)) : []; if(!hh.pointed) for(let i=0;i<=16;i++){ const t = Math.PI*i/16; archPts.push(new THREE.Vector3(Math.cos(t)*(hh.w/2+.08), hh.h - hh.w/2 + Math.sin(t)*(hh.w/2+.08), 0)); }
     const path = new THREE.CatmullRomCurve3([new THREE.Vector3(hh.w/2+.08,0,0), ...archPts, new THREE.Vector3(-hh.w/2-.08,0,0)]);
-    const frameM = new THREE.Mesh(new THREE.TubeGeometry(path, 48, .1, 6, false), mat("#b4aa95"));
+    const frameM = new THREE.Mesh(new THREE.TubeGeometry(path, 48, hh.pointed ? .2 : .1, 6, false), mat("#b4aa95"));
     frameM.position.copy(c).add(n.clone().multiplyScalar(.02)); frameM.rotation.y = yaw; frameM.castShadow = true; g.add(frameM);
     // a door leaf: open doors stand ajar, locked doors are shut and studded
     const leafG = new THREE.Shape(); const x0=-hh.w/2+.02, x1=hh.w/2-.02, y1=hh.h-hh.w/2;
-    leafG.moveTo(x0,0); leafG.lineTo(x1,0); leafG.lineTo(x1,y1); leafG.absarc(0,y1,hh.w/2-.02,0,Math.PI,false); leafG.lineTo(x0,0);
+    if(hh.pointed){ leafG.moveTo(x0,0); leafG.lineTo(x1,0); archPts2(hh.w-.04, hh.h-.02, true, 14).forEach(([x,y]) => leafG.lineTo(x,y)); leafG.lineTo(x0,0); } else { leafG.moveTo(x0,0); leafG.lineTo(x1,0); leafG.lineTo(x1,y1); leafG.absarc(0,y1,hh.w/2-.02,0,Math.PI,false); leafG.lineTo(x0,0); }
     const leafTex = canvasTex(256, 512, (gg,w,h) => { gg.fillStyle = d.look==="mirror" ? "#d9dcdc" : d.look==="gold" ? "#6b5a3a" : "#5a4632"; gg.fillRect(0,0,w,h);
       if(d.look==="mirror"){ for(let k=0;k<6;k++){ gg.strokeStyle="rgba(255,255,255,.7)"; gg.lineWidth=6+k*2; gg.beginPath(); gg.moveTo(-40+k*60,h); gg.lineTo(w+40-k*10,h*.2+k*30); gg.stroke(); } }
       else { for(let x=0;x<w;x+=42){ gg.strokeStyle="#2c2218"; gg.lineWidth=3; gg.beginPath(); gg.moveTo(x,0); gg.lineTo(x,h); gg.stroke(); } [h*.25,h*.7].forEach(y=>{ gg.fillStyle="#2b2520"; gg.fillRect(0,y,w,14); for(let x=10;x<w;x+=36){ gg.beginPath(); gg.arc(x,y+7,4,0,TAU); gg.fillStyle="#9a8e78"; gg.fill(); } }); }
@@ -658,7 +791,7 @@ export function create(container, hooks){
       if(d.name){ gg.font = `34px ${FELLSC}`; gg.fillText(d.name.toUpperCase().slice(0,22), w/2, 160); }
       if(p.mirror){ const img = gg.getImageData(0,0,w,h); gg.save(); gg.scale(-1,1); gg.translate(-w,0); const c2=document.createElement("canvas"); c2.width=w; c2.height=h; c2.getContext("2d").putImageData(img,0,0); gg.drawImage(c2,0,0); gg.restore(); } });
     const pm = new THREE.Mesh(new THREE.PlaneGeometry(1.05, .41), mat("#ffffff", {map:plate, metalness:.35, roughness:.45}));
-    pm.position.copy(c).add(n.clone().multiplyScalar(.035)); pm.position.y = hh.h + .42; pm.rotation.y = yaw; g.add(label(pm));
+    const psc = hh.pointed ? 1.9 : 1; pm.scale.setScalar(psc); pm.position.copy(c).add(n.clone().multiplyScalar(.035)); pm.position.y = hh.h + .22 + .2*psc; pm.rotation.y = yaw; g.add(label(pm));
     const onClick0 = d.onClick, doorAt = c.clone().add(out.clone().multiplyScalar(.4)); 
     d = Object.assign({}, d, {onClick: d.open ? () => approach(doorAt, onClick0) : onClick0});
     g.userData.hit = {kind: d.open ? "door" : "locked", label: (d.open ? "" : d.look==="boarded" ? "Closed for renovation: " : "Locked: ") + d.label + (d.name ? " · " + d.name : "") + (d.title ? " · " + d.title : ""), onClick: d.onClick};

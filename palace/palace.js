@@ -291,7 +291,7 @@ function drawRoom(room, svg, light){
     for(let k=1;k<8;k++){ const t=k/8; L(g, W*t, 0, BX0+(BX1-BX0)*t, BY0, 2.2,{stroke:"var(--paper)"}); L(g, W*t, 0, BX0+(BX1-BX0)*t, BY0, .8); }
     for(let j=1;j<5;j++){ const f = 1 - Math.pow(.62,j), y = BY0*f, xl = (lx>0? lx*(1-f)+BX0*f : BX0*f), xr = W - (W - (lx>0?W-lx:W))*0 - (W-BX1)*f; L(g, BX0*f, y, W-(W-BX1)*f, y, 2.2,{stroke:"var(--paper)"}); L(g, BX0*f, y, W-(W-BX1)*f, y, .8);
       for(let k=0;k<8;k++){ const t=(k+.5)/8, x = BX0*f*(1) + ((W-(W-BX1)*f) - BX0*f)*t, f2 = 1-Math.pow(.62,j-.5); const yy=BY0*f2, x2 = BX0*f2 + ((W-(W-BX1)*f2)-BX0*f2)*t; E("circle",{cx:x2,cy:yy,r:Math.max(1.5,5*(1-f2)+1.2),fill:"var(--paper)",stroke:"var(--ink)","stroke-width":.8},g); } }
-  } else if(ceil==="vault"){
+  } else if(ceil==="vault" || ceil==="gothic"){
     for(let k=0;k<=8;k++){ const t=k/8, x=W*t, xb=BX0+(BX1-BX0)*t; E("path",{d:`M${x},0 Q${(x+xb)/2},${BY0*.2} ${xb},${BY0}`,fill:"none",stroke:"var(--paper)","stroke-width":3},g); E("path",{d:`M${x},0 Q${(x+xb)/2},${BY0*.2} ${xb},${BY0}`,fill:"none",stroke:"var(--ink)","stroke-width":1.1},g); }
     E("path",{d:`M0,${BY0*.15} Q400,${BY0*1.25} ${W},${BY0*.15}`,fill:"none",stroke:"var(--ink)","stroke-width":1.4},g);
   } else for(let k=1;k<6;k++){ const t=k/6; L(g, W*t, 0, BX0+(BX1-BX0)*t, BY0, 1.6); }
@@ -308,7 +308,7 @@ function drawRoom(room, svg, light){
     const yh = (BY0+BY1)/2 - 10, k = H - yh;
     for(let z=1; ; z+=.28){ const y = yh + k/z; if(y<=BY1+1) break; const t=(H-y)/(H-BY1); L(g, BX0*t, y, W-(W-BX1)*t, y, 1.1); }
     for(let i=-3;i<=3;i++) L(g, 400+i*(BX1-BX0)/7, BY1, 400+i*130, H, .9);
-  } else if((room.floor||"")==="checker" || (room.floor||"")==="stone"){
+  } else if((room.floor||"")==="checker" || (room.floor||"")==="stone" || (room.floor||"")==="slate"){
     // a floor laid in true perspective: squares (or flags) of equal size, shrinking with depth
     const yh = BY0 - 40, k = H - yh, zb = k/(BY1-yh), checker = room.floor==="checker";
     const zs=[]; for(let z=1; z<zb; z*=1.22) zs.push(z); zs.push(zb);

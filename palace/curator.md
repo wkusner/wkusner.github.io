@@ -284,6 +284,17 @@ The Sundial Court is now a wide court, 22 m across, with a longer colonnade, mor
 - `size: 22` sets the room's width in meters (the default is about 8).
 - `walk: true` lets visitors walk anywhere on the floor: click the paving to walk there, or use W/↑ and S/↓ to step forward and back. They stop short of the dial and the walls. Doors still work as usual.
 
+### The Great Hall
+
+Off the Entry (the second door on its back wall) is room 42, the Great Hall: a homage to the Commons Room of Pittsburgh's Cathedral of Learning, with clustered piers, a ribbed vault, galleries, a great window over an iron gate, lanterns, and oak tables on a green slate floor. Its eight alcoves (rooms 43–50) are closed for renovation, waiting to be fitted out, perhaps as trial rooms for a new look for the whole house. To open one, delete its `closed: renovation` line in `_data/palace.yml` and give it decor, objects, and text like any room. Alcoves 43–46 run down the left side from the entrance, and 47–50 come back up the right.
+
+The keys that make a hall like this, on any room:
+- `ceiling: gothic` builds the vaulted hall: piers, ribs, galleries, the window and gate, lanterns, and tables. Doors on the side walls become tall pointed arches, set in the middle bays.
+- `size:` is the width and `length:` the length, in meters (without `length` the room is square).
+- `height:` is the height of the walls in meters (the hall is 16).
+- `bays:` is how many bays of piers run down the hall (default 6).
+- `floor: slate` is green slate. `walk: true` lets visitors walk the floor. In rooms you can walk, turning now turns you where you stand.
+
 ### Going up into the sky
 
 In the court, look up (or move to the top of the picture) and click the sky: *The sky: go up into it.* The view tilts up to the real sky over the house for the moment shown, and a panel opens in the corner of the picture with three tabs:
