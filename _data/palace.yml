@@ -9,15 +9,15 @@ help: >-
   <p>This is a memory palace for my instruments, games, drafts, and books. Every room keeps something. You can also skip the walking and use the Catalogue.</p>
 
 wings:
-  foyer:        {name: "The Foyer",                  color: "#A77E22"}
-  instruments:  {name: "The Instrument Gallery",     color: "#8C6A2E"}
-  turnings:     {name: "The Turnings",               color: "#8A3B23"}
-  numbers:      {name: "The Numbers, below",         color: "#3B5A7A"}
-  pond:         {name: "The Lily Pond",              color: "#3E7A4F"}
-  schoolroom:   {name: "The Schoolroom",             color: "#5E6B3A"}
-  workshop:     {name: "The Workshop",               color: "#6B4E8C"}
-  lectures:     {name: "The Lecture Wing",           color: "#2E6B6B"}
-  archive:      {name: "The Archive",                color: "#4B3B5E"}
+  foyer:        {name: "The Foyer",                  color: "#B5452B"}
+  instruments:  {name: "The Instrument Gallery",     color: "#B07A1E"}
+  turnings:     {name: "The Turnings",               color: "#B5452B"}
+  numbers:      {name: "The Numbers, below",         color: "#2F5E9E"}
+  pond:         {name: "The Lily Pond",              color: "#3C7A54"}
+  schoolroom:   {name: "The Schoolroom",             color: "#3C7A54"}
+  workshop:     {name: "The Workshop",               color: "#7A4A86"}
+  lectures:     {name: "The Lecture Wing",           color: "#2C7B80"}
+  archive:      {name: "The Archive",                color: "#7A4A86"}
 
 ranks:
   - {name: "Visitor",                     at: 0,  color: "#D9D2C0"}

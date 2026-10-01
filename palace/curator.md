@@ -184,9 +184,15 @@ A rank is earned by the number of distinct rooms remembered. Its index (0, 1, 2,
 
 The palace uses the visitor's clock. Light runs dawn, day, dusk, night, and the Lamps button overrides it. The window shows the sun by day and the actual phase of the moon by night. The Clock Room's door changes each hour, and the Observatory's trapdoor opens at dusk.
 
+### The look
+
+The pictures are drawn like woodcuts: black hatching on paper, with a rough cut to every line. At night they turn into white-line engravings. The windows around them are HyperCard's: striped title bars, square close boxes, hard shadows, and a dithered desktop.
+
+Color is a second block, printed over the black. Each wing's `color` is its spot color, and it shows up on the room number, the drop cap, the rug, the lamp shade, the sky in the window, the water, and the darkest fills of the objects. Keep wing colors muted and few; the palace looks best with four or five. The **Ink** button switches any visitor to pure 1-bit black and white.
+
 ### What visitors' browsers remember
 
-Visits, the walk, the frame in each room, pockets, solved riddles, and Funes names are all kept in the visitor's own browser (`localStorage`, key `palace-v1`). Nothing is sent anywhere. "Forget my walk" in *How to walk* clears it.
+Visits, the walk, the frame in each room, pockets, solved riddles, Funes names, and the lamp and ink settings are all kept in the visitor's own browser (`localStorage`, key `palace-v1`). Nothing is sent anywhere. "Forget my walk" in *How to walk* clears it.
 
 ### Recipes
 
