@@ -3,7 +3,9 @@
 
 title: The Palace
 start: 1
-latitude: 44.26        # Appleton, for the pendulum
+latitude: 44.26        # Appleton: the pendulum, the sky, the sun through the windows
+longitude: -88.41
+facing: 180            # a visitor in frame e faces south, so the windows catch the sun
 
 help: >-
   <p>This is a memory palace for my instruments, games, drafts, and books. Every room keeps something. You can also skip the walking and use the Catalogue.</p>
@@ -28,6 +30,7 @@ ranks:
 
 items:
   golden-key: "a golden key, stamped φ"
+  primer: "A Young Lady's Illustrated Primer"
 
 rooms:
 
@@ -39,10 +42,15 @@ rooms:
   decor: [shelves, lamp, rug, window]
   at: [5, 5]
   text: >-
-    Six walls, four of them doors. Every reading room should be a hexagon. The lamp is on whether or not anyone is reading.
+    Six walls, four of them doors. Every reading room should be a hexagon. The lamp comes on at dusk, whether or not anyone is reading.
 
     On the lectern lies the plan of a book that isn't written yet. The card catalogue in the corner knows where everything is. It is the honest way through, and the walking is the other way.
   again: The rug has worn a little where you keep crossing it.
+  phases:
+    - when: "hours:0-1"
+      text: "It is past midnight. A door that isn't there by day stands open behind you."
+      doors: [{to: 23, wall: front, oneway: true, title: "the midnight door"}]
+    - {when: dawn, text: "Dawn. The first reader of the day is always the dust."}
   doors:
     - {to: 2,  wall: right, title: "brass and glass"}
     - {to: 8,  wall: left,  title: "a draft that turns"}
@@ -89,12 +97,16 @@ rooms:
   name: The Observatory
   wing: instruments
   shape: round
-  decor: [stars, window]
+  decor: [sky, window]
   at: [6, 2]
   text: >-
-    A small dome. The great net on the table is a Wulff net, the sphere pressed flat by stereographic projection so that circles stay circles. Turn the overlay and you have turned the sky.
+    A small dome, and its ceiling is the sky over Appleton right now: the actual stars, the moon in its actual phase, and whichever planets are up. It repaints itself by the minute. By day it fades to the sun and the brightest stars. The chart is stereographic, like the Wulff net on the table, so circles in the sky stay circles on the ceiling.
+
+    The dome turns with you. If a corridor has turned you, north is no longer at the top. Come in mirrored and the whole sky is reversed, the way the ceiling of Grand Central Terminal was painted.
+  mirror: You are seeing the sky the way a god outside it would. The constellations run backwards.
+  widget: sky
   notes:
-    - {when: night, text: "The dome is open. Below it, a second door has appeared in the floor, and the pendulum hall shows through it."}
+    - {when: night, text: "The dome is open. A trapdoor has appeared behind you, and the pendulum hall shows through it."}
     - {when: "moon:full", text: "Full moon. Even the net's grid lines cast shadows."}
   doors:
     - {to: 2, wall: left}
@@ -122,6 +134,9 @@ rooms:
   at: [8, 5]
   text: >-
     It's warm, and the arithmetic has gone tropical. As the base of the logarithm grows, addition melts into max and multiplication into plus. The plants don't mind.
+  phases:
+    - {when: night, text: "After dark the night-blooming cereus opens. It has the largest flower in the room and the shortest season: one night."}
+    - {when: "sun:up", text: "The panes fog in the sun, and the tropical rule's scale sweats."}
   doors:
     - {to: 5, wall: left}
     - {to: 20, wall: right, title: "a door that smells of chalk"}
@@ -177,6 +192,7 @@ rooms:
     - {to: 8, wall: right}
     - {to: 10, wall: back}
     - {to: 11, wall: left}
+    - {to: 27, wall: front, title: "salt air"}
   objects:
     - {kind: device, icon: cards, title: "Quaternion Cards", href: "/quaternion-cards/", note: "A card game in the quaternion group."}
     - {kind: unwritten, icon: cards, title: "Group War", note: "Klein, ℤ₄, Q₈, S₃, D₄, octonions. In simulation, the chance of being able to equalize on a turn runs from about 0.56 (ℤ₄) down to about 0.12 (S₄)."}
@@ -328,6 +344,8 @@ rooms:
 
     One door turns with the hour hand. It leads somewhere different every hour, and once in every four hours it leads to the center.
   widget: clock
+  phases:
+    - {when: "minutes:0-3", text: "The clock is striking the hour, in dozens."}
   doors:
     - {to: 15, wall: right}
     - {to: 16, wall: front}
@@ -362,6 +380,9 @@ rooms:
   at: [6, 8]
   text: >-
     Lily pads crowd the water, as many as will fit without overlapping. How tightly can they pack, and how do you prove it? On the wall are Kepler's woodcuts of stacked cannonballs. Barlow's plans show the ways to stack layers of spheres, and the skeletons of FCC and HCP are drawn beside them. The machinery for the lily pads is still being brought over from another wing.
+  phases:
+    - {when: day, text: "By day the lilies are open, and the packing is loose: every flower wants a little more room than its pad."}
+    - {when: "night|dusk", text: "At night the lilies close. The pads lie flat and tight, and the packing is as good as it gets."}
   doors:
     - {to: 20, wall: right}
     - {to: 21, wall: left}
@@ -383,11 +404,15 @@ rooms:
   at: [7, 6]
   text: >-
     Desks, a chalkboard, and a box of cards. This is where the devices get used for practice: fractions first, then whatever MATH 102 and 103 need next.
+  phases:
+    - {when: ["weekday", "hours:8-17"], text: "Class is in session. Somebody is at the board finding a common denominator."}
+    - {when: "night|weekend", text: "The chairs are up on the desks. The chalk tray has been wiped, mostly."}
   doors:
     - {to: 1, wall: back}
     - {to: 6, wall: right}
     - {to: 19, wall: left}
     - {to: 24, wall: front, title: "the lecture wing"}
+    - {to: 28, wall: right, title: "a small door, painted"}
   objects:
     - {kind: device, icon: fraction, title: "Fraction Target", href: "/fraction-target/", note: "Make the target from four fraction cards. Every deal can be solved."}
     - {kind: unwritten, icon: fraction, title: "Coefficient Knobs", note: "Turn a, b, and c on a quadratic and watch the vertex trace its locus. Then cubics, and the cusp 4p³ + 27q² = 0."}
@@ -401,6 +426,8 @@ rooms:
     Sawdust, plaster, and drafts. The shelf by the door holds the books that aren't written yet. They are real books in every respect except that they don't exist.
 
     A linking book lies open on the bench. Touch the picture and you're back in the reading room.
+  phases:
+    - {when: night, text: "The plaster in the molds is setting overnight. Don't touch it."}
   doors:
     - {to: 19, wall: right}
     - {to: 16, wall: left, oneway: true}
@@ -425,6 +452,7 @@ rooms:
     - {to: 12, wall: right, turn: s, twist: true, title: "back through the mirror"}
     - {to: 13, wall: left, title: "the closed stacks"}
     - {to: 23, wall: back, needs: "has:golden-key", oneway: true, hint: "A small gold lock with a φ on it."}
+    - {to: 29, wall: front, title: "the stacks beyond the stacks"}
   objects:
     - {kind: paper, icon: scroll, title: "My papers", href: "/research/"}
     - {kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
@@ -442,6 +470,9 @@ rooms:
     - {kind: ref, title: "Ficciones", by: "Jorge Luis Borges"}
     - {kind: ref, title: "The Name of the Rose", by: "Umberto Eco"}
     - {kind: ref, title: "Maze", by: "Christopher Manson"}
+    - {kind: ref, title: "What Is the Name of This Book?", by: "Raymond Smullyan"}
+    - {kind: ref, title: "To Mock a Mockingbird", by: "Raymond Smullyan"}
+    - {kind: ref, title: "The Diamond Age", by: "Neal Stephenson"}
     - {kind: ref, title: "Lirael", by: "Garth Nix"}
     - {kind: ref, title: "Invisible Cities", by: "Italo Calvino"}
     - {kind: ref, title: "The Discworld library and L-space", by: "Terry Pratchett"}
@@ -540,3 +571,84 @@ rooms:
     - {kind: figure, icon: net, title: "Spiral discrepancy", href: "/assets/2018ICERM/spiraldiscrepancy.pdf"}
     - {kind: figure, icon: net, title: "Random discrepancy", href: "/assets/2018ICERM/randomdiscrepancy.pdf"}
     - {kind: figure, icon: net, title: "Discrepancy samples", href: "/assets/2018ICERM/discrepancysamples.pdf"}
+
+# ─────────────────────────── LATER ADDITIONS ───────────────────────────
+- id: 27
+  name: The Island of Two Kinds
+  wing: turnings
+  decor: [window]
+  at: [3, 1]
+  text: >-
+    Sand on the floor and two doors in the back wall. The islanders here come in two kinds: knights, who always tell the truth, and knaves, who always lie. Raymond Smullyan collected them by the hundred.
+
+    Each puzzle is dealt fresh, and each has exactly one answer. A solver checks every possible world before the islanders speak. Solve three and the barred door at the far end of the beach opens.
+  widget: {type: knights, need: 3}
+  doors:
+    - {to: 9, wall: front, title: "back to the card room"}
+    - {to: 10, wall: left, oneway: true}
+    - {to: 12, wall: back, oneway: true, needs: "solved:island", hint: "Barred. Solve three puzzles on the island.", title: "the barred door", say: "The bar lifts. You go down to the cellar."}
+  objects:
+    - {kind: ref, icon: book, title: "The Lady or the Tiger?", by: "Raymond Smullyan"}
+    - {kind: ref, icon: book, title: "Forever Undecided", by: "Raymond Smullyan", note: "Knights and knaves, all the way up to Gödel."}
+    - {kind: unwritten, icon: tree, title: "The Mockingbird Forest", note: "Smullyan's birds as combinators: S, K, and the mockingbird M, where Mx = xx. A device for composing them."}
+
+- id: 28
+  name: The Nursery
+  wing: schoolroom
+  decor: [window, lamp, rug, shelves]
+  at: [9, 6]
+  text: >-
+    A small room with low shelves. On the rug lies a book bound in something that isn't quite leather. In Stephenson's novel, the Primer was a book that raised the girl who read it, teaching her through stories that rewrote themselves around her.
+
+    This one is humbler. It knows where you have been in the palace and where you haven't. Pick it up and it will travel with you.
+  doors:
+    - {to: 20, wall: left}
+  objects:
+    - {kind: primer, icon: book, title: "A Young Lady's Illustrated Primer", action: primer, item: primer, note: "Open it here, or anywhere once it's in your pocket."}
+    - {kind: ref, icon: book, title: "The Diamond Age", by: "Neal Stephenson"}
+
+- id: 29
+  name: The Hall of Impossible Libraries
+  wing: archive
+  secret: true
+  shape: oct
+  decor: [shelves, lamp, stars]
+  at: [-1, 4]
+  text: >-
+    The shelves here hold the libraries that never were, or not quite: the great stores of knowledge from other people's books. Every one of them is a different answer to the question this palace asks, which is what it means to keep everything you know in one place and still be able to find it.
+
+    In the middle of the room stands an instrument with thirty-six symbols and three hands.
+  widget: oracle
+  doors:
+    - {to: 22, wall: back, title: "back to the Archive"}
+    - {to: random, wall: left, label: "?", title: "a gap between two shelves", say: "All libraries are connected. You come out somewhere else."}
+  objects:
+    - {kind: ref, icon: scroll, title: "An STC fragment", by: "Warhammer 40,000", note: "A Standard Template Construct, the data-seed of a whole lost technology. Recovering a complete one is a holy act. Every device in this palace is meant to be a small STC."}
+    - {kind: ref, icon: book, title: "The Orange Catholic Bible, and a Mentat", by: "Frank Herbert, Dune", note: "After the Butlerian Jihad outlawed thinking machines, people trained their own minds to compute. A slide rule is a polite compromise."}
+    - {kind: ref, icon: book, title: "The Red Book of Westmarch", by: "J. R. R. Tolkien", note: "Also the archives of Minas Tirith, where a forgotten scroll mattered more than any army."}
+    - {kind: ref, icon: net, title: "A palantír", by: "J. R. R. Tolkien", note: "A seeing-stone. Compare the Observatory's dome, which only shows what is really there."}
+    - {kind: ref, icon: book, title: "The Book of Gramarye", by: "Susan Cooper, The Dark Is Rising", note: "Read once and then destroyed; what it taught survives only in memory. Funes would have been the ideal reader."}
+    - {kind: ref, icon: clock, title: "The alethiometer", by: "Philip Pullman, His Dark Materials", note: "Thirty-six symbols, each with endless meanings, read by setting three hands. The palace keeps a crude copy in the middle of this room."}
+    - {kind: ref, icon: books, title: "The Great Library of the Clayr", by: "Garth Nix, Lirael", note: "A library carved into a glacier, with ranked librarians and stacks that bite. The Great Spiral is its cousin."}
+    - {kind: ref, icon: books, title: "The Aedificium", by: "Umberto Eco, The Name of the Rose", note: "A labyrinth built as a library, with the finis Africae hidden at its heart."}
+    - {kind: ref, icon: hex, title: "The Library of Babel", by: "Jorge Luis Borges", note: "Every possible book, in hexagons without end."}
+    - {kind: ref, icon: books, title: "L-space", by: "Terry Pratchett", note: "Enough books in one place bend space, and all libraries become one library."}
+    - {kind: ref, icon: book, title: "The Encyclopedia Galactica", by: "Isaac Asimov, Foundation", note: "A library compiled as a cover story for a plan."}
+    - {kind: ref, icon: scroll, title: "The Isolate Tower", by: "Ursula K. Le Guin, Earthsea", note: "Where the Master Namer keeps the lists of true names."}
+    - {kind: ref, icon: hex, title: "Llull's Ars Magna", by: "Ramon Llull, c. 1305", note: "Real: nested paper wheels that combine concepts mechanically. Leibniz read it. It belongs in the Instrument Gallery."}
+    - {kind: ref, icon: scroll, title: "The memex", by: "Vannevar Bush, “As We May Think,” 1945", note: "Real: a desk that stores a whole library and the trails a reader makes through it. The nearest ancestor of this palace."}
+    - {kind: ref, icon: books, title: "The Library of Alexandria", note: "Real, and lost."}
+    - {kind: ref, icon: scroll, title: "The Voynich manuscript", note: "Real, and still unread."}
+    - {kind: unwritten, icon: hex, title: "Llull's wheels", note: "A working volvelle of Llull's combinatorial wheels."}
+
+primer:
+  "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}
+  "3":  {teaser: "a wheel measures area by walking around it", lesson: "A planimeter traces the edge of a shape and reads off the area inside, which is Green's theorem in brass.", q: "If you trace the boundary backwards, what happens?", a: "You get the same area with a minus sign. The orientation of the loop matters."}
+  "7":  {teaser: "a pendulum turns although nothing turns it", lesson: "The swing of the pendulum keeps its direction while the earth turns under it. In Appleton it comes round once every 34 hours or so.", q: "Where on earth does the pendulum turn once a day?", a: "At the poles, where sin φ = 1. At the equator it doesn't turn at all."}
+  "8":  {teaser: "two turns add like arrows on a sphere", lesson: "Rotations don't commute. Turn a book a quarter turn forward and then a quarter turn left; then do it in the other order.", q: "Which group do the eight symmetries of a square form?", a: "The dihedral group D₄. It's the frame the palace carries you in."}
+  "10": {teaser: "a lock only opens for symmetries", lesson: "The roots of x⁴ − 2 can be shuffled only in ways that keep every rational relation true.", q: "How many ways are there?", a: "Eight, the symmetries of a square, out of 24 shuffles."}
+  "11": {teaser: "half the arrangements can never be reached", lesson: "Every slide of the fifteen puzzle changes the permutation's sign and moves the blank one step; together, nothing changes.", q: "Can you swap just the 14 and 15?", a: "No. That would change the invariant."}
+  "15": {teaser: "a man remembered everything and could add nothing", lesson: "Funes gave every number its own name. Without place value, names can be memorized but not computed with.", q: "What does the 6 in 365 mean?", a: "Six tens. Funes's system has no way to say that."}
+  "16": {teaser: "the slowest gcd is made of Fibonacci numbers", lesson: "Euclid's algorithm cuts off squares. Fibonacci rectangles cut off one square at a time, so they take the longest.", q: "How many steps for gcd(89, 55)?", a: "Nine. The numbers fall back through the Fibonacci sequence: 89, 55, 34, 21, 13, 8, 5, 3, 2, 1."}
+  "4":  {teaser: "the ceiling is tonight's real sky", lesson: "The dome uses stereographic projection, which sends circles to circles. The horizon is the edge of the dome.", q: "Which star stays put at the top of the sky's turning?", a: "Polaris, very nearly. It sits about 44° up in Appleton, which is the latitude."}
+  "27": {teaser: "every islander either always lies or never does", lesson: "When a knave describes what a knight would say, the answer you hear is false either way.", q: "If you ask any islander 'Are you a knight?', what do they say?", a: "Yes, every time. So the question tells you nothing."}

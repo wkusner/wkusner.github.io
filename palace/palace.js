@@ -50,6 +50,83 @@ function band(d){ const h=d.getHours(); return h>=21||h<5 ? "night" : h<8 ? "daw
 function moonPhase(d){ const syn=29.530588853, ref=Date.UTC(2000,0,6,18,14); return (((d - ref)/864e5 % syn) + syn) % syn / syn; }
 function lightNow(){ return S.light==="auto" ? band(now()) : S.light; }
 
+/* ---------- the sky over the palace ---------- */
+const DEG = Math.PI/180, LON = (P.longitude!=null ? P.longitude : -88.41);
+const jdOf = d => d.getTime()/864e5 + 2440587.5;
+const OBL = 23.43928;
+function eclToEq(lam, beta){ const e=OBL*DEG, l=lam*DEG, b=beta*DEG;
+  const ra = Math.atan2(Math.sin(l)*Math.cos(e) - Math.tan(b)*Math.sin(e), Math.cos(l));
+  const dec = Math.asin(Math.sin(b)*Math.cos(e) + Math.cos(b)*Math.sin(e)*Math.sin(l));
+  return [((ra/DEG)%360+360)%360, dec/DEG]; }
+function sunEq(jd){ const n=jd-2451545, L=280.460+0.9856474*n, g=(357.528+0.9856003*n)*DEG;
+  return eclToEq(L + 1.915*Math.sin(g) + 0.020*Math.sin(2*g), 0); }
+function moonEq(jd){ const n=jd-2451545, Lp=218.316+13.176396*n, M=(134.963+13.064993*n)*DEG, F=(93.272+13.229350*n)*DEG,
+  D=(297.850+12.190749*n)*DEG, Ms=(357.529+0.985600*n)*DEG;
+  const lam = Lp + 6.289*Math.sin(M) + 1.274*Math.sin(2*D-M) + 0.658*Math.sin(2*D) + 0.214*Math.sin(2*M) - 0.186*Math.sin(Ms) - 0.114*Math.sin(2*F);
+  const beta = 5.128*Math.sin(F) + 0.281*Math.sin(M+F) + 0.278*Math.sin(M-F) + 0.173*Math.sin(2*D-F);
+  return eclToEq(lam, beta); }
+function helio(el, T){ const a=el.a+el.da*T, e=el.e+el.de*T, i=(el.i+el.di*T)*DEG, L=el.L+el.dL*T, W=el.W+el.dW*T, N=(el.N+el.dN*T)*DEG;
+  let M=((L-W)%360+540)%360-180; M*=DEG; let E=M+e*Math.sin(M); for(let k=0;k<8;k++) E -= (E - e*Math.sin(E) - M)/(1 - e*Math.cos(E));
+  const xp=a*(Math.cos(E)-e), yp=a*Math.sqrt(1-e*e)*Math.sin(E), w=W*DEG-N;
+  const cw=Math.cos(w), sw=Math.sin(w), cN=Math.cos(N), sN=Math.sin(N), ci=Math.cos(i), si=Math.sin(i);
+  return [ (cw*cN - sw*sN*ci)*xp + (-sw*cN - cw*sN*ci)*yp, (cw*sN + sw*cN*ci)*xp + (-sw*sN + cw*cN*ci)*yp, (sw*si)*xp + (cw*si)*yp ]; }
+function planetsEq(jd){
+  const T=(jd-2451545)/36525, PL=(window.SKY&&SKY.planets)||{}, out=[];
+  if(!PL.ter) return out; const t=helio(PL.ter.el,T);
+  ["mer","ven","mar","jup","sat"].forEach(k => { if(!PL[k]) return; const p=helio(PL[k].el,T), x=p[0]-t[0], y=p[1]-t[1], z=p[2]-t[2];
+    const lam=Math.atan2(y,x)/DEG, beta=Math.atan2(z,Math.hypot(x,y))/DEG, eq=eclToEq(lam,beta); out.push({id:k, name:PL[k].name, sym:PL[k].sym, ra:eq[0], dec:eq[1]}); });
+  return out; }
+function lst(jd){ return ((280.46061837 + 360.98564736629*(jd-2451545) + LON) % 360 + 360) % 360; }
+function altaz(ra, dec, L){ const H=(L-ra)*DEG, d=dec*DEG, f=LAT*DEG;
+  const alt=Math.asin(Math.sin(d)*Math.sin(f)+Math.cos(d)*Math.cos(f)*Math.cos(H));
+  const az=Math.atan2(-Math.cos(d)*Math.sin(H), Math.sin(d)*Math.cos(f)-Math.cos(d)*Math.sin(f)*Math.cos(H));
+  return [alt/DEG, ((az/DEG)%360+360)%360]; }
+function skyNow(offsetHours){
+  const d = new Date(now().getTime() + (offsetHours||0)*36e5), jd = jdOf(d), L = lst(jd);
+  const s = sunEq(jd), m = moonEq(jd), sa = altaz(s[0],s[1],L), ma = altaz(m[0],m[1],L);
+  ma[0] -= 0.95*Math.cos(ma[0]*DEG);   // parallax: we stand on the surface, not at the center
+  return {d, jd, L, sun:{ra:s[0],dec:s[1],alt:sa[0],az:sa[1]}, moon:{ra:m[0],dec:m[1],alt:ma[0],az:ma[1],phase:moonPhase(d)}, planets:planetsEq(jd).map(p=>{const a=altaz(p.ra,p.dec,L); return Object.assign(p,{alt:a[0],az:a[1]});})};
+}
+/* stereographic projection of the upper hemisphere, as seen looking up: north at top, east at left.
+   rot = quarter turns of the visitor's frame; mir = mirrored frame */
+function proj(alt, az, R, rot, mir){
+  const z = (90-alt)*DEG, r = R*Math.tan(z/2), A = (az - 90*rot)*DEG;
+  let x = -r*Math.sin(A), y = -r*Math.cos(A); if(mir) x = -x; return [x, y]; }
+const facing = () => (((P.facing!=null?P.facing:180) + 90*S.frame[0]) % 360 + 360) % 360;
+function drawSky(g, cx, cy, R, opts){
+  opts = opts || {};
+  const sk = skyNow(opts.offset), dark = sk.sun.alt < -6, mir = S.frame[1]===1, rot = S.frame[0];
+  const SK = window.SKY; const id = "skyclip"+(opts.tag||"");
+  const cp = E("clipPath",{id},g); E("circle",{cx,cy,r:R},cp);
+  E("circle",{cx,cy,r:R+6,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2.4},g);
+  const bg = dark ? "var(--sky-ink, #0d0c0b)" : (sk.sun.alt < 0 ? "url(#s-dark)" : "url(#s-hz)");
+  E("circle",{cx,cy,r:R,fill: dark ? "#0d0c0b" : bg, stroke:"var(--ink)","stroke-width":1.5},g);
+  const inner = E("g",{"clip-path":`url(#${id})`},g);
+  const star = dark ? "#F4EFE2" : "var(--ink)", faint = dark ? 1 : .35;
+  const P2 = (ra,dec) => { const a = altaz(ra,dec,sk.L); return a[0] < -1 ? null : proj(a[0],a[1],R,rot,mir).concat([a[0]]); };
+  if(SK){
+    if(opts.milky!==false && SK.mw) (SK.mw.ol1||[]).forEach(poly => { let d=""; let pen=false; poly.forEach(([ra,dec]) => { const p=P2(ra,dec); if(!p){ pen=false; return; } d += (pen?"L":"M")+(cx+p[0]).toFixed(1)+","+(cy+p[1]).toFixed(1); pen=true; }); if(d) E("path",{d,fill:"none",stroke:star,"stroke-width":.6,opacity:.35*faint,"stroke-dasharray":"1 2"},inner); });
+    if(opts.lines!==false) SK.lines.forEach(ln => { let d="", pen=false; ln.forEach(([ra,dec]) => { const p=P2(ra,dec); if(!p){ pen=false; return; } d += (pen?"L":"M")+(cx+p[0]).toFixed(1)+","+(cy+p[1]).toFixed(1); pen=true; }); if(d) E("path",{d,fill:"none",stroke:dark?"var(--spot)":"var(--ink)","stroke-width":opts.big?1.1:.8,opacity:dark?.9:.45},inner); });
+    const lim = opts.big ? 4.8 : (R>100 ? 4.2 : 3.6);
+    SK.stars.forEach(([ra,dec,m]) => { if(m>lim) return; if(!dark && m>2.2) return; const p=P2(ra,dec); if(!p) return; const rr = Math.max(.5,(lim+.6-m)*(opts.big?.85:.6));
+      E("circle",{cx:cx+p[0],cy:cy+p[1],r:rr,fill:star,opacity:faint},inner); });
+    if(opts.names) SK.names.forEach(([ra,dec,n,m]) => { if(m>1.6) return; const p=P2(ra,dec); if(!p||p[2]<3) return; const t=T(n,{x:cx+p[0]+5,y:cy+p[1]-4,"font-size":10,fill:dark?"#F4EFE2":"var(--ink)","font-family":"IM Fell English, serif",opacity:.9},inner); });
+    if(opts.cons) SK.cons.forEach(([ra,dec,n,rk]) => { if(rk>1) return; const p=P2(ra,dec); if(!p||p[2]<8) return; T(n.toUpperCase(),{x:cx+p[0],y:cy+p[1],"text-anchor":"middle","font-size":8.5,"letter-spacing":"1.5",fill:dark?"var(--spot)":"var(--muted)","font-family":"IM Fell English SC, serif"},inner); });
+  }
+  sk.planets.forEach(pl => { if(pl.alt<0) return; const p=proj(pl.alt,pl.az,R,rot,mir);
+    E("circle",{cx:cx+p[0],cy:cy+p[1],r:opts.big?4:3,fill:dark?"var(--spot)":"var(--ink)",stroke:dark?"#F4EFE2":"var(--paper)","stroke-width":1},inner);
+    if(opts.names||opts.big) T(pl.name,{x:cx+p[0]+6,y:cy+p[1]+11,"font-size":10,fill:dark?"#F4EFE2":"var(--ink)","font-family":"IM Fell English, serif","font-style":"italic"},inner); });
+  if(sk.moon.alt>0){ const p=proj(sk.moon.alt,sk.moon.az,R,rot,mir), mr=opts.big?8:5, ph=sk.moon.phase;
+    E("circle",{cx:cx+p[0],cy:cy+p[1],r:mr,fill:"#F4EFE2",stroke:"var(--ink)","stroke-width":.8},inner);
+    E("circle",{cx:cx+p[0]+(ph<.5?-1:1)*mr*2*(ph<.5?2*ph:2*(1-ph)),cy:cy+p[1],r:mr*1.05,fill:"#0d0c0b",opacity:.85},inner); }
+  if(sk.sun.alt>-1){ const p=proj(Math.max(sk.sun.alt,0),sk.sun.az,R,rot,mir);
+    for(let k=0;k<16;k++){ const t=k/16*2*Math.PI; L(inner,cx+p[0]+Math.cos(t)*8,cy+p[1]+Math.sin(t)*8,cx+p[0]+Math.cos(t)*(k%2?12:16),cy+p[1]+Math.sin(t)*(k%2?12:16),1); }
+    E("circle",{cx:cx+p[0],cy:cy+p[1],r:6.5,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.4},inner); }
+  // horizon ring and cardinal points, turned with the visitor
+  [["N",0],["E",90],["S",180],["W",270]].forEach(([c,az]) => { const p=proj(0,az,R+14,rot,mir); E("circle",{cx:cx+p[0],cy:cy+p[1],r:opts.big?9:7,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1},g); T(c,{x:cx+p[0],y:cy+p[1]+4,"text-anchor":"middle","font-size":opts.big?13:10,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},g); });
+  return sk;
+}
+
 /* ---------- ranks, conditions ---------- */
 const seen = () => Object.keys(S.visits).filter(k => ROOMS[k]).length;
 function rankIndex(){ let i=0; RANKS.forEach((r,j)=>{ if(seen()>=r.at) i=j; }); return i; }
@@ -64,6 +141,8 @@ function cond(c, room){
     case "night": case "day": case "dawn": case "dusk": return band(d)===key;
     case "weekend": return d.getDay()===0 || d.getDay()===6;
     case "weekday": return d.getDay()>0 && d.getDay()<6;
+    case "minutes": { const [a,b]=val.split("-").map(Number), mm=d.getMinutes(); return mm>=a && mm<b; }
+    case "sun": { const sa=skyNow().sun.alt; return val==="up" ? sa>0 : sa<=0; }
     case "hours": { const [a,b]=val.split("-").map(Number); return a<=b ? (h>=a && h<b) : (h>=a || h<b); }
     case "month": return d.getMonth()+1 === +val;
     case "moon": { const p=moonPhase(d); return val==="full" ? Math.abs(p-.5)<.07 : val==="new" ? (p<.07||p>.93) : true; }
@@ -126,6 +205,7 @@ function defs(svg){
   cross("x-dark",4,1.15); cross("x-light",7,.8);
   const spot = (id, size, rot, sw) => { const p=E("pattern",{id,width:size,height:size,patternUnits:"userSpaceOnUse",patternTransform:`rotate(${rot})`},d);
     E("rect",{width:size,height:size,fill:"var(--paper)"},p); E("line",{x1:-1,y1:size/2,x2:size+1,y2:size/2,stroke:"var(--spot)","stroke-width":sw},p); };
+  { const p=E("pattern",{id:"beam",width:4,height:4,patternUnits:"userSpaceOnUse",patternTransform:"rotate(-60)"},d); E("line",{x1:-1,y1:2,x2:5,y2:2,stroke:"var(--spot)","stroke-width":1.3},p); }
   spot("s-hatch",4.6,-38,1.2); spot("s-dark",3.2,-38,1.5); spot("s-hz",4.2,0,1.1);
   const f = E("filter",{id:"rough",x:"-3%",y:"-3%",width:"106%",height:"106%"},d);
   E("feTurbulence",{type:"fractalNoise",baseFrequency:"0.04",numOctaves:"2",seed:"11",result:"n"},f);
@@ -197,26 +277,37 @@ function decor(room, svg, light, mirror){
       }
     });
   }
-  if(d.includes("window")||d.includes("stars")){
+  if(d.includes("window")){
     const wx=212, wy=98, ww=56, wh=70, path=`M${wx},${wy+wh} V${wy+20} A${ww/2},20 0 0 1 ${wx+ww},${wy+20} V${wy+wh} Z`;
+    const sk = skyNow(), rel = a => ((a - facing() + 540) % 360) - 180;
+    const sunRel = rel(sk.sun.az), moonRel = rel(sk.moon.az), dark = sk.sun.alt < -6;
     E("path",{d:`M${wx-6},${wy+wh+6} V${wy+18} A${ww/2+6},24 0 0 1 ${wx+ww+6},${wy+18} V${wy+wh+6} Z`,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g);
-    E("path",{d:path,fill:night?"var(--ink)":"url(#s-hz)",stroke:"var(--ink)","stroke-width":2},g);
-    if(night){ for(let i=0;i<8;i++){ const x=wx+6+R()*(ww-12), y=wy+14+R()*(wh-20), r=1.2+R()*1.5; L(g,x-r,y,x+r,y,1,{stroke:"var(--paper)"}); L(g,x,y-r,x,y+r,1,{stroke:"var(--paper)"}); }
-      const p = moonPhase(now()), mx=wx+ww*.65, my=wy+30;
-      E("circle",{cx:mx,cy:my,r:8,fill:"var(--paper)"},g);
-      E("circle",{cx:mx + (p<.5 ? -32*p : 32*(1-p)), cy:my, r:8.4, fill:"var(--ink)"},g);
-    } else { const sx=wx+ww*.68, sy=wy+30;
-      for(let k=0;k<12;k++){ const t=k/12*2*Math.PI; L(g,sx+Math.cos(t)*11,sy+Math.sin(t)*11,sx+Math.cos(t)*(k%2?15:19),sy+Math.sin(t)*(k%2?15:19),1.2); }
-      E("circle",{cx:sx,cy:sy,r:8,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.5},g); }
+    E("path",{d:path,fill:dark?"#0d0c0b":(sk.sun.alt<0?"url(#s-dark)":"url(#s-hz)"),stroke:"var(--ink)","stroke-width":2},g);
+    const inWin = (alt, r) => [wx + ww/2 + Math.max(-1,Math.min(1,r/60))*(ww/2-9), wy + wh - 10 - Math.max(0,Math.min(1,alt/50))*(wh-26)];
+    if(dark){ for(let i=0;i<8;i++){ const x=wx+6+R()*(ww-12), y=wy+14+R()*(wh-20), r=1.2+R()*1.5; L(g,x-r,y,x+r,y,1,{stroke:"#F4EFE2"}); L(g,x,y-r,x,y+r,1,{stroke:"#F4EFE2"}); } }
+    if(sk.moon.alt>0 && Math.abs(moonRel)<70){ const [mx,my]=inWin(sk.moon.alt,moonRel), p=sk.moon.phase;
+      E("circle",{cx:mx,cy:my,r:7,fill:"#F4EFE2",stroke:"var(--ink)","stroke-width":.8},g); E("circle",{cx:mx + (p<.5 ? -28*p : 28*(1-p)), cy:my, r:7.4, fill:dark?"#0d0c0b":"url(#s-hz)"},g); }
+    if(sk.sun.alt>-2 && Math.abs(sunRel)<70){ const [sx,sy]=inWin(sk.sun.alt,sunRel);
+      for(let k=0;k<12;k++){ const t=k/12*2*Math.PI; L(g,sx+Math.cos(t)*9,sy+Math.sin(t)*9,sx+Math.cos(t)*(k%2?12:15),sy+Math.sin(t)*(k%2?12:15),1.1); }
+      E("circle",{cx:sx,cy:sy,r:7,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.4},g); }
     L(g,wx+ww/2,wy+4,wx+ww/2,wy+wh,2); L(g,wx,wy+wh*.55,wx+ww,wy+wh*.55,2);
+    // a beam of sun (or full moon) on the floor
+    const src = (sk.sun.alt>2 && Math.abs(sunRel)<80) ? {alt:sk.sun.alt, rel:sunRel} : (dark && sk.moon.alt>5 && Math.abs(moonRel)<80 && Math.abs(sk.moon.phase-.5)<.2) ? {alt:sk.moon.alt, rel:moonRel, moon:true} : null;
+    LIGHT.beam = src;
+    if(src){ const dy = Math.max(24, Math.min(150, 60/Math.tan(src.alt*DEG))), dx = Math.max(-220, Math.min(220, -Math.tan(src.rel*DEG)*dy*1.3));
+      const pts = `${wx},${BY1} ${wx+ww},${BY1} ${wx+ww+dx+10},${BY1+dy} ${wx+dx-10},${BY1+dy}`;
+      E("polygon",{points:pts,fill:"url(#beam)",opacity:src.moon?.6:.9},g);
+      L(g,wx,wy+wh,wx+dx-10,BY1+dy,.6,{"stroke-dasharray":"2 5",opacity:.6}); L(g,wx+ww,wy+20,wx+ww+dx+10,BY1+dy,.6,{"stroke-dasharray":"2 5",opacity:.6}); }
   }
+  if(d.includes("sky")){ const sg = E("g",{},svg); drawSky(sg, 400, 158, 118, {tag:"c", names:false}); }
   if(d.includes("stars")){ for(let i=0;i<34;i++){ const x=R()*W, y=R()*BY0*.9; if(y < BY0*Math.min(x/BX0,(W-x)/(W-BX1),1)-4){ const r=1.5+R()*2.5;
     E("path",{d:`M${x-r},${y} L${x},${y-r*.35} L${x+r},${y} L${x},${y+r*.35} Z M${x},${y-r} L${x+r*.35},${y} L${x},${y+r} L${x-r*.35},${y} Z`,fill:"var(--paper)"},g); } } }
   if(d.includes("lamp")){
+    const lit = LIGHT.lamp = (light==="night" || light==="dusk" || S.light==="night" || room.dark);
     L(g,400,0,400,34,1.6);
-    for(let k=0;k<18;k++){ const t=Math.PI*(.08+k/17*.84); L(g,400+Math.cos(t)*16,58+Math.sin(t)*16,400+Math.cos(t)*(k%2?34:50),58+Math.sin(t)*(k%2?34:50),.8); }
-    E("path",{d:"M384,34 h32 l9,19 h-50 Z",fill:"var(--spot)",stroke:"var(--ink)","stroke-width":1.5},g); L(g,376,53,424,53,1,{stroke:"var(--paper)"});
-    E("circle",{cx:400,cy:58,r:5,fill:"var(--paper)",stroke:"var(--ink)"},g);
+    if(lit) for(let k=0;k<18;k++){ const t=Math.PI*(.08+k/17*.84); L(g,400+Math.cos(t)*16,58+Math.sin(t)*16,400+Math.cos(t)*(k%2?34:50),58+Math.sin(t)*(k%2?34:50),.8); }
+    E("path",{d:"M384,34 h32 l9,19 h-50 Z",fill:lit?"var(--spot)":"url(#h-mid)",stroke:"var(--ink)","stroke-width":1.5},g);
+    E("circle",{cx:400,cy:58,r:5,fill:lit?"#F4EFE2":"var(--paper)",stroke:"var(--ink)"},g);
   }
   if(d.includes("rug")){ E("polygon",{points:"330,330 470,330 560,420 240,420",fill:"url(#s-hatch)",stroke:"var(--ink)","stroke-width":2},g);
     E("polygon",{points:"340,336 460,336 540,414 260,414",fill:"none",stroke:"var(--ink)","stroke-width":1},g);
@@ -293,15 +384,26 @@ function hot(el, label, fn){
 }
 
 /* ---------- rendering ---------- */
-let cur = null;
+let cur = null, LIGHT = {};
+function effective(base){
+  const r = Object.assign({}, base);
+  (base.phases||[]).forEach(ph => { if(!cond(ph.when, base)) return;
+    if(ph.name) r.name = ph.name;
+    if(ph.text) r.text = ph.replace ? ph.text : (r.text||"") + "\n" + ph.text;
+    ["decor","doors","objects","notes"].forEach(k => { if(ph[k]) r[k] = (r[k]||[]).concat(ph[k]); });
+    if(ph.drop) r.decor = (r.decor||[]).filter(x => !ph.drop.includes(x));
+    if(ph.widget) r.widget = ph.widget; });
+  return r;
+}
 function render(){
-  const room = cur, id = String(room.id);
+  const room = effective(cur), id = String(room.id); LIGHT = {};
   const light = lightNow();
   document.documentElement.setAttribute("data-light", light);
   document.documentElement.setAttribute("data-ink", S.ink==="1bit" ? "1bit" : "two");
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
   $("cardt").textContent = `Card ${room.label||id} of ${P.rooms.length}`;
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
+  $("b-primer").style.display = S.inv.includes("primer") ? "" : "none";
   const mirror = S.frame[1]===1;
   // header
   $("rnum").textContent = room.label || id;
@@ -401,7 +503,10 @@ function drawDoor(svg, room, d, w, i, n, mirror){
 function drawObject(svg, room, o, i, n, mirror){
   const x = 400 + (i-(n-1)/2) * Math.min(150, 420/Math.max(n-1,1)), y = n>4 && i%2 ? 352 : 392;
   const g = E("g",{transform:`translate(${x},${y})`},svg);
-  E("polygon",{points:"-30,26 30,26 44,34 -16,34",fill:"url(#h-dark)"},g);
+  { const b = LIGHT.beam; let sx=14, sy=8;
+    if(b){ const len = Math.max(8, Math.min(60, 22/Math.tan(Math.max(b.alt,3)*DEG))); sx = -Math.sin(b.rel*DEG)*len*(mirror?-1:1); sy = 4+Math.cos(b.rel*DEG)*len*.35; }
+    else if(LIGHT.lamp){ sx = (x-400)*.06; sy = 6; }
+    E("polygon",{points:`-30,26 30,26 ${30+sx},${26+sy} ${-30+sx},${26+sy}`,fill:"url(#h-dark)"},g); }
   E("polygon",{points:"-30,18 30,18 36,14 -24,14",fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":1.2},g);
   E("rect",{x:-30,y:18,width:60,height:8,fill:"var(--paper)",class:"hl",stroke:"var(--ink)","stroke-width":1.4},g);
   E("polygon",{points:"30,18 36,14 36,22 30,26",fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":1.2},g);
@@ -417,6 +522,7 @@ function useObject(o, room){
   if(o.more){ $("objects").scrollIntoView({behavior:"smooth",block:"center"}); return; }
   if(o.kind==="key"){ if(!S.inv.includes(o.item)){ S.inv.push(o.item); save(); toast(o.take || `You pocket ${o.title}.`); render(); } return; }
   if(o.action==="map") return mapView();
+  if(o.action==="primer"){ if(o.item && !S.inv.includes(o.item)){ S.inv.push(o.item); save(); render(); toast("You take the Primer. It will travel with you (see the menu bar)."); } return primerView(); }
   if(o.action==="catalogue") return catalogueView();
   if(o.action==="ranks"){ overlay("Ranks of the library",""); WIDGETS.rank($("ovb")); return; }
   if(o.to){ if(o.say) toast(o.say); move(String(o.to), o.turn, room); return; }
@@ -729,6 +835,153 @@ WIDGETS.babel = (el, spec, room) => {
   $("bb-f").onclick = () => { const q = $("bb-q").value.toLowerCase().split("").map(c => AL.includes(c)? c : (c==="k"?"c":c==="w"?"u":c==="y"?"i":c==="q"?"c":" ")).join(""); if(!q.trim()) return; show(hash(q)*7919>>>0, q); };
   show(hash(room.id + ":" + (S.visits[room.id]||0)));
 };
+WIDGETS.sky = (el, spec) => {
+  const compass = az => ["N","NE","E","SE","S","SW","W","NW"][Math.round(az/45)%8];
+  el.innerHTML = `<div class="panel"><h3>The dome, unrolled</h3>
+    <svg id="sk-s" viewBox="0 0 560 560" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto" role="img" aria-label="The sky over Appleton, as seen looking straight up"></svg>
+    <div class="row"><label class="mono" for="sk-o">turn the dome</label><input id="sk-o" type="range" min="-24" max="24" step="0.25" value="0" style="width:240px"><span id="sk-ol" class="mono"></span><button class="btn" id="sk-n" type="button">Now</button></div>
+    <div id="sk-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
+    <p class="note">Looking straight up, with north at the top and east on the left, as a sky chart should be. The circle is the horizon. The projection is stereographic, the stereonet's projection, so every circle in the sky stays a circle. The chart turns with you: if the palace has turned you, the dome turns too, and in a mirror it is reversed, the way the ceiling of Grand Central was painted.</p>
+    <p class="note" style="font-size:12px">${esc((window.SKY&&SKY.credit)||"")}</p></div>`;
+  const draw = () => {
+    const off = +$("sk-o").value, svg = $("sk-s"); svg.innerHTML = "";
+    const sk = drawSky(svg, 280, 280, 240, {big:true, names:true, cons:true, tag:"w", offset:off});
+    $("sk-ol").textContent = (off>=0?"+":"") + off + " h · " + sk.d.toLocaleString([], {weekday:"short", hour:"numeric", minute:"2-digit"});
+    const up = sk.planets.filter(p=>p.alt>0).map(p=>`${p.name} ${p.alt.toFixed(0)}° up in the ${compass(p.az)}`);
+    const lit = Math.round(50*(1-Math.cos(2*Math.PI*sk.moon.phase)));
+    $("sk-t").innerHTML = `sun: ${sk.sun.alt>0?`${sk.sun.alt.toFixed(0)}° up in the ${compass(sk.sun.az)}`:`${(-sk.sun.alt).toFixed(0)}° below the horizon`}<br>
+      moon: ${lit}% lit, ${sk.moon.alt>0?`${sk.moon.alt.toFixed(0)}° up in the ${compass(sk.moon.az)}`:"below the horizon"}<br>
+      planets up: ${up.length? up.join("; ") : "none"}<br>local sidereal time ${(sk.L/15).toFixed(2)} h · latitude ${LAT}° · you face ${compass(facing())}`;
+  };
+  $("sk-o").oninput = draw; $("sk-n").onclick = () => { $("sk-o").value = 0; draw(); };
+  draw(); timers.push(setInterval(draw, 60000));
+};
+/* ---- Smullyan's island: knights always tell the truth, knaves always lie ---- */
+const KN = (() => {
+  const NAMES = ["Ash","Birch","Cedar"];
+  const DOOR = ["the left door","the right door"];
+  function templates(n){
+    const T = [];
+    for(let x=0;x<n;x++){
+      T.push({txt:(i)=>x===i?null:`${NAMES[x]} is a knight.`, f:(w)=>w.r[x]});
+      T.push({txt:(i)=>x===i?null:`${NAMES[x]} is a knave.`, f:(w)=>!w.r[x]});
+      T.push({txt:(i)=>x===i?null:`${NAMES[x]} and I are the same kind.`, f:(w,i)=>w.r[x]===w.r[i]});
+      T.push({txt:(i)=>x===i?null:`${NAMES[x]} and I are different kinds.`, f:(w,i)=>w.r[x]!==w.r[i]});
+      for(const dd of [0,1]){
+        T.push({txt:(i)=>x===i?null:`${NAMES[x]} would tell you that ${DOOR[dd]} leads on.`, f:(w)=> w.r[x] ? w.s===dd : w.s!==dd});
+        T.push({txt:(i)=>x===i?null:`Either ${NAMES[x]} is a knave, or ${DOOR[dd]} leads on.`, f:(w)=> !w.r[x] || w.s===dd});
+      }
+    }
+    for(const dd of [0,1]){
+      T.push({txt:()=>`${DOOR[dd][0].toUpperCase()+DOOR[dd].slice(1)} leads on.`, f:(w)=>w.s===dd, direct:true});
+      T.push({txt:()=>`If I am a knight, then ${DOOR[dd]} leads on.`, f:(w,i)=>!w.r[i] || w.s===dd});
+      T.push({txt:()=>`I am a knave or ${DOOR[dd]} leads on.`, f:(w,i)=>!w.r[i] || w.s===dd});
+      T.push({txt:()=>`I am a knight, and ${DOOR[dd]} leads on.`, f:(w,i)=>w.r[i] && w.s===dd});
+    }
+    T.push({txt:()=>`At least one of us is a knave.`, f:(w)=>w.r.some(v=>!v)});
+    T.push({txt:()=>`Exactly one of us is a knight.`, f:(w)=>w.r.filter(v=>v).length===1});
+    T.push({txt:()=>`We are all the same kind.`, f:(w)=>w.r.every(v=>v===w.r[0])});
+    return T;
+  }
+  function worlds(n){ const out=[]; for(let m=0;m<(1<<n);m++) for(const s of [0,1]) out.push({r:Array.from({length:n},(_,k)=>!!(m>>k&1)), s}); return out; }
+  function make(rand){
+    for(let tries=0; tries<4000; tries++){
+      const n = rand()<.55 ? 2 : 3, T = templates(n), says=[];
+      for(let i=0;i<n;i++){ let t, txt; do { t=T[Math.floor(rand()*T.length)]; txt=t.txt(i); } while(!txt); says.push({i, t, txt}); }
+      if(says.filter(x=>x.t.direct).length>1) continue;
+      const ok = worlds(n).filter(w => says.every(({i,t}) => t.f(w,i)===w.r[i]));
+      if(!ok.length) continue;
+      if(!ok.every(w=>w.s===ok[0].s)) continue;
+      if(ok.length > 2) continue;
+      if(says.some(x=>x.t.direct) && says.length===2 && rand()<.6) continue;
+      return {n, says, ok, safe: ok[0].s};
+    }
+    return null;
+  }
+  return {make, NAMES, DOOR};
+})();
+WIDGETS.knights = (el, spec) => {
+  const need = spec.need || 3;
+  let pz = null;
+  const show = () => {
+    pz = KN.make(Math.random);
+    const solved = S.solved.knightsCount || 0;
+    el.innerHTML = `<div class="panel"><h3>A puzzle at the two doors</h3>
+      <p class="note">One door leads on and the other leads back to the start. ${pz.n===2?"Two":"Three"} islanders stand between them. Each is a knight, who always tells the truth, or a knave, who always lies.</p>
+      <ul class="list" style="margin:10px 0">${pz.says.map(x=>`<li><b>${KN.NAMES[x.i]}:</b> “${esc(x.txt)}”</li>`).join("")}</ul>
+      <div class="row"><button class="btn" id="kn-l" type="button">Take the left door</button><button class="btn" id="kn-r" type="button">Take the right door</button><button class="btn" id="kn-n" type="button">Another island</button></div>
+      <div id="kn-o" class="note"></div><p class="note">Solved here: ${solved}${solved<need?` of the ${need} the far door asks for`:""}.</p></div>`;
+    const answer = d => {
+      const right = d===pz.safe, w = pz.ok[0];
+      const roles = pz.ok.length===1 ? Array.from({length:pz.n},(_,k)=>`${KN.NAMES[k]} is a ${w.r[k]?"knight":"knave"}`).join(", ") : "the islanders' kinds aren't all determined, but the door is";
+      if(right){ S.solved.knightsCount = (S.solved.knightsCount||0)+1; if(S.solved.knightsCount>=need) S.solved.island = 1; save(); }
+      $("kn-o").innerHTML = right ? `<span class="ok">Right. ${esc(roles)}.</span>` : `<span class="warn">That door leads back. ${esc(roles)}, so ${KN.DOOR[pz.safe]} leads on.</span>`;
+      $("kn-l").disabled = $("kn-r").disabled = true;
+      if(right && S.solved.knightsCount===need){ toast("Somewhere on the island, a door unbars."); render(); }
+    };
+    $("kn-l").onclick = () => answer(0); $("kn-r").onclick = () => answer(1); $("kn-n").onclick = show;
+  };
+  show();
+};
+
+/* ---- the Primer ---- */
+function primerView(){
+  const name = S.reader;
+  if(!name){
+    overlay("A Young Lady's Illustrated Primer", `<div class="text"><p>The book is heavier than it looks. The first page is blank, and then it isn't: <i>Who is reading?</i></p></div><div class="row widget"><input id="pr-n" style="width:220px" placeholder="your name"><button class="btn primary" id="pr-b" type="button">Answer the book</button></div>`);
+    const go = () => { const v=$("pr-n").value.trim(); if(!v) return; S.reader=v; save(); primerView(); };
+    $("pr-b").onclick = go; $("pr-n").onkeydown = e => { if(e.key==="Enter") go(); }; return;
+  }
+  const L2 = P.primer || {}, order = P.rooms.filter(r=>!r.secret).map(r=>String(r.id));
+  const unseen = order.filter(id => !S.visits[id]);
+  const secret = P.rooms.filter(r=>r.secret && !S.visits[r.id]).map(r=>String(r.id));
+  let pick = unseen.find(id => L2[id]) || unseen[0] || secret[0];
+  const here = String(cur.id), lessonHere = L2[here];
+  const n = Object.keys(S.visits).length;
+  let html = `<div class="text" style="max-width:640px;margin:0 auto">`;
+  html += `<p>Once there was a reader called <b>${esc(name)}</b>, who had wandered through ${n} room${n===1?"":"s"} of a palace that was larger inside than out.</p>`;
+  if(lessonHere) html += `<p><i>Here, in ${esc(cur.name)}:</i> ${lessonHere.lesson}</p>${lessonHere.q?`<p><b>The book asks:</b> ${lessonHere.q}</p><details><summary class="note">turn the page for the answer</summary><p>${lessonHere.a||""}</p></details>`:""}`;
+  if(pick){ const r = ROOMS[pick], ls = L2[pick];
+    html += `<p>${esc(name)} had not yet seen <b>${esc(r.name)}</b>${ls? ", where " + ls.teaser : ""}. The page shows a small picture of a door with the number ${esc(r.label||r.id)} on it.</p>
+    <div class="row"><button class="btn primary" id="pr-go" type="button">Touch the picture</button></div>`;
+  } else html += `<p>${esc(name)} had seen every room, even the hidden ones. The last page is still blank, which is the book's way of asking for a new room.</p>`;
+  html += `<p class="note">The book rewrites itself for whoever holds it. Close it and open it again somewhere else.</p></div>`;
+  overlay(`A Young Lady's Illustrated Primer · for ${name}`, html);
+  const b = $("pr-go"); if(b) b.onclick = () => { closeOv(); toast("The picture swallows you, gently."); move(pick, "e", null); };
+}
+
+/* ---- a palace alethiometer: three hands set a question, the needle answers ---- */
+const SYMBOLS = [["hourglass",7],["key",16],["lock",10],["compass",4],["lamp",1],["pendulum",7],["lily",19],["crystal",12],["tree",14],["tile",11],["card",9],["mirror",8],
+ ["stair",13],["clock",17],["whale",15],["railroad",15],["φ",16],["die",27],["owl",22],["serpent",12],["star",4],["moon",4],["sun",3],["spiral",13],
+ ["hexagon",18],["bell",17],["quill",21],["anchor",19],["wheel",2],["labyrinth",23],["scale",3],["ladder",13],["eye",5],["seed",29],["sphere",8],["door",1]];
+WIDGETS.oracle = (el) => {
+  const hands = [0,12,24];
+  el.innerHTML = `<div class="panel"><h3>The palace alethiometer</h3>
+    <svg id="al-s" viewBox="-170 -170 340 340" style="width:100%;max-width:380px;display:block;margin:0 auto" role="img" aria-label="A dial of 36 symbols with three hands and a needle"></svg>
+    <div class="row">${[0,1,2].map(k=>`<label class="mono">hand ${k+1} <select id="al-h${k}">${SYMBOLS.map((s,j)=>`<option value="${j}" ${j===hands[k]?"selected":""}>${s[0]}</option>`).join("")}</select></label>`).join("")}</div>
+    <div class="row"><button class="btn primary" id="al-a" type="button">Ask</button></div><div id="al-o" class="text"></div>
+    <p class="note">Thirty-six symbols, each meaning many things, in honor of Pullman's instrument. This one knows only the palace, and it answers with a room.</p></div>`;
+  const svg = $("al-s"); let needle = 0;
+  const draw = () => {
+    svg.innerHTML = "";
+    E("circle",{r:160,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":3},svg); E("circle",{r:122,fill:"url(#s-hatch)",stroke:"var(--ink)","stroke-width":1.5},svg); E("circle",{r:100,fill:"var(--paper)",stroke:"var(--ink)"},svg);
+    SYMBOLS.forEach((s,j) => { const t=(j/36)*2*Math.PI-Math.PI/2; L(svg,122*Math.cos(t+Math.PI/36),122*Math.sin(t+Math.PI/36),160*Math.cos(t+Math.PI/36),160*Math.sin(t+Math.PI/36),.8);
+      const tx=T(s[0],{x:141*Math.cos(t),y:141*Math.sin(t)+3,"text-anchor":"middle","font-size":s[0].length>7?6.5:8,fill:"var(--ink)","font-family":"IM Fell English, serif",transform:`rotate(${j*10} ${141*Math.cos(t)} ${141*Math.sin(t)})`},svg); });
+    [0,1,2].forEach(k => { const j=+$("al-h"+k).value, t=(j/36)*2*Math.PI-Math.PI/2; L(svg,0,0,96*Math.cos(t),96*Math.sin(t),2.5); E("circle",{cx:96*Math.cos(t),cy:96*Math.sin(t),r:4,fill:"var(--ink)"},svg); });
+    const nt=(needle/36)*2*Math.PI-Math.PI/2; L(svg,0,0,118*Math.cos(nt),118*Math.sin(nt),1.4,{stroke:"var(--spot)"}); E("circle",{r:7,fill:"var(--spot)",stroke:"var(--ink)"},svg);
+  };
+  [0,1,2].forEach(k => $("al-h"+k).onchange = draw);
+  $("al-a").onclick = () => {
+    const q = [0,1,2].map(k=>+$("al-h"+k).value), seed = hash(q.join("-") + ":" + new Date().toDateString());
+    const R = rng(seed), target = Math.floor(R()*36); let steps = 0; const total = 36*2 + ((target - needle + 36) % 36);
+    const swing = setInterval(() => { needle = (needle+1)%36; draw(); if(++steps>=total){ clearInterval(swing);
+      const sym = SYMBOLS[target], room = ROOMS[String(sym[1])] || cur, first = SYMBOLS[q[0]][0];
+      $("al-o").innerHTML = `<p>The needle settles on <b>${esc(sym[0])}</b>. You asked about ${esc(first)}, ${esc(SYMBOLS[q[1]][0])}, and ${esc(SYMBOLS[q[2]][0])}. The ${esc(sym[0])} means many things; today it means <b>room ${esc(room.label||room.id)}, ${esc(room.name)}</b>.</p>`; } }, 28);
+    timers.push(swing);
+  };
+  draw();
+};
+
 WIDGETS.center = (el, spec, room) => {
   const d = bfs(START)[String(room.id)];
   const n = Math.max(0, S.walk.length-1);
@@ -743,6 +996,7 @@ WIDGETS.rank = (el) => {
 $("b-map").onclick = mapView;
 $("b-cat").onclick = catalogueView;
 $("b-help").onclick = helpView;
+$("b-primer").onclick = primerView;
 $("b-ink").onclick = () => { S.ink = S.ink==="1bit" ? "two" : "1bit"; save(); render(); toast(S.ink==="1bit" ? "Black ink only, as on a 1-bit screen." : "A second block of color, wing by wing."); };
 $("b-close").onclick = () => { location.hash = START; };
 const mclock = () => { const d=now(); $("mclock").textContent = d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}); };

@@ -54,7 +54,34 @@ Visitors never see the office unless they type `#curator`.
   objects: [...]
 ```
 
-**Decor** (any combination): `shelves`, `lamp`, `window` (shows the real sun or the real moon phase), `stars`, `rug`, `stair` (a spiral well), `pool` (lily pads in a hexagonal packing), `pendulum`, `clockface` (shows the visitor's time), `glacier` (ice and icicles).
+**Decor** (any combination): `shelves`, `lamp` (lit at dusk and night), `window` (shows the real sun or moon if it's in front of you, and casts a beam on the floor), `sky` (the real sky as a dome on the back wall), `stars`, `rug`, `stair` (a spiral well), `pool` (lily pads in a hexagonal packing), `pendulum`, `clockface` (shows the visitor's time), `glacier` (ice and icicles).
+
+### Rooms that change with the time
+
+Every room already changes on its own. The light follows the visitor's clock, lamps light at dusk, and a window shows the sun or moon when it is really in that direction. The sun also lays a beam across the floor, long in the morning and evening and short at noon, and objects cast shadows away from it. A full moon does the same at night.
+
+To change a room's *contents* with the time, give it `phases`. Each phase has a condition and adds to the room while the condition holds:
+
+```yaml
+  phases:
+    - when: "hours:0-1"
+      text: "It is past midnight. A door that isn't there by day stands open."
+      doors: [{to: 23, wall: front, oneway: true, title: "the midnight door"}]
+    - {when: "night|dusk", text: "The lilies close.", decor: [stars], drop: [window]}
+    - {when: ["weekday", "hours:8-17"], text: "Class is in session."}
+```
+
+A phase can add `text`, `doors`, `objects`, `notes`, and `decor`. It can remove decor with `drop`, rename the room with `name`, or swap its `widget`. Add `replace: true` to replace the text instead of adding to it.
+
+The top of the file sets where the palace is and which way it faces:
+
+```yaml
+latitude: 44.26
+longitude: -88.41
+facing: 180      # in frame e a visitor faces south, so the windows catch the sun
+```
+
+The visitor's frame turns this too: a quarter turn faces them west, and so on.
 
 ### A door
 
@@ -99,6 +126,8 @@ A condition is a word, a word with a value, or a list (all must hold). Use `|` f
 | `night`, `dawn`, `day`, `dusk` | the visitor's local hour is 21–5, 5–8, 8–18, 18–21 |
 | `hours:9-17` | the hour is in that range (wraps past midnight, e.g. `hours:22-3`) |
 | `weekend`, `weekday` | as named |
+| `minutes:0-5` | the first five minutes of any hour |
+| `sun:up`, `sun:down` | the real sun, at the palace's latitude and longitude |
 | `month:12` | December |
 | `moon:full`, `moon:new` | the actual moon, within about two days |
 | `mirror`, `upright` | the visitor is (or isn't) reflected |
@@ -147,6 +176,7 @@ Special objects:
 - `kind: link` with `to: 1` is a Myst linking book: clicking it carries the visitor to room 1 (with an optional `turn` and `say`).
 - `kind: key` with `item: golden-key` can be picked up. Name items under `items:` at the top of the file.
 - `action: map`, `action: catalogue`, or `action: ranks` opens that view.
+- `action: primer` with `item: primer` is the Primer. Once picked up, it gets a button in the menu bar.
 
 Icons: `rule`, `net`, `planimeter`, `cross`, `plant`, `turns`, `cards`, `lock`, `tiles`, `crystal`, `tree`, `book`, `books`, `unwritten`, `scroll`, `lectern`, `clock`, `key`, `pond`, `fraction`, `note`, `map`, `pendulum`, `hex`, `door`, `box`.
 
@@ -164,9 +194,25 @@ A room can hold one working instrument under its text:
 | `clock` | the time in dozenal, in grosses and great grosses | — |
 | `babel` | a page from the Library of Babel, and a search that always succeeds | — |
 | `center` | the visitor's path length against the shortest one | — |
+| `sky` | the sky chart, full size, with a slider to turn the dome through ±24 hours | — |
+| `knights` | endless knights-and-knaves puzzles, each checked for a unique answer; solving `need` of them sets `solved:island` | `need` |
+| `oracle` | the palace alethiometer: three hands, a needle, and a room for an answer | — |
 | `rank` | the table of ranks | — |
 
 Write widgets as `widget: clock` or `widget: {type: euclid, a: 89, b: 34}`.
+
+### The Primer
+
+The Primer knows which rooms the reader has seen. Each time it opens, it tells a little story about the reader by name and teaches the lesson for the room they're standing in. Then it offers a picture of a door to a room they haven't seen, and touching the picture takes them there. Lessons live at the bottom of the data file:
+
+```yaml
+primer:
+  "16": {teaser: "the slowest gcd is made of Fibonacci numbers",
+         lesson: "Euclid's algorithm cuts off squares...",
+         q: "How many steps for gcd(89, 55)?", a: "Nine..."}
+```
+
+`teaser` finishes the sentence "had not yet seen *Room*, where …". `q` and `a` are a question and a hidden answer. Rooms without a lesson are still offered; they just get less of a story.
 
 ### Wings and ranks
 
