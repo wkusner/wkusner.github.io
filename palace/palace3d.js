@@ -1,4 +1,4 @@
-/* The Palace in three dimensions: rooms built from the data file, lit by the real sun and the lamps,
+/* The Wending House in three dimensions: rooms built from the data file, lit by the real sun and the lamps,
    and printed through an engraving shader (hatching that follows the surfaces, ink outlines, paper grain,
    muted color). Loaded by palace.js; falls back to the flat woodcut drawings if WebGL is missing. */
 import * as THREE from "./lib/three.module.min.js";
@@ -674,7 +674,7 @@ export function create(container, hooks){
       case "hex": { const sh = new THREE.Shape(); for(let k=0;k<6;k++){ const t=k*Math.PI/3; k? sh.lineTo(Math.cos(t)*.12,Math.sin(t)*.12) : sh.moveTo(.12,0); } add(new THREE.ExtrudeGeometry(sh,{depth:.03,bevelEnabled:false}), paper, 0,.03,0,-Math.PI/2,0,0); break; }
       case "orrery": add(new THREE.CylinderGeometry(.06,.08,.12,12), wood, 0,.06); add(new THREE.SphereGeometry(.04,16,12), brass, 0,.17);
         [.08,.12,.16].forEach((r,k) => { add(new THREE.TorusGeometry(r,.003,4,40), brass, 0,.15,0, Math.PI/2,0,0); add(new THREE.SphereGeometry(.014+k*.004,10,8), k===1?sp:ink, Math.cos(k*2.2)*r,.15,Math.sin(k*2.2)*r); }); break;
-      case "carriage": { // brass case, glass sides, a handle, and hands that keep palace time
+      case "carriage": { // brass case, glass sides, a handle, and hands that keep house time
         const glass = mat("#e8eceb",{transparent:true, opacity:.28, roughness:.1});
         add(new THREE.BoxGeometry(.2,.02,.15), brass, 0,.01); add(new THREE.BoxGeometry(.18,.015,.13), brass, 0,.27);
         [[-.085,-.06],[.085,-.06],[-.085,.06],[.085,.06]].forEach(([x,z]) => add(new THREE.BoxGeometry(.018,.25,.018), brass, x,.14,z));

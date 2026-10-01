@@ -8,7 +8,7 @@ shorttitle:
 
 ##Puzzles
 
-**[The Palace](/palace/)**: a Myst-like library and memory palace that holds all of these devices, plus drafts, books, and puzzles. Doors keep hours, mirrors hide rooms, the sky and weather are real, and some loops take you somewhere else. A [curator's guide](/palace/curator/) explains how it's built.
+**[The Wending House](/palace/)**: a Myst-like library and memory palace that holds all of these devices, plus drafts, books, and puzzles. Doors keep hours, mirrors hide rooms, the sky and weather are real, and some loops take you somewhere else. A [curator's guide](/palace/curator/) explains how it's built.
 
 - [Defectsweeper](/defectsweeper/): find the dislocations hidden in a hexagonal crystal by walking Burgers circuits.
 - [Fifteen and the Parity Dial](/fifteen/): the 15 puzzle with its permutation, parity invariant, and commutators shown live.

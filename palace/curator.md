@@ -5,7 +5,7 @@ title: The Curator's Guide
 shorttitle:
 ---
 
-## The Curator's Guide to the Palace
+## The Curator's Guide to the Wending House
 
 The [Palace](/palace/) is one engine plus one data file. To add a room, a door, a book, or a riddle, you edit one file, `_data/palace.yml`, then commit and push. Nothing else needs to change.
 
@@ -13,11 +13,11 @@ The [Palace](/palace/) is one engine plus one data file. To add a room, a door, 
 
 | File | What it is | Do you edit it? |
 |---|---|---|
-| `_data/palace.yml` | every room, door, object, wing, and rank | **yes, this is the palace** |
+| `_data/palace.yml` | every room, door, object, wing, and rank | **yes, this is the house** |
 | `palace/data.js` | three lines that hand the YAML to the page | no |
 | `palace/palace.js` | the engine: drawing, walking, the map, the widgets | only to add a new kind of thing |
 | `palace/index.html` | the page and its styles | rarely |
-| `palace/curator.md` | this guide | when the palace learns new tricks |
+| `palace/curator.md` | this guide | when the house learns new tricks |
 
 ### The curator's office
 
@@ -79,7 +79,7 @@ To change a room's *contents* with the time, give it `phases`. Each phase has a 
 
 A phase can add `text`, `doors`, `objects`, `notes`, and `decor`. It can remove decor with `drop`, rename the room with `name`, or swap its `widget`. Add `replace: true` to replace the text instead of adding to it.
 
-The top of the file sets where the palace is and which way it faces:
+The top of the file sets where the house is and which way it faces:
 
 ```yaml
 latitude: 44.26
@@ -133,7 +133,7 @@ Special destinations:
 
 **Floors and ceilings.** `floor: checker` or `floor: stone` lays a floor in true perspective. `ceiling: coffers`, `ceiling: vault`, or `ceiling: open` (the real sky, for courtyards) replace the default beams.
 
-**The console.** The tally bar shows your level and xp, your frame and sheets, the palace's date and time, the weather, your save code, and your mode. The bag holds what you carry; click an item to use it. With a map in the bag, a live minimap sits in the top-right corner. With the Primer, a hint sits in the bottom-left.
+**The console.** The tally bar shows your level and xp, your frame and sheets, the house's date and time, the weather, your save code, and your mode. The bag holds what you carry; click an item to use it. With a map in the bag, a live minimap sits in the top-right corner. With the Primer, a hint sits in the bottom-left.
 
 **Modes.** The porter's desk at the Entry (room 0) offers three ways to walk:
 - *guided:* master key, plan, finding aid, compass, lantern, and hourglass;
@@ -156,14 +156,14 @@ warps:
 - The Great Spiral is a log stair: each loop through 15, 17, and 16 goes down a landing, and at landing −3 a hidden door opens.
 - The Branch Cut (rooms 30 to 33) is a square root: once around the pillar puts you on the other sheet, and twice brings you back.
 
-**Live world.** The weather comes from Open-Meteo, for the palace's latitude and longitude. It shows in the windows and on the `thermo` fitting, and it can hide the sun. The hourglass (and the clock chip in the tally bar) sets the palace's date, time, and speed. The sky, sun, sundial, pendulum, light, and timed doors all follow it. The `sundial` fitting and widget show the real shadow.
+**Live world.** The weather comes from Open-Meteo, for the house's latitude and longitude. It shows in the windows and on the `thermo` fitting, and it can hide the sun. The hourglass (and the clock chip in the tally bar) sets the house's date, time, and speed. The sky, sun, sundial, pendulum, light, and timed doors all follow it. The `sundial` fitting and widget show the real shadow.
 
 **Combining things.** An object with `action: combine`, `uses: [a, b]`, and `gives: c` turns two carried things into one. The torn page in the Branch Cut works this way.
 
 
 ### Version 3: the engraved view
 
-On any browser with WebGL, the Palace builds each room in three dimensions and prints it through an engraving pass:
+On any browser with WebGL, the Wending House builds each room in three dimensions and prints it through an engraving pass:
 - hatching that follows the surfaces: floors across, walls up, curved things around;
 - ink outlines where depth jumps;
 - paper grain and a vignette;
@@ -182,7 +182,7 @@ Lettering, the window skies, and the sky ceiling print on top, so they stay legi
 
   A HyperCard-style label names whatever is under the cursor.
 - **Animation.**
-  - The pendulum swings, and its plane turns at Appleton's rate on palace time.
+  - The pendulum swings, and its plane turns at Appleton's rate on house time.
   - The lily pads bob.
   - The lamps flicker.
   - The icosahedron in the model room turns.
@@ -199,7 +199,7 @@ The Entry (room 0) is the front door and a working launch page. No porter; a let
 - **The desk.** The ring of keys and the full plan make you a *guided* walker. The folded map and compass make you a *wanderer*. Take nothing and you're *hardcore*. The tray puts everything back. The walking style is read from what you carry, so it's never a menu.
 - **The guest book and the bell.** The guest book keeps a reader's name in their own browser; the Primer uses it. The bell does nothing, mostly.
 - **The notice board** (left wall) carries the problem of the week, the month's calendar, the news, and a "wanted" list. The puzzle changes on Mondays by ISO week, drawn in turn from `puzzles:` (each has `q`, `a`, and `source`; last week's answer is shown). Calendar entries come from `events:`: `{date: "2026-10-14", time: "4:30 pm", title: "...", where: "...", href: "..."}` (quote the date and times). News is `news:`, a list of `{date, text, href}`; the board sorts it by date.
-- **The link board** (right wall) is the launch page. The site's own tiles come from `links:` in the data. Visitors can add their own tiles, kept only in their own browser (`palace-links`), and can export or import them as a file. Bookmark `/palace/#0/links` to land on it, or tick "open the palace straight onto this board."
+- **The link board** (right wall) is the launch page. The site's own tiles come from `links:` in the data. Visitors can add their own tiles, kept only in their own browser (`palace-links`), and can export or import them as a file. Bookmark `/palace/#0/links` to land on it, or tick "open the house straight onto this board."
 - **The almanac** (right wall) shows the weather now, a four-day forecast, sunrise and sunset, and the moon and planets at 9 p.m.
 - **The codes ledger** writes and reads save codes, and takes warp words.
 - **Search.** Press `/` anywhere, or use "/ go" in the tally, to jump to a room, thing, link, or warp. The ★ in the tally pins the current room to the top of search and the link board.
@@ -220,7 +220,7 @@ office_hours:
   - {days: Fri, start: "10:00", end: "11:00", note: "QRC drop-in"}
 ```
 
-Times are on the palace's clock, so the hourglass can test them.
+Times are on the house's clock, so the hourglass can test them.
 
 ### The Sundial Court and the open sky
 
@@ -234,7 +234,7 @@ Room 34 has `ceiling: open`. Any room with an open ceiling gets the real sky ove
 
 Click near the top to look up; in an open court the camera tips nearly to the zenith.
 
-The **sundial** is laid out for the latitude the palace stands at, on a baluster pedestal with two round steps, and reads from IIII in the morning to VIII at night. Click the dial to bring its reading forward. Nothing on it is corrected: it reads the sun's own time, straight off the plate, and the note beside it says why that differs from the clock (longitude, the equation of time, daylight saving). On a clear night with the moon more than about a sixth lit, it reads by moonlight instead, and that too is read straight off the plate: moon time, which runs about 48 minutes later each night. Under heavy cloud, or with the sun put out in the storm glass, it says so and waits. South of the equator, the style turns to point at the south pole.
+The **sundial** is laid out for the latitude the house stands at, on a baluster pedestal with two round steps, and reads from IIII in the morning to VIII at night. Click the dial to bring its reading forward. Nothing on it is corrected: it reads the sun's own time, straight off the plate, and the note beside it says why that differs from the clock (longitude, the equation of time, daylight saving). On a clear night with the moon more than about a sixth lit, it reads by moonlight instead, and that too is read straight off the plate: moon time, which runs about 48 minutes later each night. Under heavy cloud, or with the sun put out in the storm glass, it says so and waits. South of the equator, the style turns to point at the south pole.
 
 The positions behind it are good to about a hundredth of a degree for the sun and a few tenths for the moon. They include the moon's parallax and atmospheric refraction, so the sun is seen a little above where geometry alone would put it near the horizon, just as a real shadow sees it. The moon's phase comes from its real elongation from the sun, not from a mean month.
 
@@ -243,7 +243,7 @@ The court is a cloister: a Tuscan colonnade on every side, whose lean-to roof th
 ### The astrolabe: place, day, and weather
 
 The astrolabe hangs in the Sundial Court; take it and it rides in the bag (its save-code bit comes after the mended page). It can:
-- **Carry the palace somewhere else.** Choose from a list (Reykjavík, Tromsø, Quito, Alexandria, Kyoto, Sydney, the South Pole), type a latitude and longitude, or press "Where I am", which asks the browser once. Weather, the sky, the sun's light, the sundial, the pendulum's rate, and the almanac all follow. Away from home, light (dawn, day, dusk, night) follows the sun's real height instead of the clock. "Home to Appleton" undoes it.
+- **Carry the house somewhere else.** Choose from a list (Reykjavík, Tromsø, Quito, Alexandria, Kyoto, Sydney, the South Pole), type a latitude and longitude, or press "Where I am", which asks the browser once. Weather, the sky, the sun's light, the sundial, the pendulum's rate, and the almanac all follow. Away from home, light (dawn, day, dusk, night) follows the sun's real height instead of the clock. "Home to Appleton" undoes it.
 - **Set the day and hour.** This is the same control as the hourglass.
 - **Set the weather.** The storm glass can fix clear, broken cloud, overcast, fog, rain, snow, or a storm, or go back to live weather. "Clear the sky" sets it clear in one press, which keeps the sundial and the stars working whatever the real weather is doing.
 - **Put out the sun or the moon.** With the sun out, the court's sky goes dark, so the stars, planets, and their tracks show by day; there's no sunlight and no shadow. With the moon out, its glare and its shadows go too.
@@ -290,7 +290,7 @@ Under the table is a small orrery. Positions come from JPL's Keplerian elements,
 
 ### The carriage clock
 
-It stands on a side table on the Entry's right wall and keeps palace time, with live hands and a ticking balance. Its card offers:
+It stands on a side table on the Entry's right wall and keeps house time, with live hands and a ticking balance. Its card offers:
 - the chimes: Westminster, Whittington, St. Michael's, ting-tang, ship's bells, the hours only, or silent;
 - volume;
 - whether it's heard only in the Entry (faintly next door) or through the whole house;
@@ -334,7 +334,7 @@ A condition is a word, a word with a value, or a list (all must hold). Use `|` f
 | `hours:9-17` | the hour is in that range (wraps past midnight, e.g. `hours:22-3`) |
 | `weekend`, `weekday` | as named |
 | `minutes:0-5` | the first five minutes of any hour |
-| `sun:up`, `sun:down` | the real sun, at the palace's latitude and longitude |
+| `sun:up`, `sun:down` | the real sun, at the house's latitude and longitude |
 | `month:12` | December |
 | `moon:full`, `moon:new` | the actual moon, within about two days |
 | `mirror`, `upright` | the visitor is (or isn't) reflected |
@@ -379,7 +379,7 @@ objects:
 
 Special objects:
 
-- `kind: unwritten` is a book or device that doesn't exist yet. It sits on the shelf with a dashed outline. This is the palace's to-do list.
+- `kind: unwritten` is a book or device that doesn't exist yet. It sits on the shelf with a dashed outline. This is the house's to-do list.
 - `kind: link` with `to: 1` is a Myst linking book: clicking it carries the visitor to room 1 (with an optional `turn` and `say`).
 - `kind: key` with `item: golden-key` can be picked up. Name items under `items:` at the top of the file.
 - `action: map`, `action: catalogue`, or `action: ranks` opens that view.
@@ -395,7 +395,7 @@ A room can hold one working instrument under its text:
 
 | Widget | What it does | Options |
 |---|---|---|
-| `pendulum` | Foucault's pendulum at the palace's latitude, turning in real time | `latitude` |
+| `pendulum` | Foucault's pendulum at the house's latitude, turning in real time | `latitude` |
 | `funes` | Funes's wall of names, the visitor's own number names, and their whole walk | `names: [{n, name}]` |
 | `euclid` | Euclid's algorithm as squares cut from a rectangle, with Lamé's bounds | `a`, `b`, `award` (an item), `awardText` |
 | `clock` | the time in dozenal, in grosses and great grosses | — |
@@ -403,7 +403,7 @@ A room can hold one working instrument under its text:
 | `center` | the visitor's path length against the shortest one | — |
 | `sky` | the sky chart, full size, with a slider to turn the dome through ±24 hours | — |
 | `knights` | endless knights-and-knaves puzzles, each checked for a unique answer; solving `need` of them sets `solved:island` | `need` |
-| `oracle` | the palace alethiometer: three hands, a needle, and a room for an answer | — |
+| `oracle` | the house alethiometer: three hands, a needle, and a room for an answer | — |
 | `rank` | the table of ranks | — |
 
 Write widgets as `widget: clock` or `widget: {type: euclid, a: 89, b: 34}`.
@@ -435,13 +435,13 @@ A rank is earned by the number of distinct rooms remembered. Its index (0, 1, 2,
 
 ### Time and light
 
-The palace uses the visitor's clock, or the hourglass's or astrolabe's. Light runs dawn, day, dusk, night, and the Lamps button overrides it. The window shows the sun by day and the actual phase of the moon by night. The Clock Room's door changes each hour, and the Observatory's trapdoor opens at dusk.
+The house uses the visitor's clock, or the hourglass's or astrolabe's. Light runs dawn, day, dusk, night, and the Lamps button overrides it. The window shows the sun by day and the actual phase of the moon by night. The Clock Room's door changes each hour, and the Observatory's trapdoor opens at dusk.
 
 ### The look
 
 The pictures are drawn like woodcuts: black hatching on paper, with a rough cut to every line. At night they turn into white-line engravings. The windows around them are HyperCard's: striped title bars, square close boxes, hard shadows, and a dithered desktop.
 
-Color is a second block, printed over the black. Each wing's `color` is its spot color, and it shows up on the room number, the drop cap, the rug, the lamp shade, the sky in the window, the water, and the darkest fills of the objects. Keep wing colors muted and few; the palace looks best with four or five. The **Ink** button switches any visitor to pure 1-bit black and white.
+Color is a second block, printed over the black. Each wing's `color` is its spot color, and it shows up on the room number, the drop cap, the rug, the lamp shade, the sky in the window, the water, and the darkest fills of the objects. Keep wing colors muted and few; the house looks best with four or five. The **Ink** button switches any visitor to pure 1-bit black and white.
 
 ### What visitors' browsers remember
 
@@ -455,7 +455,7 @@ Visits, the walk, the frame in each room, pockets, solved riddles, Funes names, 
 - **Post office hours or an event.** Edit `office_hours:` or `events:` in `_data/palace.yml` and push. The office door plate and the notice board update themselves.
 - **A door that only opens on a full moon:** `needs: "moon:full"` with a hint.
 - **Retire an unwritten book once it exists.** Change `kind: unwritten` to `kind: device` and add its `href`.
-- **Ask Claude.** "Add a room for X to the palace" is enough. The data file and this guide are in the QRC project notes too.
+- **Ask Claude.** "Add a room for X to the house" is enough. The data file and this guide are in the QRC project notes too.
 
 ### Sources of the idea
 

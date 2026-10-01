@@ -1,7 +1,7 @@
-# The Palace — the one file that furnishes every room.
+# The Wending House — the one file that furnishes every room.
 # Edit this file, commit, push. See /palace/curator/ for the full guide.
 
-title: The Palace
+title: The Wending House
 start: 0
 latitude: 44.26        # Appleton: the pendulum, the sky, the sun through the windows
 longitude: -88.41
@@ -75,11 +75,14 @@ letter: |
 
   W. K.
 
+  P.S. To wend is to turn, or to go one's way. Here it means both.
+
 news:     # newest first is fine; the notice board sorts by date
+  - {date: "2026-10-02", text: "The palace has a name: the Wending House. Also: gardens, a carriage clock, and the planets tracked.", href: "#0"}
   - {date: "2026-10-01", text: "The Entry gets a notice board, a link board, and an almanac.", href: "#0"}
   - {date: "2026-10-01", text: "The engraved view: rooms in three dimensions, lit by the real sun.", href: "#1"}
   - {date: "2026-10-01", text: "Lily Pads: sticky growth in a pond.", href: "/lily-pads/"}
-  - {date: "2026-09-30", text: "The Palace opens.", href: "#0"}
+  - {date: "2026-09-30", text: "The Wending House opens.", href: "#0"}
 
 events:   # add your own: {date: "2026-10-14", time: "4:30 pm", title: "…", where: "…", href: "…"}
   []
@@ -168,7 +171,7 @@ rooms:
     - {to: 3, wall: back}
     - {to: 4, wall: right, title: "a narrow stair up"}
   objects:
-    - {kind: key, item: plan, icon: map, title: "A folded plan of the palace", when: "mode:hardcore"}
+    - {kind: key, item: plan, icon: map, title: "A folded plan of the house", when: "mode:hardcore"}
     - {kind: device, icon: rule, title: "Slide Rule Cabinet", href: "/slide-rules/", note: "Straight, circular, complex, finite-field, and relativistic rules to drag and read."}
     - {kind: unwritten, icon: rule, title: "The Instruments Cabinet", note: "Sectors, Napier's bones and their descendants, log and trig tables, Gunter's scale, ruler constructions, scraping and flattening, inclinometers, and sextants."}
     - {kind: unwritten, icon: rule, title: "Elliptic slide rule", note: "A rule built on the ℘ function, using transparencies."}
@@ -306,7 +309,7 @@ rooms:
     Some of the doors in this wing turn you as you pass through them. Watch the F.
   mirror: You came in through glass. The room is the same room, but the F in the corner is reversed, and something in the cellar is now visible that wasn't before.
   marginalia:
-    - "The F in the menu bar is an element of D₄. Every door in the palace can act on it."
+    - "The F in the menu bar is an element of D₄. Every door in the house can act on it."
   sources:
     - "Hamilton's quaternions (1843), carved into Brougham Bridge in Dublin, and his representation of rotations by arcs on the sphere."
   bib:
@@ -566,7 +569,7 @@ rooms:
     - {to: 16, wall: front}
     - {to: [18, 19, 21, 23], wall: back, label: "⟳", oneway: true, title: "the door on the clock's hand"}
   objects:
-    - {kind: key, item: hourglass, icon: hourglass, title: "An hourglass", take: "You take the hourglass. Turn it (from your bag, or the clock in the tally bar) to set the palace's time."}
+    - {kind: key, item: hourglass, icon: hourglass, title: "An hourglass", take: "You take the hourglass. Turn it (from your bag, or the clock in the tally bar) to set the house's time."}
     - {kind: unwritten, icon: clock, title: "The Number Systems Museum", note: "Tallies, Roman, Babylonian, Egyptian, Maya, Kaktovik, bases, the French counting words, dozen and gross, and Archimedes's Sand Reckoner."}
     - {kind: unwritten, icon: scroll, title: "Continued fractions and nested radicals", note: "Euclid's algorithm, written down differently."}
 
@@ -580,7 +583,7 @@ rooms:
   text: >-
     Another hexagon, or the same one. Shelves on four walls, five shelves to a wall, thirty-two books to a shelf. The books are all different, and almost all of them are noise.
 
-    The shelves here fold. Take the door marked “?” and you could come out anywhere in the palace.
+    The shelves here fold. Take the door marked “?” and you could come out anywhere in the house.
   widget: babel
   marginalia:
     - "Borges's books have 410 pages of 40 lines of about 80 characters, from 25 symbols. That is 25^1,312,000 books."
@@ -668,7 +671,7 @@ rooms:
   phases:
     - {when: night, text: "The plaster in the molds is setting overnight. Don't touch it."}
   marginalia:
-    - "The shelf of unwritten books is the palace's to-do list. When one gets written, it moves out to its room."
+    - "The shelf of unwritten books is the house's to-do list. When one gets written, it moves out to its room."
   sources:
     - "The shelf of books never written, from the library of Dream in Neil Gaiman's <i>The Sandman</i>."
     - "The linking books of Myst (1993)."
@@ -697,7 +700,7 @@ rooms:
   decor: [shelves, lamp, rug]
   at: [0, 5]
   text: >-
-    The room the plan doesn't show. You reach it through a mirror or by rank. Here are the books the rest of the palace stands on, and the books about palaces like this one.
+    The room the plan doesn't show. You reach it through a mirror or by rank. Here are the books the rest of the house stands on, and the books about houses like this one.
   marginalia:
     - "Secret rooms count toward rank but not toward the room total."
   sources:
@@ -887,7 +890,7 @@ rooms:
   text: >-
     A small room with low shelves. On the rug lies a book bound in something that isn't quite leather. In Stephenson's novel, the Primer was a book that raised the girl who read it, teaching her through stories that rewrote themselves around her.
 
-    This one is humbler. It knows where you have been in the palace and where you haven't. Pick it up and it will travel with you.
+    This one is humbler. It knows where you have been in the house and where you haven't. Pick it up and it will travel with you.
   marginalia:
     - "The Primer's lessons are stored at the bottom of the data file, one per room."
   sources:
@@ -910,12 +913,12 @@ rooms:
   decor: [shelves, lamp, stars, alethiometer]
   at: [-1, 4]
   text: >-
-    The shelves here hold the libraries that never were, or not quite: the great stores of knowledge from other people's books. Every one of them is a different answer to the question this palace asks, which is what it means to keep everything you know in one place and still be able to find it.
+    The shelves here hold the libraries that never were, or not quite: the great stores of knowledge from other people's books. Every one of them is a different answer to the question this house asks, which is what it means to keep everything you know in one place and still be able to find it.
 
     In the middle of the room stands an instrument with thirty-six symbols and three hands.
   widget: oracle
   marginalia:
-    - "The alethiometer here is my own: its symbols are things in the palace, and it answers with a room. The same three hands give the same answer all day, and a different one tomorrow."
+    - "The alethiometer here is my own: its symbols are things in the house, and it answers with a room. The same three hands give the same answer all day, and a different one tomorrow."
   sources:
     - "The libraries and instruments on the shelves, each credited on its card."
   bib:
@@ -932,12 +935,12 @@ rooms:
     - {to: 22, wall: front, title: "back to the Archive"}
     - {to: random, wall: left, label: "?", look: shelves, title: "a gap between two shelves", say: "All libraries are connected. You come out somewhere else."}
   objects:
-    - {kind: ref, icon: scroll, title: "An STC fragment", by: "Warhammer 40,000", note: "A Standard Template Construct, the data-seed of a whole lost technology. Recovering a complete one is a holy act. Every device in this palace is meant to be a small STC."}
+    - {kind: ref, icon: scroll, title: "An STC fragment", by: "Warhammer 40,000", note: "A Standard Template Construct, the data-seed of a whole lost technology. Recovering a complete one is a holy act. Every device in this house is meant to be a small STC."}
     - {kind: ref, icon: book, title: "The Orange Catholic Bible, and a Mentat", by: "Frank Herbert, Dune", note: "After the Butlerian Jihad outlawed thinking machines, people trained their own minds to compute. A slide rule is a polite compromise."}
     - {kind: ref, icon: book, title: "The Red Book of Westmarch", by: "J. R. R. Tolkien", note: "Also the archives of Minas Tirith, where a forgotten scroll mattered more than any army."}
     - {kind: ref, icon: net, title: "A palantír", by: "J. R. R. Tolkien", note: "A seeing-stone. Compare the Observatory's dome, which only shows what is really there."}
     - {kind: ref, icon: book, title: "The Book of Gramarye", by: "Susan Cooper, The Dark Is Rising", note: "Read once and then destroyed; what it taught survives only in memory. Funes would have been the ideal reader."}
-    - {kind: ref, icon: clock, title: "The alethiometer", by: "Philip Pullman, His Dark Materials", note: "Thirty-six symbols, each with endless meanings, read by setting three hands. The palace keeps a crude copy in the middle of this room."}
+    - {kind: ref, icon: clock, title: "The alethiometer", by: "Philip Pullman, His Dark Materials", note: "Thirty-six symbols, each with endless meanings, read by setting three hands. The house keeps a crude copy in the middle of this room."}
     - {kind: ref, icon: books, title: "The Great Library of the Clayr", by: "Garth Nix, Lirael", note: "A library carved into a glacier, with ranked librarians and stacks that bite. The Great Spiral is its cousin."}
     - {kind: ref, icon: books, title: "The Aedificium", by: "Umberto Eco, The Name of the Rose", note: "A labyrinth built as a library, with the finis Africae hidden at its heart."}
     - {kind: ref, icon: hex, title: "The Library of Babel", by: "Jorge Luis Borges", note: "Every possible book, in hexagons without end."}
@@ -945,7 +948,7 @@ rooms:
     - {kind: ref, icon: book, title: "The Encyclopedia Galactica", by: "Isaac Asimov, Foundation", note: "A library compiled as a cover story for a plan."}
     - {kind: ref, icon: scroll, title: "The Isolate Tower", by: "Ursula K. Le Guin, Earthsea", note: "Where the Master Namer keeps the lists of true names."}
     - {kind: ref, icon: hex, title: "Llull's Ars Magna", by: "Ramon Llull, c. 1305", note: "Real: nested paper wheels that combine concepts mechanically. Leibniz read it. It belongs in the Instrument Gallery."}
-    - {kind: ref, icon: scroll, title: "The memex", by: "Vannevar Bush, “As We May Think,” 1945", note: "Real: a desk that stores a whole library and the trails a reader makes through it. The nearest ancestor of this palace."}
+    - {kind: ref, icon: scroll, title: "The memex", by: "Vannevar Bush, “As We May Think,” 1945", note: "Real: a desk that stores a whole library and the trails a reader makes through it. The nearest ancestor of this house."}
     - {kind: ref, icon: books, title: "The Library of Alexandria", note: "Real, and lost."}
     - {kind: ref, icon: scroll, title: "The Voynich manuscript", note: "Real, and still unread."}
     - {kind: unwritten, icon: hex, title: "Llull's wheels", note: "A working volvelle of Llull's combinatorial wheels."}
@@ -975,7 +978,7 @@ rooms:
   objects:
     - {kind: letter, icon: note, title: "A letter, left on the desk", action: letter}
     - {kind: key, item: master-key, icon: key, title: "A ring of keys", take: "You take the ring of keys. Every ordinary lock will open for you now."}
-    - {kind: key, item: plan, icon: map, title: "The full plan", take: "You take the full plan of the palace."}
+    - {kind: key, item: plan, icon: map, title: "The full plan", take: "You take the full plan of the house."}
     - {kind: key, item: map, icon: map, title: "A folded map", take: "You take the folded map. It fills in as you walk."}
     - {kind: key, item: compass, icon: compass, title: "A compass", take: "You take the compass. It will always tell you which way is true."}
     - {kind: device, icon: book, title: "The guest book", action: register, note: "Sign it, and the Primer will know your name."}
@@ -985,11 +988,11 @@ rooms:
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
-    - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps palace time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
+    - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
     - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook"}
     - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly."}
   marginalia:
-    - "This is the front door, and a launch page: the link board is one click away from here, and pressing / anywhere in the palace lets you type to go."
+    - "This is the front door, and a launch page: the link board is one click away from here, and pressing / anywhere in the house lets you type to go."
   sources:
     - "The opening of Myst, where you are dropped on a dock with nothing in your hands and a note to find."
 
@@ -1001,7 +1004,7 @@ rooms:
   decor: [sundial, cloister]
   at: [5, 8]
   text: >-
-    An open court with the real sky over it and a brass sundial in the middle, laid out for the latitude where the palace stands (Appleton, unless the astrolabe has carried it off). The shadow on the plate is the actual shadow for this moment, or for whatever moment the hourglass says. Look up: the sky is the sky over the court right now, sun or stars, the moon in its true phase, and as much cloud as the weather says.
+    An open court with the real sky over it and a brass sundial in the middle, laid out for the latitude where the house stands (Appleton, unless the astrolabe has carried it off). The shadow on the plate is the actual shadow for this moment, or for whatever moment the hourglass says. Look up: the sky is the sky over the court right now, sun or stars, the moon in its true phase, and as much cloud as the weather says.
 
     On a clear night with a bright moon the dial works by moonlight. It tells moon time, read straight off the plate, which runs about forty-eight minutes later each night than sun time.
 
@@ -1081,7 +1084,7 @@ rooms:
   text: >-
     The last side of the pillar, and the way out to the perspective corridor. The step from here to the North Arcade crosses the cut.
   phases:
-    - {when: "sheet:sqrt=1", name: "The West Arcade, other sheet", text: "You are on the other sheet. The way out is the same, but you may come back to a different palace."}
+    - {when: "sheet:sqrt=1", name: "The West Arcade, other sheet", text: "You are on the other sheet. The way out is the same, but you may come back to a different house."}
   doors:
     - {to: 30, wall: right, lift: {sqrt: 1}, title: "across the cut"}
     - {to: 32, wall: left}
@@ -1146,7 +1149,7 @@ rooms:
     - {to: 37, wall: left, turn: s, title: "a turning that doubles back", say: "The path doubles back on itself, and the hedges seem to have swapped sides."}
     - {to: 41, wall: back, needs: "mirror", hint: "The hedge here only parts for someone who has been turned inside out.", title: "a gap in the hedge"}
   objects:
-    - {kind: book, icon: book, wall: right, title: "Maze", by: "Christopher Manson, 1985", note: "Forty-five numbered rooms, a shortest path of sixteen steps, and a riddle along it. The palace's numbered rooms are a homage."}
+    - {kind: book, icon: book, wall: right, title: "Maze", by: "Christopher Manson, 1985", note: "Forty-five numbered rooms, a shortest path of sixteen steps, and a riddle along it. The house's numbered rooms are a homage."}
   marginalia:
     - "The turnings are holonomy you can walk: each door applies an element of the dihedral group to your frame. The heart needs the reflection, which no number of quarter turns will give you."
   bib:
@@ -1244,7 +1247,7 @@ primer:
   "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}
   "3":  {teaser: "a wheel measures area by walking around it", lesson: "A planimeter traces the edge of a shape and reads off the area inside, which is Green's theorem in brass.", q: "If you trace the boundary backwards, what happens?", a: "You get the same area with a minus sign. The orientation of the loop matters."}
   "7":  {teaser: "a pendulum turns although nothing turns it", lesson: "The swing of the pendulum keeps its direction while the earth turns under it. In Appleton it comes round once every 34 hours or so.", q: "Where on earth does the pendulum turn once a day?", a: "At the poles, where sin φ = 1. At the equator it doesn't turn at all."}
-  "8":  {teaser: "two turns add like arrows on a sphere", lesson: "Rotations don't commute. Turn a book a quarter turn forward and then a quarter turn left; then do it in the other order.", q: "Which group do the eight symmetries of a square form?", a: "The dihedral group D₄. It's the frame the palace carries you in."}
+  "8":  {teaser: "two turns add like arrows on a sphere", lesson: "Rotations don't commute. Turn a book a quarter turn forward and then a quarter turn left; then do it in the other order.", q: "Which group do the eight symmetries of a square form?", a: "The dihedral group D₄. It's the frame the house carries you in."}
   "10": {teaser: "a lock only opens for symmetries", lesson: "The roots of x⁴ − 2 can be shuffled only in ways that keep every rational relation true.", q: "How many ways are there?", a: "Eight, the symmetries of a square, out of 24 shuffles."}
   "11": {teaser: "half the arrangements can never be reached", lesson: "Every slide of the fifteen puzzle changes the permutation's sign and moves the blank one step; together, nothing changes.", q: "Can you swap just the 14 and 15?", a: "No. That would change the invariant."}
   "15": {teaser: "a man remembered everything and could add nothing", lesson: "Funes gave every number its own name. Without place value, names can be memorized but not computed with.", q: "What does the 6 in 365 mean?", a: "Six tens. Funes's system has no way to say that."}

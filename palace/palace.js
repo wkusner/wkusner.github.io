@@ -1,17 +1,17 @@
-/* The Palace — a memory-palace engine for wkusner.github.io
+/* The Wending House — a memory-palace engine for wkusner.github.io
    Data: window.PALACE (built by Jekyll from _data/palace.yml into data.js).
    State: localStorage "palace-v1" (per-visitor convenience only). */
 (function(){
 "use strict";
 const P = window.PALACE;
 const $ = id => document.getElementById(id);
-if(!P || !P.rooms){ $("rname").textContent="The palace data did not load."; return; }
+if(!P || !P.rooms){ $("rname").textContent="The house data did not load."; return; }
 const NS = "http://www.w3.org/2000/svg";
 const ROOMS = {}; P.rooms.forEach(r => { ROOMS[String(r.id)] = r; });
 const WINGS = P.wings || {};
 const START = String(P.start!=null ? P.start : P.rooms[0].id);
 const RANKS = P.ranks || [{name:"Visitor",at:0,color:"#d9d2c0"}];
-let LAT = P.latitude || 44.26;   // the astrolabe can move the palace; see setPlace()
+let LAT = P.latitude || 44.26;   // the astrolabe can move the house; see setPlace()
 const Q = new URLSearchParams(location.search);
 
 /* ---------- state ---------- */
@@ -57,7 +57,7 @@ function moonPhase(d){ const n = d.getTime()/864e5 + 2440587.5 - 2451545, g = (3
   return (((Lm - Ls) % 360) + 360) % 360 / 360; }
 function lightNow(){ return S.light==="auto" ? band(now()) : S.light; }
 
-/* ---------- the sky over the palace ---------- */
+/* ---------- the sky over the house ---------- */
 const DEG = Math.PI/180; let LON = (P.longitude!=null ? P.longitude : -88.41);
 const HOME = {lat: LAT, lon: LON, name: P.place || "Appleton"};
 if(S.loc && isFinite(S.loc.lat) && isFinite(S.loc.lon)){ LAT = S.loc.lat; LON = S.loc.lon; }
@@ -677,7 +677,7 @@ function render(){
   $("rnum").textContent = room.label || id;
   $("rname").innerHTML = mirror ? `<span class="mirror-text" title="${esc(room.name||"")}">${esc(room.name||"")}</span>` : esc(room.name||"");
   $("rwing").textContent = ((WINGS[room.wing] && WINGS[room.wing].name) || "") + " · facing " + FACENAME[S.face] + (S.close ? " · looking closer" : "");
-  document.title = `${room.label||id} · ${room.name||"The Palace"}`;
+  document.title = `${room.label||id} · ${room.name||"The Wending House"}`;
   tally(light);
   // the view
   const stage = $("stage");
@@ -816,7 +816,7 @@ function planetsView(){
     <circle r="7" fill="var(--spot)" stroke="var(--ink)"/>${O.map(pl => { const r = rOf(pl.a), x = Math.cos(pl.lon*DEG)*r, y = -Math.sin(pl.lon*DEG)*r;
       return `<circle r="${r.toFixed(1)}" fill="none" stroke="var(--line, #888)" stroke-width=".7" opacity=".6"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pl.id==="ter"?5:4}" fill="${pl.color}" stroke="var(--ink)"/><text x="${(x+7).toFixed(1)}" y="${(y-6).toFixed(1)}" font-size="11" fill="var(--ink)" font-family="IM Fell English, serif">${pl.sym}</text>`; }).join("")}
     <text x="182" y="4" font-size="11" text-anchor="end" fill="var(--muted)" font-family="IM Fell English, serif">♈︎ →</text></svg>`;
-  overlay("The planets", `<div class="text"><p>Where each planet is for ${esc(placeName())} at ${sk.d.toLocaleString([], {weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"})}${S.clock?" (palace time)":""}. Positions are worked out here from orbital elements, with light time, precession, and refraction; they agree with a professional ephemeris to a few hundredths of a degree. ${dark ? "" : "The sun is up, so most of them are hidden in daylight."}</p></div>
+  overlay("The planets", `<div class="text"><p>Where each planet is for ${esc(placeName())} at ${sk.d.toLocaleString([], {weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"})}${S.clock?" (house time)":""}. Positions are worked out here from orbital elements, with light time, precession, and refraction; they agree with a professional ephemeris to a few hundredths of a degree. ${dark ? "" : "The sun is up, so most of them are hidden in daylight."}</p></div>
     <div style="overflow-x:auto"><table class="ptab"><thead><tr><th>planet</th><th>now</th><th>in</th><th>mag</th><th>today</th><th>from the sun</th><th>from us</th></tr></thead><tbody>${rows}</tbody></table></div>
     <h3>The orrery, today</h3>${orr}<p class="note">Seen from above the earth's north pole; distances squeezed so Neptune fits. Magnitudes are approximate (Saturn's rings are ignored). In the Sundial Court each planet's path among the stars shows as a dotted track, forty days either side of now.</p>`);
 }
@@ -1037,13 +1037,13 @@ function drawObject(svg, room, o, i, n, mirror){
 /* ---------- things you carry ---------- */
 const ITEMS = {
   "map":         {icon:"map",       name:"A map that fills in as you walk", use:()=>mapView()},
-  "plan":        {icon:"map",       name:"The full plan of the palace",     use:()=>mapView()},
+  "plan":        {icon:"map",       name:"The full plan of the house",     use:()=>mapView()},
   "finding-aid": {icon:"scroll",    name:"The finding aid (every link)",    use:()=>catalogueView()},
   "master-key":  {icon:"key",       name:"The porter's master key",         use:()=>toast("The master key opens every ordinary lock. A few doors want more than a key.")},
   "golden-key":  {icon:"key",       name:"A golden key, stamped φ",         use:()=>toast("A golden key, stamped φ. Somewhere there is a lock to match.")},
   "compass":     {icon:"compass",   name:"A compass",                       use:()=>{ S.frame=[0,0]; save(); render(); toast("The needle settles. You are facing true, and no longer mirrored."); }},
   "lantern":     {icon:"lamp",      name:"A lantern",                       use:()=>{ S.lantern=!S.lantern; save(); render(); toast(S.lantern?"You raise the lantern.":"You shade the lantern."); }},
-  "hourglass":   {icon:"hourglass", name:"An hourglass that sets the palace's clock", use:()=>timeView()},
+  "hourglass":   {icon:"hourglass", name:"An hourglass that sets the house's clock", use:()=>timeView()},
   "page-left":   {icon:"note",      name:"The left half of a torn page", use:()=>toast("Half a page. The words stop in the middle.")},
   "page-right":  {icon:"note",      name:"The right half of a torn page", use:()=>toast("Half a page. The words start in the middle.")},
   "mended-page": {icon:"scroll",    name:"A mended page", use:()=>overlay("The mended page", `<div class="text"><p>Once mended, the page is a short poem about square roots: every number has two, and you cannot choose one consistently all the way around zero. Walk around the pillar once and you have changed your mind about which root you meant.</p><p>At the bottom, in a different hand, a warp word: <b class="mono">SHEET</b>.</p></div>`)},
@@ -1118,8 +1118,8 @@ function tally(light){
   const sheets = Object.keys(S.sheets).filter(k => S.sheets[k]).map(k => `${((P.sheets||{})[k]||{}).sym||k} ${S.sheets[k]}`).join(" · ");
   $("tally").innerHTML = `
     <span class="chip" title="Level and experience"><span class="vest" style="background:${rk.color}"></span>L${ri} ${esc(rk.name)} <span class="xp"><span style="width:${(frac*100).toFixed(0)}%"></span></span> ${S.xp} xp</span>
-    <span class="chip" title="Your frame: how the palace has turned you">${f} ${nameG(g)}${sheets?" · "+esc(sheets):""}</span>
-    <button class="chip" id="t-time" type="button" title="${S.inv.includes("hourglass")?"Set the palace's clock with the hourglass":"The palace keeps your time"}">${icon} ${d.toLocaleDateString([], {month:"short", day:"numeric"})} ${d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}${S.clock?" ⧗":""}</button>
+    <span class="chip" title="Your frame: how the house has turned you">${f} ${nameG(g)}${sheets?" · "+esc(sheets):""}</span>
+    <button class="chip" id="t-time" type="button" title="${S.inv.includes("hourglass")?"Set the house's clock with the hourglass":"The house keeps your time"}">${icon} ${d.toLocaleDateString([], {month:"short", day:"numeric"})} ${d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}${S.clock?" ⧗":""}</button>
     <span class="chip" title="${wx? (wx.set ? "Weather set by the astrolabe's storm glass" : "Weather in "+placeName()+" now (Open-Meteo)") :"Weather unavailable"}">${wx? `${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F` : "· · ·"}</span>
     <button class="chip" id="t-code" type="button" title="Save code and warp codes">⌘ ${saveCode().slice(0,9)}…</button>
     <span class="chip" title="Your way of walking, by what you carry">${esc(walkMode())}</span>
@@ -1147,18 +1147,18 @@ function weather(){
 }
 function wxKind(code){ if(code==null) return "clear"; if(code>=95) return "storm"; if(code>=71 && code<=77 || code===85 || code===86) return "snow"; if(code>=51 && code<=67 || code>=80 && code<=82) return "rain"; if(code===45||code===48) return "fog"; if(code>=2) return "cloud"; return "clear"; }
 function wxIcon(code, day){ return {clear: day?"☀":"☾", cloud:"☁", fog:"≋", rain:"☂", snow:"❄", storm:"ϟ"}[wxKind(code)]; }
-/* ---------- the hourglass: set the palace's clock ---------- */
+/* ---------- the hourglass: set the house's clock ---------- */
 function timeView(fromDesk){
   if(!S.inv.includes("hourglass") && !fromDesk && !S.showAll){ toast("You'd need an hourglass."); return; }
   const d = now(), pad = n => String(n).padStart(2,"0"), v = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  overlay("The hourglass", `<div class="text"><p>Turn the glass and the palace's clock follows: the light, the sky, the sundial, the pendulum, and every door that keeps hours.</p></div>
+  overlay("The hourglass", `<div class="text"><p>Turn the glass and the house's clock follows: the light, the sky, the sundial, the pendulum, and every door that keeps hours.</p></div>
     <div class="row widget"><input id="tv-d" type="datetime-local" value="${v}" style="width:240px"><select id="tv-r"><option value="1">runs at 1×</option><option value="60">60× (a minute a second)</option><option value="3600">3600× (an hour a second)</option><option value="0">stopped</option></select><button class="btn primary" id="tv-s" type="button">Turn the glass</button></div>
-    <div class="row"><button class="btn" id="tv-n" type="button">Return to the real time</button></div><p class="note">${S.clock?"The palace is on hourglass time now.":"The palace is on real time."}</p>`);
+    <div class="row"><button class="btn" id="tv-n" type="button">Return to the real time</button></div><p class="note">${S.clock?"The house is on hourglass time now.":"The house is on real time."}</p>`);
   if(S.clock) $("tv-r").value = String(S.clock.rate);
   $("tv-s").onclick = () => { const t = new Date($("tv-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("tv-r").value}; save(); closeOv(); render(); toast("The sand runs differently now."); award("hourglass-used", 10); };
   $("tv-n").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
 }
-/* ---------- the carriage clock: chimes on palace time ---------- */
+/* ---------- the carriage clock: chimes on house time ---------- */
 // sequences from the standard chime tables: bells numbered from the lowest; four changes make the hour
 const midiHz = n => 440*Math.pow(2, (n-69)/12);   // MIDI note to hertz
 const CHIMES = {
@@ -1217,8 +1217,8 @@ function clockView(){
       ${["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"].map((n,k)=>{ const a=k*30*DEG; return `<text x="${Math.sin(a)*44}" y="${-Math.cos(a)*44+5}" text-anchor="middle" font-size="12" fill="var(--ink)" font-family="IM Fell English SC, serif">${n}</text>`; }).join("")}
       <line x1="0" y1="0" x2="${Math.sin(hA*DEG)*30}" y2="${-Math.cos(hA*DEG)*30}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
       <line x1="0" y1="0" x2="${Math.sin(mA*DEG)*52}" y2="${-Math.cos(mA*DEG)*52}" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/><circle r="3.5" fill="var(--spot)" stroke="var(--ink)"/>
-      <text y="86" text-anchor="middle" font-size="9" letter-spacing="2" fill="var(--muted)" font-family="IM Fell English SC, serif">PALACE TIME</text></svg>`; };
-  overlay("The carriage clock", `<div class="text"><p>A brass carriage clock with bevelled glass on every side, so you can watch the platform escapement tick. It keeps palace time, so it follows the hourglass and the astrolabe. Inside are rod gongs for the chimes and a deeper one for the hours.</p></div>
+      <text y="86" text-anchor="middle" font-size="9" letter-spacing="2" fill="var(--muted)" font-family="IM Fell English SC, serif">HOUSE TIME</text></svg>`; };
+  overlay("The carriage clock", `<div class="text"><p>A brass carriage clock with bevelled glass on every side, so you can watch the platform escapement tick. It keeps house time, so it follows the hourglass and the astrolabe. Inside are rod gongs for the chimes and a deeper one for the hours.</p></div>
     <div id="cc-face">${face()}</div>
     <div class="row widget"><select id="cc-k">${Object.entries(CHIMES).map(([k,c])=>`<option value="${k}" ${k===sel?"selected":""}>${c.name}</option>`).join("")}</select>
       <label class="note">volume <input id="cc-v" type="range" min="0" max="1" step=".05" value="${S.chimeVol!=null?S.chimeVol:.5}" style="width:110px"></label></div>
@@ -1237,13 +1237,13 @@ function clockView(){
       hs.forEach(([f,tt,a,l],i) => gong(ac, f, t0 + i*1.7, v*a, l)); const off = hs.length*1.7 + 1.2; qs.forEach(([f,tt,a,l]) => gong(ac, f, t0 + off + tt, v*a, l)); } };
   [1,2,3,4].forEach(q => $("cc-"+q).onclick = () => { const t = new Date(now()); t.setMinutes(q===4 ? 0 : q*15); playChime(S.chime && S.chime!=="silent" && S.chime!=="ships" ? S.chime : "westminster", t); });
 }
-/* ---------- the astrolabe: carry the palace to another place, day, or weather ---------- */
+/* ---------- the astrolabe: carry the house to another place, day, or weather ---------- */
 const PLACES = [["Appleton, Wisconsin", 44.26, -88.41], ["Reykjavík", 64.15, -21.94], ["Tromsø, in the midnight sun", 69.65, 18.96], ["Quito, on the equator", -0.18, -78.47], ["Alexandria, after Eratosthenes", 31.2, 29.92], ["Kyoto", 35.01, 135.77], ["Sydney", -33.87, 151.21], ["the South Pole", -89.99, 0]];
 function astrolabeView(){
   if(!S.inv.includes("astrolabe") && !S.showAll){ toast("You'd need the astrolabe. It hangs in the Sundial Court."); return; }
   const d = now(), pad = n => String(n).padStart(2,"0"), v = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const wxo = [["", "live, from the weather service"], ["clear","clear"], ["cloud","broken cloud"], ["overcast","overcast"], ["fog","fog"], ["rain","rain"], ["snow","snow"], ["storm","a storm"]];
-  overlay("The astrolabe", `<div class="text"><p>A brass astrolabe, its rete pierced with star pointers, and set into its throne a little storm glass. Turn the rete and the palace stands somewhere else under the sky; tap the glass and the weather changes its mind.</p></div>
+  overlay("The astrolabe", `<div class="text"><p>A brass astrolabe, its rete pierced with star pointers, and set into its throne a little storm glass. Turn the rete and the house stands somewhere else under the sky; tap the glass and the weather changes its mind.</p></div>
     <div class="board">
       <div class="pin"><h3>The place</h3><p class="mono">now: ${esc(placeName())} · ${Math.abs(LAT).toFixed(2)}°${LAT>=0?"N":"S"} ${Math.abs(LON).toFixed(2)}°${LON>=0?"E":"W"}</p>
         <div class="row widget"><select id="as-p"><option value="">choose a place…</option>${PLACES.map((pl,i)=>`<option value="${i}">${esc(pl[0])}</option>`).join("")}</select></div>
@@ -1253,7 +1253,7 @@ function astrolabeView(){
       <div class="pin"><h3>The day and hour</h3>
         <div class="row widget"><input id="as-d" type="datetime-local" value="${v}" style="width:240px"><select id="as-r"><option value="1">runs at 1×</option><option value="60">60×</option><option value="3600">3600×</option><option value="0">stopped</option></select></div>
         <div class="row"><button class="btn primary" id="as-t" type="button">Set the clock</button> <button class="btn" id="as-tn" type="button">Real time</button></div>
-        <p class="note">Times are on your own clock's zone, wherever the palace stands.</p></div>
+        <p class="note">Times are on your own clock's zone, wherever the house stands.</p></div>
       <div class="pin"><h3>The storm glass</h3><div class="row widget"><select id="as-w">${wxo.map(([k,l])=>`<option value="${k}" ${(S.wxSet||"")===k?"selected":""}>${l}</option>`).join("")}</select></div>
         <div class="row"><button class="btn primary" id="as-clear" type="button">Clear the sky</button></div>
         <div class="row widget"><label class="note"><input type="checkbox" id="as-sun" ${skyOff("sun")?"":"checked"}> the sun</label> <label class="note"><input type="checkbox" id="as-moon" ${skyOff("moon")?"":"checked"}> the moon</label></div>
@@ -1263,7 +1263,7 @@ function astrolabeView(){
   $("as-p").onchange = e => { const pl = PLACES[+e.target.value]; if(!pl) return; $("as-lat").value = pl[1]; $("as-lon").value = pl[2]; $("as-n").value = pl[0]; };
   const go = (lat, lon, name) => { if(!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 90) return toast("The rete won't turn that far.");
     lon = ((lon + 540) % 360) - 180; const home = Math.abs(lat-HOME.lat) < .005 && Math.abs(lon-HOME.lon) < .005;
-    setPlace(home ? null : {lat, lon, name: name || ""}); award("astrolabe-moved", 15); closeOv(); render(); toast(home ? "Home again." : `The palace stands at ${placeName()} now.`); };
+    setPlace(home ? null : {lat, lon, name: name || ""}); award("astrolabe-moved", 15); closeOv(); render(); toast(home ? "Home again." : `The house stands at ${placeName()} now.`); };
   $("as-go").onclick = () => go(parseFloat($("as-lat").value), parseFloat($("as-lon").value), $("as-n").value.trim());
   $("as-home").onclick = () => { setPlace(null); closeOv(); render(); toast("Home again."); };
   $("as-geo").onclick = () => { if(!navigator.geolocation) return toast("This browser can't say where it is.");
@@ -1313,7 +1313,7 @@ function officeStatus(){
 function letterView(){
   const L = P.letter || "";
   overlay("A letter, left on the desk", `<div class="letter">${L.split(/\n\s*\n/).map(p=>`<p>${p.replace(/\n/g,"<br>")}</p>`).join("")}</div>
-    <p class="note">This is visit ${Object.values(S.visits).reduce((a,b)=>a+b,0)} of yours to the palace, by its own count.</p>`);
+    <p class="note">This is visit ${Object.values(S.visits).reduce((a,b)=>a+b,0)} of yours to the house, by its own count.</p>`);
   award("letter", 5);
 }
 function registerView(){
@@ -1354,12 +1354,12 @@ function linksView(){
   const pub = P.links || [], mine = myLinks(), pins = (S.pins||[]).filter(id => ROOMS[id]);
   const tile = (l, i, own) => `<div class="tilewrap"><a class="dirl" href="${esc(l.href)}"${/^https?:/.test(l.href)?' target="_blank" rel="noopener"':""}><b>${esc(l.title)}</b><span>${esc(l.note||l.href.replace(/^https?:\/\//,"").slice(0,40))}</span></a>${own?`<span class="tileed"><button type="button" data-up="${i}" title="Move up">↑</button><button type="button" data-del="${i}" title="Remove">×</button></span>`:""}</div>`;
   overlay("The link board", `
-    ${pins.length ? `<h3 class="cat-wing">Pinned rooms</h3><div class="dir">${pins.map(id => tile({title:`${ROOMS[id].label||id} · ${ROOMS[id].name}`, href:"#"+id, note:"in the palace"}, 0, false)).join("")}</div>` : ""}
+    ${pins.length ? `<h3 class="cat-wing">Pinned rooms</h3><div class="dir">${pins.map(id => tile({title:`${ROOMS[id].label||id} · ${ROOMS[id].name}`, href:"#"+id, note:"in the house"}, 0, false)).join("")}</div>` : ""}
     <h3 class="cat-wing">Your own tiles <span class="note">(kept only in this browser)</span></h3>
     <div class="dir" id="lb-mine">${mine.map((l,i)=>tile(l,i,true)).join("") || `<p class="note">None yet. Add your mail, calendar, course sites, anything.</p>`}</div>
     <div class="row widget"><input id="lb-t" placeholder="label" style="width:160px"><input id="lb-u" placeholder="https://…" style="width:280px"><button class="btn primary" id="lb-add" type="button">Add a tile</button></div>
     <h3 class="cat-wing">The site</h3><div class="dir">${pub.map((l,i)=>tile(l,i,false)).join("")}</div>
-    <div class="row widget" style="margin-top:14px"><label class="note"><input type="checkbox" id="lb-start" ${S.startLinks?"checked":""}> open the palace straight onto this board</label>
+    <div class="row widget" style="margin-top:14px"><label class="note"><input type="checkbox" id="lb-start" ${S.startLinks?"checked":""}> open the house straight onto this board</label>
       <button class="btn" id="lb-exp" type="button">Export my tiles</button><button class="btn" id="lb-imp" type="button">Import tiles</button></div>
     <p class="note">Bookmark <span class="mono">${esc(location.origin+location.pathname)}#0/links</span> to use this as your launch page.</p>`);
   $("lb-add").onclick = () => { const t=$("lb-t").value.trim(); let u=$("lb-u").value.trim(); if(!t||!u) return; if(!/^(https?:|\/|#|mailto:)/.test(u)) u="https://"+u; const L=myLinks(); L.push({title:t, href:u}); setMyLinks(L); linksView(); };
@@ -1464,7 +1464,7 @@ function loadCode(code){
   let acc=0, n=0; const bytes=[];
   for(const ch of clean){ const v = B32.indexOf(ch); if(v<0) return false; acc=(acc<<5)|v; n+=5; if(n>=8){ bytes.push((acc>>(n-8))&255); n-=8; acc &= (1<<n)-1; } }
   if(bytes.length<6 || bytes[0]!==1) return false;
-  // codes written before the palace grew name fewer rooms; try today's count, then the counts of earlier plans
+  // codes written before the house grew name fewer rooms; try today's count, then the counts of earlier plans
   const nb = l => Math.ceil(l/8), all = roomOrder(); let ro = null, need = 0;
   for(const nr of [all.length, 36]){ const nd = 4 + nb(nr) + nb(ITEM_ORDER.length) + nb(SOLVED_ORDER.length) + 3; if(bytes.length >= nd+1 && crc8(bytes.slice(0,nd)) === bytes[nd]){ ro = all.slice(0, nr); need = nd; break; } }
   if(!ro) return false;
@@ -1478,13 +1478,13 @@ function loadCode(code){
 }
 function codesView(){
   const code = saveCode();
-  overlay("Codes", `<div class="text"><p>Your save code records the rooms you remember, what you carry, the puzzles you've solved, your experience, and how the palace has turned you. Write it down, or type it into another browser to carry on there.</p></div>
+  overlay("Codes", `<div class="text"><p>Your save code records the rooms you remember, what you carry, the puzzles you've solved, your experience, and how the house has turned you. Write it down, or type it into another browser to carry on there.</p></div>
     <p class="savecode">${code}</p><div class="row"><button class="btn" id="cd-copy" type="button">Copy</button></div>
     <div class="row widget"><input id="cd-in" style="width:280px" placeholder="a save code or a warp word"><button class="btn primary" id="cd-go" type="button">Enter</button></div><p class="note" id="cd-o">Warp words take you straight to a place. Some are printed in books; some are scratched on walls.</p>`);
   $("cd-copy").onclick = () => { try { navigator.clipboard.writeText(code); toast("Copied."); } catch(e) {} };
   const go = () => { const v = $("cd-in").value.trim(); if(!v) return; const w = (P.warps||{})[v.toUpperCase().replace(/\s+/g,"")];
     if(w){ closeOv(); if(w.time){ const t=new Date(w.time); if(!isNaN(t)) S.clock={base:Date.now(), pal:t.getTime(), rate:1}; } award("warp:"+v.toUpperCase(), 5); S.frame=[0,0]; save(); location.hash = String(w.room) + (w.face?"/"+w.face:""); toast(w.say || "The floor tilts, and you are elsewhere."); return; }
-    if(loadCode(v)){ closeOv(); render(); toast("The palace remembers you."); return; }
+    if(loadCode(v)){ closeOv(); render(); toast("The house remembers you."); return; }
     $("cd-o").textContent = "Nothing happens. Check the code, letter by letter."; };
   $("cd-go").onclick = go; $("cd-in").onkeydown = e => { if(e.key==="Enter") go(); };
 }
@@ -1637,19 +1637,19 @@ function catalogueView(force){
     $("catl").innerHTML = h || "<p class='note'>Nothing matches.</p>";
     document.querySelectorAll("[data-cat]").forEach(a => a.onclick = closeOv);
   };
-  overlay("Catalogue", `<p class="note">Everything on the shelves, without the walking. Room numbers lead into the palace.</p><div class="widget row"><input id="catq" placeholder="search" style="width:260px"></div><div id="catl"></div>`);
+  overlay("Catalogue", `<p class="note">Everything on the shelves, without the walking. Room numbers lead into the house.</p><div class="widget row"><input id="catq" placeholder="search" style="width:260px"></div><div id="catl"></div>`);
   $("catq").oninput = e => draw(e.target.value); draw("");
 }
 function helpView(){
-  overlay("How to walk the palace", `<div class="text">${P.help || ""}
+  overlay("How to walk the house", `<div class="text">${P.help || ""}
   <p><b>Looking.</b> Drag anywhere in the picture to look around, up at the sky or down at the floor; let go past half a quarter turn and you'll face that way. The edges of the picture turn you, and the top and bottom look up and down. Keys: ← → or A D turn, ↑ or W goes through the door ahead, ↓ or S turns around or steps back, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, and F fills the screen. Press / to go anywhere.</p>
   <p><b>Doors</b> are numbered. Click a door in the picture or in the list. Some doors appear only at certain hours, after certain rooms, or when you are facing a certain way.</p>
   <p><b>Facing.</b> Some corridors turn you, and some flip you as in a mirror. The small F in the top bar shows your frame, an element of the symmetry group of a square. Walk a loop and you may come back turned: that is holonomy. Some things can only be seen in a mirror.</p>
-  <p><b>Time.</b> The palace keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. The Lamps button overrides the light.</p>
+  <p><b>Time.</b> The house keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. The Lamps button overrides the light.</p>
   <p><b>Rank.</b> The more rooms you remember, the higher your librarian's rank. Some stacks are closed to beginners.</p>
   <p><b>Memory.</b> The map remembers where you have been, in this browser only. The catalogue lists everything plainly.</p></div>
   <div class="row widget"><button class="btn" id="forget" type="button">Forget my walk</button></div>`);
-  $("forget").onclick = () => { const c=S.curator; S = blank(); S.curator=c; save(); closeOv(); location.hash = START; route(); toast("The palace forgets you, politely."); };
+  $("forget").onclick = () => { const c=S.curator; S = blank(); S.curator=c; save(); closeOv(); location.hash = START; route(); toast("The house forgets you, politely."); };
 }
 
 /* ---------- curator ---------- */
@@ -1682,7 +1682,7 @@ function curatorView(){
   const dist = bfs(START);
   const rows = P.rooms.map(r => `<tr><td><a href="#${r.id}" data-cur="1">${esc(r.label||r.id)}</a></td><td>${esc(r.name||"")}</td><td>${esc(r.wing||"")}</td><td>${dist[r.id]??"—"}</td><td>${fr[r.id]?nameG(fr[r.id]):"—"}</td><td>${S.visits[r.id]||0}</td></tr>`).join("");
   overlay("Curator's office", `
-    <p class="note">This view checks the data file and shows you the palace as the builder sees it. Visitors never see it unless they type #curator.</p>
+    <p class="note">This view checks the data file and shows you the house as the builder sees it. Visitors never see it unless they type #curator.</p>
     <div class="row widget">
       <button class="btn ${S.showAll?"primary":""}" id="c-all" type="button">${S.showAll?"Showing all doors and objects":"Show all doors and objects"}</button>
       <button class="btn" id="c-forget" type="button">Forget my walk</button>
@@ -1694,7 +1694,7 @@ function curatorView(){
     <h3 class="cat-wing">Notes (${warn.length})</h3>${warn.length? "<ul>"+warn.map(e=>`<li class="note">${esc(e)}</li>`).join("")+"</ul>" : "<p class='note'>None.</p>"}
     <h3 class="cat-wing">Holonomy (${hol.length} twisted loop${hol.length===1?"":"s"})</h3>
     <p class="note">Each line is a loop: walk from the Foyer to the first room by the shortest tree path, take the door to the second, and walk the tree path back. The element is how the loop leaves you turned.</p>
-    ${hol.length? "<ul>"+hol.map(h=>`<li class="mono">loop through ${h[0]} → ${h[1]}: ${h[2]}</li>`).join("")+"</ul>" : "<p class='note'>Every loop closes up flat. Nothing in the palace is twisted.</p>"}
+    ${hol.length? "<ul>"+hol.map(h=>`<li class="mono">loop through ${h[0]} → ${h[1]}: ${h[2]}</li>`).join("")+"</ul>" : "<p class='note'>Every loop closes up flat. Nothing in the house is twisted.</p>"}
     <h3 class="cat-wing">Rooms</h3>
     <table class="cur"><tr><th>#</th><th>name</th><th>wing</th><th>steps from start</th><th>tree frame</th><th>your visits</th></tr>${rows}</table>`);
   $("c-all").onclick = () => { S.showAll=!S.showAll; save(); render(); curatorView(); };
@@ -1826,7 +1826,7 @@ WIDGETS.sky = (el, spec) => {
     <svg id="sk-s" viewBox="0 0 560 560" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto" role="img" aria-label="The sky over Appleton, as seen looking straight up"></svg>
     <div class="row"><label class="mono" for="sk-o">turn the dome</label><input id="sk-o" type="range" min="-24" max="24" step="0.25" value="0" style="width:240px"><span id="sk-ol" class="mono"></span><button class="btn" id="sk-n" type="button">Now</button></div>
     <div id="sk-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
-    <p class="note">Looking straight up, with north at the top and east on the left, as a sky chart should be. The circle is the horizon. The projection is stereographic, the stereonet's projection, so every circle in the sky stays a circle. The chart turns with you: if the palace has turned you, the dome turns too, and in a mirror it is reversed, the way the ceiling of Grand Central was painted.</p>
+    <p class="note">Looking straight up, with north at the top and east on the left, as a sky chart should be. The circle is the horizon. The projection is stereographic, the stereonet's projection, so every circle in the sky stays a circle. The chart turns with you: if the house has turned you, the dome turns too, and in a mirror it is reversed, the way the ceiling of Grand Central was painted.</p>
     <p class="note" style="font-size:12px">${esc((window.SKY&&SKY.credit)||"")}</p></div>`;
   const draw = () => {
     const off = +$("sk-o").value, svg = $("sk-s"); svg.innerHTML = "";
@@ -1924,7 +1924,7 @@ function primerView(){
   const here = String(cur.id), lessonHere = L2[here];
   const n = Object.keys(S.visits).length;
   let html = `<div class="text" style="max-width:640px;margin:0 auto">`;
-  html += `<p>Once there was a reader called <b>${esc(name)}</b>, who had wandered through ${n} room${n===1?"":"s"} of a palace that was larger inside than out.</p>`;
+  html += `<p>Once there was a reader called <b>${esc(name)}</b>, who had wandered through ${n} room${n===1?"":"s"} of a house that was larger inside than out.</p>`;
   if(lessonHere) html += `<p><i>Here, in ${esc(cur.name)}:</i> ${lessonHere.lesson}</p>${lessonHere.q?`<p><b>The book asks:</b> ${lessonHere.q}</p><details><summary class="note">turn the page for the answer</summary><p>${lessonHere.a||""}</p></details>`:""}`;
   if(pick){ const r = ROOMS[pick], ls = L2[pick];
     html += `<p>${esc(name)} had not yet seen <b>${esc(r.name)}</b>${ls? ", where " + ls.teaser : ""}. The page shows a small picture of a door with the number ${esc(r.label||r.id)} on it.</p>
@@ -1935,17 +1935,17 @@ function primerView(){
   const b = $("pr-go"); if(b) b.onclick = () => { closeOv(); toast("The picture swallows you, gently."); move(pick, "e", null); };
 }
 
-/* ---- a palace alethiometer: three hands set a question, the needle answers ---- */
+/* ---- a house alethiometer: three hands set a question, the needle answers ---- */
 const SYMBOLS = [["hourglass",7],["key",16],["lock",10],["compass",4],["lamp",1],["pendulum",7],["lily",19],["crystal",12],["tree",14],["tile",11],["card",9],["mirror",8],
  ["stair",13],["clock",17],["whale",15],["railroad",15],["φ",16],["die",27],["owl",22],["serpent",12],["star",4],["moon",4],["sun",3],["spiral",13],
  ["hexagon",18],["bell",17],["quill",21],["anchor",19],["wheel",2],["labyrinth",23],["scale",3],["ladder",13],["eye",5],["seed",29],["sphere",8],["door",1]];
 WIDGETS.oracle = (el) => {
   const hands = [0,12,24];
-  el.innerHTML = `<div class="panel"><h3>The palace alethiometer</h3>
+  el.innerHTML = `<div class="panel"><h3>The house alethiometer</h3>
     <svg id="al-s" viewBox="-170 -170 340 340" style="width:100%;max-width:380px;display:block;margin:0 auto" role="img" aria-label="A dial of 36 symbols with three hands and a needle"></svg>
     <div class="row">${[0,1,2].map(k=>`<label class="mono">hand ${k+1} <select id="al-h${k}">${SYMBOLS.map((s,j)=>`<option value="${j}" ${j===hands[k]?"selected":""}>${s[0]}</option>`).join("")}</select></label>`).join("")}</div>
     <div class="row"><button class="btn primary" id="al-a" type="button">Ask</button></div><div id="al-o" class="text"></div>
-    <p class="note">Thirty-six symbols, each meaning many things, in honor of Pullman's instrument. This one knows only the palace, and it answers with a room.</p></div>`;
+    <p class="note">Thirty-six symbols, each meaning many things, in honor of Pullman's instrument. This one knows only the house, and it answers with a room.</p></div>`;
   const svg = $("al-s"); let needle = 0;
   const draw = () => {
     svg.innerHTML = "";
