@@ -188,7 +188,7 @@ Lettering, the window skies, and the sky ceiling print on top, so they stay legi
   - The icosahedron in the model room turns.
   - The alethiometer's needle wanders.
   - Funes's cigarette glows.
-- **Icons become models.** Each `icon` name (rule, net, lock, cards, tiles, crystal, tree, book, books, scroll, lectern, clock, hourglass, compass, lamp, key, bell, astrolabe, pond, fraction, note, map, pendulum, hex, plant, turns, cross, planimeter) has a matching 3D model. Unknown icons get a plain box.
+- **Icons become models.** Each `icon` name (carriage, orrery, rule, net, lock, cards, tiles, crystal, tree, book, books, scroll, lectern, clock, hourglass, compass, lamp, key, bell, astrolabe, pond, fraction, note, map, pendulum, hex, plant, turns, cross, planimeter) has a matching 3D model. Unknown icons get a plain box.
 - **For checking the light,** `?raw=1` in the address shows the room without the engraving pass.
 
 The 3D code lives in `palace/palace3d.js`. It uses three.js (MIT license), vendored in `palace/lib/` so the site doesn't depend on a CDN.
@@ -234,20 +234,80 @@ Room 34 has `ceiling: open`. Any room with an open ceiling gets the real sky ove
 
 Click near the top to look up; in an open court the camera tips nearly to the zenith.
 
-The **sundial** is laid out for the latitude the palace stands at. Click the dial to bring its reading forward. It reads sun time and gives the equation of time. On a clear night with the moon more than about a fifth lit, it reads by moonlight and works the correction: add about 48 minutes for each day of the moon's age. Under heavy cloud it says so and waits. South of the equator, the style turns to point at the south pole.
+The **sundial** is laid out for the latitude the palace stands at, on a baluster pedestal with two round steps, and reads from IIII in the morning to VIII at night. Click the dial to bring its reading forward. Nothing on it is corrected: it reads the sun's own time, straight off the plate, and the note beside it says why that differs from the clock (longitude, the equation of time, daylight saving). On a clear night with the moon more than about a sixth lit, it reads by moonlight instead, and that too is read straight off the plate: moon time, which runs about 48 minutes later each night. Under heavy cloud, or with the sun put out in the storm glass, it says so and waits. South of the equator, the style turns to point at the south pole.
+
+The positions behind it are good to about a hundredth of a degree for the sun and a few tenths for the moon. They include the moon's parallax and atmospheric refraction, so the sun is seen a little above where geometry alone would put it near the horizon, just as a real shadow sees it. The moon's phase comes from its real elongation from the sun, not from a mean month.
+
+The court is a cloister: a Tuscan colonnade on every side, whose lean-to roof throws a hard line of shadow, two stone benches, and four terracotta urns of clipped box. The paving rings the dial.
 
 ### The astrolabe: place, day, and weather
 
 The astrolabe hangs in the Sundial Court; take it and it rides in the bag (its save-code bit comes after the mended page). It can:
 - **Carry the palace somewhere else.** Choose from a list (Reykjavík, Tromsø, Quito, Alexandria, Kyoto, Sydney, the South Pole), type a latitude and longitude, or press "Where I am", which asks the browser once. Weather, the sky, the sun's light, the sundial, the pendulum's rate, and the almanac all follow. Away from home, light (dawn, day, dusk, night) follows the sun's real height instead of the clock. "Home to Appleton" undoes it.
 - **Set the day and hour.** This is the same control as the hourglass.
-- **Set the weather.** The storm glass can fix clear, broken cloud, overcast, fog, rain, snow, or a storm, or go back to live weather.
+- **Set the weather.** The storm glass can fix clear, broken cloud, overcast, fog, rain, snow, or a storm, or go back to live weather. "Clear the sky" sets it clear in one press, which keeps the sundial and the stars working whatever the real weather is doing.
+- **Put out the sun or the moon.** With the sun out, the court's sky goes dark, so the stars, planets, and their tracks show by day; there's no sunlight and no shadow. With the moon out, its glare and its shadows go too.
 
 The home place is `latitude`, `longitude`, and (optionally) `place:` at the top of the data file.
 
-### Quality
+### Quality, skins, and looking around
 
-The menu's **Quality** button cycles draft, normal, and fine. These set the pixel density (up to 1×, 2×, 3×), the size of the shadow map, and the texture resolution. Fine is meant for big screens; draft for old laptops. Changing it reloads the page.
+The menu's **Quality** button cycles draft, normal, fine, and ultra. Each draws more pixels than the screen shows and lets the browser shrink them, which smooths every engraved line. Each step also enlarges the shadow map and the textures, and the finer settings use finer engraving (the hatch spacing drops from 6.2 to 4.4 pixels). Fine is the default on a desktop-sized screen, and normal on a phone. Ultra wants a good graphics card. Changing the setting reloads the page. **Full view** (or F) fills the screen with the picture.
+
+The **Skin** button switches the frame around the picture between two looks:
+- **Myst**, the default: a dark room around a lit picture, journals of parchment bound in leather, brass buttons, and messages as a line of italic text.
+- **HyperCard**: striped title bars, square close boxes, and hard shadows.
+
+**View** switches between the engraved 3D rooms and the flat woodcut drawings.
+
+**Looking around.** Drag anywhere in the picture to look; let go past half a quarter turn and you face that way. The edges turn you, and the top and bottom look up and down; in an open court looking up tips nearly to the zenith. Keys:
+- ← → or A D turn.
+- ↑ or W goes through the door ahead.
+- ↓ or S turns around, or steps back from a close look.
+- Shift with ↑ ↓ (or Page Up, Page Down) looks up and down.
+- / searches.
+
+### The gardens
+
+Through the court's front gate (36–41), all open to the sky with hedge walls (`hedges` in `decor`) and gravel or lawn floors (`floor: gravel`, `floor: lawn`):
+- **The Knot Garden (36)** is a trefoil in clipped box that rises over and dips under at each crossing (`knot`).
+- **The Hedge Maze (37)** has turnings that carry you round a quarter turn or turn you inside out (doors to itself with `turn: r` and `turn: s`). Its heart (41, `secret`, with a `fountain`) opens only to visitors who arrive mirrored (`needs: mirror`).
+- **The Sunflower Bed (38)** is Vogel's spiral of 610 seeds (`phyllo`). Its sunflowers face the real sun by day and the east by night (`sunflowers`).
+- **The Moon Garden (39)** has flowers that open at dusk (`moonflowers`). It also has an armillary sphere set up as an equatorial dial: its polar rod points at the pole and casts a real shadow on the hour band (`armillary`).
+- **The Orrery Lawn (40)** has a brass orrery with every planet where it really is today (`orrery`), and the ephemeris.
+
+### The planets
+
+"The planet book" in the Observatory, "The ephemeris" on the Orrery Lawn, and the almanac's "All the planets…" button open a table for Mercury through Neptune. For each planet it gives:
+- where it is now;
+- the constellation it's in;
+- its magnitude;
+- when it rises, is highest, and sets;
+- its elongation from the sun and how much of it is lit;
+- its distance and the light time.
+
+Under the table is a small orrery. Positions come from JPL's Keplerian elements, with light time, precession to the date, and refraction; they agree with pyephem to a few hundredths of a degree. In any open court at night, each planet's path among the stars shows as a dotted track, a dot every four days for forty days either side of now, so retrograde loops show as kinks.
+
+### The carriage clock
+
+It stands on a side table on the Entry's right wall and keeps palace time, with live hands and a ticking balance. Its card offers:
+- the chimes: Westminster, Whittington, St. Michael's, ting-tang, ship's bells, the hours only, or silent;
+- volume;
+- whether it's heard only in the Entry (faintly next door) or through the whole house;
+- whether it chimes at night;
+- a repeat button, and buttons to play each quarter.
+
+The sequences are the standard chime tables, sounded on synthesized rod gongs. Browsers allow sound only after a click on the page.
+
+### Furniture and fitted rooms
+
+There are a few `decor` words for fitted rooms:
+- `wainscot` panels the walls to dado height, stepping around doors.
+- `porter` fits out the Entry: a hall bench, a coat stand with a coat and hat, an umbrella stand, and a runner toward the reading room.
+- `officefit` fits out the Office: a partners' desk with a green leather top and a brass gallery, your chair and a visitor's, a green-shaded lamp, a filing cabinet, a blackboard, bookcases on the right wall, a reading chair, and a rug.
+- `cloister` is the court's colonnade.
+
+Desks and tables everywhere now have turned legs, moulded tops, and drawers with brass knobs. When you measure the real office, give the furniture's positions and sizes and they'll go into `officefit`.
 
 ### Annotations: marginalia, sources, bibliography
 

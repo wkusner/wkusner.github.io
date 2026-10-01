@@ -6,6 +6,7 @@
 <title>The Palace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Pixelify+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>try{var _s=JSON.parse(localStorage.getItem("palace-v1")||"{}");document.documentElement.classList.add((_s.skin||"myst")==="myst"?"skin-myst":"skin-hypercard");}catch(e){document.documentElement.classList.add("skin-myst");}</script>
 <style>
 :root{
   --paper:#F4F1E8; --paper2:#FFFFFF; --ink:#141210; --muted:#55504A; --line:#141210;
@@ -182,6 +183,80 @@ table.cal td.ev{text-decoration:underline;text-decoration-color:var(--spot);text
 .svi{margin:3px 0}
 .svi.first{outline:2px solid var(--spot)}
 #widget.flash{outline:3px solid var(--spot);outline-offset:4px;transition:outline-color 1s}
+.ptab{border-collapse:collapse;width:100%;font-size:13.5px}.ptab th,.ptab td{border-bottom:1px solid var(--line,#999);padding:6px 8px;text-align:left;vertical-align:top}.ptab th{font-family:var(--mono,monospace);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
+#stage:fullscreen{width:100vw;height:100vh;background:#111;aspect-ratio:auto}
+#stage:fullscreen canvas.view3d{width:100vw!important;height:100vh!important}
+#stage canvas.view3d[data-cursor=drag]{cursor:grabbing}
+#stage canvas.view3d[data-cursor=none]{cursor:grab}
+
+/* ===== the Myst skin (default): a dark room around a lit picture; journals of parchment bound in leather; brass and sepia ink.
+   The HyperCard skin above stays as it was, and the menu's Skin button switches between them. ===== */
+html.skin-myst{--leather:#2a1d14; --leather2:#3a2919; --brass:#b8955a; --brass2:#e0c48a; --parch:#efe3c6; --parch2:#e6d6b0; --sepia:#2e2216; --sepia2:#6b5640;
+  --page:#0e0c0a; --chrome:var(--fellsc); background:var(--page)}
+html.skin-myst body{background:radial-gradient(ellipse at 50% 30%, #1c1712 0%, #0e0c0a 55%, #070605 100%) fixed; color:var(--parch)}
+html.skin-myst a{color:var(--brass2)} html.skin-myst a:hover{color:#fff1cf}
+html.skin-myst .menubar button{padding:3px 7px}
+html.skin-myst .menubar{background:linear-gradient(#17120d, #0e0b08); border-bottom:1px solid #3d2f20; box-shadow:0 1px 0 #000; font:400 15px var(--fellsc); letter-spacing:.04em}
+html.skin-myst .menubar .home, html.skin-myst .menubar button{color:var(--parch2); font:400 15px var(--fellsc); letter-spacing:.05em}
+html.skin-myst .menubar .home b{color:var(--brass2)}
+html.skin-myst .menubar button:hover, html.skin-myst .menubar button:focus-visible{background:transparent; color:#fff1cf; text-decoration:underline; text-decoration-color:var(--brass); text-underline-offset:5px}
+html.skin-myst .roomhead{gap:18px}
+html.skin-myst .roomnum{background:none; border:0; box-shadow:none; color:var(--brass2); font:400 64px/1 var(--fellsc); text-shadow:0 1px 0 #000, 0 0 18px rgba(184,149,90,.25); min-width:0; padding:0 4px}
+html.skin-myst .roomname{background:none; border:0; box-shadow:none; color:var(--parch); font:italic 400 38px/1.1 var(--fell); padding:0}
+html.skin-myst .wingname{background:none; border:0; border-top:1px solid var(--brass); color:var(--brass); padding:4px 0 0; letter-spacing:.22em; font:400 12px var(--fellsc)}
+/* the picture itself: no window chrome, a thin brass bezel, deep shadow */
+html.skin-myst .console.win{background:#000; border:1px solid #3d2f20; box-shadow:0 18px 60px rgba(0,0,0,.8), 0 0 0 1px #000}
+html.skin-myst .tally{background:linear-gradient(#1b140e,#120d09); border-bottom:1px solid #3d2f20; color:var(--parch2); font:400 13px var(--fellsc); letter-spacing:.03em}
+html.skin-myst .tally .chip, html.skin-myst .chip{background:transparent; color:var(--parch2); border:1px solid #4a3a28; border-radius:2px; box-shadow:none; font:400 13px var(--fellsc)}
+html.skin-myst .tally button.chip:hover{background:#2a2016; color:#fff1cf}
+html.skin-myst .xp{border:1px solid var(--brass); background:#0e0b08}
+html.skin-myst .bagbar{background:linear-gradient(#120d09,#1b140e); border-top:1px solid #3d2f20; color:var(--parch2)}
+html.skin-myst .baglabel, html.skin-myst .hint{font:400 13px var(--fellsc); color:var(--sepia2); color:#a8916c}
+html.skin-myst .slot{background:radial-gradient(#2a2016,#140f0a); border:1px solid #5a4630; border-radius:50%; box-shadow:inset 0 0 8px #000}
+html.skin-myst .slot:hover{outline:1px solid var(--brass2)}
+html.skin-myst .corner{background:rgba(20,15,10,.82); color:var(--parch2); border:1px solid #5a4630; box-shadow:0 4px 18px rgba(0,0,0,.6); font:italic 13px var(--fell)}
+/* every other window becomes a page of a journal */
+html.skin-myst .win:not(.console), html.skin-myst .toast{--paper2:var(--parch); --paper:var(--parch2); --ink:var(--sepia); --muted:var(--sepia2); --line:#8a7350; color:var(--sepia)}
+html.skin-myst .win:not(.console){background:var(--parch); background-image:radial-gradient(ellipse at 20% 0%, rgba(255,250,235,.55), transparent 60%), radial-gradient(ellipse at 100% 100%, rgba(120,90,50,.22), transparent 55%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .26 0 0 0 0 .15 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  border:1px solid #7a6040; border-radius:3px; box-shadow:0 10px 30px rgba(0,0,0,.55), inset 0 0 40px rgba(110,80,40,.25)}
+html.skin-myst .tb{background:none; border:0; height:auto; padding:12px 14px 0; display:block; text-align:center}
+html.skin-myst .tb .t{display:inline-block; background:none; font:italic 400 21px var(--fell); color:var(--sepia); max-width:100%; padding:0 34px; position:relative}
+html.skin-myst .tb .t::before, html.skin-myst .tb .t::after{content:""; position:absolute; top:55%; width:26px; border-top:1px solid #8a7350}
+html.skin-myst .tb .t::before{left:0} html.skin-myst .tb .t::after{right:0}
+html.skin-myst .tb .box{position:absolute; right:12px; top:10px; width:26px; height:26px; border:0; background:none; font:400 22px/26px var(--fell); color:#7a6040; text-align:center}
+html.skin-myst .tb .box::before{content:"×"}
+html.skin-myst .tb .box:hover{background:none; color:#2e2216}
+html.skin-myst .win{position:relative}
+html.skin-myst .wb{padding:10px 22px 20px}
+/* the overlay: the room dims and a book lies open on it */
+html.skin-myst .overlay{background:radial-gradient(ellipse at center, rgba(8,6,4,.55), rgba(0,0,0,.88)); backdrop-filter:blur(2px)}
+html.skin-myst .overlay .sheet{border:14px solid var(--leather); border-image:none; outline:1px solid var(--brass); outline-offset:-9px; box-shadow:0 30px 90px rgba(0,0,0,.9), 0 0 0 1px #000; border-radius:6px;
+  background-color:var(--parch)}
+html.skin-myst .overlay .sheet::before{content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg, rgba(60,40,20,.28), transparent 5%, transparent 95%, rgba(60,40,20,.22)); border-radius:2px}
+html.skin-myst .overlay .tb .t{font-size:26px}
+/* buttons, inputs, tabs: ink and brass, not plastic */
+html.skin-myst .doorbtn, html.skin-myst .btn{font:400 15px var(--fellsc); letter-spacing:.03em; background:transparent; color:var(--sepia); border:1px solid #8a7350; border-radius:2px; padding:5px 12px}
+html.skin-myst .doorbtn:hover, html.skin-myst .btn:hover, html.skin-myst .doorbtn:focus-visible, html.skin-myst .btn:focus-visible{background:rgba(90,60,30,.12); color:#1a120a; border-color:var(--sepia)}
+html.skin-myst .doorbtn:hover .note{color:var(--sepia2)}
+html.skin-myst .btn.primary{background:linear-gradient(#cdb07a,#a8854c); color:#1d140b; border:1px solid #6b5230; box-shadow:inset 0 1px 0 rgba(255,240,200,.6), 0 1px 2px rgba(0,0,0,.3); margin:0}
+html.skin-myst .btn.primary:hover{background:linear-gradient(#d9bf8b,#b59157)}
+html.skin-myst .widget input, html.skin-myst .win input[type=text], html.skin-myst .win input[type=number], html.skin-myst .win input[type=datetime-local], html.skin-myst .win select{font:16px var(--fell); background:rgba(255,250,235,.5); color:var(--sepia); border:0; border-bottom:1px solid #8a7350; border-radius:0}
+html.skin-myst .tab{font:400 14px var(--fellsc); background:transparent; border:0; border-bottom:1px solid transparent; color:var(--sepia2); border-radius:0}
+html.skin-myst .tab[aria-selected="true"]{background:transparent; color:var(--sepia); border-bottom:2px solid var(--sepia)}
+html.skin-myst .panel, html.skin-myst .obi, html.skin-myst .babel, html.skin-myst .savecode{background:rgba(255,250,235,.35); border:1px solid #a68d63; border-radius:2px}
+html.skin-myst .mode{background:rgba(255,250,235,.4); border:1px solid #a68d63; border-radius:2px; color:var(--sepia)}
+html.skin-myst .mode b{font:400 18px var(--fellsc)}
+html.skin-myst .mode:hover{background:rgba(90,60,30,.12); color:var(--sepia)}
+html.skin-myst .board .pin{background:rgba(255,250,235,.35); border-color:#a68d63}
+html.skin-myst .ptab th, html.skin-myst .ptab td{border-bottom-color:#b39a72}
+html.skin-myst .ptab th{font:400 12px var(--fellsc); letter-spacing:.12em}
+html.skin-myst .mono, html.skin-myst .ptab .mono{font-family:var(--fell); font-size:15px}
+/* a message: a line of italic text over the picture, the way Myst says things */
+html.skin-myst .toast{background:rgba(10,8,6,.78); color:var(--parch); border:0; border-top:1px solid #5a4630; border-bottom:1px solid #5a4630; box-shadow:0 8px 30px rgba(0,0,0,.6); font:italic 17px var(--fell); padding:10px 26px; border-radius:0}
+html.skin-myst footer span{background:transparent; border:0; color:#a8916c; font:italic 14px var(--fell)}
+html.skin-myst footer a{color:var(--brass2)}
+html.skin-myst .tip3d{background:rgba(14,11,8,.86); color:var(--parch); border:1px solid #5a4630; box-shadow:0 6px 20px rgba(0,0,0,.6); font:italic 15px var(--fell); border-radius:0}
+.widget input[type=checkbox],.widget input[type=range],.win input[type=checkbox]{width:auto;border:0;padding:0;background:none}
 </style>
 </head>
 <body>
@@ -192,8 +267,10 @@ table.cal td.ev{text-decoration:underline;text-decoration-color:var(--spot);text
   <button type="button" id="b-cat">Finding aid</button>
   <button type="button" id="b-lamp">Lamps</button>
   <button type="button" id="b-ink">Ink</button>
+  <button type="button" id="b-skin">Skin</button>
   <button type="button" id="b-gfx">View</button>
   <button type="button" id="b-q">Quality</button>
+  <button type="button" id="b-full" title="Full screen (F)">Full view</button>
   <button type="button" id="b-ann">Annotations</button>
   <button type="button" id="b-help">How to walk</button>
 </div>
@@ -205,7 +282,7 @@ table.cal td.ev{text-decoration:underline;text-decoration-color:var(--spot);text
       <button class="corner tr" id="mini" type="button" aria-label="Open the map"></button>
       <button class="corner bl" id="primerc" type="button" aria-label="Open the Primer"></button>
     </div>
-    <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint">← → turn · ↓ step back · ↑ go through</span></div>
+    <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint">drag to look · ← → or A D turn · ↑ W go through · ↓ S step back · ⇧↑ ⇧↓ look up, down · F full view</span></div>
   </div>
   <div class="win" id="annwin" style="display:none;margin-top:20px"><div class="tb"><button class="box" type="button" id="ann-x" aria-label="Close annotations"></button><span class="t">Annotations</span></div>
     <div class="wb"><div class="tabs" role="tablist"><button type="button" class="tab" data-tab="marginalia">Marginalia</button><button type="button" class="tab" data-tab="sources">Sources</button><button type="button" class="tab" data-tab="bib">Bibliography</button></div><div id="annb" class="ann"></div></div></div>

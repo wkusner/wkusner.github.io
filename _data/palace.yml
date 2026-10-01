@@ -21,6 +21,7 @@ wings:
   lectures:     {name: "The Lecture Wing",           color: "#2C7B80"}
   branch:       {name: "The Branch Cut",             color: "#3A6E8F"}
   court:        {name: "The Courtyards",             color: "#B07A1E"}
+  garden:       {name: "The Gardens",                color: "#5E7A3A"}
   archive:      {name: "The Archive",                color: "#7A4A86"}
 
 ranks:   # earned by experience (xp): rooms, close looks, puzzles, items, sheets
@@ -221,6 +222,7 @@ rooms:
     - {to: 7, wall: front, when: "night|dusk", title: "a trapdoor, open after dark"}
   objects:
     - {kind: device, icon: net, title: "Stereonet Slide Rule", href: "/stereonet/", note: "The SO(3) slide rule: a Wulff net with a turning overlay and a frame-matching challenge."}
+    - {kind: device, icon: orrery, title: "The planet book", action: planets, note: "Every planet tracked: where it is now, rising and setting, brightness, distance, and constellation."}
 
 - id: 5
   name: The Perspective Corridor
@@ -958,7 +960,7 @@ rooms:
   wing: foyer
   floor: checker
   ceiling: coffers
-  decor: [thermo, window, lamp, rose]
+  decor: [thermo, window, lamp, rose, wainscot, porter]
   at: [5, 7]
   text: >-
     A high, empty hall. Someone has just left: there is a letter on the desk, a lamp still lit, and the things they meant you to have laid out beside it. A compass rose in the floor points to true north. The thermometer and the window show the real weather outside.
@@ -983,6 +985,7 @@ rooms:
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
+    - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps palace time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
     - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook"}
     - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly."}
   marginalia:
@@ -995,18 +998,19 @@ rooms:
   wing: court
   floor: stone
   ceiling: open
-  decor: [sundial]
+  decor: [sundial, cloister]
   at: [5, 8]
   text: >-
     An open court with the real sky over it and a brass sundial in the middle, laid out for the latitude where the palace stands (Appleton, unless the astrolabe has carried it off). The shadow on the plate is the actual shadow for this moment, or for whatever moment the hourglass says. Look up: the sky is the sky over the court right now, sun or stars, the moon in its true phase, and as much cloud as the weather says.
 
-    On a clear night with a bright moon the dial works by moonlight, a little late. The moon falls behind the sun by about forty-eight minutes a day, so add that for each day of its age.
+    On a clear night with a bright moon the dial works by moonlight. It tells moon time, read straight off the plate, which runs about forty-eight minutes later each night than sun time.
 
     The dial tells sun time, which is not clock time. The difference is the longitude, the time zone, daylight saving, and the equation of time, the wobble that comes from the earth's tilted, elliptical orbit.
   widget: sundial
   doors:
     - {to: 0, wall: right, title: "back to the Entry"}
-    - {to: 19, wall: back, title: "the garden gate"}
+    - {to: 19, wall: back, title: "the lily pond"}
+    - {to: 36, wall: front, title: "the garden gate", look: gate}
   objects:
     - {kind: unwritten, icon: clock, wall: right, title: "A bowstring equatorial dial", note: "A second dial whose hour lines are evenly spaced, for comparison."}
     - {kind: device, icon: astrolabe, wall: right, item: astrolabe, action: astrolabe, title: "An astrolabe with a storm glass", note: "Turn the rete to stand somewhere else under the sky, or at another hour; tap the storm glass to change the weather."}
@@ -1088,7 +1092,7 @@ rooms:
   wing: foyer
   hours: true
   floor: planks
-  decor: [window, lamp, shelves]
+  decor: [window, lamp, wainscot, officefit]
   at: [4, 7]
   text: >-
     A working office, for now a sketch of the real one, which will be modeled here later: its desk, its shelves, its whiteboard, its view. The hours are posted on the wall, and the plate on the door outside says whether it's open.
@@ -1098,6 +1102,143 @@ rooms:
     - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours}
     - {kind: unwritten, icon: lectern, wall: left, title: "The real office, measured", note: "A model of the actual office: the desk, the shelves, the whiteboard, the window."}
     - {kind: device, icon: note, wall: left, title: "The calendar", action: notices}
+
+- id: 36
+  name: The Knot Garden
+  wing: garden
+  floor: gravel
+  ceiling: open
+  decor: [hedges, knot]
+  at: [5, 9]
+  text: >-
+    Past the sundial the paving gives way to gravel, and the walls to clipped box. In the middle is a knot garden, and this one is a knot in earnest: a single hedge that closes on itself, rising over and dipping under at each crossing. It's a trefoil, the simplest knot that can't be untied.
+
+    Gardeners have laid out knots since the Tudors. Topologists have argued about them since Tait, who tabulated them in the 1870s because Kelvin thought atoms might be knotted vortices in the ether. The atoms weren't, but the table survived.
+  doors:
+    - {to: 34, wall: back, title: "the sundial court"}
+    - {to: 37, wall: left, title: "the hedge maze"}
+    - {to: 39, wall: right, title: "the moon garden"}
+    - {to: 38, wall: front, title: "the sunflower bed"}
+  objects:
+    - {kind: device, icon: tree, wall: left, title: "The trefoil, drawn", note: "Three crossings, and no way to fewer: the crossing number of the trefoil is 3. It is chiral, too. Its mirror image is a different knot, which you can check by walking around the hedge in a mirrored frame."}
+    - {kind: unwritten, icon: cross, wall: left, title: "A table of knots, to be planted", note: "The figure-eight, the cinquefoil, and the rest of Tait's table up to seven crossings, each a bed of its own."}
+    - {kind: unwritten, icon: scroll, wall: right, title: "Knots for tying", note: "The bowline, the clove hitch, the sheet bend: the practical knots, with the mathematics of each. A rope's knot is an open curve; tie its ends together and it becomes a knot in the topologist's sense."}
+  marginalia:
+    - "A knot is a closed curve in space, up to wiggling without cutting. The hedge rises and dips so the crossings are honest: over and under, not just touching."
+    - "Tait, Kirkman, and Little tabulated knots by hand through the 1890s. The Perko pair, two entries in that table that are really the same knot, wasn't caught until 1974."
+  bib:
+    - "Colin Adams, <i>The Knot Book</i>, 1994."
+    - "Peter Guthrie Tait, “On Knots,” <i>Transactions of the Royal Society of Edinburgh</i>, 1877."
+    - "Clifford Ashley, <i>The Ashley Book of Knots</i>, 1944."
+
+- id: 37
+  name: The Hedge Maze
+  wing: garden
+  floor: gravel
+  ceiling: open
+  decor: [hedges, maze]
+  at: [4, 9]
+  text: >-
+    Hedges higher than your head, and turnings that all look alike. The maze has a habit: some turnings carry you round a quarter turn, and some turn you inside out, so left and right trade places. The heart of the maze lets in only those who arrive mirrored.
+  doors:
+    - {to: 36, wall: right, title: "back to the knot garden"}
+    - {to: 37, wall: front, turn: r, title: "a turning in the hedge", say: "The path bends round. It looks like the same place, turned."}
+    - {to: 37, wall: left, turn: s, title: "a turning that doubles back", say: "The path doubles back on itself, and the hedges seem to have swapped sides."}
+    - {to: 41, wall: back, needs: "mirror", hint: "The hedge here only parts for someone who has been turned inside out.", title: "a gap in the hedge"}
+  objects:
+    - {kind: book, icon: book, wall: right, title: "Maze", by: "Christopher Manson, 1985", note: "Forty-five numbered rooms, a shortest path of sixteen steps, and a riddle along it. The palace's numbered rooms are a homage."}
+  marginalia:
+    - "The turnings are holonomy you can walk: each door applies an element of the dihedral group to your frame. The heart needs the reflection, which no number of quarter turns will give you."
+  bib:
+    - "Christopher Manson, <i>Maze: Solve the World's Most Challenging Puzzle</i>, 1985."
+    - "Jorge Luis Borges, “The Garden of Forking Paths,” 1941."
+
+- id: 41
+  name: The Heart of the Maze
+  wing: garden
+  floor: lawn
+  ceiling: open
+  decor: [hedges, fountain]
+  at: [4, 10]
+  secret: true
+  text: >-
+    A small square of lawn with a fountain, and a stone bench. You came in mirrored, and you'll leave mirrored unless you find another turning, or use the compass.
+
+    Most mazes are trees, and a hand on one wall will get you out. This one isn't: its turnings are a group, and the way out depends on how you've been turned.
+  doors:
+    - {to: 37, wall: front, title: "back into the maze"}
+  objects:
+    - {kind: book, icon: book, wall: left, title: "The Garden of Forking Paths", by: "Jorge Luis Borges, 1941", note: "A labyrinth in time, not space: a novel in which every choice is taken, and all the futures happen."}
+    - {kind: unwritten, icon: hex, wall: left, title: "A labyrinth, to be laid in the turf", note: "The seven-circuit classical labyrinth: one path, no choices, all the way to the center."}
+  marginalia:
+    - "The hand-on-the-wall rule works exactly when the maze's walls are connected, a tree, as graph theorists say. A loop of hedge you can't reach from the outer wall defeats it."
+
+- id: 38
+  name: The Sunflower Bed
+  wing: garden
+  floor: gravel
+  ceiling: open
+  decor: [hedges, phyllo, sunflowers]
+  at: [5, 10]
+  text: >-
+    A round bed laid out seed by seed in Vogel's spiral: the n-th seed at distance √n from the center and n times the golden angle around. Count the spirals and you get Fibonacci numbers, 13, 21, and 34 here, because the golden angle is as far as an angle can get from any fraction.
+
+    Around the edge, sunflowers. By day they turn to face the sun, wherever it really is; by night they face east, where it will rise.
+  doors:
+    - {to: 36, wall: back, title: "the knot garden"}
+    - {to: 40, wall: right, title: "the orrery lawn"}
+  objects:
+    - {kind: device, icon: crystal, wall: back, title: "The golden angle", note: "360° × (1 − 1/φ) ≈ 137.508°. Its continued fraction is all ones, so it is the worst approximable number: no seed ever falls exactly behind another."}
+    - {kind: unwritten, icon: plant, wall: back, title: "Turing's sunflowers", note: "Turing's last work was on phyllotaxis. In 2012 a citizen-science project grew hundreds of sunflowers to test it; most, though not all, counted Fibonacci."}
+  marginalia:
+    - "Vogel's model, 1979: r = c√n, θ = n · 137.508°. The square root keeps the seeds evenly packed; the golden angle keeps them from lining up."
+  bib:
+    - "Helmut Vogel, “A better way to construct the sunflower head,” <i>Mathematical Biosciences</i>, 1979."
+    - "Jonathan Swinton and others, “Novel Fibonacci and non-Fibonacci structure in the sunflower,” <i>Royal Society Open Science</i>, 2016."
+
+- id: 39
+  name: The Moon Garden
+  wing: garden
+  floor: gravel
+  ceiling: open
+  decor: [hedges, moonflowers, armillary]
+  at: [6, 9]
+  widget: sundial
+  text: >-
+    Pale flowers in clipped bushes: moonflowers, evening primrose, nicotiana. By day they're shut. At dusk they open, and they glow a little under the moon.
+
+    In the middle stands an armillary sphere set up as an equatorial dial. Its rod points at the celestial pole, and its band lies in the plane of the equator, so its hours are evenly spaced, fifteen degrees each. The rod's shadow on the band is the sun's own time, read straight off the brass.
+  doors:
+    - {to: 36, wall: left, title: "the knot garden"}
+    - {to: 40, wall: front, title: "the orrery lawn"}
+  objects:
+    - {kind: unwritten, icon: clock, wall: left, title: "A moon dial's volvelle", note: "A rotating disc that converts moon time to sun time by the moon's age. For now the dials here tell it as they see it."}
+  marginalia:
+    - "An equatorial dial is the easy one: tilt the dial plate until it's parallel to the equator, and the hour lines are evenly spaced. The horizontal dial in the court is the same dial, projected onto the ground."
+  bib:
+    - "Albert E. Waugh, <i>Sundials: Their Theory and Construction</i>, 1973."
+
+- id: 40
+  name: The Orrery Lawn
+  wing: garden
+  floor: lawn
+  ceiling: open
+  decor: [hedges, orrery]
+  at: [6, 10]
+  text: >-
+    A brass orrery on a stone pedestal in the middle of the lawn, with the planets where they really are today, from Mercury out to Neptune. The distances are squeezed so Neptune fits; the angles are true. At night the real planets are overhead, and you can check one against the other.
+  doors:
+    - {to: 39, wall: back, title: "the moon garden"}
+    - {to: 38, wall: left, title: "the sunflower bed"}
+  objects:
+    - {kind: device, icon: orrery, wall: left, title: "The ephemeris", action: planets, note: "Every planet tracked: where it is now, when it rises and sets, how bright it is, how far, and in which constellation."}
+    - {kind: unwritten, icon: scroll, wall: left, title: "A planet walk, to scale", note: "The solar system on a scale where the sun is a beach ball: Neptune would be about two miles off, a long way past the edge of the lawn."}
+  marginalia:
+    - "The positions come from JPL's Keplerian elements for the planets, good to a few hundredths of a degree for 1800–2050."
+    - "The first orrery of the modern kind was made around 1712 by George Graham and Thomas Tompion, and copied for Charles Boyle, the fourth Earl of Orrery, who gave it his name."
+  bib:
+    - "E. M. Standish, “Keplerian Elements for Approximate Positions of the Major Planets,” JPL."
+    - "Jean Meeus, <i>Astronomical Algorithms</i>, 1991."
 
 primer:
   "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}

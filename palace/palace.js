@@ -50,7 +50,11 @@ function now(){
 }
 function band(d){ if(S.loc){ const sk = skyNow(), a = sk.sun.alt; return a < -12 ? "night" : a < -.8 ? (sk.sun.az < 180 ? "dawn" : "dusk") : (a < 6 ? (sk.sun.az < 180 ? "dawn" : "dusk") : "day"); }
   const h=d.getHours(); return h>=21||h<5 ? "night" : h<8 ? "dawn" : h<18 ? "day" : "dusk"; }
-function moonPhase(d){ const syn=29.530588853, ref=Date.UTC(2000,0,6,18,14); return (((d - ref)/864e5 % syn) + syn) % syn / syn; }
+// the moon's phase from the real elongation: 0 new, .25 first quarter, .5 full, .75 last quarter
+function moonPhase(d){ const n = d.getTime()/864e5 + 2440587.5 - 2451545, g = (357.528+0.9856003*n)*DEG, Ls = 280.460+0.9856474*n + 1.915*Math.sin(g) + 0.020*Math.sin(2*g);
+  const M=(134.963+13.064993*n)*DEG, F=(93.272+13.229350*n)*DEG, D=(297.850+12.190749*n)*DEG, Ms=(357.529+0.985600*n)*DEG;
+  const Lm = 218.316+13.176396*n + 6.289*Math.sin(M) + 1.274*Math.sin(2*D-M) + 0.658*Math.sin(2*D) + 0.214*Math.sin(2*M) - 0.186*Math.sin(Ms) - 0.114*Math.sin(2*F);
+  return (((Lm - Ls) % 360) + 360) % 360 / 360; }
 function lightNow(){ return S.light==="auto" ? band(now()) : S.light; }
 
 /* ---------- the sky over the palace ---------- */
@@ -78,22 +82,43 @@ function helio(el, T){ const a=el.a+el.da*T, e=el.e+el.de*T, i=(el.i+el.di*T)*DE
   const xp=a*(Math.cos(E)-e), yp=a*Math.sqrt(1-e*e)*Math.sin(E), w=W*DEG-N;
   const cw=Math.cos(w), sw=Math.sin(w), cN=Math.cos(N), sN=Math.sin(N), ci=Math.cos(i), si=Math.sin(i);
   return [ (cw*cN - sw*sN*ci)*xp + (-sw*cN - cw*sN*ci)*yp, (cw*sN + sw*cN*ci)*xp + (-sw*sN + cw*cN*ci)*yp, (sw*si)*xp + (cw*si)*yp ]; }
-function planetsEq(jd){
-  const T=(jd-2451545)/36525, PL=(window.SKY&&SKY.planets)||{}, out=[];
-  if(!PL.ter) return out; const t=helio(PL.ter.el,T);
-  ["mer","ven","mar","jup","sat"].forEach(k => { if(!PL[k]) return; const p=helio(PL[k].el,T), x=p[0]-t[0], y=p[1]-t[1], z=p[2]-t[2];
-    const lam=Math.atan2(y,x)/DEG, beta=Math.atan2(z,Math.hypot(x,y))/DEG, eq=eclToEq(lam,beta); out.push({id:k, name:PL[k].name, sym:PL[k].sym, ra:eq[0], dec:eq[1]}); });
+// Uranus and Neptune join the five bright planets (JPL's approximate Keplerian elements, Standish, valid 1800–2050)
+const PLANETS_MORE = {
+  ura: {name:"Uranus", sym:"♅", el:{a:19.18916464, e:0.04725744, i:0.77263783, L:313.23810451, W:170.95427630, N:74.01692503, da:-0.00196176, de:-0.00004397, di:-0.00242939, dL:428.48202785, dW:0.40805281, dN:0.04240589}},
+  nep: {name:"Neptune", sym:"♆", el:{a:30.06992276, e:0.00859048, i:1.77004347, L:-55.12002969, W:44.96476227, N:131.78422574, da:0.00026291, de:0.00005105, di:0.00035372, dL:218.45945325, dW:-0.32241464, dN:-0.00508664}}};
+const PLANET_KEYS = ["mer","ven","mar","jup","sat","ura","nep"];
+const planetEl = k => ((window.SKY&&SKY.planets)||{})[k] || PLANETS_MORE[k];
+function planetsEq(jd, more){
+  const T=(jd-2451545)/36525, out=[], ter = planetEl("ter");
+  if(!ter) return out; const t=helio(ter.el,T);
+  PLANET_KEYS.forEach(k => { const P0 = planetEl(k); if(!P0) return; const p=helio(P0.el,T);
+    // light time: we see each planet where it was when its light left
+    const d0 = Math.hypot(p[0]-t[0], p[1]-t[1], p[2]-t[2]), pl = helio(P0.el, T - d0*0.0057755/36525);
+    const x=pl[0]-t[0], y=pl[1]-t[1], z=pl[2]-t[2];
+    const lam=Math.atan2(y,x)/DEG, beta=Math.atan2(z,Math.hypot(x,y))/DEG, eq=prec(...eclToEq(lam,beta), jd);
+    const o = {id:k, name:P0.name, sym:P0.sym, ra:eq[0], dec:eq[1]};
+    if(more){ const r = Math.hypot(...pl), D = Math.hypot(x,y,z), R0 = Math.hypot(...t);
+      Object.assign(o, {lam:((lam%360)+360)%360, beta, r, delta:D, R:R0, helioLon:((Math.atan2(pl[1],pl[0])/DEG)%360+360)%360,
+        phase: Math.acos(Math.max(-1, Math.min(1, (r*r + D*D - R0*R0)/(2*r*D))))/DEG, elong: Math.acos(Math.max(-1, Math.min(1, (R0*R0 + D*D - r*r)/(2*R0*D))))/DEG}); }
+    out.push(o); });
   return out; }
 function lst(jd){ return ((280.46061837 + 360.98564736629*(jd-2451545) + LON) % 360 + 360) % 360; }
+// precession from the J2000 catalogue to the equinox of date (IAU 1976 angles); stars and planets need it, the sun and moon formulas are already of date
+function prec(ra, dec, jd){ const T = (jd-2451545)/36525, as = DEG/3600, ze = (2306.2181*T + .30188*T*T)*as, z = (2306.2181*T + 1.09468*T*T)*as, th = (2004.3109*T - .42665*T*T)*as;
+  const a = ra*DEG + ze, d = dec*DEG, A = Math.cos(d)*Math.sin(a), B = Math.cos(th)*Math.cos(d)*Math.cos(a) - Math.sin(th)*Math.sin(d), C = Math.sin(th)*Math.cos(d)*Math.cos(a) + Math.cos(th)*Math.sin(d);
+  return [(((Math.atan2(A,B)+z)/DEG)%360+360)%360, Math.asin(C)/DEG]; }
 function altaz(ra, dec, L){ const H=(L-ra)*DEG, d=dec*DEG, f=LAT*DEG;
   const alt=Math.asin(Math.sin(d)*Math.sin(f)+Math.cos(d)*Math.cos(f)*Math.cos(H));
   const az=Math.atan2(-Math.cos(d)*Math.sin(H), Math.sin(d)*Math.cos(f)-Math.cos(d)*Math.sin(f)*Math.cos(H));
   return [alt/DEG, ((az/DEG)%360+360)%360]; }
+// atmospheric refraction lifts what we see near the horizon (Saemundsson's formula, in degrees)
+const refr = h => h < -1.9 ? 0 : 1.02/Math.tan((h + 10.3/(h + 5.11))*DEG)/60;
 function skyNow(offsetHours){
   const d = new Date(now().getTime() + (offsetHours||0)*36e5), jd = jdOf(d), L = lst(jd);
   const s = sunEq(jd), m = moonEq(jd), sa = altaz(s[0],s[1],L), ma = altaz(m[0],m[1],L);
   ma[0] -= 0.95*Math.cos(ma[0]*DEG);   // parallax: we stand on the surface, not at the center
-  return {d, jd, L, sun:{ra:s[0],dec:s[1],alt:sa[0],az:sa[1]}, moon:{ra:m[0],dec:m[1],alt:ma[0],az:ma[1],phase:moonPhase(d)}, planets:planetsEq(jd).map(p=>{const a=altaz(p.ra,p.dec,L); return Object.assign(p,{alt:a[0],az:a[1]});})};
+  sa[0] += refr(sa[0]); ma[0] += refr(ma[0]);   // apparent positions, as the eye and a shadow see them
+  return {d, jd, L, sun:{ra:s[0],dec:s[1],alt:sa[0],az:sa[1]}, moon:{ra:m[0],dec:m[1],alt:ma[0],az:ma[1],phase:moonPhase(d)}, planets:planetsEq(jd).map(p=>{const a=altaz(p.ra,p.dec,L); return Object.assign(p,{alt:a[0]+refr(a[0]),az:a[1]});})};
 }
 /* stereographic projection of the upper hemisphere, as seen looking up: north at top, east at left.
    rot = quarter turns of the visitor's frame; mir = mirrored frame */
@@ -111,7 +136,7 @@ function drawSky(g, cx, cy, R, opts){
   E("circle",{cx,cy,r:R,fill: dark ? "#0d0c0b" : bg, stroke:"var(--ink)","stroke-width":1.5},g);
   const inner = E("g",{"clip-path":`url(#${id})`},g);
   const star = dark ? "#F4EFE2" : "var(--ink)", faint = dark ? 1 : .35;
-  const P2 = (ra,dec) => { const a = altaz(ra,dec,sk.L); return a[0] < -1 ? null : proj(a[0],a[1],R,rot,mir).concat([a[0]]); };
+  const P2 = (ra,dec) => { const a = altaz(...prec(ra,dec,sk.jd),sk.L); return a[0] < -1 ? null : proj(a[0],a[1],R,rot,mir).concat([a[0]]); };
   if(SK){
     if(opts.milky!==false && SK.mw) (SK.mw.ol1||[]).forEach(poly => { let d=""; let pen=false; poly.forEach(([ra,dec]) => { const p=P2(ra,dec); if(!p){ pen=false; return; } d += (pen?"L":"M")+(cx+p[0]).toFixed(1)+","+(cy+p[1]).toFixed(1); pen=true; }); if(d) E("path",{d,fill:"none",stroke:star,"stroke-width":.6,opacity:.35*faint,"stroke-dasharray":"1 2"},inner); });
     if(opts.lines!==false) SK.lines.forEach(ln => { let d="", pen=false; ln.forEach(([ra,dec]) => { const p=P2(ra,dec); if(!p){ pen=false; return; } d += (pen?"L":"M")+(cx+p[0]).toFixed(1)+","+(cy+p[1]).toFixed(1); pen=true; }); if(d) E("path",{d,fill:"none",stroke:dark?"var(--spot)":"var(--ink)","stroke-width":opts.big?1.1:.8,opacity:dark?.9:.45},inner); });
@@ -607,6 +632,8 @@ const ICON = {
   hourglass:(g)=>{ E("rect",{x:-16,y:-24,width:32,height:5,fill:"var(--ink)"},g); E("rect",{x:-16,y:19,width:32,height:5,fill:"var(--ink)"},g); E("path",{d:"M-12,-19 C-12,-4 -2,-4 -2,0 C-2,4 -12,4 -12,19 H12 C12,4 2,4 2,0 C2,-4 12,-4 12,-19 Z",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.6},g); E("path",{d:"M-8,17 Q0,6 8,17 Z",fill:"url(#s-dark)"},g); E("path",{d:"M-6,-12 h12 l-6,9 Z",fill:"url(#s-dark)"},g); },
   compass:(g)=>{ E("circle",{r:20,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g); for(let k=0;k<8;k++){ const t=k*Math.PI/4; E("line",{x1:Math.sin(t)*15,y1:-Math.cos(t)*15,x2:Math.sin(t)*19,y2:-Math.cos(t)*19,stroke:"var(--ink)"},g); } E("path",{d:"M0,-15 L4,0 L0,15 L-4,0 Z",fill:"var(--paper)",stroke:"var(--ink)"},g); E("path",{d:"M0,-15 L4,0 L-4,0 Z",fill:"var(--spot)"},g); },
   lamp:(g)=>{ E("path",{d:"M-10,-20 h20 M0,-20 v-4",stroke:"var(--ink)","stroke-width":2},g); E("path",{d:"M-12,-18 h24 l-3,30 h-18 Z",fill:"url(#hz)",stroke:"var(--ink)","stroke-width":1.6},g); E("ellipse",{cx:0,cy:-2,rx:5,ry:8,fill:"var(--spot)"},g); E("rect",{x:-14,y:12,width:28,height:6,fill:"var(--ink)"},g); },
+  carriage:(g)=>{ E("rect",{x:-15,y:-14,width:30,height:34,rx:2,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":1.6},g); E("path",{d:"M-8,-14 Q0,-26 8,-14",fill:"none",stroke:"var(--ink)","stroke-width":2.4},g); E("circle",{cy:2,r:10,fill:"var(--paper)",stroke:"var(--ink)"},g); E("line",{x1:0,y1:2,x2:0,y2:-5,stroke:"var(--ink)","stroke-width":1.6},g); E("line",{x1:0,y1:2,x2:5,y2:4,stroke:"var(--ink)","stroke-width":1.6},g); },
+  orrery:(g)=>{ E("circle",{r:5,fill:"var(--spot)",stroke:"var(--ink)"},g); [10,16,22].forEach((r,k)=>{ E("circle",{r,fill:"none",stroke:"var(--ink)",opacity:.6},g); E("circle",{cx:Math.cos(k*2.1)*r,cy:Math.sin(k*2.1)*r,r:2.6,fill:"var(--ink)"},g); }); },
   bell:(g)=>{ E("rect",{x:-18,y:10,width:36,height:6,rx:2,fill:"var(--ink)"},g); E("path",{d:"M-14,10 A14,14 0 0 1 14,10 Z",fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":1.6},g); E("line",{x1:0,y1:-4,x2:0,y2:-12,stroke:"var(--ink)","stroke-width":2},g); E("circle",{cy:-13,r:3,fill:"var(--spot)",stroke:"var(--ink)"},g); },
   box:(g)=>{ E("rect",{x:-16,y:-14,width:32,height:28,fill:"var(--paper)",stroke:"var(--ink)"},g); }
 };
@@ -645,7 +672,7 @@ function render(){
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
   $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : "View: engraved";
-  $("b-q").textContent = "Quality: " + (S.quality||"normal"); $("b-q").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none";
+  $("b-q").textContent = "Quality: " + defaultQuality(); $("b-q").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none"; $("b-full").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none";
   const mirror = S.frame[1]===1;
   $("rnum").textContent = room.label || id;
   $("rname").innerHTML = mirror ? `<span class="mirror-text" title="${esc(room.name||"")}">${esc(room.name||"")}</span>` : esc(room.name||"");
@@ -725,8 +752,9 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look:d.look||"", onClick:()=>tryDoor(d, room)})),
     objects: objs.map((o,i) => ({raw:o, mount:o.mount||null, board: o.mount ? boardContent(o) : null, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
     lampLit: light==="night" || light==="dusk" || S.light==="night" || !!room.dark,
-    sunUp: sk.sun.alt > 0 && !overcast, sunAlt: sk.sun.alt, sunRel, overcast,
-    sunInWindow: sk.sun.alt > -2 && !overcast ? inWin(sk.sun.alt, sunRel) : null, moonInWindow: sk.moon.alt > 0 ? inWin(sk.moon.alt, moonRel) : null,
+    sunUp: sk.sun.alt > 0 && !overcast && !skyOff("sun"), sunAlt: sk.sun.alt, sunRel, overcast,
+    sunInWindow: sk.sun.alt > -2 && !overcast && !skyOff("sun") ? inWin(sk.sun.alt, sunRel) : null, moonInWindow: sk.moon.alt > 0 && !skyOff("moon") ? inWin(sk.moon.alt, moonRel) : null,
+    sunOff: skyOff("sun"), moonOff: skyOff("moon"),
     wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
     temp: wx ? wx.temperature_2m : null,
     lantern: !!(S.lantern && S.inv.includes("lantern")), gloom: (room.decor||[]).includes("gloom"),
@@ -736,19 +764,76 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     // the moon: where it is, how much of it is lit, and how much the clouds let through
     moonAlt: sk.moon.alt, moonRel, moonLit: (1 - Math.cos(2*Math.PI*sk.moon.phase))/2, cloud: wx ? (wx.cloud_cover||0) : 0,
     dome: room.ceiling==="open" ? domeData(sk) : null, place: placeName(),
+    orrery: (room.decor||[]).includes("orrery") ? orreryData(sk.jd) : null,
   };
+}
+/* ---------- the planets, tracked ---------- */
+const PLANET_LOOK = {mer:{color:"#a59c8e", size:.045}, ven:{color:"#e8dcb8", size:.07}, ter:{color:"#5f7f99", size:.07}, mar:{color:"#b5603c", size:.055}, jup:{color:"#c9a983", size:.13}, sat:{color:"#d8c690", size:.11, rings:true}, ura:{color:"#9cc3c9", size:.085}, nep:{color:"#5f7fb5", size:.085}};
+// the zodiac as the IAU draws it, by ecliptic longitude (J2000); planets stay close to the ecliptic, so this names the constellation they're in
+const ZODIAC = [[28.7,"Pisces"],[53.5,"Aries"],[90.1,"Taurus"],[118.0,"Gemini"],[138.0,"Cancer"],[174.2,"Leo"],[218.0,"Virgo"],[241.0,"Libra"],[248.0,"Scorpius"],[266.3,"Ophiuchus"],[299.7,"Sagittarius"],[327.9,"Capricornus"],[351.6,"Aquarius"],[360,"Pisces"]];
+const zodiacOf = lam => (ZODIAC.find(z => lam < z[0]) || ZODIAC[0])[1];
+function planetMag(id, r, D, i){ const L = 5*Math.log10(r*D);
+  return ({mer: -0.613 + 6.328e-2*i - 1.6336e-3*i*i + 3.3644e-5*i**3 - 3.4265e-7*i**4 + 1.6893e-9*i**5 - 3.0334e-12*i**6,
+    ven: i < 163.7 ? -4.384 - 1.044e-3*i + 3.687e-4*i*i - 2.814e-6*i**3 + 8.938e-9*i**4 : 236.05828 - 2.81914*i + 8.39034e-3*i*i,
+    mar: -1.601 + 2.267e-2*i - 1.302e-4*i*i, jup: -9.395 + 3.7e-4*i + 6.16e-4*i*i, sat: -8.95 + 4.4e-2*i, ura: -7.110 + 6.587e-3*i + 1.045e-4*i*i, nep: -7.00})[id] + L; }
+function orreryData(jd){
+  const T = (jd-2451545)/36525, out = [];
+  ["mer","ven","ter","mar","jup","sat","ura","nep"].forEach(k => { const P0 = planetEl(k); if(!P0) return; const h = helio(P0.el, T), lon = ((Math.atan2(h[1],h[0])/DEG)%360+360)%360, r = Math.hypot(...h);
+    out.push(Object.assign({id:k, name:P0.name, sym:P0.sym, a:P0.el.a, lon, note:`${r.toFixed(2)} AU from the sun, heliocentric longitude ${lon.toFixed(0)}°`}, PLANET_LOOK[k])); });
+  return out; }
+function planetReport(){
+  const d = now(), sk = skyNow(), jd = sk.jd, full = planetsEq(jd, true);
+  const ter = planetEl("ter"), te = helio(ter.el, (jd-2451545)/36525), sunLam = ((Math.atan2(-te[1], -te[0])/DEG)%360+360)%360;
+  // a day of altitudes, every ten minutes, for rising, transit, and setting
+  const d0 = new Date(d.toDateString()).getTime(), steps = [];
+  for(let m=0; m<=1440; m+=10){ const t = d0 + m*60e3, j = t/864e5 + 2440587.5, L = lst(j); steps.push({t, alts: planetsEq(j).map(pl => altaz(pl.ra, pl.dec, L)[0])}); }
+  return full.map((pl, k) => { const now0 = sk.planets.find(q => q.id===pl.id) || {};
+    let rise=null, set=null, top=null, topAlt=-99; const H0 = -.5667;
+    for(let i=1;i<steps.length;i++){ const a0 = steps[i-1].alts[k], a1 = steps[i].alts[k], tt = steps[i-1].t + (steps[i].t-steps[i-1].t)*(H0-a0)/(a1-a0);
+      if(a0 < H0 && a1 >= H0 && rise==null) rise = tt; if(a0 >= H0 && a1 < H0 && set==null) set = tt; if(a1 > topAlt){ topAlt = a1; top = steps[i].t; } }
+    const east = ((pl.lam - sunLam + 360) % 360) < 180, lit = (1 + Math.cos(pl.phase*DEG))/2;
+    return Object.assign(pl, {alt: now0.alt, az: now0.az, rise, set, top, topAlt, east, lit, mag: planetMag(pl.id, pl.r, pl.delta, pl.phase), zodiac: zodiacOf(pl.lam), lightMin: pl.delta*8.3167}); });
+}
+function planetsView(){
+  const rep = planetReport(), tf = t => t ? new Date(t).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}) : "—";
+  const compass = az => ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"][Math.round(az/22.5)%16];
+  const sk = skyNow(), dark = sk.sun.alt < -6;
+  const verdict = pl => { const faint = pl.mag > 6 ? "; too faint for the eye, so binoculars or a telescope" : "";
+    if(pl.elong < 12) return "lost in the sun's glare";
+    if(pl.elong > 150) return "near opposition: up all night" + faint;
+    if(pl.elong > 90) return (pl.east ? "high in the evening, setting after midnight" : "rising in the evening, best before dawn") + faint;
+    return (pl.east ? "an evening object, in the west after sunset" : "a morning object, in the east before sunrise") + faint; };
+  const rows = rep.map(pl => `<tr><td><b>${pl.sym} ${esc(pl.name)}</b><br><span class="note">${verdict(pl)}</span></td>
+    <td class="mono">${pl.alt > 0 ? `${pl.alt.toFixed(1)}° up in the ${compass(pl.az)}` : `below the horizon`}<br><span class="note">az ${pl.az.toFixed(1)}°</span></td>
+    <td>${pl.zodiac}<br><span class="note mono">RA ${(pl.ra/15).toFixed(2)}h · Dec ${pl.dec>=0?"+":""}${pl.dec.toFixed(1)}°</span></td>
+    <td class="mono">${pl.mag.toFixed(1)}</td>
+    <td class="mono">rises ${tf(pl.rise)}<br>highest ${tf(pl.top)} (${pl.topAlt.toFixed(0)}°)<br>sets ${tf(pl.set)}</td>
+    <td class="mono">${pl.elong.toFixed(0)}° ${pl.east?"E":"W"} of the sun<br>${Math.round(pl.lit*100)}% lit</td>
+    <td class="mono">${pl.delta.toFixed(2)} AU<br><span class="note">light ${pl.lightMin < 120 ? pl.lightMin.toFixed(1)+" min" : (pl.lightMin/60).toFixed(1)+" h"}</span></td></tr>`).join("");
+  // a small orrery, seen from the north ecliptic pole
+  const O = orreryData(sk.jd), rOf = a => 18 + 34*Math.log(1 + 2*a);
+  const orr = `<svg viewBox="-190 -190 380 380" style="width:100%;max-width:360px;display:block;margin:0 auto" role="img" aria-label="The planets around the sun today">
+    <circle r="7" fill="var(--spot)" stroke="var(--ink)"/>${O.map(pl => { const r = rOf(pl.a), x = Math.cos(pl.lon*DEG)*r, y = -Math.sin(pl.lon*DEG)*r;
+      return `<circle r="${r.toFixed(1)}" fill="none" stroke="var(--line, #888)" stroke-width=".7" opacity=".6"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pl.id==="ter"?5:4}" fill="${pl.color}" stroke="var(--ink)"/><text x="${(x+7).toFixed(1)}" y="${(y-6).toFixed(1)}" font-size="11" fill="var(--ink)" font-family="IM Fell English, serif">${pl.sym}</text>`; }).join("")}
+    <text x="182" y="4" font-size="11" text-anchor="end" fill="var(--muted)" font-family="IM Fell English, serif">♈︎ →</text></svg>`;
+  overlay("The planets", `<div class="text"><p>Where each planet is for ${esc(placeName())} at ${sk.d.toLocaleString([], {weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"})}${S.clock?" (palace time)":""}. Positions are worked out here from orbital elements, with light time, precession, and refraction; they agree with a professional ephemeris to a few hundredths of a degree. ${dark ? "" : "The sun is up, so most of them are hidden in daylight."}</p></div>
+    <div style="overflow-x:auto"><table class="ptab"><thead><tr><th>planet</th><th>now</th><th>in</th><th>mag</th><th>today</th><th>from the sun</th><th>from us</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <h3>The orrery, today</h3>${orr}<p class="note">Seen from above the earth's north pole; distances squeezed so Neptune fits. Magnitudes are approximate (Saturn's rings are ignored). In the Sundial Court each planet's path among the stars shows as a dotted track, forty days either side of now.</p>`);
 }
 /* the open sky over a courtyard, as directions (alt, az) for the 3D view to place */
 function domeData(sk){
   const key = Math.floor(sk.d.getTime()/60000) + ":" + locKey();
   if(domeData.key === key) return domeData.v;
-  const SK = window.SKY || {stars:[], lines:[], names:[], cons:[]}, up = (ra,dec) => altaz(ra,dec,sk.L);
+  const SK = window.SKY || {stars:[], lines:[], names:[], cons:[]}, up = (ra,dec) => altaz(...prec(ra,dec,sk.jd),sk.L);
   const stars = []; SK.stars.forEach(([ra,dec,m]) => { if(m > 4.7) return; const a = up(ra,dec); if(a[0] > -2) stars.push([a[0], a[1], m]); });
   const lines = []; (SK.lines||[]).forEach(ln => { let prev = null; ln.forEach(([ra,dec]) => { const a = up(ra,dec); if(prev && prev[0] > -2 && a[0] > -2) lines.push([prev, a]); prev = a; }); });
   const names = (SK.names||[]).filter(n => n[3] <= 1.5).map(([ra,dec,n]) => up(ra,dec).concat([n])).filter(a => a[0] > 6);
   const cons = (SK.cons||[]).filter(c => c[3] <= 1).map(([ra,dec,n]) => up(ra,dec).concat([n])).filter(a => a[0] > 12);
+  // each planet's path among the stars, forty days either side of now, every four days
+  const tracks = PLANET_KEYS.map(k => ({id:k, pts:[]}));
+  for(let dd=-40; dd<=40; dd+=4){ if(!dd) continue; planetsEq(sk.jd + dd).forEach(pl => { const tr = tracks.find(t => t.id===pl.id); if(!tr) return; const a = altaz(pl.ra, pl.dec, sk.L); if(a[0] > -2) tr.pts.push([a[0], a[1], dd]); }); }
   domeData.key = key;
-  domeData.v = {sun: {alt: sk.sun.alt, az: sk.sun.az}, moon: {alt: sk.moon.alt, az: sk.moon.az, phase: sk.moon.phase},
+  domeData.v = {tracks: tracks.filter(t => t.pts.length),sun: {alt: sk.sun.alt, az: sk.sun.az}, moon: {alt: sk.moon.alt, az: sk.moon.az, phase: sk.moon.phase},
     planets: sk.planets.filter(p => p.alt > -2).map(p => ({name: p.name, alt: p.alt, az: p.az})), stars, lines, names, cons, seed: Math.floor(sk.d.getTime()/36e5)};
   return domeData.v;
 }
@@ -770,17 +855,21 @@ function skyCanvasFor(cb){
   img.onerror = () => { skyCache.busy = false; };
   img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(src);
 }
+// fine by default on a desktop-sized window, normal on small screens; the menu cycles draft, normal, fine, ultra
+function defaultQuality(){ return S.quality || (Math.min(screen.width, screen.height) >= 700 ? "fine" : "normal"); }
+function fullView(){ const st = $("stage"); if(document.fullscreenElement){ document.exitFullscreen(); return; } if(st.requestFullscreen) st.requestFullscreen().catch(() => toast("This browser won't go full screen here.")); }
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
   import("./palace3d.js").then(m => {
     VIEW3D = m.create($("stage"), {
-      turn, toast, now, quality: () => S.quality || "normal",
+      turn, toast, now, quality: defaultQuality,
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
       closer: slot => { const f = (slot + 3) % 4; if(f===S.face) setView(S.face, "ahead"); else setView(f, null); },
       stepBack: () => setView(S.face, null),
       useObject: o => useObject(o.raw, effective(cur)),
       palaceSeconds: () => now().getTime()/1000,
+      planets: () => planetsView(),
       dial: () => { const w = $("widget"); if(w && w.firstChild){ w.scrollIntoView({behavior:"smooth", block:"center"}); w.classList.add("flash"); setTimeout(() => w.classList.remove("flash"), 1400); } },
       pendulumPlane: () => { const rate = 360*Math.sin(LAT*DEG)/23.9345; return -((now().getTime()/36e5*rate) % 180)*DEG; },
     });
@@ -975,6 +1064,8 @@ function useObject(o, room){
   if(o.action==="almanac") return almanacView();
   if(o.action==="officehours") return officeHoursView();
   if(o.action==="search") return searchView();
+  if(o.action==="planets") return planetsView();
+  if(o.action==="clock") return clockView();
   if(o.action==="astrolabe"){ if(o.item && !S.inv.includes(o.item)) take(o.item, "You lift the astrolabe off its hook. The storm glass in its throne clouds and clears."); return astrolabeView(); }
   if(o.action==="combine"){ const uses=o.uses||[]; if(uses.every(k=>S.inv.includes(k))){ S.inv = S.inv.filter(k=>!uses.includes(k)); if(o.solve) S.solved[o.solve]=1; save(); take(o.gives, o.say); award("combine:"+o.gives, 40); } else toast(o.hint || "Something is missing."); return; }
   if(o.action==="directory") return directoryView();
@@ -1042,6 +1133,7 @@ function tally(light){
 }
 /* ---------- weather (Open-Meteo, no key) ---------- */
 let wxFetching = false;
+const skyOff = k => !!(S.skyOff && S.skyOff[k]);   // the storm glass can put out the sun or the moon, to see the stars
 const WX_SET = {clear:{weather_code:0,cloud_cover:0}, cloud:{weather_code:2,cloud_cover:55}, overcast:{weather_code:3,cloud_cover:96}, fog:{weather_code:45,cloud_cover:100}, rain:{weather_code:63,cloud_cover:100}, snow:{weather_code:73,cloud_cover:100}, storm:{weather_code:95,cloud_cover:100}};
 function weather(){
   if(S.wxSet && WX_SET[S.wxSet]){ const live = S.wx && S.wx.c || {}; const sk = skyNow();
@@ -1066,6 +1158,85 @@ function timeView(fromDesk){
   $("tv-s").onclick = () => { const t = new Date($("tv-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("tv-r").value}; save(); closeOv(); render(); toast("The sand runs differently now."); award("hourglass-used", 10); };
   $("tv-n").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
 }
+/* ---------- the carriage clock: chimes on palace time ---------- */
+// sequences from the standard chime tables: bells numbered from the lowest; four changes make the hour
+const midiHz = n => 440*Math.pow(2, (n-69)/12);   // MIDI note to hertz
+const CHIMES = {
+  westminster: {name:"Westminster", bells:[midiHz(62),midiHz(67),midiHz(69),midiHz(71)], hour:midiHz(50),
+    q:[["4321"], ["2431","2342"], ["4231","1342","4321"], ["2431","2342","4231","1342"]]},
+  whittington: {name:"Whittington", bells:[midiHz(62),midiHz(64),midiHz(66),midiHz(67),midiHz(69),midiHz(71),midiHz(73),midiHz(74)], hour:midiHz(50),
+    q:[["87654321"], ["82736451","86427531"], ["87436521","24685231","87654321"], ["82736451","86427531","87436521","24685231"]]},
+  stmichael:   {name:"St. Michael's", bells:[midiHz(65),midiHz(67),midiHz(69),midiHz(70),midiHz(72),midiHz(74),midiHz(76),midiHz(77)], hour:midiHz(53),
+    q:[["87654321"], ["82347561","54362781"], ["78342561","57384261","87654321"], ["82347561","54362781","78342561","57384261"]]},
+  tingtang:    {name:"Ting-tang", bells:[midiHz(72),midiHz(76)], hour:midiHz(55), q:[["21"], ["21","21"], ["21","21","21"], []]},
+  ships:       {name:"Ship's bells", bells:[midiHz(81)], ships:true},
+  hours:       {name:"The hours only", bells:[], hour:midiHz(55), q:[[],[],[],[]]},
+  silent:      {name:"Silent", silent:true},
+};
+let AC = null;
+const audio = () => { if(!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return null; } } if(AC.state === "suspended") AC.resume(); return AC; };
+document.addEventListener("pointerdown", () => { if(S.chime && S.chime !== "silent") audio(); }, {once:true});
+// a struck rod gong: the free bar's partials, 1 : 2.756 : 5.404 : 8.933, each dying away at its own rate
+function gong(ac, f, t, vol, long){
+  const out = ac.createGain(); out.gain.value = vol; out.connect(ac.destination);
+  [[1,1,long?6:3.2],[2.756,.42,1.4],[5.404,.22,.7],[8.933,.1,.35]].forEach(([k,a,dec]) => { if(f*k > 16000) return;
+    const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f*k; o.type = "sine";
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(a, t + .004); g.gain.exponentialRampToValueAtTime(1e-4, t + dec);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + dec + .05); });
+}
+// what the clock strikes at a given moment (quarter 1–4, with the hour on the fourth)
+function chimeScore(kind, d){
+  const C = CHIMES[kind]; if(!C || C.silent) return [];
+  const m = d.getMinutes(), qi = Math.round(m/15) % 4, hr = (d.getHours() + (m >= 53 ? 1 : 0)) % 12 || 12, notes = []; let t = 0;
+  if(C.ships){ // a bell every half hour of the watch, struck in pairs
+    const half = ((d.getHours()*2 + (m >= 30 ? 1 : 0)) % 8) || 8; for(let k=0;k<half;k++){ notes.push([C.bells[0], t, 1]); t += (k%2 ? 1.1 : .42); } return notes; }
+  const seq = C.q[(qi + 3) % 4];   // :15 is the first quarter, :00 the fourth
+  seq.forEach(change => { [...change].forEach(ch => { notes.push([C.bells[+ch-1], t, .8]); t += kind==="tingtang" ? .55 : .62; }); t += .7; });
+  if(qi === 0 && C.hour){ t += 1.2; for(let k=0;k<hr;k++){ notes.push([C.hour, t, 1, true]); t += 1.7; } }
+  return notes;
+}
+function playChime(kind, d, vol){ const ac = audio(); if(!ac) return; const t0 = ac.currentTime + .08; chimeScore(kind, d).forEach(([f, t, a, long]) => gong(ac, f, t0 + t, (vol!=null ? vol : (S.chimeVol!=null ? S.chimeVol : .5))*.35*a, long)); }
+// listen for the quarters (and, for ship's bells, the half hours)
+let lastQ = null;
+setInterval(() => { const kind = S.chime; if(!kind || kind==="silent" || !AC) return; if(S.clock && S.clock.rate > 60) return;
+  const d = now(), m = d.getMinutes(), every = kind==="ships" ? 30 : 15, key = d.getHours()*60 + Math.floor(m/every)*every;
+  if(lastQ === null){ lastQ = key; return; } if(key === lastQ) return; lastQ = key;
+  if(m % every > 1) return;   // only on the quarter itself
+  if(S.chimeNight === false && (d.getHours() >= 22 || d.getHours() < 7)) return;
+  const here = cur && String(cur.id) === "0", near = cur && (ROOMS["0"].doors||[]).some(dd => String(dd.to) === String(cur.id));
+  if(S.chimeWhere === "house" || here) playChime(kind, d, (S.chimeVol!=null?S.chimeVol:.5) * (here ? 1 : near ? .5 : .25));
+  else if(near) playChime(kind, d, (S.chimeVol!=null?S.chimeVol:.5) * .35);
+}, 3000);
+function clockView(){
+  const d = now(), sel = S.chime || "silent";
+  const face = () => { const t = now(), hA = ((t.getHours()%12) + t.getMinutes()/60)*30, mA = (t.getMinutes() + t.getSeconds()/60)*6;
+    return `<svg viewBox="-110 -130 220 250" style="width:200px;display:block;margin:0 auto" role="img" aria-label="The carriage clock's face">
+      <rect x="-92" y="-102" width="184" height="210" rx="10" fill="url(#h-light)" stroke="var(--ink)" stroke-width="3"/><path d="M-40,-102 Q0,-140 40,-102" fill="none" stroke="var(--ink)" stroke-width="5"/>
+      <rect x="-80" y="-90" width="160" height="186" rx="4" fill="var(--paper)" stroke="var(--ink)"/><circle r="66" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/>
+      ${[...Array(60)].map((_,k)=>{ const a=k*6*DEG, r0 = k%5 ? 60 : 54; return `<line x1="${Math.sin(a)*r0}" y1="${-Math.cos(a)*r0}" x2="${Math.sin(a)*64}" y2="${-Math.cos(a)*64}" stroke="var(--ink)" stroke-width="${k%5?.6:1.6}"/>`; }).join("")}
+      ${["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"].map((n,k)=>{ const a=k*30*DEG; return `<text x="${Math.sin(a)*44}" y="${-Math.cos(a)*44+5}" text-anchor="middle" font-size="12" fill="var(--ink)" font-family="IM Fell English SC, serif">${n}</text>`; }).join("")}
+      <line x1="0" y1="0" x2="${Math.sin(hA*DEG)*30}" y2="${-Math.cos(hA*DEG)*30}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="${Math.sin(mA*DEG)*52}" y2="${-Math.cos(mA*DEG)*52}" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/><circle r="3.5" fill="var(--spot)" stroke="var(--ink)"/>
+      <text y="86" text-anchor="middle" font-size="9" letter-spacing="2" fill="var(--muted)" font-family="IM Fell English SC, serif">PALACE TIME</text></svg>`; };
+  overlay("The carriage clock", `<div class="text"><p>A brass carriage clock with bevelled glass on every side, so you can watch the platform escapement tick. It keeps palace time, so it follows the hourglass and the astrolabe. Inside are rod gongs for the chimes and a deeper one for the hours.</p></div>
+    <div id="cc-face">${face()}</div>
+    <div class="row widget"><select id="cc-k">${Object.entries(CHIMES).map(([k,c])=>`<option value="${k}" ${k===sel?"selected":""}>${c.name}</option>`).join("")}</select>
+      <label class="note">volume <input id="cc-v" type="range" min="0" max="1" step=".05" value="${S.chimeVol!=null?S.chimeVol:.5}" style="width:110px"></label></div>
+    <div class="row widget"><select id="cc-w"><option value="entry" ${S.chimeWhere!=="house"?"selected":""}>heard in the Entry, faintly next door</option><option value="house" ${S.chimeWhere==="house"?"selected":""}>heard through the whole house</option></select>
+      <label class="note"><input type="checkbox" id="cc-n" ${S.chimeNight===false?"":"checked"}> chime at night</label></div>
+    <div class="row"><button class="btn primary" id="cc-r" type="button">Repeat</button> <button class="btn" id="cc-1" type="button">¼</button> <button class="btn" id="cc-2" type="button">½</button> <button class="btn" id="cc-3" type="button">¾</button> <button class="btn" id="cc-4" type="button">the hour</button></div>
+    <p class="note">The repeat button strikes the last hour and quarters, the way a repeater does in the dark. Westminster, Whittington, and St. Michael's chime the quarters; ting-tang marks them with two notes; ship's bells strike the half hours of each four-hour watch, in pairs, up to eight bells. Browsers let a page make sound only after you've clicked something on it, so the clock is silent until then.</p>`);
+  const tick = setInterval(() => { const el = $("cc-face"); if(!el){ clearInterval(tick); return; } el.innerHTML = face(); }, 15000);
+  $("cc-k").onchange = e => { S.chime = e.target.value; save(); audio(); if(S.chime !== "silent"){ const t = new Date(now()); t.setMinutes(15); playChime(S.chime, t); toast(`The clock will chime ${CHIMES[S.chime].name}.`); } else toast("The clock ticks on, silently."); award("chime", 5); };
+  $("cc-v").oninput = e => { S.chimeVol = +e.target.value; save(); };
+  $("cc-w").onchange = e => { S.chimeWhere = e.target.value; save(); };
+  $("cc-n").onchange = e => { S.chimeNight = e.target.checked; save(); };
+  $("cc-r").onclick = () => { const k = S.chime && S.chime!=="silent" ? S.chime : "westminster", t = new Date(now()); const m = t.getMinutes(); if(k==="ships"){ t.setMinutes(m >= 30 ? 30 : 0); } else { t.setMinutes(Math.floor(m/15)*15 || 0); }
+    if(Math.floor(m/15) === 0 || k==="ships") playChime(k, t); else { // the hour, then the quarters since
+      const h = new Date(t); h.setMinutes(0); const ac = audio(); const hs = chimeScore(k, h).filter(n => n[3]); const qs = chimeScore(k, t); const t0 = ac.currentTime + .08, v = (S.chimeVol!=null?S.chimeVol:.5)*.35;
+      hs.forEach(([f,tt,a,l],i) => gong(ac, f, t0 + i*1.7, v*a, l)); const off = hs.length*1.7 + 1.2; qs.forEach(([f,tt,a,l]) => gong(ac, f, t0 + off + tt, v*a, l)); } };
+  [1,2,3,4].forEach(q => $("cc-"+q).onclick = () => { const t = new Date(now()); t.setMinutes(q===4 ? 0 : q*15); playChime(S.chime && S.chime!=="silent" && S.chime!=="ships" ? S.chime : "westminster", t); });
+}
 /* ---------- the astrolabe: carry the palace to another place, day, or weather ---------- */
 const PLACES = [["Appleton, Wisconsin", 44.26, -88.41], ["Reykjavík", 64.15, -21.94], ["Tromsø, in the midnight sun", 69.65, 18.96], ["Quito, on the equator", -0.18, -78.47], ["Alexandria, after Eratosthenes", 31.2, 29.92], ["Kyoto", 35.01, 135.77], ["Sydney", -33.87, 151.21], ["the South Pole", -89.99, 0]];
 function astrolabeView(){
@@ -1084,7 +1255,9 @@ function astrolabeView(){
         <div class="row"><button class="btn primary" id="as-t" type="button">Set the clock</button> <button class="btn" id="as-tn" type="button">Real time</button></div>
         <p class="note">Times are on your own clock's zone, wherever the palace stands.</p></div>
       <div class="pin"><h3>The storm glass</h3><div class="row widget"><select id="as-w">${wxo.map(([k,l])=>`<option value="${k}" ${(S.wxSet||"")===k?"selected":""}>${l}</option>`).join("")}</select></div>
-        <p class="note">Clouds dim the sun and hide the stars; under a clear sky a bright moon throws shadows of its own.</p></div>
+        <div class="row"><button class="btn primary" id="as-clear" type="button">Clear the sky</button></div>
+        <div class="row widget"><label class="note"><input type="checkbox" id="as-sun" ${skyOff("sun")?"":"checked"}> the sun</label> <label class="note"><input type="checkbox" id="as-moon" ${skyOff("moon")?"":"checked"}> the moon</label></div>
+        <p class="note">Clouds dim the sun and hide the stars; under a clear sky a bright moon throws shadows of its own. Put out the sun and the court's sky goes dark, so the stars and planets show by day; put out the moon and its glare and shadows go with it.</p></div>
     </div>`);
   if(S.clock) $("as-r").value = String(S.clock.rate);
   $("as-p").onchange = e => { const pl = PLACES[+e.target.value]; if(!pl) return; $("as-lat").value = pl[1]; $("as-lon").value = pl[2]; $("as-n").value = pl[0]; };
@@ -1097,6 +1270,9 @@ function astrolabeView(){
     toast("Asking where you are…"); navigator.geolocation.getCurrentPosition(pos => go(+pos.coords.latitude.toFixed(3), +pos.coords.longitude.toFixed(3), "where you are"), () => toast("The browser wouldn't say."), {timeout:10000, maximumAge:36e5}); };
   $("as-t").onclick = () => { const t = new Date($("as-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("as-r").value}; save(); closeOv(); render(); toast("The rete turns to another hour."); };
   $("as-tn").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
+  $("as-clear").onclick = () => { S.wxSet = "clear"; save(); closeOv(); render(); toast("The storm glass runs clear. So does the sky."); };
+  const sw = (k, on) => { S.skyOff = Object.assign({}, S.skyOff, {[k]: !on}); save(); render(); toast(on ? `The ${k} is lit again.` : `The ${k} goes out.`); };
+  $("as-sun").onchange = e => sw("sun", e.target.checked); $("as-moon").onchange = e => sw("moon", e.target.checked);
   $("as-w").onchange = e => { S.wxSet = e.target.value || null; save(); closeOv(); render(); toast(S.wxSet ? "The storm glass clouds over, and outside the sky agrees." : "The storm glass settles. The weather is the real weather again."); };
 }
 setInterval(() => { if(S.clock && S.clock.rate>1 && cur && !$("ov").classList.contains("open")) render(); }, 4000);
@@ -1208,7 +1384,7 @@ function sunTimes(){
   // scan the day for the sun crossing −0.833° (the standard horizon, refraction included)
   const d0 = new Date(now().toDateString()).getTime(), alt = t => { const jd = t/864e5 + 2440587.5, L = lst(jd), s = sunEq(jd); return altaz(s[0], s[1], L)[0]; };
   let rise=null, set=null, prev = alt(d0);
-  for(let m=5; m<=1440; m+=5){ const t = d0 + m*60e3, a = alt(t); if(prev < -.833 && a >= -.833 && rise==null) rise = t; if(prev >= -.833 && a < -.833) set = t; prev = a; }
+  for(let m=5; m<=1440; m+=5){ const t = d0 + m*60e3, a = alt(t), at = t - 5*60e3*(a+.833)/(a-prev); if(prev < -.833 && a >= -.833 && rise==null) rise = at; if(prev >= -.833 && a < -.833) set = at; prev = a; }
   return {rise, set};
 }
 function almanacView(){
@@ -1224,7 +1400,8 @@ function almanacView(){
     <div class="pin"><h3>The sun</h3><p class="mono">rises ${tf(st.rise)} · sets ${tf(st.set)}${len?` · ${Math.floor(len)}h ${Math.round((len%1)*60)}m of daylight`:""}</p></div>
     <div class="pin"><h3>Tonight at 9</h3><p class="mono">moon ${phaseName}, ${lit}% lit${sky.moon.alt>0?`, ${sky.moon.alt.toFixed(0)}° up in the ${compass(sky.moon.az)}`:", below the horizon"}</p>
       <p class="mono">${sky.planets.filter(p=>p.alt>0).map(p=>`${p.name} ${p.alt.toFixed(0)}° ${compass(p.az)}`).join(" · ") || "no bright planets up"}</p></div>
-  </div><p class="note">Weather from Open-Meteo. Sun, moon, and planets computed here, for latitude ${LAT}° and longitude ${LON}°.</p>`);
+  </div><div class="row"><button class="btn" id="al-pl" type="button">All the planets…</button></div><p class="note">Weather from Open-Meteo. Sun, moon, and planets computed here, for latitude ${LAT}° and longitude ${LON}°.</p>`);
+  $("al-pl").onclick = planetsView;
 }
 function officeHoursView(){
   const H = P.office_hours || [], st = officeStatus(), o = P.office || {};
@@ -1287,9 +1464,10 @@ function loadCode(code){
   let acc=0, n=0; const bytes=[];
   for(const ch of clean){ const v = B32.indexOf(ch); if(v<0) return false; acc=(acc<<5)|v; n+=5; if(n>=8){ bytes.push((acc>>(n-8))&255); n-=8; acc &= (1<<n)-1; } }
   if(bytes.length<6 || bytes[0]!==1) return false;
-  const ro = roomOrder(), nb = l => Math.ceil(l/8), need = 4 + nb(ro.length) + nb(ITEM_ORDER.length) + nb(SOLVED_ORDER.length) + 3;
-  if(bytes.length < need+1) return false;
-  if(crc8(bytes.slice(0,need)) !== bytes[need]) return false;
+  // codes written before the palace grew name fewer rooms; try today's count, then the counts of earlier plans
+  const nb = l => Math.ceil(l/8), all = roomOrder(); let ro = null, need = 0;
+  for(const nr of [all.length, 36]){ const nd = 4 + nb(nr) + nb(ITEM_ORDER.length) + nb(SOLVED_ORDER.length) + 3; if(bytes.length >= nd+1 && crc8(bytes.slice(0,nd)) === bytes[nd]){ ro = all.slice(0, nr); need = nd; break; } }
+  if(!ro) return false;
   let p=4; const rd = (list, f) => { for(let i=0;i<list.length;i++){ if(bytes[p+(i>>3)] & (1<<(i&7))) f(list[i]); } p += nb(list.length); };
   S.mode = ["wanderer","guided","hardcore"][bytes[1]&3]; S.xp = (bytes[2]<<8)|bytes[3];
   const visits = {}; rd(ro, id => visits[id] = Math.max(1, S.visits[id]||0)); S.visits = Object.assign(visits, {});
@@ -1377,10 +1555,16 @@ window.addEventListener("hashchange", route);
 document.addEventListener("keydown", e => {
   if(e.target.closest && e.target.closest("input,select,textarea")) return;
   if($("ov").classList.contains("open")) return;
-  if(e.key==="ArrowLeft"){ e.preventDefault(); turn(-1); }
-  else if(e.key==="ArrowRight"){ e.preventDefault(); turn(1); }
-  else if(e.key==="ArrowDown"){ e.preventDefault(); if(S.close) setView(S.face,null); else turn(2); }
-  else if(e.key==="ArrowUp"){ e.preventDefault(); const room=effective(cur); const ds=(room.doors||[]).filter(d=>visible(d,room)); const d=ds.find((d,i)=>pos(d.wall!=null?WALLS[d.wall]:[1,0,2][i%3])===1); if(d) tryDoor(d, room); }
+  if(e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  // look up and down: shift with the arrows, or page up and page down
+  if((e.shiftKey && k==="ArrowUp") || k==="PageUp"){ e.preventDefault(); setView(S.face, S.close==="down" ? null : "up"); return; }
+  if((e.shiftKey && k==="ArrowDown") || k==="PageDown"){ e.preventDefault(); setView(S.face, S.close==="up" ? null : "down"); return; }
+  if(k==="f"){ e.preventDefault(); fullView(); return; }
+  if(k==="ArrowLeft" || k==="a"){ e.preventDefault(); turn(-1); }
+  else if(k==="ArrowRight" || k==="d"){ e.preventDefault(); turn(1); }
+  else if(k==="ArrowDown" || k==="s"){ e.preventDefault(); if(S.close) setView(S.face,null); else turn(2); }
+  else if(k==="ArrowUp" || k==="w"){ e.preventDefault(); const room=effective(cur); const ds=(room.doors||[]).filter(d=>visible(d,room)); const d=ds.find((d,i)=>pos(d.wall!=null?WALLS[d.wall]:[1,0,2][i%3])===1); if(d) tryDoor(d, room); }
 });
 
 /* ---------- riddles ---------- */
@@ -1458,6 +1642,7 @@ function catalogueView(force){
 }
 function helpView(){
   overlay("How to walk the palace", `<div class="text">${P.help || ""}
+  <p><b>Looking.</b> Drag anywhere in the picture to look around, up at the sky or down at the floor; let go past half a quarter turn and you'll face that way. The edges of the picture turn you, and the top and bottom look up and down. Keys: ← → or A D turn, ↑ or W goes through the door ahead, ↓ or S turns around or steps back, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, and F fills the screen. Press / to go anywhere.</p>
   <p><b>Doors</b> are numbered. Click a door in the picture or in the list. Some doors appear only at certain hours, after certain rooms, or when you are facing a certain way.</p>
   <p><b>Facing.</b> Some corridors turn you, and some flip you as in a mirror. The small F in the top bar shows your frame, an element of the symmetry group of a square. Walk a loop and you may come back turned: that is holonomy. Some things can only be seen in a mirror.</p>
   <p><b>Time.</b> The palace keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. The Lamps button overrides the light.</p>
@@ -1788,22 +1973,31 @@ WIDGETS.sundial = (el) => {
   const draw = () => {
     const svg=$("sd-s"); svg.innerHTML=""; const sk=skyNow(), phi=LAT*DEG, Hd=(((sk.L-sk.sun.ra)%360)+540)%360-180, H=Hd*DEG;
     E("circle",{r:240,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":3},svg); E("circle",{r:226,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1.2},svg);
-    for(let m=6*4; m<=18*4; m++){ const h=m/4, th=Math.atan2(Math.sin(phi)*Math.sin((h-12)*15*DEG), Math.cos((h-12)*15*DEG)), r0 = m%4?196:150;
+    for(let m=4*4; m<=20*4; m++){ const h=m/4, th=Math.atan2(Math.sin(phi)*Math.sin((h-12)*15*DEG), Math.cos((h-12)*15*DEG)), r0 = m%4?196:150;
       L(svg, Math.sin(th)*r0, -Math.cos(th)*r0, Math.sin(th)*220, -Math.cos(th)*220, m%4?.6:1.4);
-      if(!(m%4)){ T(["VI","VII","VIII","IX","X","XI","XII","I","II","III","IV","V","VI"][m/4-6],{x:Math.sin(th)*176,y:-Math.cos(th)*176+5,"text-anchor":"middle","font-size":16,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg); } }
+      if(!(m%4)){ T(["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"][(m/4)%12],{x:Math.sin(th)*176,y:-Math.cos(th)*176+5,"text-anchor":"middle","font-size":16,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg); } }
     T(LAT>=0?"N":"S",{x:0,y:-244,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg);
-    const Hm = ((((sk.L-sk.moon.ra)%360)+540)%360-180)*DEG, wxd = weather(), cc = wxd ? (wxd.cloud_cover||0) : 0, lit = (1-Math.cos(2*Math.PI*sk.moon.phase))/2, moonShadow = sk.sun.alt < -.8 && sk.moon.alt > 0 && lit > .2 && cc < 85;
-    if(moonShadow){ const th=Math.atan2(Math.sin(phi)*Math.sin(Hm), Math.cos(Hm)); E("polygon",{points:`0,0 ${Math.sin(th-.03)*210},${-Math.cos(th-.03)*210} ${Math.sin(th+.03)*210},${-Math.cos(th+.03)*210}`,fill:"var(--ink)",opacity:.25+.5*lit},svg); }
-    if(sk.sun.alt>0 && cc < 85){ const th=Math.atan2(Math.sin(phi)*Math.sin(H), Math.cos(H)); E("polygon",{points:`0,0 ${Math.sin(th-.03)*210},${-Math.cos(th-.03)*210} ${Math.sin(th+.03)*210},${-Math.cos(th+.03)*210}`,fill:"var(--spot)",opacity:.85},svg); }
+    const Hm = ((((sk.L-sk.moon.ra)%360)+540)%360-180)*DEG, wxd = weather(), cc = wxd ? (wxd.cloud_cover||0) : 0, lit = (1-Math.cos(2*Math.PI*sk.moon.phase))/2;
+    const sunShadow = sk.sun.alt > 0 && cc < 85 && !skyOff("sun");
+    const moonShadow = !sunShadow && (sk.sun.alt < -.8 || skyOff("sun")) && sk.moon.alt > 0 && !skyOff("moon") && lit > .15 && cc < 85;
+    const shade = (Ha, fill, op) => { const th = Math.atan2(Math.sin(phi)*Math.sin(Ha), Math.cos(Ha)); E("polygon",{points:`0,0 ${Math.sin(th-.03)*210},${-Math.cos(th-.03)*210} ${Math.sin(th+.03)*210},${-Math.cos(th+.03)*210}`,fill,opacity:op},svg); };
+    if(moonShadow) shade(Hm, "var(--ink)", .25+.5*lit);
+    if(sunShadow) shade(H, "var(--spot)", .85);
     E("polygon",{points:"-5,0 5,0 0,-150",fill:"url(#h-dark)",stroke:"var(--ink)","stroke-width":1.5},svg); E("circle",{r:5,fill:"var(--ink)"},svg);
     const n=sk.jd-2451545, Lm=((280.460+0.9856474*n)%360+360)%360; let eot=(Lm-sk.sun.ra); eot=((eot+540)%360-180)*4;
-    const solar = 12 + Hd/15, sh = Math.floor((solar+24)%24), sm = Math.floor(((solar%1)+1)%1*60);
-    const hm = s => { const h = ((s%24)+24)%24; return `${Math.floor(h)}:${String(Math.floor(h%1*60)).padStart(2,"0")}`; };
-    const age = sk.moon.phase*29.530588853, mread = 12 + (Hm/DEG)/15, corr = age*24/29.530588853;
-    const sunOK = sk.sun.alt>0 && cc < 85;
-    $("sd-t").innerHTML = sk.sun.alt>0 && !sunOK ? `The sun is up but the cloud is too thick for a shadow (${Math.round(cc)}% cover). The dial waits. (By the sky's reckoning it would read ${hm(solar)}.)`
-      : moonShadow ? `The moon is ${sk.moon.alt.toFixed(0)}° up and ${Math.round(lit*100)}% lit, and its shadow reads <b>${hm(mread)}</b> on the dial.<br>The moon runs late: it is ${age.toFixed(1)} days old, so add ${(corr).toFixed(1)} hours (about 48 minutes a day). Sun time ≈ <b>${hm(mread+corr)}</b>; the true sun time is ${hm(solar)}. · clock ${sk.d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}`
-      : sk.sun.alt>0 ? `sundial time ${sh}:${String(sm).padStart(2,"0")} · clock ${sk.d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}<br>equation of time today: ${eot>=0?"+":""}${eot.toFixed(1)} min (sundial ahead of mean sun when +) · sun ${sk.sun.alt.toFixed(0)}° up` : (sk.moon.alt > 0 && cc >= 85 ? `The moon is up behind the clouds. No shadow tonight.` : sk.moon.alt > 0 ? `The moon is up but only ${Math.round(lit*100)}% lit, too thin to throw a shadow you could read.` : `The sun is down and the moon is ${sk.moon.alt < 0 ? "down too" : "hidden"}. The dial is only a plate of brass until morning.`) + ` (Sun ${(-sk.sun.alt).toFixed(0)}° below the horizon.)`;
+    const hm = x => { const h = ((x%24)+24)%24, mm = Math.floor(h%1*60); return `${Math.floor(h)}:${String(mm).padStart(2,"0")}`; };
+    const clock = sk.d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+    const zone = -sk.d.getTimezoneOffset()/60, lonMin = (LON - zone*15)*4;
+    $("sd-t").innerHTML = sunShadow
+      ? `The shadow reads <b>${hm(12 + Hd/15)}</b>. The clock says ${clock}.<br><span class="note">Nothing on the plate is corrected: this is the sun's own time, here. The difference from the clock is the longitude (${lonMin>=0?"+":""}${lonMin.toFixed(0)} min from the zone's meridian), the equation of time (${eot>=0?"+":""}${eot.toFixed(1)} min today), and daylight saving if it's in force. Sun ${sk.sun.alt.toFixed(1)}° up.</span>`
+      : moonShadow
+      ? `The moon's shadow reads <b>${hm(12 + (Hm/DEG)/15)}</b>. The clock says ${clock}.<br><span class="note">This is moon time, read straight off the plate, as a real dial would show it. The moon is ${sk.moon.alt.toFixed(1)}° up and ${Math.round(lit*100)}% lit, ${(sk.moon.phase*29.530588853).toFixed(1)} days past new.</span>`
+      : skyOff("sun") && sk.sun.alt > 0 ? `The storm glass has put the sun out. No shadow until it's lit again.`
+      : sk.sun.alt > 0 ? `The sun is up but the cloud is too thick for a shadow (${Math.round(cc)}% cover). The dial waits.`
+      : sk.moon.alt > 0 && skyOff("moon") ? `The moon is up, but the storm glass has put it out.`
+      : sk.moon.alt > 0 && cc >= 85 ? `The moon is up behind the clouds. No shadow tonight.`
+      : sk.moon.alt > 0 ? `The moon is up but only ${Math.round(lit*100)}% lit, too thin to throw a shadow you could read.`
+      : `The sun is down and the moon is down too. The dial is only a plate of brass until morning. (Sun ${(-sk.sun.alt).toFixed(0)}° below the horizon.)`;
   };
   draw(); timers.push(setInterval(draw, 30000));
 };
@@ -1827,7 +2021,12 @@ $("b-ink").onclick = () => { S.ink = S.ink==="1bit" ? "two" : "1bit"; save(); re
 setInterval(() => { if(cur && !$("ov").classList.contains("open")) tally(lightNow()); }, 30000);
 $("b-lamp").onclick = () => { S.light = {auto:"night", night:"day", day:"auto"}[S.light] || "auto"; save(); render(); toast(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down." : "You light every lamp."); };
 rankIndex.cache = null;
-$("b-q").onclick = () => { S.quality = {draft:"normal", normal:"fine", fine:"draft"}[S.quality||"normal"]; save(); toast(`Quality: ${S.quality}. Redrawing…`); setTimeout(() => location.reload(), 500); };
+$("b-full").onclick = fullView;
+// skins: Myst (journals, brass, a dark room around the picture) or HyperCard (striped title bars, hard shadows, 1-bit chrome)
+function applySkin(){ const m = (S.skin||"myst")==="myst"; document.documentElement.classList.toggle("skin-myst", m); document.documentElement.classList.toggle("skin-hypercard", !m); $("b-skin").textContent = "Skin: " + (m ? "Myst" : "HyperCard"); }
+$("b-skin").onclick = () => { S.skin = (S.skin||"myst")==="myst" ? "hypercard" : "myst"; save(); applySkin(); toast(S.skin==="myst" ? "The journals come out." : "Back to the stack."); };
+applySkin();
+$("b-q").onclick = () => { S.quality = {draft:"normal", normal:"fine", fine:"ultra", ultra:"draft"}[defaultQuality()]; save(); toast(`Quality: ${S.quality}. Redrawing…`); setTimeout(() => location.reload(), 500); };
 $("b-gfx").onclick = () => { S.gfx = S.gfx==="2d" ? "3d" : "2d"; save(); if(S.gfx==="3d" && !VIEW3D) start3d(); render(); };
 route();
 start3d();
