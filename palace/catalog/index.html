@@ -93,13 +93,16 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(184,149,90,.6);ou
 .keydial{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;margin-top:22px;padding:14px;border:1px solid #a68d63;background:rgba(255,250,235,.4)}
 .keydial svg{width:120px;height:120px} .keydial .big{font:italic 26px var(--fell);margin:4px 0} .keydial.warn .big{color:#8a2b1e}
 #n-key{font-style:italic;font-family:var(--fell);letter-spacing:0} #n-key.warn{color:#ffb38a}
+.hrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 0;border-bottom:1px solid rgba(166,141,99,.4)}
+.hrow input[type=text]{flex:1;min-width:110px} .hrow input[type=time],.hrow input[type=date]{width:auto}
+.prow{padding:10px 0;border-bottom:1px solid rgba(166,141,99,.45)} .prow textarea{min-height:48px;margin:3px 0}
 .count{font:400 12px var(--sc);letter-spacing:.14em;color:var(--sepia2);text-align:right}
 </style>
 </head>
 <body>
 <div class="top">
   <h1>The Log Book</h1><span class="sub">The Wending House · its catalogue</span>
-  <nav><a href="#search" id="n-search">Search</a><a href="#add" id="n-add" hidden>Write an entry</a><a href="#curator" id="n-cur">Archivist</a><a href="#curator" id="n-key" hidden title="When the archivist's key runs out"></a><a href="/palace/#22" id="n-back" target="_top">Back to the house</a></nav>
+  <nav><a href="#search" id="n-search">Search</a><a href="#add" id="n-add" hidden>Write an entry</a><a href="#house" id="n-house" hidden>The house</a><a href="#curator" id="n-cur">Archivist</a><a href="#curator" id="n-key" hidden title="When the archivist's key runs out"></a><a href="/palace/#22" id="n-back" target="_top">Back to the house</a></nav>
 </div>
 <div class="book">
   <section class="pg left" id="left"></section>
@@ -107,6 +110,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(184,149,90,.6);ou
 </div>
 <div id="cam"><p>Hold the barcode up to the camera.</p><video id="camv" playsinline muted></video><p><button class="btn" id="cam-x" type="button" style="color:var(--parch);border-color:var(--brass)">Close</button></p></div>
 <div id="zoom"><img alt=""></div>
+<script src="../data.js"></script>
 <script src="catalog.js"></script>
 </body>
 </html>

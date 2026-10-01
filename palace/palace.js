@@ -673,7 +673,7 @@ function render(){
   document.documentElement.setAttribute("data-ink", S.ink==="1bit" ? "1bit" : "two");
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
-  $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : "View: engraved";
+  $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : S.gfx==="photo" ? "View: photographic" : "View: engraved";
   $("b-q").textContent = "Quality: " + defaultQuality(); $("b-q").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none"; $("b-full").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none";
   const mirror = S.frame[1]===1;
   $("rnum").textContent = room.label || id;
@@ -760,13 +760,14 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
     temp: wx ? wx.temperature_2m : null,
     lantern: !!(S.lantern && S.inv.includes("lantern")), gloom: (room.decor||[]).includes("gloom"),
-    sheetKey: JSON.stringify(S.sheets) + ":" + (CATALOG ? CATALOG.length : -1), minuteKey: Math.floor(now().getTime()/60000),
+    sheetKey: JSON.stringify(S.sheets) + ":" + (CATALOG ? CATALOG.length : -1) + ":" + (S.dial||""), minuteKey: Math.floor(now().getTime()/60000),
     snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
     skyCanvas: (room.decor||[]).includes("sky") ? skyCanvasFor : null,
     // the moon: where it is, how much of it is lit, and how much the clouds let through
     moonAlt: sk.moon.alt, moonRel, moonLit: (1 - Math.cos(2*Math.PI*sk.moon.phase))/2, cloud: wx ? (wx.cloud_cover||0) : 0,
     dome: room.ceiling==="open" ? domeData(sk) : null, place: placeName(),
     orrery: (room.decor||[]).includes("orrery") ? orreryData(sk.jd) : null,
+    dialType: (room.decor||[]).includes("sundial") ? dialType() : null, dialData: (room.decor||[]).includes("sundial") ? dialData(dialType()) : null, dials: DIALS,
     catalog: (room.decor||[]).includes("catalogshelves") ? (CATALOG||[]).filter(it => ["book","paper","physical","digital","ephemera","art"].includes(it.type)).map(it => ({id:it.id, title:it.title, creator:((it.creators||[])[0]||{}).name||"", type:it.type, pages:it.pages})) : null,
   };
 }
@@ -866,13 +867,14 @@ function start3d(){
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
   import("./palace3d.js").then(m => {
     VIEW3D = m.create($("stage"), {
-      turn, toast, now, quality: defaultQuality,
+      turn, toast, now, quality: defaultQuality, style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
       closer: slot => { const f = (slot + 3) % 4; if(f===S.face) setView(S.face, "ahead"); else setView(f, null); },
       stepBack: () => setView(S.face, null),
       useObject: o => useObject(o.raw, effective(cur)),
       palaceSeconds: () => now().getTime()/1000,
       planets: () => planetsView(),
+      setDial: t => setDial(t),
       openItem: id => catalogView("item/" + id),
       openCatalog: h => catalogView(h || ""),
       dial: () => { const w = $("widget"); if(w && w.firstChild){ w.scrollIntoView({behavior:"smooth", block:"center"}); w.classList.add("flash"); setTimeout(() => w.classList.remove("flash"), 1400); } },
@@ -1167,11 +1169,50 @@ function timeView(fromDesk){
   $("tv-s").onclick = () => { const t = new Date($("tv-d").value); if(isNaN(t)) return; S.clock = {base:Date.now(), pal:t.getTime(), rate:+$("tv-r").value}; save(); closeOv(); render(); toast("The sand runs differently now."); award("hourglass-used", 10); };
   $("tv-n").onclick = () => { S.clock = null; save(); closeOv(); render(); toast("Back on real time."); };
 }
+
+/* ---------- the court's sundials: five instruments that take turns in the middle of the court ---------- */
+const DIALS = {
+  horizontal: {name:"The horizontal dial", blurb:"A brass plate and a style aimed at the pole: the sun's own time, as it falls here."},
+  armillary:  {name:"The armillary sphere", blurb:"An equatorial dial: the polar rod's shadow on an evenly divided band."},
+  meantime:   {name:"The mean-time dial", blurb:"A plate of figure-eights. The shadow of a bead on a pin tells the clock's own time, the equation of time and the longitude already worked in."},
+  meridiana:  {name:"The glass sphere", blurb:"A glass ball on a column throws a spot of sun on the paving; at clock noon it crosses the figure-eight, at sun noon the straight line."},
+  cannon:     {name:"The noon cannon", blurb:"A burning glass over the touch-hole: when the sun crosses the meridian on a clear day, it fires."},
+};
+const dialType = () => DIALS[S.dial] ? S.dial : "horizontal";
+// hours east of UTC for standard time (no daylight saving), as the dials that tell clock time are drawn
+function stdOffsetH(){ const y = now().getFullYear(); return -Math.max(new Date(y,0,1).getTimezoneOffset(), new Date(y,6,1).getTimezoneOffset())/60; }
+function sunAtUTC(ms){ const jd = ms/864e5 + 2440587.5, L = lst(jd), sq = sunEq(jd), a = altaz(sq[0], sq[1], L); a[0] += refr(a[0]); return {alt:a[0], az:a[1], ra:sq[0], dec:sq[1], L}; }
+// the shadow of a point one unit above the ground, as (east, north)
+const shadowOf = a => { const t = 1/Math.tan(a.alt*DEG); return [-t*Math.sin(a.az*DEG), -t*Math.cos(a.az*DEG)]; };
+function dialData(type){
+  const y = now().getFullYear(), key = type + ":" + locKey() + ":" + y; if(dialData.cache && dialData.cache.key === key) return dialData.cache.v;
+  const off = stdOffsetH(), out = {type, stdOffset: off, lat: LAT};
+  if(type === "meantime"){ // a figure-eight for each clock hour: where the bead's shadow falls at that standard time, every few days of the year
+    out.hours = {}; for(let hr=6; hr<=18; hr++){ const pts = []; for(let d=0; d<=366; d+=3){ const a = sunAtUTC(Date.UTC(y,0,1+d, hr - off, 0)); if(a.alt > 5) pts.push(shadowOf(a).concat([d])); } out.hours[hr] = pts; }
+    out.dates = [[171,"June solstice"],[79,"equinoxes"],[354,"December solstice"]].map(([d, lab]) => ({lab, pts: Array.from({length:65}, (_, k) => { const a = sunAtUTC(Date.UTC(y,0,1+d, 4 - off, 0) + k*15*6e4); return a.alt > 5 ? shadowOf(a) : null; }).filter(Boolean)}));
+  }
+  if(type === "meridiana"){ // where the spot falls at clock noon through the year, and the marks for each month's first day at sun noon
+    out.noon8 = []; for(let d=0; d<=366; d+=2){ const a = sunAtUTC(Date.UTC(y,0,1+d, 12 - off, 0)); if(a.alt > 3) out.noon8.push(shadowOf(a).concat([d])); }
+    out.months = Array.from({length:12}, (_, m) => { const jd = Date.UTC(y, m, 1, 12)/864e5 + 2440587.5, dec = sunEq(jd)[1], alt = 90 - Math.abs(LAT - dec); return {m, n: (LAT >= dec ? 1 : -1)/Math.tan(alt*DEG)}; });
+  }
+  dialData.cache = {key, v: out}; return out;
+}
+function setDial(t){ if(!DIALS[t]) return; S.dial = t; save(); award("dial:" + t, 5); toast(`${DIALS[t].name} is carried out into the court.`); render(); }
+// the noon cannon: listen for the sun crossing the meridian
+let lastHA = null;
+setInterval(() => { if(!cur || String(cur.id) !== "34" || dialType() !== "cannon") { lastHA = null; return; }
+  const sk = skyNow(), ha = ((sk.L - sk.sun.ra + 540) % 360) - 180, wx = weather(), cc = wx ? (wx.cloud_cover||0) : 0;
+  if(lastHA != null && lastHA < 0 && ha >= 0 && sk.sun.alt > 0 && cc < 70 && !skyOff("sun")){ window.dispatchEvent(new CustomEvent("wending-cannon")); sound.cannon && sound.cannon(); toast("Noon. The sun crosses the meridian, the burning glass finds the touch-hole, and the little cannon fires."); award("cannon", 20); }
+  lastHA = ha; }, 2000);
 /* ---------- the Archive's log book: the catalogue, read inside the house ---------- */
 let CATALOG = null;
 function loadCatalog(){ const url = (P.catalog && P.catalog.url) || "/catalog/index.json";
   fetch(url + "?t=" + Math.floor(Date.now()/6e4)).then(r => r.ok ? r.json() : {items:[]}).then(j => { CATALOG = (j.items||[]).filter(it => !it.private); if(cur && (effective(cur).decor||[]).includes("catalogshelves")) render(); }).catch(() => { CATALOG = []; }); }
 loadCatalog();
+// the house's notices, as the archivist last posted them from the log book, override the data file's
+(function loadHouseNotices(){ const base = ((P.catalog && P.catalog.url) || "/catalog/index.json").replace(/index\.json.*$/, "");
+  fetch(base + "house.json?t=" + Math.floor(Date.now()/6e4)).then(r => r.ok ? r.json() : null).then(h => { if(!h) return;
+    ["office","office_hours","events","news","puzzles"].forEach(k => { if(h[k] != null) P[k] = h[k]; }); if(cur) render(); }).catch(() => {}); })();
 function catalogView(hash){
   let lb = $("logbook-ov");
   if(!lb){ lb = document.createElement("div"); lb.id = "logbook-ov"; lb.className = "logbook-ov"; lb.innerHTML = `<button type="button" class="lbx" aria-label="Close the log book">×</button><iframe title="The log book" allow="camera"></iframe>`; document.body.appendChild(lb);
@@ -1301,6 +1342,7 @@ const sound = (() => {
     const src = mk("BufferSource"); src.buffer = noise.pink; const bp = mk("BiquadFilter"); bp.type = "bandpass"; bp.frequency.value = f*3; bp.Q.value = 2; const e = g(0); src.connect(bp); bp.connect(e); e.connect(out); env(e, t, .001, .25, .05); src.start(t); src.stop(t + .1);
   }
   const fx = {
+    cannon(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; burst("sfx", t, {buf:"brown", type:"lowpass", freq:300, a:.004, d:1.8, v:1.2, rate:.6}); burst("sfx", t, {buf:"pink", type:"lowpass", freq:2400, a:.002, d:.25, v:.7}); burst("amb", t + .35, {buf:"brown", type:"lowpass", freq:160, a:.2, d:3, v:.4, rate:.4}); },
     step(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; [0, .38].forEach(dt => burst("sfx", t + dt, {buf:"brown", type:"lowpass", freq: scene.open ? 700 : 380, a:.004, d:.13, v:.5, rate:.8})); },
     door(){ if(!init() || !S.snd.on) return; const t = ac.currentTime, o = mk("Oscillator"); o.type = "sawtooth"; o.frequency.setValueAtTime(90, t); o.frequency.linearRampToValueAtTime(140 + Math.random()*60, t + .5);
       const bp = mk("BiquadFilter"); bp.type = "bandpass"; bp.frequency.value = 900; bp.Q.value = 9; const e = g(0); o.connect(bp); bp.connect(e); e.connect(buses.sfx); env(e, t, .08, .07, .55); o.start(t); o.stop(t + .7);
@@ -1458,7 +1500,9 @@ function directoryView(){
 function walkMode(){ return S.inv.includes("master-key") ? "guided" : (S.inv.some(k => ["map","plan","compass"].includes(k)) ? "wanderer" : "hardcore"); }
 const DESK_ITEMS = ["master-key","plan","map","compass","finding-aid","lantern","hourglass"];
 function isoWeek(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1)); return [t.getUTCFullYear(), Math.ceil(((t-y0)/864e5+1)/7)]; }
-function puzzleOfWeek(offset){ const L = P.puzzles||[]; if(!L.length) return null; const [y,w] = isoWeek(new Date(now().getTime() + (offset||0)*7*864e5)); return L[((y*53 + w) % L.length + L.length) % L.length]; }
+function puzzleOfWeek(offset){ const L = P.puzzles||[]; if(!L.length) return null; const [y,w] = isoWeek(new Date(now().getTime() + (offset||0)*7*864e5));
+  const pin = L.find(p => p.week === `${y}-W${String(w).padStart(2,"0")}`); if(pin) return pin;   // a problem pinned to this week by the archivist
+  const free = L.filter(p => !p.week), pool = free.length ? free : L; return pool[((y*53 + w) % pool.length + pool.length) % pool.length]; }
 function upcomingEvents(n){ const t0 = new Date(now().toDateString()).getTime(); return (P.events||[]).map(e => Object.assign({t:new Date(e.date+"T00:00").getTime()}, e)).filter(e => e.t >= t0).sort((a,b)=>a.t-b.t).slice(0, n||4); }
 function officeStatus(){
   const H = P.office_hours || []; if(!H.length) return {open:false, label:"hours not yet posted"};
@@ -2130,6 +2174,7 @@ WIDGETS.oracle = (el) => {
 };
 
 WIDGETS.sundial = (el) => {
+  const t = dialType(); if(t === "meantime" || t === "meridiana" || t === "cannon") return dialWidget2(el, t);
   el.innerHTML = `<div class="panel"><h3>The dial, from above</h3><svg id="sd-s" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="A horizontal sundial with today's shadow"></svg><div id="sd-t" class="mono" style="font-size:13.5px;line-height:1.7"></div>
     <p class="note">A horizontal dial laid out for latitude ${LAT}° (${esc(placeName())}): each hour line makes angle θ with the noon line, where tan θ = sin φ · tan(15° × hours from noon). The style points at the celestial pole. The dial tells local apparent solar time. Your clock differs by the longitude correction (in Appleton, which is west of its time-zone meridian), by daylight saving time, and by the equation of time.</p></div>`;
   const draw = () => {
@@ -2163,6 +2208,46 @@ WIDGETS.sundial = (el) => {
   };
   draw(); timers.push(setInterval(draw, 30000));
 };
+
+// the readings for the dials that tell clock time, or fire
+function dialWidget2(el, t){
+  const D = DIALS[t];
+  el.innerHTML = `<div class="panel"><h3>${esc(D.name)}</h3><svg id="sd2" viewBox="-260 -260 520 520" style="width:100%;max-width:440px;display:block;margin:0 auto" role="img" aria-label="${esc(D.name)}"></svg><div id="sd2-t" class="mono" style="font-size:13.5px;line-height:1.7"></div><p class="note">${esc(D.blurb)} Change it at the cabinet under the colonnade.</p></div>`;
+  const draw = () => {
+    const svg = $("sd2"); if(!svg) return; svg.innerHTML = ""; const sk = skyNow(), wx = weather(), cc = wx ? (wx.cloud_cover||0) : 0, sunOK = sk.sun.alt > 0 && cc < 85 && !skyOff("sun");
+    const off = stdOffsetH(), d = sk.d, stdH = ((d.getUTCHours() + d.getUTCMinutes()/60 + d.getUTCSeconds()/3600 + off) % 24 + 24) % 24, hm = h => { const x = ((h%24)+24)%24; return `${Math.floor(x)}:${String(Math.floor(x%1*60)).padStart(2,"0")}`; };
+    const ha = ((sk.L - sk.sun.ra + 540) % 360) - 180, toNoon = -ha/15;   // hours until the sun crosses the meridian
+    const n0 = ((sk.jd - 2451545)), Lm = ((280.460+0.9856474*n0)%360+360)%360; let eot = ((Lm - sk.sun.ra + 540) % 360 - 180)*4;
+    if(t === "meantime"){ const D2 = dialData("meantime"), k = 92, oy = (LAT >= 0 ? -1 : 1)*150;   // the bead stands toward the equator side
+      E("circle",{r:240,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":3},svg); E("circle",{r:226,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":1},svg);
+      const P = ([e,n]) => [e*k, -(n*k + oy)];
+      D2.dates.forEach(dl => { if(dl.pts.length < 2) return; E("polyline",{points:dl.pts.map(P).map(p=>p.join(",")).join(" "),fill:"none",stroke:"var(--muted)","stroke-dasharray":"3 3","stroke-width":1},svg); });
+      Object.entries(D2.hours).forEach(([hr, pts]) => { const inside = pts.map(P).filter(([x,y]) => x*x+y*y < 222*222); if(inside.length < 3) return;
+        E("polyline",{points:inside.map(p=>p.join(",")).concat([inside[0].join(",")]).join(" "),fill:"none",stroke:+hr===12?"var(--spot)":"var(--ink)","stroke-width":+hr===12?2:1.2},svg);
+        const top = inside.reduce((a,b) => a[1] < b[1] ? a : b); T(["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"][hr%12],{x:top[0],y:top[1]-6,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg); });
+      E("circle",{cx:0,cy:-oy,r:4,fill:"var(--ink)"},svg); T(LAT>=0?"N":"S",{x:0,y:-244,"text-anchor":"middle","font-size":12,fill:"var(--ink)","font-family":"IM Fell English SC, serif"},svg);
+      if(sunOK){ const [x,y] = P(shadowOf(sk.sun)); E("line",{x1:0,y1:-oy,x2:x,y2:y,stroke:"var(--ink)","stroke-width":1.5,opacity:.5},svg); E("circle",{cx:x,cy:y,r:7,fill:"var(--spot)",stroke:"var(--ink)"},svg); }
+      $("sd2-t").innerHTML = sunOK ? `The bead's shadow reads <b>${hm(stdH)}</b> standard time: the clock's own time, read straight off the figure-eights.${d.getTimezoneOffset() !== -off*60 ? ` Your clock is on daylight saving, an hour ahead: ${hm(stdH+1)}.` : ""}<br><span class="note">Each figure-eight is one clock hour through the year; the shadow runs up the left loop in spring and down the right in autumn (in the north). The equation of time today is ${eot>=0?"+":""}${eot.toFixed(1)} minutes.</span>` : `No shadow to read: ${sk.sun.alt <= 0 ? "the sun is down" : skyOff("sun") ? "the storm glass has put the sun out" : "too much cloud"}.`;
+    }
+    if(t === "meridiana"){ const D2 = dialData("meridiana"), k = 70, hS = 2.6, base = 200*(LAT >= 0 ? 1 : -1);   // the column stands toward the equator, at the bottom of the drawing
+      const P = ([e,n]) => [e*hS*k/2.6*1, base - n*hS*k/2.6];
+      E("rect",{x:-230,y:-250,width:460,height:500,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":2},svg);
+      E("line",{x1:0,y1:-250,x2:0,y2:250,stroke:"var(--ink)","stroke-width":2},svg);
+      D2.months.forEach(mk => { const y = base - mk.n*hS*k/2.6; if(Math.abs(y) < 248){ E("line",{x1:-12,y1:y,x2:12,y2:y,stroke:"var(--ink)"},svg); T(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][mk.m],{x:16,y:y+4,"font-size":11,fill:"var(--ink)","font-family":"IM Fell English, serif"},svg); } });
+      E("polyline",{points:D2.noon8.map(P).map(p=>p.join(",")).join(" "),fill:"none",stroke:"var(--spot)","stroke-width":2},svg);
+      E("circle",{cx:0,cy:base,r:8,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},svg);
+      if(sunOK){ const sh = shadowOf(sk.sun), [x,y] = P(sh); if(Math.abs(x) < 230 && Math.abs(y) < 250) E("circle",{cx:x,cy:y,r:7,fill:"#fff6c8",stroke:"var(--ink)"},svg); }
+      const mins = Math.round(toNoon*60);
+      $("sd2-t").innerHTML = sunOK ? `The spot of sun ${Math.abs(mins) < 2 ? "is crossing the straight line now: <b>sun noon</b>" : mins > 0 ? `will cross the straight line in <b>${Math.floor(mins/60) ? Math.floor(mins/60)+" h " : ""}${mins%60} min</b> (sun noon)` : `crossed the straight line ${Math.floor(-mins/60) ? Math.floor(-mins/60)+" h " : ""}${(-mins)%60} min ago`}, and the figure-eight at ${hm(12 + (toNoon > 0 ? 0 : 0))} standard time, ${(() => { const mn = (12 - stdH)*60; return Math.abs(mn) < 2 ? "now" : mn > 0 ? `in ${Math.floor(mn/60) ? Math.floor(mn/60)+" h " : ""}${Math.round(mn%60)} min` : `${Math.floor(-mn/60) ? Math.floor(-mn/60)+" h " : ""}${Math.round(-mn%60)} min ago`; })()}.<br><span class="note">The gap between the two is the longitude and the equation of time (${eot>=0?"+":""}${eot.toFixed(1)} min today). The month marks are where the spot falls at sun noon on the first of each month.</span>` : `No spot today: ${sk.sun.alt <= 0 ? "the sun is down" : skyOff("sun") ? "the storm glass has put the sun out" : "too much cloud"}.`;
+    }
+    if(t === "cannon"){ const mins = Math.round(toNoon*60), next = mins >= 0 ? mins : mins + 24*60 - 4;
+      E("circle",{r:200,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":2},svg); E("path",{d:"M-120,40 L110,10 L120,40 L-110,70 Z",fill:"url(#s-dark)",stroke:"var(--ink)"},svg); E("circle",{cx:-120,cy:55,r:26,fill:"var(--paper)",stroke:"var(--ink)","stroke-width":3},svg);
+      E("ellipse",{cx:60,cy:-70,rx:42,ry:14,fill:"#e9f0f2",stroke:"var(--ink)"},svg); E("line",{x1:60,y1:-56,x2:62,y2:18,stroke:"var(--spot)","stroke-dasharray":"4 3"},svg);
+      $("sd2-t").innerHTML = `${sunOK ? `The cannon fires at sun noon, in <b>${Math.floor(next/60) ? Math.floor(next/60)+" h " : ""}${next%60} min</b>${next > 12*60 ? " (tomorrow)" : ""}, if the sky stays clear.` : "No firing today unless the sky clears: the glass needs the sun."}<br><span class="note">Sun noon is ${hm(stdH + toNoon)} by the standard clock today. The Palais-Royal's noon cannon in Paris fired this way from 1786; the cannon in the Wending House is smaller and fires only for those in the court.</span>`;
+    }
+  };
+  draw(); timers.push(setInterval(draw, 20000));
+}
 WIDGETS.center = (el, spec, room) => {
   const d = bfs(START)[String(room.id)];
   const n = Math.max(0, S.walk.length-1);
@@ -2188,8 +2273,9 @@ $("b-full").onclick = fullView;
 function applySkin(){ const m = (S.skin||"myst")==="myst"; document.documentElement.classList.toggle("skin-myst", m); document.documentElement.classList.toggle("skin-hypercard", !m); $("b-skin").textContent = "Skin: " + (m ? "Myst" : "HyperCard"); }
 $("b-skin").onclick = () => { S.skin = (S.skin||"myst")==="myst" ? "hypercard" : "myst"; save(); applySkin(); toast(S.skin==="myst" ? "The journals come out." : "Back to the stack."); };
 applySkin();
-$("b-q").onclick = () => { S.quality = {draft:"normal", normal:"fine", fine:"ultra", ultra:"draft"}[defaultQuality()]; save(); toast(`Quality: ${S.quality}. Redrawing…`); setTimeout(() => location.reload(), 500); };
-$("b-gfx").onclick = () => { S.gfx = S.gfx==="2d" ? "3d" : "2d"; save(); if(S.gfx==="3d" && !VIEW3D) start3d(); render(); };
+$("b-q").onclick = () => { S.quality = {draft:"normal", normal:"fine", fine:"ultra", ultra:"max", max:"draft"}[defaultQuality()]; save(); toast(`Quality: ${S.quality}. Redrawing…`); setTimeout(() => location.reload(), 500); };
+// three ways to see the house: engraved (the default), photographic, and the flat woodcuts
+$("b-gfx").onclick = () => { S.gfx = S.gfx==="2d" ? "3d" : S.gfx==="photo" ? "2d" : "photo"; save(); if(S.gfx!=="2d" && !VIEW3D) start3d(); render(); toast({"3d":"Engraved.", photo:"Photographic: the light as it is.", "2d":"Woodcuts."}[S.gfx]); };
 route();
 start3d();
 if(S.curator && location.hash!=="#curator") { /* stay quiet; the office opens on #curator */ }

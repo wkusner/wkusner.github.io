@@ -1022,10 +1022,12 @@ rooms:
   wing: court
   floor: stone
   ceiling: open
-  decor: [sundial, cloister]
+  decor: [sundial, cloister, dialcabinet]
   at: [5, 8]
   text: >-
     An open court with the real sky over it and a brass sundial in the middle, laid out for the latitude where the house stands (Appleton, unless the astrolabe has carried it off). The shadow on the plate is the actual shadow for this moment, or for whatever moment the hourglass says. Look up: the sky is the sky over the court right now, sun or stars, the moon in its true phase, and as much cloud as the weather says.
+
+    Under the colonnade stands a glass-fronted cabinet of dials: the horizontal dial, an armillary sphere, a mean-time dial of figure-eights, a glass sphere that throws a spot of sun across the paving, and a little noon cannon. Open it and choose which one stands in the court.
 
     On a clear night with a bright moon the dial works by moonlight. It tells moon time, read straight off the plate, which runs about forty-eight minutes later each night than sun time.
 
@@ -1036,7 +1038,6 @@ rooms:
     - {to: 19, wall: back, title: "the lily pond"}
     - {to: 36, wall: front, title: "the garden gate", look: gate}
   objects:
-    - {kind: unwritten, icon: clock, wall: right, title: "A bowstring equatorial dial", note: "A second dial whose hour lines are evenly spaced, for comparison."}
     - {kind: device, icon: astrolabe, wall: right, item: astrolabe, portable: true, action: astrolabe, title: "An astrolabe with a storm glass", note: "Turn the rete to stand somewhere else under the sky, or at another hour; tap the storm glass to change the weather."}
   marginalia:
     - "Hour lines: tan θ = sin φ · tan h. At the pole they'd be evenly spaced; at the equator they all crowd toward six o'clock."

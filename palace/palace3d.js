@@ -10,8 +10,53 @@ let WALL_H = 4.2; const EYE = 1.62, DOOR_W = 1.35, DOOR_H = 2.45;
 function rng(seed){ let a = seed>>>0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; }; }
 function hashStr(s){ let h=2166136261; for(const ch of String(s)){ h ^= ch.charCodeAt(0); h = Math.imul(h,16777619); } return h>>>0; }
 const muted = (hex, k=0.55) => { const c = new THREE.Color(hex); const g = c.r*.3+c.g*.59+c.b*.11; return new THREE.Color(g+(c.r-g)*k, g+(c.g-g)*k, g+(c.b-g)*k); };
-function mat(color, opts={}){ return new THREE.MeshStandardMaterial(Object.assign({color:new THREE.Color(color), roughness:.85, metalness:0}, opts)); }
+function mat(color, opts={}){ const m = new THREE.MeshStandardMaterial(Object.assign({color:new THREE.Color(color), roughness:.85, metalness:0}, opts));
+  const k = typeof color === "string" && SURFACES_ON ? surfaceFor(color, opts) : null;
+  if(k){ const sf = surface(k); m.map = sf.map; m.normalMap = sf.normalMap; m.roughnessMap = sf.roughnessMap; m.normalScale = new THREE.Vector2(k === "brass" ? .4 : .8, k === "brass" ? .4 : .8); if(k === "brass"){ m.metalness = Math.max(.75, m.metalness); m.roughness = .55; } else m.roughness = 1; }
+  return m; }
+let SURFACES_ON = true;
 let TEXK = 1;
+/* ---------- surfaces: procedural wood, leather, brass, stone, plaster, and cloth, each with a colour map, a bump (normal) map and a roughness map.
+   Neutral in tone, so a material's own colour tints them. Made once per visit, at the quality's texture size. ---------- */
+const SURF = {};
+function noise2(seed){ const R = rng(seed), P = new Float32Array(512); for(let i=0;i<512;i++) P[i] = R(); const h = (x, y) => P[((x & 255) + ((y & 255) * 7)) & 511];
+  return (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf*xf*(3-2*xf), v = yf*yf*(3-2*yf);
+    return (h(xi,yi)*(1-u) + h(xi+1,yi)*u)*(1-v) + (h(xi,yi+1)*(1-u) + h(xi+1,yi+1)*u)*v; }; }
+function fbm(n, x, y, oct){ let a = 0, f = 1, w = .5; for(let o=0;o<oct;o++){ a += w*n(x*f, y*f); f *= 2.03; w *= .5; } return a; }
+function surface(kind){
+  if(SURF[kind]) return SURF[kind];
+  const N = Math.round(512*Math.min(2, Math.max(.75, TEXK))), n = noise2(hashStr(kind)), H = new Float32Array(N*N), col = new Uint8ClampedArray(N*N*4), rough = new Uint8ClampedArray(N*N*4);
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++){ const u = x/N, v = y/N; let h = .5, c = 1, r = .5;
+    if(kind === "wood"){ // grain along x: growth rings stretched long, wobbling; pores; a few darker streaks
+      const wob = fbm(n, u*3, v*18, 4)*2.2, ring = Math.sin((v*38 + wob*3.2)*Math.PI), fine = fbm(n, u*90, v*400, 2);
+      h = .5 + .28*ring + .18*(fine - .5); c = .78 + .16*ring + .1*(fbm(n, u*2, v*6, 3) - .5) - .08*Math.max(0, fine - .7)*3; r = .55 + .25*(1 - h); }
+    else if(kind === "leather"){ const cell = fbm(n, u*60, v*60, 3), crease = Math.abs(fbm(n, u*9, v*9, 4) - .5) < .02 ? -.25 : 0;
+      h = .5 + .3*(cell - .5) + crease; c = .85 + .12*(cell - .5) + crease*.4; r = .6 - .2*(cell - .5); }
+    else if(kind === "brass"){ const brush = fbm(n, u*2, v*900, 2), blot = fbm(n, u*5, v*5, 4);
+      h = .5 + .06*(brush - .5); c = .9 + .1*(brush - .5) - .12*Math.max(0, blot - .62); r = .28 + .25*(brush - .5) + .3*Math.max(0, blot - .6); }
+    else if(kind === "stone"){ const g = fbm(n, u*14, v*14, 5), speck = n(u*300, v*300) > .86 ? -.12 : 0, vein = Math.abs(fbm(n, u*4, v*4, 5) - .5) < .012 ? -.18 : 0;
+      h = .5 + .35*(g - .5) + speck + vein; c = .9 + .12*(g - .5) + speck + vein*.6; r = .75 + .2*(g - .5); }
+    else if(kind === "plaster"){ const g = fbm(n, u*8, v*8, 5), fine = n(u*200, v*200); h = .5 + .2*(g - .5) + .05*(fine - .5); c = .94 + .07*(g - .5); r = .85; }
+    else if(kind === "cloth"){ const warp = Math.sin(u*N*.5*Math.PI)*.5 + .5, weft = Math.sin(v*N*.5*Math.PI)*.5 + .5, g = fbm(n, u*20, v*20, 3);
+      h = .5 + .2*(warp*weft - .25) + .1*(g - .5); c = .86 + .1*(warp - .5) + .08*(g - .5); r = .95; }
+    else { const g = fbm(n, u*10, v*10, 4); h = .5 + .1*(g - .5); c = .95 + .06*(g - .5); r = .7; }
+    H[y*N + x] = h; const i = (y*N + x)*4, cv = Math.max(0, Math.min(1, c))*255; col[i] = col[i+1] = col[i+2] = cv; col[i+3] = 255; const rv = Math.max(.05, Math.min(1, r))*255; rough[i] = rough[i+1] = rough[i+2] = rv; rough[i+3] = 255; }
+  // the bump becomes a normal map
+  const nrm = new Uint8ClampedArray(N*N*4), k = kind === "brass" ? 1.2 : kind === "wood" ? 3 : 4;
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++){ const hx = H[y*N + (x+1)%N] - H[y*N + (x-1+N)%N], hy = H[((y+1)%N)*N + x] - H[((y-1+N)%N)*N + x];
+    let nx = -hx*k, ny = -hy*k, nz = 1; const l = Math.hypot(nx, ny, nz); const i = (y*N + x)*4; nrm[i] = (nx/l*.5+.5)*255; nrm[i+1] = (ny/l*.5+.5)*255; nrm[i+2] = (nz/l*.5+.5)*255; nrm[i+3] = 255; }
+  const tex = (data, srgb) => { const t = new THREE.DataTexture(data, N, N, THREE.RGBAFormat); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; t.anisotropy = 8; if(srgb) t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true; return t; };
+  return (SURF[kind] = {map: tex(col, true), normalMap: tex(nrm), roughnessMap: tex(rough)});
+}
+const WOODS = new Set(["#6a5440","#4a3b2e","#7d6248","#5e4632","#8c7458","#a58c6c","#6e5743","#3f3024","#77583e","#6a4f38","#5a3c26","#6a4730","#7a5b40","#5c4a38","#4a3726","#8a6a45","#93724c","#6e5236","#5e4a37","#4f3d2c","#6a5440","#3d2e20","#5a4634","#6c553f","#7d6448","#5a4632","#2b2219","#241b13","#3b3128","#3c2c1e","#4a3b2e","#8f7a62","#7a6a55","#8a7a63","#9a7f5f","#86694d","#2b2318"]);
+const BRASS = new Set(["#b39a62","#b8955a","#8a7448","#c7b07a","#6e5a34","#b06a45"]);
+const LEATHER = new Set(["#3f5a43","#6b3a2e","#5b2a22","#7a2e24","#6b2f26","#2f4a5a","#3f5a3a","#5a4630","#7a5a2e","#3a3048","#25303a"]);
+const STONE = new Set(["#c2b8a2","#bdb4a0","#d3cab7","#c4bba6","#cfc6b2","#b4aa95","#c8bea9","#8f8573","#b9ae98","#c3b9a4","#d6cdbb","#e6dfcf","#bdb4a2","#b8af9c","#c9c0ad","#9e9583","#cdbd92","#c8b98f"]);
+function surfaceFor(hex, opts){ if(opts.map || opts.transparent || opts.side === THREE.DoubleSide && !STONE.has(hex)) return null; const h = String(hex).toLowerCase();
+  if(BRASS.has(h) || (opts.metalness||0) >= .5) return "brass"; if(LEATHER.has(h)) return "leather"; if(WOODS.has(h)) return "wood"; if(STONE.has(h)) return "stone";
+  const c = new THREE.Color(hex), hsl = {}; c.getHSL(hsl);
+  if(hsl.h > .04 && hsl.h < .12 && hsl.s > .15 && hsl.l < .5) return "wood"; if(hsl.s < .2 && hsl.l > .55) return "plaster"; return null; }
+
 function canvasTex(w, h, paint){ const c = document.createElement("canvas"); c.width=Math.round(w*TEXK); c.height=Math.round(h*TEXK); const g = c.getContext("2d"); g.scale(TEXK, TEXK); paint(g, w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 const FELL = '"IM Fell English", Georgia, serif', FELLSC = '"IM Fell English SC", "IM Fell English", Georgia, serif';
 
@@ -76,6 +121,35 @@ void main(){
 }`;
 
 /* ---------- the view ---------- */
+
+const PHOTO_FS = `
+precision highp float;
+uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float time, aoK, night, exposure; uniform mat4 projInv; uniform mat4 proj;
+varying vec2 vUv;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
+vec3 viewPos(vec2 uv){ float d = texture2D(tDepth, uv).x; vec4 p = projInv * vec4(uv*2.-1., d*2.-1., 1.); return p.xyz/p.w; }
+vec3 aces(vec3 x){ return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14), 0., 1.); }
+void main(){
+  vec3 col = texture2D(tColor, vUv).rgb * exposure;
+  float dep = texture2D(tDepth, vUv).x;
+  float ao = 1.;
+  if(dep < .9999){
+    vec3 P = viewPos(vUv), N = normalize(cross(dFdx(P), dFdy(P)));
+    float rad = .38, occ = 0., ang = hash(vUv*res)*6.2831;
+    for(int i=0;i<16;i++){ float fi = float(i), r = (fi+.5)/16., a = ang + fi*2.39996;
+      vec2 off = vec2(cos(a), sin(a)) * r * rad * proj[0][0] / max(-P.z, .1) * .5;
+      vec3 Q = viewPos(vUv + off*vec2(1., res.x/res.y)), v = Q - P; float d = length(v);
+      occ += max(dot(N, v/max(d,1e-4)) - .08, 0.) * (1. - smoothstep(rad*.6, rad*2., d)); }
+    ao = clamp(1. - aoK*occ/16.*2.2, .25, 1.);
+  }
+  col *= ao;
+  col = aces(col);
+  col = pow(col, vec3(1./2.2));
+  // a little of the lens: vignette and grain, as on film
+  float vig = smoothstep(1.3, .35, length(vUv - .5)*1.5); col *= mix(.78, 1., vig);
+  col += (hash(vUv*res + time) - .5)*.022;
+  gl_FragColor = vec4(col, 1.);
+}`;
 const RAW = /[?&]raw=1/.test(location.search);
 export function create(container, hooks){
   const canvas = document.createElement("canvas");
@@ -85,7 +159,7 @@ export function create(container, hooks){
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   // quality: how many pixels are drawn for each one shown (supersampling smooths every line), shadow detail, texture detail, and how fine the engraver's lines are
-  const QS = {draft:{ss:1, cap:1, shadow:1024, tex:.75, hatch:6.2}, normal:{ss:1.5, cap:2, shadow:2048, tex:1, hatch:5.8}, fine:{ss:2, cap:3, shadow:4096, tex:2, hatch:5.0}, ultra:{ss:3, cap:4, shadow:4096, tex:2.5, hatch:4.4}};
+  const QS = {draft:{ss:1, cap:1, shadow:1024, tex:.75, hatch:6.2}, normal:{ss:1.5, cap:2, shadow:2048, tex:1, hatch:5.8}, fine:{ss:2, cap:3, shadow:4096, tex:2, hatch:5.0}, ultra:{ss:3, cap:4, shadow:4096, tex:2.5, hatch:4.4}, max:{ss:4, cap:5, shadow:4096, tex:3, hatch:4.0}};
   const Q = QS[(hooks.quality&&hooks.quality())||"fine"] || QS.fine;
   TEXK = Q.tex;
   const dpr = Math.min(Math.max(window.devicePixelRatio||1, Q.ss) * (Q.ss > 1 && (window.devicePixelRatio||1) > 1 ? 1.25 : 1), Q.cap);
@@ -100,7 +174,18 @@ export function create(container, hooks){
   post.extensions = {derivatives:true};
   const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
   const tri = new THREE.BufferGeometry(); tri.setAttribute("position", new THREE.Float32BufferAttribute([-1,-1,0, 3,-1,0, -1,3,0],3)); tri.setAttribute("uv", new THREE.Float32BufferAttribute([0,0, 2,0, 0,2],2));
-  postScene.add(new THREE.Mesh(tri, post));
+  const postMesh = new THREE.Mesh(tri, post); postScene.add(postMesh);
+  // the photographic view: no engraving, a tone curve, light reflected from the room, and soft shadow in every corner
+  const photo = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:PHOTO_FS, uniforms:{tColor:{value:null}, tDepth:{value:null}, res:{value:new THREE.Vector2()}, time:{value:0}, aoK:{value:1}, night:{value:0}, exposure:{value:1.0}, projInv:{value:new THREE.Matrix4()}, proj:{value:new THREE.Matrix4()}}});
+  photo.extensions = {derivatives:true};
+  const isPhoto = () => !!(hooks.style && hooks.style() === "photo");
+  let envTex = null;
+  function roomEnvironment(){ // a soft room of light to be reflected in brass, varnish, and glass
+    if(envTex) return envTex; const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene();
+    const box = new THREE.Mesh(new THREE.BoxGeometry(12, 8, 12), new THREE.MeshBasicMaterial({color:"#6b5f50", side:THREE.BackSide})); es.add(box);
+    [[0,3.9,0, 6,6, "#fff4e0", 2.6],[5.9,1.5,0, 3,2.4,"#d8e4f0", 3.2],[-5.9,1.2,1, 2,2,"#ffe0b0", 1.6],[0,-3.9,0, 10,10,"#3a3026", 1]].forEach(([x,y,z,w,h,c,k]) => {
+      const pl = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({color:new THREE.Color(c).multiplyScalar(k), side:THREE.DoubleSide})); pl.position.set(x,y,z); pl.lookAt(0,0,0); es.add(pl); });
+    envTex = pm.fromScene(es, .04).texture; pm.dispose(); return envTex; }
 
   let scene = new THREE.Scene(), key = null, picks = [], anims = [], stations = {}, slots = {}, plan = null, labelDim = 1;
   const depthOnly = new THREE.MeshBasicMaterial({colorWrite:false});
@@ -115,8 +200,8 @@ export function create(container, hooks){
     renderer.setSize(w*dpr, h*dpr, false); canvas.style.width = w+"px"; canvas.style.height = h+"px";
     camera.aspect = w/h; camera.updateProjectionMatrix();
     if(rt) rt.dispose();
-    rt = new THREE.WebGLRenderTarget(w*dpr, h*dpr, {depthTexture:new THREE.DepthTexture(w*dpr, h*dpr), samples:0});
-    post.uniforms.res.value.set(w*dpr, h*dpr);
+    rt = new THREE.WebGLRenderTarget(w*dpr, h*dpr, {depthTexture:new THREE.DepthTexture(w*dpr, h*dpr), samples:0, type:THREE.HalfFloatType});
+    post.uniforms.res.value.set(w*dpr, h*dpr); photo.uniforms.res.value.set(w*dpr, h*dpr);
   }
   new ResizeObserver(resize).observe(container);
   resize();
@@ -127,7 +212,7 @@ export function create(container, hooks){
   let hover = null;
   let peeking = false;
   function zoneAt(x, y){
-    if(peeking && y > H*.84) return {kind:"back", label:"Step back", onClick:()=>{ peeking = false; show(plan); }};
+    if(peeking && y > H*.84) return {kind:"back", label:"Step back", onClick:()=>{ peeking = false; window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); }};
     // edges of the picture turn you, the top looks up, the bottom looks down or steps back
     if(plan && plan.close){ if(y > H*.86) return {kind:"back", label:"Step back", onClick:()=>hooks.stepBack()}; }
     else {
@@ -204,6 +289,8 @@ export function create(container, hooks){
       renderer.setRenderTarget(rt); renderer.render(scene, camera);
       post.uniforms.tColor.value = rt.texture; post.uniforms.tDepth.value = rt.depthTexture;
       post.uniforms.projInv.value.copy(camera.projectionMatrixInverse); post.uniforms.time.value = t/1000;
+      if(isPhoto()){ postMesh.material = photo; photo.uniforms.tColor.value = rt.texture; photo.uniforms.tDepth.value = rt.depthTexture; photo.uniforms.projInv.value.copy(camera.projectionMatrixInverse); photo.uniforms.proj.value.copy(camera.projectionMatrix); photo.uniforms.time.value = (t/1000) % 100; }
+      else postMesh.material = post;
       renderer.setRenderTarget(null); renderer.render(postScene, postCam);
       // depth of the room, then the lettering on top
       renderer.autoClear = false; renderer.clearDepth();
@@ -218,7 +305,7 @@ export function create(container, hooks){
   let prevRoom = null, plan0 = null, R0 = Math.random;
   function show(p){
     plan = p; peeking = false;
-    const k = JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.wxKind, Math.floor(p.minuteKey/10)]);
+    const k = (isPhoto() ? "photo:" : "") + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.wxKind, Math.floor(p.minuteKey/10)]);
     if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); }
     // where to stand and where to look
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5)};
@@ -238,7 +325,9 @@ export function create(container, hooks){
 
   function build(p){
     scene.traverse(o => { if(o.geometry) o.geometry.dispose(); if(o.material){ [].concat(o.material).forEach(m => { if(m.map) m.map.dispose(); m.dispose(); }); } });
-    scene = new THREE.Scene(); picks = []; anims = []; stations = {}; slots = {}; labelDim = p.band==="night" ? .72 : p.band==="dusk" ? .9 : 1;
+    winL.forEach(([ty, fn]) => window.removeEventListener(ty, fn)); winL = [];
+    scene = new THREE.Scene(); picks = []; anims = [];
+    if(isPhoto()){ scene.environment = roomEnvironment(); scene.environmentIntensity = p.band === "night" ? .15 : .45; } stations = {}; slots = {}; labelDim = p.band==="night" ? .72 : p.band==="dusk" ? .9 : 1;
     const hedged = (p.room.decor||[]).includes("hedges");
     WALL_H = hedged ? 2.9 : (p.room.ceiling==="open") ? 3.3 : 4.2;
     const R = rng(hashStr("room"+p.room.id)); R0 = R;
@@ -346,6 +435,8 @@ export function create(container, hooks){
     if(p.gloom){ amb.intensity *= p.lantern ? .7 : .25; }
     // ---- floor and wall fittings
     decorBuild(p, faces, R, spot);
+    if(isPhoto()){ // in the photographic view the room's light comes from the sun, the lamps, and what the walls reflect: less flat fill
+      scene.traverse(o => { if(o.isHemisphereLight) o.intensity *= .38; else if(o.isDirectionalLight && !o.castShadow) o.intensity *= .45; else if(o.isPointLight) o.intensity *= 1.25; }); }
     // ---- stations: furniture with the room's things on it, one per wall that has things
     Object.keys(objsBySlot).forEach(sk => { const sl = slots[sk]; if(!sl) return;
       const mounted = objsBySlot[sk].filter(o => o.mount), loose = objsBySlot[sk].filter(o => !o.mount);
@@ -751,6 +842,116 @@ export function create(container, hooks){
     g.position.copy(at); g.rotation.y = Math.atan2(faceTo.x, faceTo.z); scene.add(g);
     g.userData.hit = {kind:"use", label:"The card catalogue: search the log book", onClick:()=>hooks.openCatalog && hooks.openCatalog("")}; picks.push(g);
   }
+
+  /* ---- the court's other dials ---- */
+  function compassAxes(p){ const F = p.F*DEG; return {east: new THREE.Vector3(Math.sin(Math.PI/2 - F), 0, -Math.cos(Math.PI/2 - F)), north: new THREE.Vector3(Math.sin(-F), 0, -Math.cos(-F))}; }
+  function dialSteps(){ const stoneM = mat("#c4bba6"); [[1.55,.12,0],[1.2,.12,.12]].forEach(([r,h,y]) => { const st = new THREE.Mesh(new THREE.CylinderGeometry(r, r+.04, h, 64), stoneM); st.position.y = y + h/2; st.castShadow = st.receiveShadow = true; scene.add(st); }); }
+  function buildDialVariant(p, spot){
+    const t = p.dialType, D = p.dialData || {}, {east, north} = compassAxes(p), brass = mat("#b39a62",{metalness:.65, roughness:.32}), stoneM = mat("#c4bba6");
+    const read = {kind:"closer", label: (p.dials && p.dials[t] ? p.dials[t].name : "The dial") + ": look closer and read it", onClick:()=>{ lookAtDial(t === "meridiana" ? null : 1); hooks.dial && hooks.dial(); }};
+    const at = (e, n, y=0) => east.clone().multiplyScalar(e).add(north.clone().multiplyScalar(n)).setY(y);
+    if(t === "meantime"){ // a horizontal plate of figure-eights; a bead on a pin casts the shadow
+      dialSteps();
+      const ped = lathe([[0,.24],[.42,.24],[.42,.3],[.34,.34],[.22,.42],[.3,.56],[.32,.62],[.2,.74],[.16,.8],[.26,.84],[.38,.88],[.4,.92],[0,.92]], stoneM, 48); ped.castShadow = ped.receiveShadow = true; scene.add(ped);
+      const hN = .3, R0 = 1.1, oy = (p.lat >= 0 ? -1 : 1)*.62, k = 500/R0;
+      const plate = canvasTex(1024, 1024, (g, w, h) => { const X = (e, n) => [w/2 + e*k, h/2 - n*k];
+        g.fillStyle = "#cdbd92"; g.beginPath(); g.arc(w/2, h/2, 500, 0, TAU); g.fill(); g.strokeStyle = "#2b2318"; g.lineWidth = 8; g.stroke(); g.lineWidth = 2; g.beginPath(); g.arc(w/2, h/2, 470, 0, TAU); g.stroke();
+        g.save(); g.beginPath(); g.arc(w/2, h/2, 468, 0, TAU); g.clip();
+        (D.dates||[]).forEach(dl => { g.setLineDash([14,10]); g.strokeStyle = "rgba(43,35,24,.6)"; g.lineWidth = 4; g.beginPath(); dl.pts.forEach(([e,n],i) => { const [x,y] = X(e*hN, n*hN + oy); i ? g.lineTo(x,y) : g.moveTo(x,y); }); g.stroke(); g.setLineDash([]); });
+        Object.entries(D.hours||{}).forEach(([hr, pts]) => { if(pts.length < 3) return; g.strokeStyle = +hr === 12 ? "#7a2b1e" : "#2b2318"; g.lineWidth = +hr === 12 ? 9 : 6; g.beginPath(); pts.forEach(([e,n],i) => { const [x,y] = X(e*hN, n*hN + oy); i ? g.lineTo(x,y) : g.moveTo(x,y); }); g.closePath(); g.stroke();
+          const top = pts.reduce((a,b) => (b[1] > a[1] ? b : a)); const [x,y] = X(top[0]*hN, top[1]*hN + oy); g.fillStyle = "#2b2318"; g.font = `40px ${FELLSC}`; g.textAlign = "center"; g.fillText(["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"][hr%12], x, y - 14); });
+        g.restore(); g.fillStyle = "#2b2318"; g.font = `italic 30px ${FELL}`; g.textAlign = "center"; g.fillText("Horas non numero nisi serenas", w/2, h - 70); });
+      const dial = new THREE.Mesh(new THREE.CircleGeometry(R0, 96), mat("#ffffff",{map:plate, metalness:.3, roughness:.45})); dial.rotation.set(-Math.PI/2, 0, p.F*DEG); dial.position.set(0,.92,0); dial.receiveShadow = true; scene.add(dial);
+      const foot = at(0, oy, .92), pin = new THREE.Mesh(new THREE.CylinderGeometry(.006,.008,hN,12), brass); pin.position.copy(foot).setY(.92 + hN/2); pin.castShadow = true; scene.add(pin);
+      const bead = new THREE.Mesh(new THREE.SphereGeometry(.022, 24, 16), brass); bead.position.copy(foot).setY(.92 + hN); bead.castShadow = true; scene.add(bead);
+      dial.userData.hit = read; ped.userData.hit = read; picks.push(dial, ped);
+    }
+    if(t === "meridiana"){ // a glass ball on a column at the equator side; its spot of sun crosses the paving
+      const hS = 2.6, foot = at(0, (p.lat >= 0 ? -1 : 1)*3.0);
+      const col = lathe([[0,0],[.3,0],[.3,.12],[.22,.18],[.16,.3],[.13,2.2],[.18,2.3],[.2,2.42],[.08,2.48],[0,2.48]], stoneM, 48); col.position.copy(foot); col.castShadow = col.receiveShadow = true; scene.add(col);
+      const cup = new THREE.Mesh(new THREE.TorusGeometry(.1,.015,12,48), brass); cup.rotation.x = Math.PI/2; cup.position.copy(foot).setY(hS - .1); scene.add(cup);
+      const ball = new THREE.Mesh(new THREE.SphereGeometry(.12, 48, 32), new THREE.MeshStandardMaterial({color:"#eef5f7", roughness:.02, metalness:0, transparent:true, opacity:.55})); ball.position.copy(foot).setY(hS); ball.castShadow = true; scene.add(ball);
+      // the brass inlay in the paving: the meridian line, the figure-eight at clock noon, the month marks
+      const strip = (pts, r, m) => { if(pts.length < 2) return; const curve = new THREE.CatmullRomCurve3(pts.map(([e,n]) => at(e, n, .012))); const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, pts.length*3, r, 6, false), m); tube.receiveShadow = true; scene.add(tube); };
+      const nf = n => (p.lat >= 0 ? -1 : 1)*3.0 + n*hS;
+      const inside = ([e,n]) => { const w = at(e, n); return Math.abs(w.x) < 5.3 && Math.abs(w.z) < 5.3; };
+      strip([[0, (p.lat >= 0 ? -1 : 1)*3.0], [0, (p.lat >= 0 ? 1 : -1)*5.3]], .015, brass);
+      strip((D.noon8||[]).map(([e,n]) => [e*hS, nf(n)]).filter(inside), .012, mat("#8f3b2a",{metalness:.3, roughness:.4}));
+      (D.months||[]).forEach(mk => { const n = nf(mk.n); if(!inside([0,n])) return; const tick = new THREE.Mesh(new THREE.BoxGeometry(.32,.012,.025), brass); tick.position.copy(at(0, n, .012)); tick.lookAt(at(0, n + 1, .012)); tick.rotateY(Math.PI/2); scene.add(tick);
+        skyLabel(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][mk.m], at(.42, n, .05), "#3a2b1c", 28, .9, .3, true); });
+      // the spot itself, where the sun's ray through the ball meets the floor
+      const sun = p.dome && p.dome.sun, ok = sun && sun.alt > 1 && !p.sunOff && (p.cloud||0) < 85;
+      if(ok){ const a = (sun.az - p.F)*DEG, h = sun.alt*DEG, dirS = new THREE.Vector3(Math.sin(a)*Math.cos(h), Math.sin(h), -Math.cos(a)*Math.cos(h)), tt = hS/dirS.y, spotAt = foot.clone().setY(hS).sub(dirS.clone().multiplyScalar(tt)).setY(.016);
+        if(Math.abs(spotAt.x) < 5.4 && Math.abs(spotAt.z) < 5.4){ const sp = new THREE.Mesh(new THREE.CircleGeometry(.05, 32), new THREE.MeshBasicMaterial({color:"#fff8d8", transparent:true, opacity:.95, depthWrite:false})); sp.rotation.x = -Math.PI/2; sp.position.copy(spotAt); sp.layers.set(1); scene.add(sp);
+          const halo = new THREE.Mesh(new THREE.CircleGeometry(.12, 32), new THREE.MeshBasicMaterial({color:"#ffe9a0", transparent:true, opacity:.35, depthWrite:false})); halo.rotation.x = -Math.PI/2; halo.position.copy(spotAt).setY(.015); halo.layers.set(1); scene.add(halo);
+          anims.push(t2 => { sp.material.opacity = .85 + .1*Math.sin(t2*9); }); } }
+      col.userData.hit = read; ball.userData.hit = read; picks.push(col, ball);
+    }
+    if(t === "cannon"){ // a bronze noon gun on a stone block, a burning glass on an arc above its touch-hole
+      dialSteps(); const block = new THREE.Mesh(new THREE.BoxGeometry(1.2,.75,.7), stoneM); block.position.y = .615; block.castShadow = block.receiveShadow = true; scene.add(block);
+      const g = new THREE.Group(); g.position.y = .99; g.lookAt(north.clone().setY(.99)); scene.add(g);
+      const bronze = mat("#6e5a34",{metalness:.7, roughness:.38});
+      const barrel = lathe([[0,-.42],[.09,-.42],[.1,-.38],[.085,-.34],[.08,-.1],[.07,.2],[.065,.38],[.075,.4],[.07,.44],[.04,.44],[0,.44]], bronze, 48); barrel.rotation.x = Math.PI/2; barrel.castShadow = true; g.add(barrel);
+      [-1,1].forEach(sx => { const wheel = new THREE.Mesh(new THREE.TorusGeometry(.13,.025,12,40), mat("#3d2e20")); wheel.position.set(sx*.16, -.05, -.05); wheel.rotation.y = Math.PI/2; g.add(wheel); });
+      const arc = new THREE.Mesh(new THREE.TorusGeometry(.32,.01,8,48,Math.PI), brass); arc.position.set(0, 0, -.3); arc.rotation.y = Math.PI/2; g.add(arc);
+      const lens = new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.012,48), new THREE.MeshStandardMaterial({color:"#eef5f7", roughness:.02, transparent:true, opacity:.5})); lens.position.set(0, .3, -.3); lens.rotation.x = .5; g.add(lens);
+      const puff = new THREE.Group(); scene.add(puff); const puffs = []; for(let k=0;k<14;k++){ const sm = new THREE.Mesh(new THREE.SphereGeometry(.12, 16, 12), new THREE.MeshStandardMaterial({color:"#e9e6df", transparent:true, opacity:0, depthWrite:false})); puff.add(sm); puffs.push(sm); }
+      let fired = -1; const muzzle = north.clone().multiplyScalar(.45).setY(1.05);
+      const fire = () => { fired = performance.now(); puffs.forEach(sm => { sm.position.copy(muzzle); sm.userData.v = north.clone().multiplyScalar(1.2 + Math.random()).add(new THREE.Vector3((Math.random()-.5)*.6, .3 + Math.random()*.5, (Math.random()-.5)*.6)); }); dirty = 3; };
+      onWin("wending-cannon", fire);
+      anims.push(() => { if(fired < 0) return; const tt = (performance.now() - fired)/1000; puffs.forEach(sm => { sm.position.addScaledVector(sm.userData.v, .016); sm.userData.v.multiplyScalar(.97); sm.scale.setScalar(1 + tt*3); sm.material.opacity = Math.max(0, .8 - tt*.25); }); if(tt > 4) fired = -1; });
+      block.userData.hit = read; barrel.userData.hit = read; picks.push(block, barrel);
+    }
+  }
+  /* ---- the cabinet of dials, under the colonnade: open it, look in, and choose ---- */
+  function buildDialCabinet(p, faces, spot){
+    const W = wallAt(faces, 0) || wallAt(faces, 2); if(!W) return;
+    const t0 = [W.len*.5, W.len*.3, W.len*.7].find(t => W.free(t, 1.8)) ?? W.len*.5, c = W.at(t0, .02);
+    const g = new THREE.Group(); g.position.copy(c); g.rotation.y = W.yaw; scene.add(g);
+    const wood = mat("#5e4632"), dark = mat("#2b2219"), brass = mat("#b39a62",{metalness:.6, roughness:.35}), glassM = new THREE.MeshStandardMaterial({color:"#e8eef0", roughness:.05, transparent:true, opacity:.25});
+    const w = 1.7, h = 2.1, dpt = .5;
+    const back = new THREE.Mesh(new THREE.BoxGeometry(w, h, .03), dark); back.position.set(0, .3 + h/2, .015); g.add(back);
+    [-1,1].forEach(sx => { const side = new THREE.Mesh(new THREE.BoxGeometry(.05, h, dpt), wood); side.position.set(sx*(w/2-.025), .3 + h/2, dpt/2); side.castShadow = true; g.add(side); });
+    const top = new THREE.Mesh(new THREE.BoxGeometry(w+.12, .1, dpt+.06), wood); top.position.set(0, .3 + h, dpt/2); g.add(top);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(w+.06, .3, dpt+.04), wood); base.position.set(0, .15, dpt/2); g.add(base);
+    [.3, .3 + h*.5].forEach(y => { const sh = new THREE.Mesh(new THREE.BoxGeometry(w-.1, .03, dpt-.04), mat("#8a6a45")); sh.position.set(0, y + .015, dpt/2); sh.receiveShadow = true; g.add(sh); });
+    // the doors: two glazed leaves that swing open when you come close
+    const doors = [-1, 1].map(sx => { const hinge = new THREE.Group(); hinge.position.set(sx*(w/2-.02), .3, dpt); g.add(hinge);
+      const fr = new THREE.Group(); hinge.add(fr); const dw = w/2 - .03;
+      [[0, h/2, dw, .05], [0, -h/2 + .03, dw, .05], [-dw/2 + .025, 0, .05, h], [dw/2 - .025, 0, .05, h]].forEach(([x, y, ww, hh]) => { const m = new THREE.Mesh(new THREE.BoxGeometry(ww, hh, .04), wood); m.position.set(-sx*dw/2 + x, h/2 + y - .02, 0); fr.add(m); });
+      const gl = new THREE.Mesh(new THREE.PlaneGeometry(dw - .1, h - .1), glassM); gl.position.set(-sx*dw/2, h/2, 0); fr.add(gl);
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(.02, 16, 12), brass); knob.position.set(-sx*(dw - .06), h/2, .03); fr.add(knob);
+      return {hinge, sx}; });
+    let open = 0, openTo = 0; anims.push((tt, dt) => { if(Math.abs(open - openTo) < .001) return; open += (openTo - open)*Math.min(1, (dt||.016)*4); doors.forEach(d => d.hinge.rotation.y = d.sx*open*1.9); dirty = 2; });
+    // the five dials in small
+    const kinds = Object.keys(p.dials || {}), cur = p.dialType || "horizontal";
+    kinds.forEach((k, i) => { const row = i < 3 ? 1 : 0, n = row ? 3 : 2, j = row ? i : i - 3, x = -w/2 + (j + .5)*w/n, y = .3 + h*.5*row + .05;
+      const m = miniDial(k, brass, stoneM2(), spot); m.position.set(x, y, dpt*.45); g.add(m);
+      const tag = skyLabel(p.dials[k].name.replace(/^The /, ""), new THREE.Vector3(0,0,0), "#e9dcc0", 22, .9, .22, true); g.remove(tag); scene.remove(tag); tag.position.set(x, y + .58, dpt*.6); g.add(tag);
+      if(k === cur){ const ring = new THREE.Mesh(new THREE.RingGeometry(.2, .23, 40), new THREE.MeshBasicMaterial({color:"#e8c77a"})); ring.rotation.x = -Math.PI/2; ring.position.set(x, y + .005, dpt*.45); ring.layers.set(1); g.add(ring); }
+      m.userData.hit = {kind:"use", label: k === cur ? `${p.dials[k].name}: in the court now` : `${p.dials[k].name}: carry it out into the court`, onClick:()=> { if(k !== cur) hooks.setDial && hooks.setDial(k); }}; picks.push(m); });
+    const eye = W.at(t0, 1.35).setY(1.45), aim = W.at(t0, .2).setY(1.05);
+    const hit = {kind:"closer", label:"The cabinet of dials: open it", onClick:()=>{ openTo = 1; peek(eye, aim); }};
+    back.userData.hit = hit; doors.forEach(d => { d.hinge.userData.hit = hit; picks.push(d.hinge); }); picks.push(back);
+    onWin("wending-unpeek", () => { openTo = 0; });
+  }
+  // listeners that belong to one room's build, removed when the next room is built
+  let winL = []; function onWin(type, fn){ window.addEventListener(type, fn); winL.push([type, fn]); }
+  // step up to the dial in the middle of the court and look down at its face (or, for the glass sphere, at the paving)
+  function lookAtDial(near){ const from = cam.pos.clone().setY(0); if(from.lengthSq() < .01) from.set(0,0,1); from.normalize();
+    if(near) peek(from.clone().multiplyScalar(1.15).setY(2.05), new THREE.Vector3(0, .92, 0));
+    else peek(from.clone().multiplyScalar(3.2).setY(2.6), new THREE.Vector3(0, 0, 0)); }
+  function stoneM2(){ return mat("#c4bba6"); }
+  function miniDial(k, brass, stone, spot){
+    const g = new THREE.Group(), add = (geo, m, x=0, y=0, z=0, rx=0, ry=0, rz=0) => { const me = new THREE.Mesh(geo, m); me.position.set(x,y,z); me.rotation.set(rx,ry,rz); me.castShadow = true; g.add(me); return me; };
+    add(new THREE.CylinderGeometry(.16,.18,.05,40), stone, 0,.025);
+    if(k === "horizontal"){ add(new THREE.CylinderGeometry(.14,.14,.01,48), brass, 0,.06); const sh = new THREE.Shape(); sh.moveTo(0,0); sh.lineTo(.12,0); sh.lineTo(.12,.1); sh.lineTo(0,0); add(new THREE.ExtrudeGeometry(sh,{depth:.006,bevelEnabled:false}), brass, -.06,.065,0); }
+    if(k === "armillary"){ add(new THREE.CylinderGeometry(.02,.03,.18,16), stone, 0,.14); [0,1,2].forEach(i => add(new THREE.TorusGeometry(.12,.006,8,48), brass, 0,.33,0, i===0?Math.PI/2:0.8, i===2?Math.PI/2:0, 0)); add(new THREE.CylinderGeometry(.004,.004,.32,8), brass, 0,.33,0, .75,0,0); }
+    if(k === "meantime"){ add(new THREE.CylinderGeometry(.14,.14,.01,48), mat("#cdbd92"), 0,.06); const pts = []; for(let i=0;i<=48;i++){ const a = i/48*TAU; pts.push(new THREE.Vector3(.03*Math.sin(2*a), .067, .07*Math.sin(a))); } add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 64, .003, 6, true), mat("#7a2b1e")); add(new THREE.CylinderGeometry(.002,.002,.06,6), brass, 0,.09,-.08); add(new THREE.SphereGeometry(.008,12,8), brass, 0,.12,-.08); }
+    if(k === "meridiana"){ add(new THREE.CylinderGeometry(.02,.03,.36,24), stone, 0,.23); add(new THREE.SphereGeometry(.035,32,24), new THREE.MeshStandardMaterial({color:"#eef5f7", roughness:.02, transparent:true, opacity:.6}), 0,.44); }
+    if(k === "cannon"){ add(new THREE.BoxGeometry(.2,.08,.12), stone, 0,.09); add(new THREE.CylinderGeometry(.018,.025,.22,24), mat("#6e5a34",{metalness:.7,roughness:.38}), 0,.16,0, 0,0,Math.PI/2); add(new THREE.TorusGeometry(.06,.003,6,32,Math.PI), brass, .02,.16,0, 0,Math.PI/2,0); }
+    g.scale.setScalar(1.6); return g;
+  }
   /* ---- a book on a stand: the linking books against a wall, the log book on its podium in the middle of the room ---- */
   function buildPedestal(sl, o, i, p, spot){
     const centre = o.mount === "center", f = sl.face, u = f.b.clone().sub(f.a).normalize(), len = f.a.distanceTo(f.b);
@@ -859,10 +1060,10 @@ export function create(container, hooks){
 
   /* ---- fittings that belong to particular rooms ---- */
   /* ---- a joiner's kit: turned legs, tables, desks, chairs, benches, columns, panelling ---- */
-  const lathe = (prof, m, seg=16) => new THREE.Mesh(new THREE.LatheGeometry(prof.map(([r,y]) => new THREE.Vector2(r,y)), seg), m);
+  const lathe = (prof, m, seg=40) => new THREE.Mesh(new THREE.LatheGeometry(prof.map(([r,y]) => new THREE.Vector2(r,y)), seg), m);
   function turnedLeg(h, r, m){ // a baluster: foot, swelling vase, ring, square-ish neck
     const P = [[0,0],[r*.9,0],[r,.04*h],[r*.7,.1*h],[r*1.25,.32*h],[r*.75,.52*h],[r*1.05,.58*h],[r*.7,.64*h],[r*.85,.92*h],[r*.95,h],[0,h]];
-    const leg = lathe(P, m, 12); leg.castShadow = true; return leg; }
+    const leg = lathe(P, m, 32); leg.castShadow = true; return leg; }
   function knob(m){ return new THREE.Mesh(new THREE.SphereGeometry(.018, 10, 8), m); }
   function table(w, d, h, opts={}){ // a joined table: moulded top, apron with drawers, turned legs, stretchers
     const g = new THREE.Group(), wood = mat(opts.wood || "#7d6248"), dark = mat(opts.dark || "#4a3b2e"), brass = mat("#b39a62",{metalness:.6, roughness:.35});
@@ -953,7 +1154,9 @@ export function create(container, hooks){
         const pad = new THREE.Mesh(new THREE.ShapeGeometry(shape,24), mat("#61744a",{side:THREE.DoubleSide})); pad.rotation.x = -Math.PI/2; pad.rotation.z = R()*TAU; pad.position.set(x,.04,.6+z); pad.receiveShadow = true; scene.add(pad); pads.push([pad, R()*TAU]); }
       anims.push((t) => { pads.forEach(([pd,ph]) => { pd.position.y = .04 + .012*Math.sin(t*1.3+ph); pd.rotation.z += .0006*Math.sin(ph); }); });
     }
-    if(d.includes("sundial")){
+    if(d.includes("sundial") && p.dialType && p.dialType !== "horizontal") buildDialVariant(p, spot);
+    if(d.includes("dialcabinet")) buildDialCabinet(p, faces, spot);
+    if(d.includes("sundial") && (!p.dialType || p.dialType === "horizontal")){
       const plate = canvasTex(1024,1024,(g,w,h)=>{ g.fillStyle="#c8b98f"; g.beginPath(); g.arc(w/2,h/2,500,0,TAU); g.fill(); g.strokeStyle="#2b2318"; g.lineWidth=8; g.stroke();
         const phi = p.lat*DEG; for(let hr=4; hr<=20; hr++){ const th = Math.atan2(Math.sin(phi)*Math.sin((hr-12)*15*DEG), Math.cos((hr-12)*15*DEG)); g.lineWidth = hr===12?6:3; g.beginPath(); g.moveTo(w/2,h/2); g.lineTo(w/2+Math.sin(th)*460, h/2-Math.cos(th)*460); g.stroke();
           g.save(); g.translate(w/2+Math.sin(th)*400, h/2-Math.cos(th)*400); g.rotate(th); g.fillStyle="#2b2318"; g.font=`54px ${FELLSC}`; g.textAlign="center"; g.fillText(["XII","I","II","III","IIII","V","VI","VII","VIII","IX","X","XI"][hr%12],0,0); g.restore(); } });
@@ -968,7 +1171,7 @@ export function create(container, hooks){
       const L0 = .85, style = new THREE.Shape(); style.moveTo(0,0); style.lineTo(L0,0); style.lineTo(L0, L0*Math.tan(Math.min(89, Math.abs(p.lat))*DEG)); style.lineTo(0,0);
       const gn = new THREE.Mesh(new THREE.ExtrudeGeometry(style,{depth:.05,bevelEnabled:false}), mat("#8a7448",{metalness:.6,roughness:.35}));
       const holder = new THREE.Group(); holder.position.set(0,.92,0); holder.rotation.y = Math.atan2(Math.cos(F), -Math.sin(F)); gn.position.set(0,0,-.025); holder.add(gn); gn.castShadow = true; scene.add(holder);
-      const read = {kind:"look", label:"The sundial: read the shadow", onClick:()=>hooks.dial && hooks.dial()}; dial.userData.hit = read; ped.userData.hit = read; picks.push(dial, ped);
+      const read = {kind:"closer", label:"The sundial: look closer and read the shadow", onClick:()=>{ lookAtDial(1); hooks.dial && hooks.dial(); }}; dial.userData.hit = read; ped.userData.hit = read; picks.push(dial, ped);
     }
     // ---- the Archive
     if(d.includes("catalogshelves")) buildCatalogShelves(faces, p.catalog || [], R, spot);
@@ -1089,7 +1292,7 @@ export function create(container, hooks){
           const fl = open ? new THREE.Mesh(new THREE.CircleGeometry(.13, 10), new THREE.MeshStandardMaterial({color:"#f7f4ea", emissive:"#3a3a36", side:THREE.DoubleSide})) : new THREE.Mesh(new THREE.ConeGeometry(.04,.16,6), mat("#e8e4d6"));
           fl.position.copy(at); fl.lookAt(at.clone().multiplyScalar(2).sub(new THREE.Vector3(x,.55,z))); scene.add(fl); } });
     }
-    if(d.includes("armillary")){
+    if(d.includes("armillary") || (d.includes("sundial") && p.dialType === "armillary")){
       // an equatorial dial: the polar rod's shadow falls on the hour band, sun time read straight off the brass
       const lat = p.lat, A = skyDir(Math.abs(lat), lat >= 0 ? 0 : 180).normalize(), Z = new THREE.Vector3(0,1,0);
       const M = Z.clone().sub(A.clone().multiplyScalar(Z.dot(A))).normalize(), west = skyDir(0, 270), W = west.sub(A.clone().multiplyScalar(west.dot(A))).normalize();

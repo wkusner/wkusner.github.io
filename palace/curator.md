@@ -267,6 +267,36 @@ The **Skin** button switches the frame around the picture between two looks:
 - Shift with ↑ ↓ (or Page Up, Page Down) looks up and down.
 - / searches.
 
+### The cabinet of dials
+
+Under the court's colonnade (on its left-hand wall) stands a glass-fronted cabinet (`dialcabinet` in `decor`). Click it to open it and step up to it, then click one of the small models to carry that dial out to the middle of the court. Each visitor's choice is kept in their browser. Click the dial in the court to step up and look down at it; its reading appears in the panel beside the picture.
+- **The horizontal dial.** Sun time, straight off the plate, as before.
+- **The armillary sphere.** An equatorial dial: the polar rod's shadow on an evenly divided band.
+- **The mean-time dial.** A horizontal plate with one figure-eight (analemma) for each clock hour, and a bead on a pin. The figure-eights are computed for the place the house stands, from the sun's real position at that standard-time hour every few days of the year. So the bead's shadow tells the clock's own standard time, with longitude and the equation of time already worked in. Dashed lines mark the solstices and equinoxes.
+- **The glass sphere.** A ball on a column at the equator side of the court throws a spot of sun on the paving. A brass meridian line and month marks show sun noon; a red figure-eight shows where the spot falls at clock noon through the year. This is the cathedral meridiana, in a courtyard.
+- **The noon cannon.** A burning glass over the touch-hole. When the sun crosses the meridian on a clear day and you're in the court, it fires: a puff of smoke, a boom, and a toast. Its reading counts down to sun noon.
+
+### The house's notices, from the log book
+
+Signed in as the archivist, the log book has a tab called **The house**. It edits:
+- office hours (days, times, where, a note) and the office details;
+- the calendar's events;
+- the news;
+- the weekly problems.
+
+Problems take turns by ISO week number. You can pin one to a week (`2026-W41`), and *Print this week's problem sheet* makes a one-page handout with room to work and last week's answer. *Post the changes* writes `catalog/house.json`. The house reads that file on every visit, and it overrides the same keys in `_data/palace.yml`, so you never need to edit the YAML by hand for these.
+
+### Filling in entries and covers
+
+In the entry form, **Fill in from the ISBN, barcode, or DOI** uses whatever number is in the scan box or the entry's own fields. **Find details from the title and creator** searches by name. **Find a cover** offers covers from Open Library, Google Books (asked for its largest size), and, for records, the Cover Art Archive. With *keep a copy of the cover in the log* ticked, the chosen cover is downloaded, shrunk, and saved with the entry's pictures, so it never depends on another site. Some image hosts don't allow this; if so, the entry keeps the cover's address instead.
+
+### The photographic view
+
+The **View** button now cycles three ways of seeing: engraved, photographic, and the flat woodcuts.
+- **The photographic view** drops the engraving. It renders with a filmic tone curve, light reflected from a soft room of light (so brass, varnish, and glass catch it), screen-space ambient occlusion in every corner and under every object, and a touch of vignette and grain.
+- **Surfaces, in every view:** wood, leather, brass, stone, plaster, and cloth now carry procedural colour, bump, and roughness maps. In the engraved view they give the hatching something to follow.
+- **Quality:** a new top level, **max** (four pixels drawn for every one shown, larger textures, finer engraving), joins draft, normal, fine, and ultra. It wants a good graphics card.
+
 ### Renovation: what's open
 
 For now only four rooms are open: the Entry (0), the Office (35), the Sundial Court (34), and the Archive (22). Every other room has `closed: renovation`: its doors stay where they were, boarded across with a pinned note, and a click reads the note aloud. Change the note under `renovation:` at the top of the data file. To open a room again, delete its `closed: renovation` line. (`closed: true` still hides a room and its doors completely, as for the lecture wing.)

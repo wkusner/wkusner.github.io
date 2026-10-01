@@ -195,6 +195,28 @@ async function searchFields(type, title, creator){
   return ol.concat(gb).slice(0, 14);
 }
 
+/* ---------- covers: Open Library, Google Books (asked for a larger size), the Cover Art Archive ---------- */
+async function findCovers(d){
+  const out = [], seen = new Set(), add = (url, label, source) => { if(url && !seen.has(url)){ seen.add(url); out.push({cover:url, title:label, creators:[], source, coverOnly:true}); } };
+  const isbn = d.ids && d.ids.isbn, title = d.title || "", who = ((d.creators||[])[0]||{}).name || "";
+  const probe = url => new Promise(res => { const im = new Image(); im.onload = () => res(im.naturalWidth > 20 ? url : null); im.onerror = () => res(null); im.src = url; setTimeout(() => res(null), 8000); });
+  if(isbn){ const u = await probe(`https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`); if(u) add(u, "this ISBN", "Open Library"); }
+  if(d.type === "physical" || (d.ids && d.ids.barcode)){
+    try { const q = d.ids && d.ids.barcode ? `barcode:${d.ids.barcode}` : [title && `release:"${title}"`, who && `artist:"${who}"`].filter(Boolean).join(" AND ");
+      const j = await getJSON(`https://musicbrainz.org/ws/2/release/?query=${encodeURIComponent(q)}&fmt=json&limit=6`); (j.releases||[]).forEach(r => add(`https://coverartarchive.org/release/${r.id}/front-500`, r.title, "Cover Art Archive")); } catch(e) {} }
+  if(title || isbn){
+    try { const q = new URLSearchParams({limit:"8", fields:"title,author_name,cover_i"}); if(isbn) q.set("isbn", isbn); else { q.set("title", title); if(who) q.set("author", who); }
+      const j = await getJSON(`https://openlibrary.org/search.json?${q}`); (j.docs||[]).forEach(x => x.cover_i && add(`https://covers.openlibrary.org/b/id/${x.cover_i}-L.jpg`, x.title, "Open Library")); } catch(e) {}
+    try { const gq = isbn ? `isbn:${isbn}` : [title && `intitle:${title}`, who && `inauthor:${who}`].filter(Boolean).join("+");
+      const j = await getJSON(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(gq)}&maxResults=6`);
+      (j.items||[]).forEach(v => { const il = (v.volumeInfo||{}).imageLinks; const u = il && (il.thumbnail || il.smallThumbnail); if(u) add(u.replace(/^http:/,"https:").replace("&edge=curl","").replace(/zoom=\d/,"zoom=0") , v.volumeInfo.title, "Google Books"); }); } catch(e) {}
+  }
+  return out.slice(0, 12);
+}
+// fetch a cover and keep it as one of the entry's own pictures, if the image's host allows it
+async function keepCoverCopy(url){
+  try { const r = await fetch(url, {mode:"cors"}); if(!r.ok) return null; const blob = await r.blob(); if(!/^image\//.test(blob.type)) return null; return await shrink(blob); } catch(e){ return null; }
+}
 /* ---------- search ---------- */
 let query = "", typeFilter = "", sortBy = "recent", selected = null;
 function hay(it){ return [it.title, it.subtitle, (it.creators||[]).map(c=>c.name).join(" "), it.publisher, it.date, it.container, (it.tags||[]).join(" "), it.description, it.notes, it.location, it.format, it.medium,
@@ -290,7 +312,8 @@ function renderForm(){
     <div class="chips" id="ftypes">${Object.entries(TYPES).map(([k,x]) => `<button class="chip ${draft.type===k?"on":""}" data-t="${k}" type="button">${esc(x.label.toLowerCase())}</button>`).join("")}</div>
     <datalist id="fmt-list">${t.formats.map(x => `<option value="${esc(x)}">`).join("")}</datalist>
     <div class="form">${t.fields.map(fieldHTML).join("")}${fieldHTML("cover")}${fieldHTML("private")}</div>
-    <div class="row"><button class="btn" id="find" type="button">Find details from the title and creator</button></div>
+    <div class="row"><button class="btn primary" id="fillid" type="button">Fill in from the ISBN, barcode, or DOI</button><button class="btn" id="find" type="button">Find details from the title and creator</button><button class="btn" id="covers" type="button">Find a cover</button></div>
+    ${draft.cover ? `<div class="row"><img src="${esc(draft.cover)}" alt="" style="height:120px;border:1px solid #8a7350" onerror="this.replaceWith(document.createTextNode('(that cover image can’t be loaded)'))"><label class="note"><input type="checkbox" id="keepcover" ${draft.keepCover === false ? "" : "checked"} style="width:auto"> keep a copy of the cover in the log</label></div>` : ""}
     <div class="cands" id="cands"></div>
     <h3>Pictures</h3><div class="imgs" id="imgs"></div>
     <div class="row"><label class="btn" style="display:inline-block">Add photographs<input id="pics" type="file" accept="image/*" multiple capture="environment" hidden></label><span class="note">They're shrunk to 1600 pixels and saved with the entry.</span></div>
@@ -299,6 +322,9 @@ function renderForm(){
   $("ftypes").onclick = e => { const b = e.target.closest("[data-t]"); if(!b) return; readForm(); draft.type = b.dataset.t; renderForm(); };
   $("code").onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); handleCode($("code").value); } };
   $("cam-b").onclick = () => camera(code => { $("code").value = code; handleCode(code); });
+  $("fillid").onclick = () => { readForm(); const code = draft.ids.isbn || draft.ids.barcode || draft.ids.doi || $("code").value; if(!code){ status("Type or scan an ISBN, barcode, or DOI first, in the box at the top or in its field.", "err"); return; } $("code").value = code; handleCode(code); };
+  $("covers").onclick = async () => { readForm(); status("Looking for covers…"); candidates = await findCovers(draft); showCands(true); status(candidates.length ? "Choose a cover." : "No covers found. A photograph of your own copy works too.", candidates.length ? "" : "err"); };
+  if($("keepcover")) $("keepcover").onchange = e => { draft.keepCover = e.target.checked; };
   $("find").onclick = async () => { readForm(); status("Looking…"); candidates = await searchFields(draft.type, draft.title, (draft.creators[0]||{}).name); showCands(); };
   $("pics").onchange = async e => { for(const f of e.target.files){ try { draftImages.push(await shrink(f)); } catch(err){ status("That picture couldn't be read.", "err"); } } showImgs(); e.target.value = ""; };
   $("save").onclick = save;
@@ -323,10 +349,12 @@ function apply(c){
   ["type","title","subtitle","creators","publisher","place","date","edition","pages","format","language","container","description","tags","cover"].forEach(k => { const v = c[k]; if(v != null && v !== "" && !(Array.isArray(v) && !v.length)) draft[k] = v; });
   draft.ids = Object.assign({}, draft.ids, Object.fromEntries(Object.entries(c.ids||{}).filter(([,v]) => v))); draft.source = c.source || "";
 }
-function showCands(){
+function showCands(coversOnly){
   const el = $("cands"); if(!el) return;
   el.innerHTML = candidates.map((c,i) => `<div class="cand" data-i="${i}">${c.cover?`<img src="${esc(c.cover)}" alt="" onerror="this.remove()">`:""}<b>${esc(c.title)}</b><br>${esc(creatorLine(c))}<br><span class="note">${esc([yearOf(c.date), c.publisher, c.format, c.source].filter(Boolean).join(" · "))}</span></div>`).join("");
-  el.onclick = e => { const d = e.target.closest("[data-i]"); if(!d) return; readForm(); apply(candidates[+d.dataset.i]); candidates = []; renderForm(); status("Filled in. Check it over.", "ok"); };
+  el.onclick = e => { const d = e.target.closest("[data-i]"); if(!d) return; readForm(); const c = candidates[+d.dataset.i];
+    if(c.coverOnly){ draft.cover = c.cover; candidates = []; renderForm(); status("Cover chosen.", "ok"); return; }
+    apply(c); candidates = []; renderForm(); status("Filled in. Check it over.", "ok"); };
 }
 function showImgs(){
   const el = $("imgs"); if(!el) return;
@@ -352,6 +380,11 @@ async function save(){
     for(let i=0;i<draftImages.length;i++){ status(`Saving photograph ${i+1} of ${draftImages.length}…`);
       const name = `images/${draft.id}-${Date.now().toString(36)}${i}.jpg`; await putFile(`${cfg.path}/${name}`, draftImages[i].b64, `Log book: picture for “${draft.title}”`); pendingImg[name] = draftImages[i].url; draft.images = (draft.images||[]).concat([name]); }
     draftImages = [];
+    if(draft.cover && draft.keepCover !== false && !(draft.images||[]).some(p => /-cover\.jpg$/.test(p))){
+      status("Keeping a copy of the cover…"); const im = await keepCoverCopy(draft.cover);
+      if(im){ const name = `images/${draft.id}-cover.jpg`; await putFile(`${cfg.path}/${name}`, im.b64, `Log book: cover of “${draft.title}”`); pendingImg[name] = im.url; draft.images = [name].concat(draft.images||[]); }
+    }
+    delete draft.keepCover;
     status("Writing it in the log…");
     const entry = JSON.parse(JSON.stringify(draft)); Object.keys(entry).forEach(k => { if(entry[k] === "" || (Array.isArray(entry[k]) && !entry[k].length)) delete entry[k]; });
     await commitIndex(list => { const i = list.findIndex(x => x.id === entry.id); if(i >= 0) list[i] = entry; else list.unshift(entry); return list; }, `Log book: ${draft.added === now ? "add" : "revise"} “${entry.title}”`);
@@ -438,8 +471,93 @@ function renderCurator(){
 }
 function download(name, text, type){ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
 
+
+/* ---------- the house's notices: office hours, events, news, and the weekly problems ----------
+   Kept in <path>/house.json beside the catalogue. The house reads it on every visit and lets it override the
+   same keys in _data/palace.yml, so the archivist can change them from here without touching the repository by hand. */
+const HOUSE_KEYS = ["office","office_hours","events","news","puzzles"];
+let house = null, houseSha = null;
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+function houseDefaults(){ const P = window.PALACE || {}; const h = {}; HOUSE_KEYS.forEach(k => h[k] = JSON.parse(JSON.stringify(P[k] || (k === "office" ? {} : [])))); return h; }
+async function loadHouse(){
+  house = null; houseSha = null;
+  if(canWrite){ try { const r = await gh(`contents/${cfg.path}/house.json?ref=${encodeURIComponent(cfg.branch)}`); if(r.ok){ const j = await r.json(); houseSha = j.sha; house = JSON.parse(b64d(j.content || "") || "{}"); } } catch(e) {} }
+  if(!house){ try { const r = await fetch(pubBase() + "house.json?t=" + Date.now()); if(r.ok) house = await r.json(); } catch(e) {} }
+  const d = houseDefaults(); house = Object.assign(d, house || {}); HOUSE_KEYS.forEach(k => { if(house[k] == null) house[k] = d[k]; });
+}
+function isoWeek(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1)); return [t.getUTCFullYear(), Math.ceil(((t-y0)/864e5+1)/7)]; }
+const weekKey = (y, w) => `${y}-W${String(w).padStart(2,"0")}`;
+// the same rule the house uses: a problem pinned to this week, or else the rotation by week number among the unpinned ones
+function problemFor(offset){ const L = house.puzzles || []; if(!L.length) return null; const [y, w] = isoWeek(new Date(Date.now() + (offset||0)*7*864e5));
+  const pin = L.find(p => p.week === weekKey(y, w)); if(pin) return pin; const free = L.filter(p => !p.week); const pool = free.length ? free : L; return pool[((y*53 + w) % pool.length + pool.length) % pool.length]; }
+let houseTab = "hours";
+function renderHouse(){
+  const R = $("right");
+  if(!canWrite){ R.innerHTML = `<p class="empty">Only the archivist can change the house's notices. <a href="#curator">Sign in</a>.</p>`; return; }
+  if(!house){ R.innerHTML = `<p class="empty">Opening the house's notices…</p>`; loadHouse().then(renderHouse); return; }
+  const tabs = [["hours","Office hours"],["events","Calendar"],["news","News"],["problems","Weekly problems"]];
+  const inp = (cls, i, k, v, ph, type) => `<input type="${type||"text"}" class="${cls}" data-i="${i}" data-k="${k}" value="${esc(v==null?"":v)}" placeholder="${esc(ph||"")}">`;
+  let body = "";
+  if(houseTab === "hours"){ const o = house.office || {};
+    body = `<div class="form"><label for="o-where">Office</label><input id="o-where" type="text" value="${esc(o.where||"")}" placeholder="building and room">
+      <label for="o-note">A note</label><input id="o-note" type="text" value="${esc(o.note||"")}" placeholder="or by appointment: write to me">
+      <label for="o-unset">When none are posted</label><input id="o-unset" type="text" value="${esc(o.unset||"")}"></div>
+      <h3>Each week</h3><div id="rows">${(house.office_hours||[]).map((h,i) => `<div class="hrow">${DAYS.map(d => `<label class="note"><input type="checkbox" class="hd" data-i="${i}" value="${d}" ${[].concat(h.days||h.day||[]).includes(d)?"checked":""} style="width:auto">${d}</label>`).join(" ")}
+        ${inp("hf",i,"start",h.start,"14:00","time")}–${inp("hf",i,"end",h.end,"15:30","time")} ${inp("hf",i,"where",h.where,"where")} ${inp("hf",i,"note",h.note,"note")} <button class="btn" data-del="${i}" type="button">×</button></div>`).join("") || `<p class="note">None yet.</p>`}</div>
+      <div class="row"><button class="btn" id="h-add" type="button">Add hours</button></div>`; }
+  if(houseTab === "events") body = `<p class="note">Events show on the notice board's calendar and in the Entry. Past ones drop off by themselves.</p><div id="rows">${(house.events||[]).map((e,i) => `<div class="hrow">${inp("ef",i,"date",e.date,"","date")} ${inp("ef",i,"time",e.time,"4:30 pm")} ${inp("ef",i,"title",e.title,"what")} ${inp("ef",i,"where",e.where,"where")} ${inp("ef",i,"href",e.href,"link (optional)")} <button class="btn" data-del="${i}" type="button">×</button></div>`).join("") || `<p class="note">None yet.</p>`}</div>
+      <div class="row"><button class="btn" id="h-add" type="button">Add an event</button></div>`;
+  if(houseTab === "news") body = `<p class="note">The notice board shows the newest few.</p><div id="rows">${(house.news||[]).map((n,i) => `<div class="hrow">${inp("nf",i,"date",n.date,"","date")} ${inp("nf",i,"text",n.text,"what's new")} ${inp("nf",i,"href",n.href,"#0 or a link")} <button class="btn" data-del="${i}" type="button">×</button></div>`).join("")}</div>
+      <div class="row"><button class="btn" id="h-add" type="button">Add news</button></div>`;
+  if(houseTab === "problems"){ const now0 = problemFor(0), next = problemFor(1), [y,w] = isoWeek(new Date());
+    body = `<p>This week (${weekKey(y,w)}): <b>${esc(now0 ? now0.q.replace(/<[^>]+>/g,"").slice(0,90) : "none")}</b>${now0 && now0.q.length > 90 ? "…" : ""}<br><span class="note">Next week: ${esc(next ? next.q.replace(/<[^>]+>/g,"").slice(0,70) : "none")}…</span></p>
+      <div class="row"><button class="btn primary" id="print" type="button">Print this week's problem sheet</button><button class="btn" id="print2" type="button">Next week's</button></div>
+      <p class="note">Problems take turns by week number. Pin one to a week (like ${weekKey(y,w+1)}) to put it up that week instead.</p>
+      <div id="rows">${(house.puzzles||[]).map((q,i) => `<div class="prow"><textarea class="pf" data-i="${i}" data-k="q" rows="2" placeholder="the problem">${esc(q.q||"")}</textarea><textarea class="pf" data-i="${i}" data-k="a" rows="2" placeholder="the answer, shown the week after">${esc(q.a||"")}</textarea>
+        <div class="row">${inp("pf",i,"source",q.source,"source")} ${inp("pf",i,"week",q.week,"pin to a week, e.g. "+weekKey(y,w))} <button class="btn" data-up="${i}" type="button">↑</button><button class="btn" data-del="${i}" type="button">×</button></div></div>`).join("")}</div>
+      <div class="row"><button class="btn" id="h-add" type="button">Add a problem</button></div>`; }
+  R.innerHTML = `<h2>The house's notices</h2><div class="chips">${tabs.map(([k,l]) => `<button class="chip ${houseTab===k?"on":""}" data-tab="${k}" type="button">${l}</button>`).join("")}</div>
+    ${body}<div class="row" style="margin-top:16px"><button class="btn primary" id="h-save" type="button">Post the changes</button><span class="note">They appear in the house within a minute or two.</span></div><div class="status" id="st"></div>`;
+  R.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { readHouse(); houseTab = b.dataset.tab; renderHouse(); });
+  const list = {hours:"office_hours", events:"events", news:"news", problems:"puzzles"}[houseTab];
+  $("h-add").onclick = () => { readHouse(); const blank = {hours:{days:["Mon"], start:"14:00", end:"15:00"}, events:{date:new Date().toISOString().slice(0,10), title:""}, news:{date:new Date().toISOString().slice(0,10), text:""}, problems:{q:"", a:"", source:""}}[houseTab];
+    house[list] = (house[list]||[]).concat([blank]); if(houseTab === "news") house.news = [blank].concat(house.news.slice(0,-1)); renderHouse(); };
+  R.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { readHouse(); house[list].splice(+b.dataset.del, 1); renderHouse(); });
+  R.querySelectorAll("[data-up]").forEach(b => b.onclick = () => { readHouse(); const i = +b.dataset.up; if(i > 0){ const L = house[list]; [L[i-1], L[i]] = [L[i], L[i-1]]; } renderHouse(); });
+  if($("print")){ $("print").onclick = () => { readHouse(); printSheet(0); }; $("print2").onclick = () => { readHouse(); printSheet(1); }; }
+  $("h-save").onclick = saveHouse;
+}
+function readHouse(){
+  if(houseTab === "hours" && $("o-where")){ house.office = Object.assign({}, house.office, {where:$("o-where").value.trim(), note:$("o-note").value.trim(), unset:$("o-unset").value.trim()});
+    house.office_hours.forEach((h, i) => { h.days = [...document.querySelectorAll(`.hd[data-i="${i}"]:checked`)].map(c => c.value); delete h.day; }); }
+  document.querySelectorAll(".hf,.ef,.nf,.pf").forEach(el => { const L = house[{hf:"office_hours", ef:"events", nf:"news", pf:"puzzles"}[el.classList[0]]], it = L && L[+el.dataset.i]; if(!it) return; const v = el.value.trim(); if(v) it[el.dataset.k] = v; else delete it[el.dataset.k]; });
+}
+async function saveHouse(){
+  readHouse(); const b = $("h-save"); b.disabled = true; status("Posting…");
+  try { const body = JSON.stringify(Object.assign({version:1, updated:new Date().toISOString()}, Object.fromEntries(HOUSE_KEYS.map(k => [k, house[k]]))), null, 1);
+    let sha = houseSha; try { const r = await gh(`contents/${cfg.path}/house.json?ref=${encodeURIComponent(cfg.branch)}`); if(r.ok) sha = (await r.json()).sha; } catch(e) {}
+    const c = await putFile(`${cfg.path}/house.json`, b64e(body), "Log book: the house's notices", sha); houseSha = c.sha; status("Posted.", "ok");
+  } catch(e){ status("It didn't post: " + e.message, "err"); } finally { b.disabled = false; }
+}
+function printSheet(offset){
+  const p = problemFor(offset), last = problemFor(offset - 1), [y, w] = isoWeek(new Date(Date.now() + offset*7*864e5));
+  const win = window.open("", "_blank"); if(!win){ status("The browser blocked the sheet's window.", "err"); return; }
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Problem of the week ${weekKey(y,w)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+    <style>@page{size:letter;margin:.8in} body{font:15pt/1.5 "IM Fell English",Georgia,serif;color:#1d160f;max-width:6.9in;margin:0 auto}
+    h1{font:400 13pt "IM Fell English SC",serif;letter-spacing:.2em;text-align:center;margin:0} .wk{text-align:center;font-style:italic;margin:4px 0 26px}
+    .q{font-size:17pt;line-height:1.45;border-top:1px solid #8a7350;border-bottom:1px solid #8a7350;padding:18px 0} .work{height:4.6in;border:1px dashed #b39a72;margin:22px 0;position:relative}
+    .work span{position:absolute;top:6px;left:10px;font:italic 11pt Georgia;color:#8a7350} .ans{font-size:12pt} .ans b{font:400 11pt "IM Fell English SC",serif;letter-spacing:.12em}
+    .src{text-align:right;font-style:italic;font-size:11pt;color:#6b5640} footer{margin-top:20px;font-size:10pt;text-align:center;color:#6b5640}</style></head><body>
+    <h1>The Wending House · Problem of the Week</h1><p class="wk">week ${w} of ${y}</p>
+    <div class="q">${p ? p.q : "No problem posted."}</div>${p && p.source ? `<p class="src">${esc(p.source)}</p>` : ""}
+    <div class="work"><span>your work</span></div>
+    ${last ? `<div class="ans"><b>Last week's problem.</b> ${last.q}<br><b>Its answer.</b> ${last.a || ""}</div>` : ""}
+    <footer>wkusner.github.io/palace · the notice board in the Entry</footer><script>setTimeout(() => print(), 600)<\/script></body></html>`);
+  win.document.close();
+}
 /* ---------- routing ---------- */
-function nav(){ $("n-add").hidden = !canWrite;
+function nav(){ $("n-add").hidden = !canWrite; $("n-house").hidden = !canWrite; $("n-house").classList.remove("on");
   const kc = $("n-key"), ms = keyLeft(); if(kc){ kc.hidden = !(canWrite || token) || ms == null; kc.textContent = ms != null && ms <= 0 ? "key expired" : "key: " + keyLeftText(); kc.classList.toggle("warn", ms != null && ms < 14*864e5); } ["n-search","n-add","n-cur"].forEach(i => $(i).classList.remove("on")); }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1)), [view, ...rest] = h.split("/"), arg = rest.join("/");
@@ -452,6 +570,7 @@ function route(){
     draftImages = []; candidates = []; renderSearch(); renderForm(); $("n-add").classList.add("on");
     if(view === "add" && arg){ $("code").value = arg; handleCode(arg); }
     return; }
+  if(view === "house"){ renderSearch(); renderHouse(); $("n-house").classList.add("on"); return; }
   if(view === "curator"){ renderSearch(); renderCurator(); $("n-cur").classList.add("on"); return; }
   renderSearch(); $("n-search").classList.add("on");
   if(!selected) $("right").innerHTML = `<h2>The log book</h2><p>Every book, record, paper, object, picture, and scrap in the house is entered here. Search on the left, or scan a barcode: a scanner works anywhere on this page.</p>
