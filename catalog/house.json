@@ -1,10 +1,10 @@
 {
  "version": 1,
- "updated": "2026-10-01T18:32:11.064Z",
+ "updated": "2026-10-01T18:32:25.338Z",
  "office": {
   "where": "",
   "unset": "Office hours for the term will be posted here.",
-  "note": "Or Tuesday and Thursday mornings by appointment"
+  "note": "Or Tuesday and Thursday mornings by appointment."
  },
  "office_hours": [
   {
