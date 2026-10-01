@@ -1,8 +1,61 @@
 {
  "version": 1,
- "updated": "2026-10-03T12:00:00Z",
- "count": 20,
+ "updated": "2026-10-01T18:16:50.163Z",
+ "count": 22,
  "items": [
+  {
+   "id": "the-craft-of-community-engaged-teaching--ut10r",
+   "type": "book",
+   "title": "The Craft of Community-Engaged Teaching and Learning",
+   "ids": {
+    "isbn": ""
+   },
+   "acquired": {
+    "date": "",
+    "source": ""
+   },
+   "private": false,
+   "added": "2026-10-01T18:14:37.419Z",
+   "updated": "2026-10-01T18:14:37.419Z"
+  },
+  {
+   "id": "the-craft-of-community-engaged-teaching--ur8c0",
+   "type": "book",
+   "title": "The Craft of Community-Engaged Teaching and Learning",
+   "creators": [
+    {
+     "name": "Marshall Welch",
+     "role": "author"
+    },
+    {
+     "name": "Star Plaxton-Moore",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "Education"
+   ],
+   "ids": {
+    "isbn": "9781733902830",
+    "url": "https://openlibrary.org/works/OL25425905W"
+   },
+   "acquired": {
+    "date": "September 29 2026",
+    "source": "Deanna Donohoue"
+   },
+   "images": [
+    "images/the-craft-of-community-engaged-teaching--ur8c0-cover.jpg"
+   ],
+   "publisher": "Stylus",
+   "date": "2019",
+   "pages": 240,
+   "notes": "For CEL Reading Group, Lawrence University, 2026-2027",
+   "cover": "https://covers.openlibrary.org/b/id/12381872-L.jpg",
+   "private": false,
+   "source": "Open Library",
+   "added": "2026-10-01T18:13:13.584Z",
+   "updated": "2026-10-01T18:13:13.584Z"
+  },
   {
    "id": "the-art-of-memory-seed5",
    "type": "book",
@@ -378,11 +431,22 @@
     "reference",
     "the archive"
    ],
-   "ids": {},
+   "ids": {
+    "isbn": ""
+   },
    "added": "2026-10-03T12:00:00Z",
-   "updated": "2026-10-03T12:00:00Z",
+   "updated": "2026-10-01T18:16:47.891Z",
    "source": "the Archive's first shelf",
-   "room": 22
+   "room": 22,
+   "acquired": {
+    "date": "",
+    "source": ""
+   },
+   "cover": "https://covers.openlibrary.org/b/id/24529-L.jpg",
+   "private": false,
+   "images": [
+    "images/lirael-seed22-cover.jpg"
+   ]
   },
   {
    "id": "invisible-cities-seed23",
