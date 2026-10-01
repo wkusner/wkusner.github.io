@@ -37,7 +37,7 @@ Visitors never see the office unless they type `#curator`.
 - id: 27                      # the room number (also its address: /palace/#27)
   name: The Map Room
   wing: instruments           # one of the keys under wings:
-  shape: hex                  # square (default), hex, oct, or round
+  shape: hex                  # square (default), hex, oct, round, or corridor
   decor: [shelves, lamp, window]
   at: [9, 4]                  # where it sits on the map grid (any integers)
   text: >-
@@ -53,6 +53,12 @@ Visitors never see the office unless they type `#curator`.
   doors: [...]
   objects: [...]
 ```
+
+**Shapes** are drawn as they're named. A `hex` room shows one face of a hexagon ahead, two faces angling away at 60°, and slivers of the next two; `oct` does the same with 45°. A `round` room has a bowed back wall, and a `corridor` is long and narrow, with floorboards spaced in true perspective. Doors on the left and right go on the angled faces.
+
+**Fittings** that match particular rooms: `cases` (glass cases of rules), `bench` (a drafting bench), `glasshouse` (panes and palms), `cardtables`, `tilefloor` (a fifteen puzzle in the floor), `dial` (the parity dial), `lattice` (a crystal with a dislocation and its Burgers circuit), `bigtree` (a 3-adic tree), `gloom`, `cot`, `names` (Funes's names on the wall), `fibfloor` (a golden rectangle cut into squares, inlaid in the floor), `woodcut` (Kepler's cannonballs, framed), `chalkboard`, `desks`, `workbench`, `tiers` and `screen` (a lecture hall), `longtable`, `polytope` (a hanging icosahedron), `sand`, `sea`, `alethiometer`, `lowshelves`.
+
+When you write a room's text, give it the fittings it describes. If the text says there are tables, put `cardtables` or `longtable` in its decor.
 
 **Decor** (any combination): `shelves`, `lamp` (lit at dusk and night), `window` (shows the real sun or moon if it's in front of you, and casts a beam on the floor), `sky` (the real sky as a dome on the back wall), `stars`, `rug`, `stair` (a spiral well), `pool` (lily pads in a hexagonal packing), `pendulum`, `clockface` (shows the visitor's time), `glacier` (ice and icicles).
 
@@ -96,6 +102,7 @@ doors:
     needs: "has:golden-key"   # if false, the door is there but locked
     hint: "A small gold lock with a φ on it."   # shown while locked
     label: "?"                # the plaque, if not the room number
+    look: mirror              # mirror, bars, dials, gold, or shelves: what the door itself looks like
     oneway: true              # quiets the one-way note in the office
     twist: true               # quiets the turns-don't-undo note
 ```
@@ -116,6 +123,21 @@ Special destinations:
       yes: "The door swings open."
       no: "The dials stick."
 ```
+
+### Annotations: marginalia, sources, bibliography
+
+The **Annotations** button in the menu bar opens a window under the picture with three tabs. Each room can fill any of them:
+
+```yaml
+  marginalia:
+    - "A note in the margin, in your own voice."
+  sources:
+    - "Where the room's idea comes from."
+  bib:
+    - "Author, <i>Title</i>, year."
+```
+
+Marginalia are shown in italics with a pencil mark, sources as a list, and the bibliography as a numbered list. HTML is allowed, so a source can be a link. Leave a tab out and it says there is nothing in that margin yet.
 
 ### Conditions (`when` and `needs`)
 

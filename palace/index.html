@@ -97,6 +97,13 @@ table.cur td,table.cur th{border-bottom:1px solid var(--ink);padding:3px 6px;tex
 .babel{font:13px/1.5 var(--mono);white-space:pre-wrap;word-break:break-all;background:var(--paper);border:2px solid var(--ink);padding:10px;max-height:240px;overflow:auto}
 .babel mark{background:var(--spot);color:var(--paper2)}
 .panel{border:2px solid var(--ink);padding:10px 12px;background:var(--paper2)}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--ink);margin-bottom:10px}
+.tab{font:400 14px var(--chrome);background:var(--paper2);color:var(--ink);border:2px solid var(--ink);border-bottom:0;border-radius:8px 8px 0 0;padding:3px 12px;margin-right:-2px;cursor:pointer;position:relative;top:2px}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper2)}
+.ann ol,.ann ul{margin:0;padding-left:22px}
+.ann li{font-size:17px;line-height:1.5;margin-bottom:6px}
+.ann.marg li{font-style:italic;list-style:"✎  "}
+.ann .empty{font:400 13px var(--chrome);color:var(--muted)}
 footer{margin-top:30px;font:400 13px var(--chrome)}
 footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px}
 </style>
@@ -108,6 +115,7 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
   <button type="button" id="b-cat">Catalogue</button>
   <button type="button" id="b-lamp">Lamps</button>
   <button type="button" id="b-ink">Ink</button>
+  <button type="button" id="b-ann">Annotations</button>
   <button type="button" id="b-primer" style="display:none">Primer</button>
   <button type="button" id="b-help">How to walk</button>
   <span class="clock" id="mclock"></span>
@@ -116,6 +124,8 @@ footer span{background:var(--paper2);border:1px solid var(--ink);padding:2px 8px
   <div class="status" id="status"></div>
   <div class="roomhead"><span class="roomnum" id="rnum"></span><span><div class="roomname" id="rname"></div><br><div class="wingname" id="rwing"></div></span></div>
   <div class="win stage"><div class="tb"><button class="box" type="button" id="b-close" aria-label="Back to the reading room" title="Back to the reading room"></button><span class="t" id="cardt"></span></div><div id="stage"></div></div>
+  <div class="win" id="annwin" style="display:none;margin-top:20px"><div class="tb"><button class="box" type="button" id="ann-x" aria-label="Close annotations"></button><span class="t">Annotations</span></div>
+    <div class="wb"><div class="tabs" role="tablist"><button type="button" class="tab" data-tab="marginalia">Marginalia</button><button type="button" class="tab" data-tab="sources">Sources</button><button type="button" class="tab" data-tab="bib">Bibliography</button></div><div id="annb" class="ann"></div></div></div>
   <div class="cols">
     <div class="win"><div class="tb"><span class="t">Notes</span></div><div class="wb"><div class="text" id="rtext"></div><div class="widget" id="widget"></div></div></div>
     <aside style="display:flex;flex-direction:column;gap:20px">
