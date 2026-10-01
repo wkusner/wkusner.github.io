@@ -58,7 +58,7 @@ async function loadPublic(){
 }
 
 /* ---------- GitHub ---------- */
-const gh = (path, opts={}) => fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}${path ? "/" + path : ""}`, Object.assign({}, opts, {headers: Object.assign({Authorization:`Bearer ${token}`, Accept:"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"}, opts.headers||{})}));
+const gh = (path, opts={}) => fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}${path ? "/" + path : ""}`, Object.assign({cache:"no-store"}, opts, {headers: Object.assign({Authorization:`Bearer ${token}`, Accept:"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"}, opts.headers||{})}));
 const b64e = str => { const bytes = new TextEncoder().encode(str); let bin = ""; for(let i=0;i<bytes.length;i+=0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i+0x8000)); return btoa(bin); };
 const b64d = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\n/g,"")), c => c.charCodeAt(0)));
 async function checkAccess(){
@@ -86,7 +86,7 @@ function keyLeftText(exact){ const ms = keyLeft(); if(ms == null) return ""; if(
   if(exact){ const d = Math.floor(ms/864e5), h = Math.floor(ms%864e5/36e5), m = Math.floor(ms%36e5/6e4), sec = Math.floor(ms%6e4/1e3); return `${d} day${d===1?"":"s"}, ${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`; }
   const d = Math.floor(ms/864e5), h = Math.floor(ms%864e5/36e5); return d ? `${d} day${d===1?"":"s"}${d < 7 ? `, ${h} hour${h===1?"":"s"}` : ""}` : `${h} hour${h===1?"":"s"}, ${Math.floor(ms%36e5/6e4)} minutes`; }
 async function readIndex(){
-  const r = await gh(`contents/${cfg.path}/index.json?ref=${encodeURIComponent(cfg.branch)}`);
+  const r = await gh(`contents/${cfg.path}/index.json?ref=${encodeURIComponent(cfg.branch)}&t=${Date.now()}`);
   if(r.status === 404) return {items:[], sha:null};
   if(!r.ok) throw new Error(`reading the catalogue: GitHub answered ${r.status}`);
   const j = await r.json(); let text = j.content ? b64d(j.content) : "";
@@ -105,11 +105,17 @@ async function deleteFile(path, message){
 async function loadLive(){ const {items:it, sha} = await readIndex(); items = it; indexSha = sha; loadedFrom = "the repository, live"; }
 // change the index with a function, retrying once if someone (another tab, another device) changed it meanwhile
 async function commitIndex(mutate, message){
-  for(let attempt=0; attempt<2; attempt++){
+  // GitHub's copies can lag a moment behind a write just made, so a mismatch is retried after a pause, reading fresh each time
+  const tries = 6;
+  for(let attempt=0; attempt<tries; attempt++){
     const cur = await readIndex(); const next = mutate(cur.items.slice());
     const body = JSON.stringify({version:1, updated:new Date().toISOString(), count:next.length, items:next}, null, 1);
-    try { const c = await putFile(`${cfg.path}/index.json`, b64e(body), message, cur.sha); items = next; indexSha = c.sha; return; }
-    catch(e){ if(attempt === 0 && (e.status === 409 || e.status === 422)) continue; throw e; }
+    try { const c = await putFile(`${cfg.path}/index.json`, b64e(body), message, cur.sha); items = next; indexSha = c.sha; if(attempt) status(""); return; }
+    catch(e){
+      if((e.status === 409 || e.status === 422) && attempt < tries-1){ status(`GitHub is still catching up with the last change; trying again (${attempt+2} of ${tries})…`); await new Promise(r => setTimeout(r, 700 * 2**attempt)); continue; }
+      if(e.status === 409) e.message = "GitHub kept giving an older copy of the log. Wait a minute and try again; nothing was lost.";
+      throw e;
+    }
   }
 }
 
