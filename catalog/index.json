@@ -1,8 +1,46 @@
 {
  "version": 1,
- "updated": "2026-10-02T02:03:35.014Z",
- "count": 22,
+ "updated": "2026-10-02T16:22:40.647Z",
+ "count": 23,
  "items": [
+  {
+   "id": "sabriel-68uyo",
+   "type": "book",
+   "title": "Sabriel",
+   "creators": [
+    {
+     "name": "Garth Nix",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "Fathers and daughters",
+    "Missing persons",
+    "Magic",
+    "Teen fantasy fiction",
+    "Fiction",
+    "Fantasy"
+   ],
+   "ids": {
+    "isbn": "9780063040502",
+    "url": "https://openlibrary.org/works/OL2628761W"
+   },
+   "acquired": {
+    "date": "",
+    "source": ""
+   },
+   "images": [
+    "images/sabriel-68uyo-cover.jpg"
+   ],
+   "publisher": "Collins",
+   "date": "1995",
+   "pages": 352,
+   "cover": "https://covers.openlibrary.org/b/id/13165306-L.jpg",
+   "private": false,
+   "source": "Open Library",
+   "added": "2026-10-02T16:22:38.016Z",
+   "updated": "2026-10-02T16:22:38.016Z"
+  },
   {
    "id": "sideways-stories-from-wayside-school-bk276",
    "type": "book",
