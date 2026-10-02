@@ -303,7 +303,9 @@ The Great Hall (off the Entry's back wall) is a homage to the Commons Room of Pi
 - **The Weather Station** (70): barometer, hygrometer, anemometer, rain dial, wind repeater, thermometer, rain gauge, and barograph, reading the real weather, plus the week's record.
 - **Closed rooms:** 71–74.
 
-The Lamps button sets the hall's light: by the clock, low (dark and firelit), or all lit.
+The house lamps (in the Light panel) set the hall's light: by the clock, low (dark and firelit), or all lit.
+
+**Closed for renovation (Oct 2026).** The hall (42), its walkway (64), the stair (65), the car (66), and the tower rooms 67–70 carry `closed: renovation` while the movement engine is sorted out in the four open rooms. Delete those lines to reopen them.
 
 The keys behind all this:
 - **A gothic hall:** `ceiling: gothic` with `size`, `length`, `height`, `core`, `gallery`, and `walkway`. `level: 0` or `1` says which floor of the hall the room is, and `see: <id>` names the room whose doors are drawn but not used.
@@ -401,9 +403,21 @@ The **music box** on the Entry's side table goes in the bag. It sets the music (
 
 Weather shows plainly now. Rain runs down the window glass, falls in long streaks in the court, rings on the wet stones, and darkens and shines the floor. Snow drifts past the glass and lies on the court. Fog closes in, and storms flash.
 
+### The light
+
+The **Light** button (and using the lantern from the bag) opens a small panel:
+- **Your lantern:** shaded, low, steady, or bright. It goes with you and matters most in dark (`gloom`) rooms and at night. **L** steps through it.
+- **The house lamps:** by the clock, low, or all lit (what the old Lamps button did).
+- **The shutters:** open, half closed, or drawn. By day they take the daylight down indoors, in every room until you open them; they do nothing at night or under an open sky.
+
 ### Moving and looking
 
-Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. Tables: click one to look down at what's on it. The Entry's takeable things lie on the green baize of the return tray and vanish from it as you take them. Drag to look around anywhere.
+Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. You arrive facing away from the door you came through, so it is behind you.
+
+- **Standing and turning.** In an ordinary room you stand near the middle, so A and D turn you in place rather than swinging you round the walls.
+- **Walking.** Where a room lets you walk, hovering the floor shows a ring where you'll stop ("Walk here"); W and S step.
+- **Close views answer only themselves.** Looking closer at a table or shelf, peeking at the dial, or going up into the sky is a *focus*. While focused, clicks reach only that thing; a click anywhere else reads "Step back" (or "Come back down" in the sky) and returns you. Escape does the same.
+- **The sky takes two clicks.** The first looks up; the second goes up into it. Tables: click one to look down at what's on it. The Entry's takeable things lie on the green baize of the return tray and vanish from it as you take them. Drag to look around anywhere.
 
 The palette is warmer: sepia ink on cream paper, with each surface's own colour kept as a muted wash. The wing colours are oxblood (foyer), ochre (court), and plum (archive). The small models are drawn with finer curves.
 

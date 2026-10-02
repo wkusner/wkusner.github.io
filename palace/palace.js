@@ -21,6 +21,10 @@ const blank = () => ({visits:{}, log:[], edges:{}, frame:[0,0], frames:{}, inv:[
 let S = blank();
 /* ink: "two" (a spot color per wing) or "1bit" */
 try { const s = JSON.parse(localStorage.getItem(KEY)); if(s) S = Object.assign(blank(), s); } catch(e) {}
+if(S.lanternLvl == null) S.lanternLvl = S.lantern ? 2 : 0;
+if(S.shutters == null) S.shutters = 0;
+const LANTERN = ["shaded", "low", "steady", "bright"], SHUTTERS = ["open", "half closed", "drawn"], SHADE = [1, .45, .12];
+const lanternLvl = () => S.inv.includes("lantern") ? (S.lanternLvl||0) : 0;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
 
 /* ---------- the dihedral group D4: g = r^k s^f ---------- */
@@ -402,7 +406,7 @@ const DECOR = {
   bigtree(g){ // a tree growing out of the floor, three branches at every fork
     const br=(x,y,len,ang,n,w)=>{ const x2=x+Math.sin(ang)*len, y2=y-Math.cos(ang)*len; L(g,x,y,x2,y2,w); if(!n){ E("circle",{cx:x2,cy:y2,r:2.6,fill:"var(--spot)"},g); return; } [-.55,0,.55].forEach(d=>br(x2,y2,len*.58,ang+d,n-1,Math.max(.8,w*.62))); };
     br(400,BY1+30,62,0,3,7); },
-  gloom(g){ const lit = S.lantern && S.inv.includes("lantern"); E("rect",{x:0,y:0,width:W,height:H,fill:"url(#x-dark)",opacity:lit?.18:.55},g); E("ellipse",{cx:400,cy:330,rx:lit?330:210,ry:lit?190:120,fill:"var(--paper)",opacity:lit?.5:.35},g); },
+  gloom(g){ const lit = lanternLvl() > 0; E("rect",{x:0,y:0,width:W,height:H,fill:"url(#x-dark)",opacity:lit?.18:.55},g); E("ellipse",{cx:400,cy:330,rx:lit?330:210,ry:lit?190:120,fill:"var(--paper)",opacity:lit?.5:.35},g); },
   cot(g){ E("polygon",{points:"230,360 470,360 500,392 200,392",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g);
     E("polygon",{points:"200,392 500,392 500,402 200,402",fill:"url(#h-mid)",stroke:"var(--ink)"},g); L(g,205,402,205,428,3); L(g,495,402,495,428,3);
     E("ellipse",{cx:250,cy:368,rx:22,ry:8,fill:"var(--paper)",stroke:"var(--ink)"},g); E("path",{d:"M270,372 q90,-16 200,4",fill:"none",stroke:"var(--ink)","stroke-width":1.4},g);
@@ -675,7 +679,7 @@ function render(){
   document.documentElement.setAttribute("data-ink", S.ink==="1bit" ? "1bit" : "two");
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
-  $("b-lamp").textContent = "Lamps: " + ({night:"low", day:"all lit"}[S.light] || "by the clock");
+  $("b-lamp").textContent = "Light";
   $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : S.gfx==="photo" ? "View: photographic" : "View: engraved";
   $("b-q").textContent = "Quality: " + defaultQuality(); $("b-q").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none"; $("b-full").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none";
   const mirror = S.frame[1]===1;
@@ -767,7 +771,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors){
     sunOff: skyOff("sun"), moonOff: skyOff("moon"),
     wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
     temp: wx ? wx.temperature_2m : null, wxRaw: wx || null, lat: LAT, lon: LON,
-    lantern: !!(S.lantern && S.inv.includes("lantern")), gloom: (room.decor||[]).includes("gloom"),
+    lantern: lanternLvl(), shade: SHADE[S.shutters||0], gloom: (room.decor||[]).includes("gloom"),
     sheetKey: JSON.stringify(S.sheets) + ":" + (CATALOG ? CATALOG.length : -1) + ":" + (S.dial||""), minuteKey: Math.floor(now().getTime()/60000),
     snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
     skyCanvas: (room.decor||[]).includes("sky") ? skyCanvasFor : null,
@@ -1060,7 +1064,7 @@ const ITEMS = {
   "master-key":  {icon:"key",       name:"The porter's master key",         use:()=>toast("The master key opens every ordinary lock. A few doors want more than a key.")},
   "golden-key":  {icon:"key",       name:"A golden key, stamped φ",         use:()=>toast("A golden key, stamped φ. Somewhere there is a lock to match.")},
   "compass":     {icon:"compass",   name:"A compass: click to hold it up in view (C); it also sets you facing true", use:()=>{ if(S.frame[0] || S.frame[1]){ S.frame=[0,0]; S.compassOn=true; save(); render(); toast("The needle settles. You are facing true, and no longer mirrored."); } else toggleCompass(); }},
-  "lantern":     {icon:"lamp",      name:"A lantern",                       use:()=>{ S.lantern=!S.lantern; save(); render(); toast(S.lantern?"You raise the lantern.":"You shade the lantern."); }},
+  "lantern":     {icon:"lamp",      name:"A lantern",                       use:()=>lightView()},
   "hourglass":   {icon:"hourglass", name:"An hourglass that sets the house's clock", use:()=>timeView()},
   "page-left":   {icon:"note",      name:"The left half of a torn page", use:()=>toast("Half a page. The words stop in the middle.")},
   "page-right":  {icon:"note",      name:"The right half of a torn page", use:()=>toast("Half a page. The words start in the middle.")},
@@ -1437,6 +1441,27 @@ function telescopeView(){
     $("scope-t").innerHTML = `<b>${esc(t.name)}</b>, ${Math.round(t.alt)}° up in the ${["N","NE","E","SE","S","SW","W","NW"][Math.round((t.az != null ? t.az : altaz(t.ra, t.dec, L)[1])/45)%8]}. ${say}`; };
   document.querySelectorAll(".scope-list .chip").forEach(b => b.onclick = () => draw(b.dataset.t));
   draw(pick); award("telescope", 10);
+}
+/* ---------- the light: your lantern, the house lamps, and the shutters ---------- */
+function lightView(){
+  let lp = $("lightpanel");
+  if(!lp){ lp = document.createElement("aside"); lp.id = "lightpanel"; lp.className = "skypanel win lightpanel"; document.querySelector(".viewport").appendChild(lp); }
+  lp.classList.add("open"); drawLightPanel();
+}
+function drawLightPanel(){
+  const lp = $("lightpanel"); if(!lp || !lp.classList.contains("open")) return;
+  const has = S.inv.includes("lantern"), L = S.lanternLvl||0, band = lightNow();
+  const chips = (key, names, cur) => names.map((n,i) => `<button class="chip${i===cur ? " on" : ""}" type="button" data-${key}="${i}">${n}</button>`).join(" ");
+  const lampsCur = {auto:0, night:1, day:2}[S.light||"auto"];
+  lp.innerHTML = `<div class="tb"><span class="t">The light</span><button class="box" type="button" id="lp-x" aria-label="Close" title="Close"></button></div><div class="wb">
+    <h4>Your lantern</h4>${has ? `<p>${chips("lv", LANTERN, L)}</p><p class="note">You carry it with you. It matters most in the dark rooms and at night. L steps through it.</p>` : `<p class="note">You have no lantern. There is one on a hook in the Entry, and one on the desk.</p>`}
+    <h4>The house lamps</h4><p>${chips("lamps", ["by the clock", "low", "all lit"], lampsCur)}</p>
+    <h4>The shutters</h4><p>${chips("sh", SHUTTERS, S.shutters||0)}</p><p class="note">${band === "night" ? "It is night; the shutters make no difference until morning." : "Close them to take the daylight down in the room you are in, and every room after."}</p></div>`;
+  lp.querySelector("#lp-x").onclick = () => lp.classList.remove("open");
+  const after = msg => { save(); render(); drawLightPanel(); if(msg) toast(msg); };
+  lp.querySelectorAll("[data-lv]").forEach(b => b.onclick = () => { S.lanternLvl = +b.dataset.lv; S.lantern = S.lanternLvl > 0; after(S.lanternLvl ? "The lantern: " + LANTERN[S.lanternLvl] + "." : "You shade the lantern."); });
+  lp.querySelectorAll("[data-lamps]").forEach(b => b.onclick = () => { S.light = ["auto","night","day"][+b.dataset.lamps]; after(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down." : "You light every lamp."); });
+  lp.querySelectorAll("[data-sh]").forEach(b => b.onclick = () => { S.shutters = +b.dataset.sh; after(["You open the shutters.", "You half close the shutters.", "You draw the shutters."][S.shutters]); });
 }
 /* ---------- the sky, as a place: notes and explorations for an observer in the court ---------- */
 const SHOWERS = [["Quadrantids",0,3,"Boötes",80],["Lyrids",3,22,"Lyra",18],["Eta Aquariids",4,6,"Aquarius",50],["Delta Aquariids",6,30,"Aquarius",25],["Perseids",7,12,"Perseus",100],["Draconids",9,8,"Draco",10],["Orionids",9,21,"Orion",20],["Leonids",10,17,"Leo",15],["Geminids",11,14,"Gemini",150],["Ursids",11,22,"Ursa Minor",10]];
@@ -2034,6 +2059,10 @@ function move(t, turnG, from){
 function arrive(id){
   if(!ROOMS[id]) id = START;
   cur = ROOMS[id];
+  // come in facing into the room, with the door you came through behind you
+  const prev = S.walk[S.walk.length-1];
+  if(prev && String(prev) !== String(id)){ const ds = (effective(cur).doors||[]), i = ds.findIndex(d => String(d.to) === String(prev));
+    if(i >= 0){ const d = ds[i], w = d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3], a = act(S.frame, w); S.face = ((a + 2) % 4 + 3) % 4; } }
   if(id===START) S.walk = [];
   S.walk.push(id);
   S.visits[id] = (S.visits[id]||0)+1;
@@ -2067,6 +2096,7 @@ document.addEventListener("keydown", e => {
   if((e.shiftKey && k==="ArrowDown") || k==="PageDown"){ e.preventDefault(); setView(S.face, S.close==="up" ? null : "down"); return; }
   if(k==="f"){ e.preventDefault(); fullView(); return; }
   if(k==="c"){ e.preventDefault(); toggleCompass(); return; }
+  if(k==="l"){ e.preventDefault(); if(!S.inv.includes("lantern")) return toast("You have no lantern."); S.lanternLvl = ((S.lanternLvl||0) + 1) % 4; S.lantern = S.lanternLvl > 0; save(); render(); drawLightPanel(); toast(S.lanternLvl ? "The lantern: " + LANTERN[S.lanternLvl] + "." : "You shade the lantern."); return; }
   const rm = effective(cur); if(rm.landings && (k==="ArrowUp" || k==="w" || k==="ArrowDown" || k==="s")){ e.preventDefault(); const L = landingOf(rm), up = k==="ArrowUp" || k==="w"; if(!setLanding(rm, L + (up ? 1 : -1))) toast(up ? "The stair ends here." : "The stair goes no lower."); return; }
   if(k==="ArrowLeft" || k==="a"){ e.preventDefault(); turn(-1); }
   else if(k==="ArrowRight" || k==="d"){ e.preventDefault(); turn(1); }
@@ -2093,7 +2123,7 @@ function riddle(d, room){
 function overlay(title, html){ if(typeof sound !== "undefined" && sound.ac) sound.page(); $("ovt").textContent=title; $("ovb").innerHTML=html; $("ov").classList.add("open"); }
 function closeOv(){ $("ov").classList.remove("open"); }
 $("ovx").onclick = closeOv; $("ov").onclick = e => { if(e.target.id==="ov") closeOv(); };
-document.addEventListener("keydown", e => { if(e.key==="Escape") closeOv(); });
+document.addEventListener("keydown", e => { if(e.key!=="Escape") return; if($("ov").classList.contains("open")) return closeOv(); if(VIEW3D && VIEW3D.focused && VIEW3D.focused()) return VIEW3D.exitFocus(); if(S.close) setView(S.face, null); });
 
 function mapView(force){
   if(!force && !S.showAll && !S.inv.includes("map") && !S.inv.includes("plan")){ toast("You have no map. The porter at the Entry keeps them."); return; }
@@ -2154,7 +2184,7 @@ function helpView(){
   <p><b>Looking.</b> Drag anywhere in the picture to look around, up at the sky or down at the floor; let go past half a quarter turn and you'll face that way. The edges of the picture turn you, and the top and bottom look up and down. Keys: ← → or A D turn, ↑ or W goes through the door ahead, ↓ or S turns around or steps back, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, and F fills the screen. Press / to go anywhere.</p>
   <p><b>Doors</b> are numbered. Click a door in the picture or in the list. Some doors appear only at certain hours, after certain rooms, or when you are facing a certain way.</p>
   <p><b>Facing.</b> Some corridors turn you, and some flip you as in a mirror. The small F in the top bar shows your frame, an element of the symmetry group of a square. Walk a loop and you may come back turned: that is holonomy. Some things can only be seen in a mirror.</p>
-  <p><b>Time.</b> The house keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. The Lamps button overrides the light.</p>
+  <p><b>Time.</b> The house keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. The Light button sets your lantern, the house lamps and the shutters.</p>
   <p><b>Rank.</b> The more rooms you remember, the higher your librarian's rank. Some stacks are closed to beginners.</p>
   <p><b>Memory.</b> The map remembers where you have been, in this browser only. The catalogue lists everything plainly.</p></div>
   <div class="row widget"><button class="btn" id="forget" type="button">Forget my walk</button></div>`);
@@ -2648,7 +2678,7 @@ $("b-ann").onclick = () => { S.annot = !S.annot; save(); annotations(effective(c
 $("ann-x").onclick = () => { S.annot = false; save(); annotations(effective(cur)); };
 $("b-ink").onclick = () => { S.ink = S.ink==="1bit" ? "two" : "1bit"; save(); render(); toast(S.ink==="1bit" ? "Black ink only, as on a 1-bit screen." : "A second block of color, wing by wing."); };
 setInterval(() => { if(cur && !$("ov").classList.contains("open")) tally(lightNow()); }, 30000);
-$("b-lamp").onclick = () => { S.light = {auto:"night", night:"day", day:"auto"}[S.light] || "auto"; save(); render(); toast(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down. The great rooms go dark." : "You light every lamp."); };
+$("b-lamp").onclick = () => { const lp = $("lightpanel"); if(lp && lp.classList.contains("open")) lp.classList.remove("open"); else lightView(); };
 rankIndex.cache = null;
 $("b-full").onclick = fullView;
 // skins: Myst (journals, brass, a dark room around the picture) or HyperCard (striped title bars, hard shadows, 1-bit chrome)

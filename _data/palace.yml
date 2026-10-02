@@ -1344,6 +1344,7 @@ rooms:
 
 # ─────────────────────────── THE GREAT HALL ───────────────────────────
 - id: 42
+  closed: renovation
   name: The Great Hall
   wing: hall
   floor: slate
@@ -1393,6 +1394,7 @@ rooms:
     - {to: 0,  wall: front, title: "back to the Entry"}
 
 - id: 64
+  closed: renovation
   name: The Walkway
   wing: hall
   floor: slate
@@ -1429,6 +1431,7 @@ rooms:
     - {to: 65, wall: back, fixture: turret-up, landing: 2, title: "the turret stair"}
 
 - id: 65
+  closed: renovation
   name: The Turret Stair
   wing: hall
   at: [7, 7]
@@ -1447,6 +1450,7 @@ rooms:
     - {to: 72, wall: back, stop: 3, title: "the fourth floor"}
 
 - id: 66
+  closed: renovation
   name: The Elevator
   wing: hall
   at: [8, 7]
@@ -1465,6 +1469,7 @@ rooms:
     - {to: 67, wall: back, stop: 3, title: "out to the Overlook"}
 
 - id: 67
+  closed: renovation
   name: The Overlook
   wing: tower
   floor: planks
@@ -1490,6 +1495,7 @@ rooms:
     - {to: 74, wall: right, title: "a closed room"}
 
 - id: 68
+  closed: renovation
   name: The Roof and the Observatory
   wing: tower
   floor: stone
@@ -1513,6 +1519,7 @@ rooms:
     - {kind: device, icon: orrery, wall: back, title: "The observing log", action: telescope, note: "What's up tonight, and a look at it through the telescope."}
 
 - id: 69
+  closed: renovation
   name: The Map Room
   wing: tower
   floor: planks
@@ -1529,6 +1536,7 @@ rooms:
     - {to: 67, wall: front, title: "back to the Overlook"}
 
 - id: 70
+  closed: renovation
   name: The Weather Station
   wing: tower
   floor: planks

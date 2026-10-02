@@ -215,7 +215,12 @@ export function create(container, hooks){
   const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); ray.layers.enableAll();
   const tip = document.createElement("div"); tip.className = "tip3d"; container.appendChild(tip);
   let hover = null;
-  let peeking = false;
+  let peeking = false, focusPt = null;
+  // a close look (the sky, a peek at the dial or the cabinet, a desk) answers only to clicks on what is in it; a click anywhere else steps back
+  function focusKind(){ if(skyOn) return "sky"; if(peeking) return "peek"; if(plan && plan.close) return "close"; return null; }
+  function allowedHit(h){ const f = focusKind(); if(!f) return true; if(f === "sky") return h.distance > 20;
+    const c = f === "peek" ? focusPt : (stations[plan.ahead] && stations[plan.ahead].top); return !c || h.point.distanceTo(c) < 2.4; }
+  function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ peeking = false; focusPt = null; window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); } else if(f === "close") hooks.stepBack(); }
   function zoneAt(x, y){
     if(skyOn && y > H*.88) return {kind:"down", label:"Come back down", onClick:()=>{ skyMode(false); hooks.skyClosed && hooks.skyClosed(); }};
     if(peeking && y > H*.84) return {kind:"back", label:"Step back", onClick:()=>{ peeking = false; window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); }};
@@ -236,7 +241,8 @@ export function create(container, hooks){
     mouse.set(x/r.width*2-1, -(y/r.height)*2+1);
     ray.setFromCamera(mouse, camera);
     const hits = ray.intersectObjects(picks, true);
-    for(const h of hits){ let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ lastHit = h.point.clone(); return o.userData.hit; } }
+    for(const h of hits){ let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; lastHit = h.point.clone(); return o.userData.hit; } }
+    const f = focusKind(); if(f) return {kind:"back", label: f === "sky" ? "Come back down" : "Step back", onClick: exitFocus};
     return null;
   }
   /* ---- drag to look around: the view follows the hand; let go past half a quarter turn and you face that way ---- */
@@ -258,11 +264,11 @@ export function create(container, hooks){
       const base = goal.pitch; look.pitch = Math.max(-1.35 - base, Math.min(1.52 - base, look.pitch));
       drag.x = e.clientX; drag.y = e.clientY; dirty = 3; return; }
     const h = pickAt(e.clientX, e.clientY); hover = h;
-    canvas.dataset.cursor = h ? h.kind : "none";
+    canvas.dataset.cursor = h ? h.kind : "none"; showAim(h && h.kind === "walk" && lastHit ? (plan && plan.HG ? null : lastHit) : null);
     if(h && h.label){ const r = container.getBoundingClientRect(); tip.textContent = h.label; tip.style.left = Math.min(e.clientX - r.left + 16, r.width - 220) + "px"; tip.style.top = (e.clientY - r.top + 18) + "px"; tip.classList.add("on"); }
     else tip.classList.remove("on");
   });
-  canvas.addEventListener("pointerleave", () => { tip.classList.remove("on"); });
+  canvas.addEventListener("pointerleave", () => { tip.classList.remove("on"); showAim(null); });
   canvas.addEventListener("click", e => { if(swallowClick){ swallowClick = false; return; } const h = pickAt(e.clientX, e.clientY); if(h && h.onClick) h.onClick(); });
 
   // going up into the sky: stand where you are, tip your head back, and drag to look around
@@ -273,18 +279,21 @@ export function create(container, hooks){
     if(plan.HG){ if(!walking) hallGo(pt); return; }
     walkPos = new THREE.Vector3(Math.max(-lx, Math.min(lx, pt.x)), EYE, Math.max(-lz, Math.min(lz, pt.z)));
     if((plan.decor||[]).includes("sundial") && walkPos.length() < 1.9) walkPos.setLength(1.9);   // not into the dial
-    peeking = false; goal.pos.copy(walkPos); dirty = 3; hooks.footstep && hooks.footstep(); }
-  function step(dir){ if(plan && plan.HG){ if(!walking) hallStep(dir); return; } const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); walkTo(goal.pos.clone().addScaledVector(f, 2.4*dir)); }
+    peeking = false; focusPt = null; if(!walking) walkRoute([walkPos.clone()]); else goal.pos.copy(walkPos); dirty = 3; }
+  let aimRing = null;
+  function showAim(pt){ if(!aimRing){ aimRing = new THREE.Mesh(new THREE.RingGeometry(.22, .3, 32), new THREE.MeshBasicMaterial({color:"#fff3c4", transparent:true, opacity:.75, depthWrite:false})); aimRing.rotation.x = -Math.PI/2; }
+    if(aimRing.parent !== scene) scene.add(aimRing); if(pt){ aimRing.visible = true; aimRing.position.set(pt.x, (pt.y || 0) + .02, pt.z); } else aimRing.visible = false; dirty = 2; }
+  function step(dir){ if(focusKind()){ exitFocus(); return; } if(plan && plan.HG){ if(!walking) hallStep(dir); return; } const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); walkTo(goal.pos.clone().addScaledVector(f, 2.4*dir)); }
   // step up to something without leaving where you are: the shelves, a picture; any other move steps back
-  function peek(eye, aim){ peeking = true; goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3; }
+  function peek(eye, aim){ peeking = true; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3; }
   /* ---- moving: a few steps toward a door before the next room, and a dissolve between rooms ---- */
   let walking = false;
   function approach(to, then){ if(walking) return; walking = true; const dest = cam.pos.clone().lerp(new THREE.Vector3(to.x, (to.y||0) + EYE, to.z), .5); goal.pos.copy(dest); look.yaw = 0; look.pitch = 0;
     const dyaw = Math.atan2(-(to.x - cam.pos.x), -(to.z - cam.pos.z)); let dd = dyaw - goal.yaw; while(dd > Math.PI) dd -= TAU; while(dd < -Math.PI) dd += TAU; if(Math.abs(dd) < .6) goal.yaw += dd*.6;
-    dirty = 3; setTimeout(() => { walking = false; then(); }, 420); }
+    dirty = 3; setTimeout(() => { walking = false; then(); }, 300); }
   const veil = document.createElement("canvas"); veil.className = "veil3d"; container.appendChild(veil);
   function dissolve(){ try { veil.width = Math.max(1, Math.round(canvas.width/2)); veil.height = Math.max(1, Math.round(canvas.height/2)); veil.getContext("2d").drawImage(canvas, 0, 0, veil.width, veil.height);
-      veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .75s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
+      veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .5s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
   const flash = document.createElement("div"); flash.className = "flash3d"; container.appendChild(flash);
   window.addEventListener("wending-lightning", () => { if(!plan || !((plan.room.ceiling||"") === "open" || plan.decor.includes("window"))) return;
     flash.style.transition = "none"; flash.style.opacity = ".75"; setTimeout(() => { flash.style.transition = "opacity .5s"; flash.style.opacity = "0"; }, 70); setTimeout(() => { flash.style.transition = "none"; flash.style.opacity = ".5"; setTimeout(() => { flash.style.transition = "opacity .9s"; flash.style.opacity = "0"; }, 60); }, 240); });
@@ -294,7 +303,7 @@ export function create(container, hooks){
     const dt = Math.min(.05, (t-last)/1000); last = t;
     // ease the camera toward its goal: a turn takes about half a second
     let dy = goal.yaw + look.yaw - cam.yaw; while(dy > Math.PI) dy -= TAU; while(dy < -Math.PI) dy += TAU;
-    const k = drag && drag.moved ? 1 - Math.pow(1e-9, dt) : 1 - Math.pow(.0009, dt), gp = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch));
+    const k = drag && drag.moved ? 1 - Math.pow(1e-9, dt) : 1 - Math.pow(.00012, dt), gp = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch));
     const moving = Math.abs(dy) > 1e-3 || Math.abs(gp-cam.pitch) > 1e-3 || cam.pos.distanceTo(goal.pos) > 1e-3;
     cam.yaw += dy*k; cam.pitch += (gp-cam.pitch)*k; cam.pos.lerp(goal.pos, k);
     camera.position.copy(cam.pos); camera.rotation.set(cam.pitch, cam.yaw, 0);
@@ -323,7 +332,7 @@ export function create(container, hooks){
   function show(p){
     const prevPlan = plan; plan = p; peeking = false;
     if(prevPlan && prevPlan.room && p.room && prevPlan.room.id === p.room.id) ['HG','half','halfX','halfZ','hallFog','envK','doorSpots'].forEach(k => { if(p[k] === undefined && prevPlan[k] !== undefined) p[k] = prevPlan[k]; });
-    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
+    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.shade, p.light, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
     if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); }
     // where to stand and where to look
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5), stand:new THREE.Vector3(0,EYE,0)};
@@ -420,7 +429,7 @@ export function create(container, hooks){
         if(hh.kind==="door") buildDoor(hh, c, u, n, p, f);
         else buildWindow(hh, c, u, n, p);
       });
-      if(f.slot>=0){ const center = mid(f); slots[f.slot] = {center, dir:n.clone().negate(), stand:center.clone().multiplyScalar(gothic ? -(1 - 3.2/center.length()) : shape==="corridor" ? -.2 : -.6).setY(EYE), face:f}; }
+      if(f.slot>=0){ const center = mid(f); slots[f.slot] = {center, dir:n.clone().negate(), stand:center.clone().multiplyScalar(gothic ? -(1 - 3.2/center.length()) : shape==="corridor" ? -.2 : p.room.walk ? -.6 : -.1).setY(EYE), face:f}; }
       // bookcases along any wall where the room keeps shelves
       if(p.decor.includes("shelves") || (p.decor.includes("cases") && f.slot!==1) || p.decor.includes("lowshelves")){
         const low = p.decor.includes("lowshelves"), cases = p.decor.includes("cases") && !p.decor.includes("shelves");
@@ -473,13 +482,19 @@ export function create(container, hooks){
       if(moonK > .18){ m.castShadow = true; m.shadow.mapSize.set(Q.shadow,Q.shadow); const sc = m.shadow.camera; const ext = Math.max(12, p.half*1.35); sc.left=-ext; sc.right=ext; sc.top=ext; sc.bottom=-ext; sc.near=1; sc.far=90; m.shadow.bias = -.0006; }
       scene.add(m); scene.add(m.target);
     }
-    if(p.lantern){ const pl = new THREE.PointLight("#ffd28a", 9, 7, 1.5); scene.add(pl); anims.push(() => { pl.position.copy(cam.pos).add(new THREE.Vector3(.3,-.4,0)); }); }
-    if(p.gloom){ amb.intensity *= p.lantern ? .7 : .25; }
+    // the lantern you carry: shaded, low, steady or bright, held a little to your right and below your eyes
+    const LV = +p.lantern || 0;
+    if(LV){ const pl = new THREE.PointLight("#ffd28a", [0, 5, 12, 26][LV], [0, 5, 9, 15][LV], 1.5); pl.userData.lantern = true; scene.add(pl);
+      const base = pl.intensity; anims.push((t) => { pl.position.copy(cam.pos).add(new THREE.Vector3(.3,-.4,0)); pl.intensity = base*(.95 + .05*Math.sin(t*5.3)*Math.sin(t*2.1+.7)); }); }
+    if(p.gloom){ amb.intensity *= [.25, .55, .7, .85][LV]; }
     // ---- floor and wall fittings
     decorBuild(p, faces, R, spot);
     if(gothic) buildCommonsHall(p, faces, R);
     if(isPhoto()){ // in the photographic view the room's light comes from the sun, the lamps, and what the walls reflect: less flat fill
       scene.traverse(o => { if(o.isHemisphereLight) o.intensity *= .38; else if(o.isDirectionalLight && !o.castShadow) o.intensity *= .45; else if(o.isPointLight) o.intensity *= 1.25; }); }
+    // the shutters: by day you can half-close them or draw them, and the daylight in the room goes down with them
+    const shade = p.shade == null ? 1 : p.shade;
+    if(shade < 1 && p.band !== "night" && !openSky) scene.traverse(o => { if(o.isHemisphereLight) o.intensity *= .25 + .75*shade; else if(o.isDirectionalLight) o.intensity *= shade; });
     // ---- stations: furniture with the room's things on it, one per wall that has things
     Object.keys(objsBySlot).forEach(sk => { const sl = slots[sk]; if(!sl) return;
       const mounted = objsBySlot[sk].filter(o => o.mount), loose = objsBySlot[sk].filter(o => !o.mount);
@@ -1035,7 +1050,7 @@ export function create(container, hooks){
       c.lerp(grey, cc*.88); col.push(c.r, c.g, c.b); }
     geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
     const domeM = on1(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({vertexColors:true, side:THREE.BackSide, fog:false, depthWrite:false})));
-    domeM.userData.hit = {kind:"look", get label(){ return skyOn ? "The sky: open its notes" : "The sky: go up into it"; }, onClick:()=>{ if(!skyOn) skyMode(true); hooks.sky && hooks.sky(); }}; picks.push(domeM);
+    domeM.userData.hit = {kind:"look", get label(){ return skyOn ? "The sky: open its notes" : (plan && plan.pitch <= 0 && cam.pitch < .5) ? "Look up at the sky" : "The sky: go up into it"; }, onClick:()=>{ if(!skyOn && plan && plan.pitch <= 0 && cam.pitch < .5){ hooks.look(1); return; } if(!skyOn) skyMode(true); hooks.sky && hooks.sky(); }}; picks.push(domeM);
     // the guides an observer would draw in: the alt-azimuth grid, the celestial equator, the ecliptic, the pole and the zenith
     const O = p.skyOpts || {}, guide = (pts, color, op, closed) => { if(pts.length < 2) return; const g2 = new THREE.BufferGeometry().setFromPoints(pts); on1(new (closed ? THREE.LineLoop : THREE.Line)(g2, new THREE.LineBasicMaterial({color, transparent:true, opacity:op, fog:false, depthWrite:false}))); };
     const ring = (alt) => Array.from({length:121}, (_, k) => dir(alt, k*3).multiplyScalar(RS-.8));
@@ -1910,5 +1925,5 @@ export function create(container, hooks){
 
   // a small picture of the room as it is now, for the linking books' panels
   function thumb(){ const c = document.createElement("canvas"); c.width = 480; c.height = 270; c.getContext("2d").drawImage(canvas, 0, 0, 480, 270); return c.toDataURL("image/jpeg", .82); }
-  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
+  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
 }
