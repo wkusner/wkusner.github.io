@@ -195,6 +195,8 @@ function cond(c, room){
     case "solved": return !!S.solved[val];
     case "seen": return seen() >= +val;
     case "mode": return walkMode()===val;
+    case "landing": return landingOf(room) === +val;
+    case "car": return carOf(room) === +val;
     case "level": return rankIndex() >= +val;
     case "sheet": { const m = val.match(/^(\w+)(=|!=|<|>)(-?\d+)$/); if(!m) return true; const v=S.sheets[m[1]]||0, n=+m[3];
       return m[2]==="=" ? v===n : m[2]==="!=" ? v!==n : m[2]==="<" ? v<n : v>n; }
@@ -688,12 +690,15 @@ function render(){
   const use3d = VIEW3D && S.gfx!=="2d";
   stage.classList.toggle("is3d", !!use3d);
   const svg = use3d ? document.createElementNS(NS,"svg") : E("svg",{viewBox:`0 0 ${W} ${H}`, role:"img", class:"view", "aria-label":`Room ${id}, ${room.name||""}, facing ${FACENAME[S.face]}`}, stage);
-  const allDoors = (room.doors||[]).filter(d => visible(d, room));
+  let allDoors = (room.doors||[]).filter(d => visible(d, room)), ghostDoors = [];
+  if(room.landings){ const L = landingOf(room); ghostDoors = allDoors.filter(d => (d.stop||0) !== L); allDoors = allDoors.filter(d => (d.stop||0) === L); }
+  if(room.floors){ const L = carOf(room); allDoors = allDoors.filter(d => (d.stop||0) === L); }
+  if(room.see && ROOMS[String(room.see)]){ const o = ROOMS[String(room.see)]; ghostDoors = ghostDoors.concat((o.doors||[]).filter(d => !d.fixture && visible(d, o)).map(d => Object.assign({}, d, {ghostOf:o}))); }
   const doorWall = (d,i) => d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3];
   const objs = (room.objects||[]).filter(o => visible(o, room) && !((o.kind==="key" || o.portable) && S.inv.includes(o.item)));
   const byObjWall = [[],[],[],[]]; objs.forEach((o,i) => byObjWall[act(S.frame, objWall(o,i,objs.length))].push(o));
   const ahead = [0,1,2,3].find(w => (w - S.face + 4) % 4 === 1);
-  if(use3d){ VIEW3D.show(plan3d(room, allDoors, doorWall, objs, light, mirror)); VIEW3D.snap = false; }
+  if(use3d){ VIEW3D.show(plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors)); VIEW3D.snap = false; }
   else if(S.close==="ahead"){ drawClose(room, svg, byObjWall[ahead] || [], mirror); }
   else {
     drawRoom(room, svg, light);
@@ -743,7 +748,7 @@ function render(){
 }
 /* ---------- the engraved, three-dimensional view ---------- */
 let VIEW3D = null, skyCache = {key:null, canvas:null, waiting:[]};
-function plan3d(room, allDoors, doorWall, objs, light, mirror){
+function plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors){
   const sk = skyNow(), F = facing(), rel = a => ((a - F + 540) % 360) - 180, wx = weather(), wk = wx ? wxKind(wx.weather_code) : "clear";
   const sunRel = rel(sk.sun.az), moonRel = rel(sk.moon.az), overcast = !!(wx && wx.cloud_cover > 85);
   const inWin = (alt, r) => Math.abs(r) < 70 && alt > -2 ? [Math.max(-1,Math.min(1,r/60)), Math.max(0,Math.min(1,alt/50))] : null;
@@ -752,14 +757,16 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     room, frame:S.frame, mirror, band:light, spot:wingColor(room), F, lat:LAT,
     ahead:(1+S.face)%4, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
     decor: room.decor || [], names,
-    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), level: d.level||0, onClick:()=>tryDoor(d, room)})),
+    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), level: d.level||0, fixture: d.fixture||null, stop: d.stop||0, to: d.to, onClick:()=>tryDoor(d, room)})),
+    ghosts: (ghostDoors||[]).map((d,i) => { const r = d.ghostOf || room; return {id:"g"+i+":"+(d.to||""), ghost:true, wall:act(S.frame, d.wall!=null ? WALLS[d.wall] : 1), label:doorLabel(d, r), name:doorName(d), title:d.title||"", open:false, look: reno(d) ? "boarded" : "", level: d.level||0, stop: d.stop||0, fixture: d.fixture||null}; }),
+    landing: room.landings ? landingOf(room) : null, car: room.floors ? carOf(room) : null, cameFrom: S.walk.length > 1 ? String(S.walk[S.walk.length-2]) : null,
     objects: objs.map((o,i) => ({raw:o, mount:o.mount||null, board: o.mount ? boardContent(o) : null, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
     lampLit: light==="night" || light==="dusk" || S.light==="night" || !!room.dark, light: S.light || "auto",
     sunUp: sk.sun.alt > 0 && !overcast && !skyOff("sun"), sunAlt: sk.sun.alt, sunRel, overcast,
     sunInWindow: sk.sun.alt > -2 && !overcast && !skyOff("sun") ? inWin(sk.sun.alt, sunRel) : null, moonInWindow: sk.moon.alt > 0 && !skyOff("moon") ? inWin(sk.moon.alt, moonRel) : null,
     sunOff: skyOff("sun"), moonOff: skyOff("moon"),
     wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
-    temp: wx ? wx.temperature_2m : null,
+    temp: wx ? wx.temperature_2m : null, wxRaw: wx || null, lat: LAT, lon: LON,
     lantern: !!(S.lantern && S.inv.includes("lantern")), gloom: (room.decor||[]).includes("gloom"),
     sheetKey: JSON.stringify(S.sheets) + ":" + (CATALOG ? CATALOG.length : -1) + ":" + (S.dial||""), minuteKey: Math.floor(now().getTime()/60000),
     snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
@@ -878,12 +885,12 @@ function start3d(){
       palaceSeconds: () => now().getTime()/1000,
       planets: () => planetsView(),
       sky: () => skyView(), skyClosed: () => { const sp = $("skypanel"); if(sp) sp.classList.remove("open"); }, footstep: () => sound.step(),
-      setDial: t => setDial(t),
+      setDial: t => setDial(t), landing: k => setLanding(effective(cur), k), car: k => carGo(effective(cur), k), telescope: () => telescopeView(), mapRoom: () => mapRoomView(), weatherStation: () => weatherStationView(),
       openItem: id => catalogView("item/" + id),
       openCatalog: h => catalogView(h || ""),
       dial: () => { const w = $("widget"); if(w && w.firstChild){ w.scrollIntoView({behavior:"smooth", block:"center"}); w.classList.add("flash"); setTimeout(() => w.classList.remove("flash"), 1400); } },
       pendulumPlane: () => { const rate = 360*Math.sin(LAT*DEG)/23.9345; return -((now().getTime()/36e5*rate) % 180)*DEG; },
-    });
+    }); if(/[?&]debug/.test(location.search)) Object.assign(window, {__view3d: VIEW3D, __carGo: k => carGo(effective(cur), k), __scope: () => telescopeView(), __map: () => mapRoomView(), __wx: () => weatherStationView()});
     if(cur) render();
   }).catch(e => { console.warn("3D view unavailable", e); });
 }
@@ -1077,6 +1084,7 @@ function useObject(o, room){
   if(o.action==="officehours") return officeHoursView();
   if(o.action==="search") return searchView();
   if(o.action==="planets") return planetsView();
+  if(o.action==="telescope") return telescopeView();
   if(o.action==="logbook") return catalogView("");
   if(o.action==="link") return linkView(o, room);
   if(o.action==="music") return musicView(o);
@@ -1279,7 +1287,7 @@ function weather(){
   if(S.wx && S.wx.at && S.wx.at !== locKey()) S.wx = null;
   const fresh = S.wx && (Date.now()-S.wx.t < 20*60e3);
   if(!fresh && !wxFetching && !(weather.failed && Date.now()-weather.failed < 10*60e3)){ wxFetching = true;
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,wind_speed_10m,surface_pressure,is_day&temperature_unit=fahrenheit&wind_speed_unit=mph`)
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,precipitation,surface_pressure,is_day&temperature_unit=fahrenheit&wind_speed_unit=mph`)
       .then(r => r.json()).then(j => { if(j && j.current){ S.wx = {t:Date.now(), c:j.current, at:locKey()}; save(); if(cur) render(); } }).catch(()=>{ weather.failed = Date.now(); }).finally(()=>{ wxFetching=false; }); }
   return S.wx ? S.wx.c : null;
 }
@@ -1336,6 +1344,100 @@ setInterval(() => { if(!cur || String(cur.id) !== "34" || dialType() !== "cannon
   if(lastHA != null && lastHA < 0 && ha >= 0 && sk.sun.alt > 0 && cc < 70 && !skyOff("sun")){ window.dispatchEvent(new CustomEvent("wending-cannon")); sound.cannon && sound.cannon(); toast("Noon. The sun crosses the meridian, the burning glass finds the touch-hole, and the little cannon fires."); award("cannon", 20); }
   lastHA = ha; }, 2000);
 
+const TAU = 2*Math.PI, hashStr = str => { let h = 2166136261; for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+/* ---------- the map room: the land below the tower, from OpenStreetMap ---------- */
+function mapRoomView(){
+  let z = S.mapZ || 13; const draw = () => { const cv = $("mr-c"); if(!cv) return; const g = cv.getContext("2d"), W = cv.width, H = cv.height, n = Math.pow(2, z);
+    const xt = (LON + 180)/360*n, yt = (1 - Math.log(Math.tan(LAT*DEG) + 1/Math.cos(LAT*DEG))/Math.PI)/2*n, x0 = Math.floor(xt - W/512), y0 = Math.floor(yt - H/512), ox = (xt - x0)*256 - W/2, oy = (yt - y0)*256 - H/2;
+    g.fillStyle = "#e8dcc0"; g.fillRect(0, 0, W, H);
+    for(let i=0; i<=Math.ceil(W/256) + 1; i++) for(let j=0; j<=Math.ceil(H/256) + 1; j++){ const im = new Image(); im.crossOrigin = "anonymous"; const X = i*256 - ox, Y = j*256 - oy; im.onload = () => { g.drawImage(im, X, Y); mark(); }; im.src = `https://tile.openstreetmap.org/${z}/${x0 + i}/${y0 + j}.png`; }
+    const mark = () => { g.strokeStyle = "#8c3f2f"; g.lineWidth = 3; g.beginPath(); g.arc(W/2, H/2, 9, 0, TAU); g.stroke(); g.beginPath(); g.moveTo(W/2 - 16, H/2); g.lineTo(W/2 + 16, H/2); g.moveTo(W/2, H/2 - 16); g.lineTo(W/2, H/2 + 16); g.stroke();
+      g.fillStyle = "rgba(255,250,235,.85)"; g.fillRect(0, H - 22, 230, 22); g.fillStyle = "#3a2c1c"; g.font = "13px Georgia, serif"; g.fillText("© OpenStreetMap contributors", 8, H - 7); }; mark();
+    $("mr-z").textContent = `zoom ${z}: about ${Math.round(40075*Math.cos(LAT*DEG)/n*W/256*10)/10} km across`; };
+  overlay("The map table", `<p class="note">The land below the tower, around ${esc(placeName())}: the windows look out over it. The cross marks where the house stands.</p>
+    <canvas id="mr-c" width="900" height="560" style="width:100%;max-width:900px;display:block;border:1px solid #8a7350"></canvas>
+    <div class="row" style="margin-top:6px"><button class="btn" id="mr-in" type="button">Closer</button><button class="btn" id="mr-out" type="button">Farther</button><span class="note" id="mr-z" style="margin-left:10px"></span>
+    <a class="btn" style="margin-left:auto" target="_blank" rel="noopener" href="https://www.openstreetmap.org/#map=${z}/${LAT}/${LON}">Open the full map</a></div>`);
+  $("mr-in").onclick = () => { z = Math.min(17, z + 1); S.mapZ = z; save(); draw(); }; $("mr-out").onclick = () => { z = Math.max(8, z - 1); S.mapZ = z; save(); draw(); }; draw(); award("maproom", 5);
+}
+/* ---------- the weather station: the readings now, and the week's record ---------- */
+function weatherStationView(){
+  const wx = weather() || {};
+  overlay("The weather station", `<div id="ws-now" class="ws-now"></div><h3 style="margin:14px 0 4px">The week's record</h3><div id="ws-week" class="note">Reading the record…</div><p class="note">From Open-Meteo, for ${esc(placeName())}.</p>`);
+  const cell = (k, v) => `<div class="ws-c"><span class="note">${k}</span><b>${v}</b></div>`, dir = d => d == null ? "—" : ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"][Math.round(d/22.5)%16];
+  $("ws-now").innerHTML = cell("Temperature", wx.temperature_2m != null ? Math.round(wx.temperature_2m) + "°F" : "—") + cell("Pressure", wx.surface_pressure != null ? (wx.surface_pressure*0.02953).toFixed(2) + " in" : "—") + cell("Humidity", wx.relative_humidity_2m != null ? Math.round(wx.relative_humidity_2m) + "%" : "—")
+    + cell("Wind", wx.wind_speed_10m != null ? `${Math.round(wx.wind_speed_10m)} mph from the ${dir(wx.wind_direction_10m)}` : "—") + cell("Cloud", wx.cloud_cover != null ? Math.round(wx.cloud_cover) + "%" : "—") + cell("Rain this hour", wx.precipitation != null ? wx.precipitation.toFixed(2) + " in" : "—");
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,wind_direction_10m_dominant&past_days=7&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`)
+    .then(r => r.json()).then(j => { const d = j.daily; if(!d || !$("ws-week")) return; const n = d.time.length, hi = d.temperature_2m_max, lo = d.temperature_2m_min, mx = Math.max(...hi) + 3, mn = Math.min(...lo) - 3, W = 640, H = 170, X = i => 30 + i*(W - 60)/(n - 1), Y = v => 14 + (mx - v)/(mx - mn)*(H - 40);
+      const line = (arr, col) => `<polyline fill="none" stroke="${col}" stroke-width="2.5" points="${arr.map((v, i) => X(i) + "," + Y(v)).join(" ")}"/>` + arr.map((v, i) => `<circle cx="${X(i)}" cy="${Y(v)}" r="3.2" fill="${col}"/><text x="${X(i)}" y="${Y(v) - 7}" text-anchor="middle" font-size="11" fill="currentColor">${Math.round(v)}°</text>`).join("");
+      $("ws-week").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;color:inherit">${line(hi, "#b0302a")}${line(lo, "#2f5e9e")}${d.time.map((t, i) => `<text x="${X(i)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="currentColor">${new Date(t + "T12:00").toLocaleDateString([], {weekday:"short"})}</text>`).join("")}</svg>
+        <table class="ws-t"><tr><th></th>${d.time.map(t => `<th>${new Date(t + "T12:00").toLocaleDateString([], {weekday:"short", day:"numeric"})}</th>`).join("")}</tr>
+        <tr><td>Rain</td>${d.precipitation_sum.map(v => `<td>${v ? v.toFixed(2) + "″" : "—"}</td>`).join("")}</tr><tr><td>Wind</td>${d.wind_speed_10m_max.map((v, i) => `<td>${Math.round(v)} ${dir(d.wind_direction_10m_dominant[i])}</td>`).join("")}</tr></table>`; })
+    .catch(() => { if($("ws-week")) $("ws-week").textContent = "The record couldn't be read just now."; });
+  award("wxstation", 5);
+}
+/* ---------- the telescope in the roof observatory: what's up tonight, through the eyepiece ---------- */
+const DEEP = [
+  {id:"m42", name:"The Orion Nebula (M42)", ra:83.82, dec:-5.39, kind:"nebula", note:"A cloud of gas some 1,300 light-years off, lit from inside by the four young stars of the Trapezium."},
+  {id:"m31", name:"The Andromeda Galaxy (M31)", ra:10.68, dec:41.27, kind:"galaxy", note:"The nearest big galaxy, about 2.5 million light-years away: the light you see left it before there were people."},
+  {id:"m45", name:"The Pleiades (M45)", ra:56.75, dec:24.12, kind:"cluster", note:"The Seven Sisters: a young open cluster about 440 light-years off. More than seven, through the eyepiece."},
+  {id:"albireo", name:"Albireo (β Cygni)", ra:292.68, dec:27.96, kind:"double", note:"The prettiest double star in the sky: a gold star and a blue one, side by side."},
+  {id:"mizar", name:"Mizar and Alcor", ra:200.98, dec:54.93, kind:"double2", note:"The middle star of the Big Dipper's handle. Alcor is the faint companion; Mizar itself splits in two in the telescope."},
+  {id:"m13", name:"The Hercules Cluster (M13)", ra:250.42, dec:36.46, kind:"globular", note:"A ball of several hundred thousand old stars, 25,000 light-years away."},
+];
+function galilean(jd){ const d = jd - 2451545, D = DEG, s = Math.sin, c = Math.cos;
+  const V = (172.74 + 0.00111588*d)*D, M = (357.529 + 0.9856003*d)*D, N = (20.020 + 0.0830853*d + 0.329*s(V))*D, J = (66.115 + 0.9025179*d - 0.329*s(V))*D;
+  const A = (1.915*s(M) + 0.020*s(2*M))*D, B = (5.555*s(N) + 0.168*s(2*N))*D, K = J + A - B, R = 1.00014 - 0.01671*c(M) - 0.00014*c(2*M), r = 5.20872 - 0.25208*c(N) - 0.00611*c(2*N);
+  const Dl = Math.sqrt(r*r + R*R - 2*r*R*c(K)), psi = Math.asin(R/Dl*s(K)), t = d - Dl/173;
+  return [["Io",163.8069,203.4058646,5.9057],["Europa",358.4140,101.2916335,9.3966],["Ganymede",5.7176,50.2345180,14.9883],["Callisto",224.8092,21.4879800,26.3627]].map(([n, u0, du, rr]) => { const u = (u0 + du*t)*D + psi - B; return {name:n, x: rr*s(u), behind: c(u) < 0}; }); }
+function telescopeView(){
+  const sk = skyNow(), jd = sk.jd, pl = planetsEq(jd, true), L = sk.L, dayLight = sk.sun.alt > -6 && !skyOff("sun");
+  const alt = (ra, dec) => altaz(ra, dec, L)[0];
+  const targets = [{id:"moon", name:"The Moon", alt: sk.moon.alt, bright:true}]
+    .concat(pl.filter(p => p.id !== "ter").map(p => Object.assign({}, p, {alt: alt(p.ra, p.dec), bright: ["ven","jup","mar","sat","mer"].includes(p.id)})))
+    .concat(DEEP.map(o => Object.assign({}, o, {alt: alt(o.ra, o.dec)})));
+  const up = targets.filter(t => t.alt > 3), pick = S.scope && up.find(t => t.id === S.scope) ? S.scope : (up[0] || targets[0]).id;
+  overlay("The telescope", `<div class="scope"><div class="scope-list">${targets.map(t => `<button type="button" class="chip ${t.id===pick?"on":""} ${t.alt > 3 ? "" : "down"}" data-t="${t.id}">${esc(t.name)}<small>${t.alt > 3 ? Math.round(t.alt) + "° up" : "below the horizon"}</small></button>`).join("")}</div>
+    <div class="scope-eye"><canvas id="scope-c" width="560" height="560"></canvas><div id="scope-t" class="note"></div></div></div>`);
+  const draw = id => { S.scope = id; save(); const t = targets.find(x => x.id === id); const cv = $("scope-c"), g = cv.getContext("2d"), W = cv.width, C = W/2, R0 = W*.47;
+    document.querySelectorAll(".scope-list .chip").forEach(b => b.classList.toggle("on", b.dataset.t === id));
+    g.fillStyle = "#000"; g.fillRect(0, 0, W, W); g.save(); g.beginPath(); g.arc(C, C, R0, 0, TAU); g.clip();
+    const skyCol = dayLight ? "#5f86b3" : sk.sun.alt > -12 ? "#1b2440" : "#04060c"; g.fillStyle = skyCol; g.fillRect(0, 0, W, W);
+    const rnd = rng(hashStr(id)); if(!dayLight) for(let i=0;i<70;i++){ g.fillStyle = `rgba(255,255,255,${.2 + rnd()*.6})`; g.beginPath(); g.arc(rnd()*W, rnd()*W, .5 + rnd()*1.1, 0, TAU); g.fill(); }
+    let say = t.note || "";
+    if(t.alt <= 3){ g.restore(); g.fillStyle = "#3a3026"; g.beginPath(); g.arc(C, C, R0, 0, TAU); g.fill(); g.fillStyle = "#cbbd9c"; g.font = "22px 'IM Fell English', serif"; g.textAlign = "center"; g.fillText("Below the horizon", C, C); $("scope-t").innerHTML = `${esc(t.name)} is below the horizon now. The list says which are up.`; return; }
+    const disc = (r, col, fn) => { g.save(); g.translate(C, C); g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fillStyle = col; g.fill(); if(fn){ g.clip(); fn(); } g.restore(); };
+    const phaseMask = (r, k, waxing) => { // shade the unlit part: k is the lit fraction
+      g.save(); g.translate(C, C); g.fillStyle = "rgba(4,5,9,.94)"; g.beginPath(); g.arc(0, 0, r + .5, -Math.PI/2, Math.PI/2, !waxing); const e = Math.abs(1 - 2*k)*r; g.ellipse(0, 0, e, r + .5, 0, Math.PI/2, -Math.PI/2, (k > .5) === waxing ? !waxing : waxing); g.fill(); g.restore(); };
+    if(id === "moon"){ const ph = sk.moon.phase, k = (1 - Math.cos(TAU*ph))/2, r = R0*.86;
+      disc(r, "#d9d6cc", () => { const m = rng(7); [[-.3,-.35,.28,.2],[.15,-.2,.22,.16],[.3,.15,.18,.22],[-.1,.1,.2,.14],[-.35,.25,.15,.12],[.05,.45,.12,.1]].forEach(([x,y,a,b]) => { g.fillStyle = "rgba(90,92,96,.55)"; g.beginPath(); g.ellipse(x*r, y*r, a*r, b*r, m()*3, 0, TAU); g.fill(); });
+        for(let i=0;i<60;i++){ const x = (m() - .5)*2*r, y = (m() - .5)*2*r, cr = 2 + m()*9; g.strokeStyle = "rgba(60,60,60,.35)"; g.beginPath(); g.arc(x, y, cr, 0, TAU); g.stroke(); } });
+      phaseMask(r, k, ph < .5); say = `The Moon, ${Math.round(k*100)}% lit, ${(ph*29.53).toFixed(1)} days past new. The craters are sharpest along the terminator, the line between light and dark, where the shadows are longest.`; }
+    else if(t.id === "jup"){ const r = R0*.18; disc(r, "#e2cfa6", () => { g.scale(1, .93); [["#b88f63",-.45,.12],["#c99f72",-.18,.1],["#b88f63",.2,.13],["#d6b98e",.48,.08]].forEach(([c, y, h]) => { g.fillStyle = c; g.fillRect(-r, y*r, 2*r, h*r); }); g.fillStyle = "#b35a3c"; g.beginPath(); g.ellipse(r*.35, r*.32, r*.16, r*.08, 0, 0, TAU); g.fill(); });
+      const ms = galilean(jd); ms.forEach(m => { g.fillStyle = "#f2ead6"; g.beginPath(); g.arc(C - m.x*r, C, 3.2, 0, TAU); g.fill(); g.fillStyle = "#bfb39a"; g.font = "13px 'IM Fell English', serif"; g.textAlign = "center"; g.fillText(m.name, C - m.x*r, C + 20 + (ms.indexOf(m)%2)*14); });
+      say = `Jupiter, ${t.delta.toFixed(2)} AU away, with its four great moons where they really are tonight (Galileo found them in January 1610). East is on the left, as the eyepiece shows it. Their positions are worked out from Jean Meeus's approximate theory.`; }
+    else if(t.id === "sat"){ const r = R0*.13, Lh = t.helioLon*DEG, B = Math.asin(Math.sin(28.08*DEG)*Math.sin(Lh - 169.5*DEG)), tilt = Math.max(.02, Math.abs(Math.sin(B)));
+      g.save(); g.translate(C, C); g.strokeStyle = "#d8c99e"; g.lineWidth = 7; g.beginPath(); g.ellipse(0, 0, r*2.25, r*2.25*tilt, 0, Math.PI, TAU); g.stroke(); g.restore();
+      disc(r, "#e3d3a2", () => { g.fillStyle = "#c9b07a"; g.fillRect(-r, -r*.15, 2*r, r*.22); });
+      g.save(); g.translate(C, C); g.strokeStyle = "#e8dbb0"; g.lineWidth = 7; g.beginPath(); g.ellipse(0, 0, r*2.25, r*2.25*tilt, 0, 0, Math.PI); g.stroke(); g.lineWidth = 1.5; g.strokeStyle = "#1a1a1a"; g.beginPath(); g.ellipse(0, 0, r*2.05, r*2.05*tilt, 0, 0, Math.PI); g.stroke(); g.restore();
+      say = `Saturn, ${t.delta.toFixed(2)} AU away. Its rings are tipped about ${Math.abs(B/DEG).toFixed(0)}° to us${Math.abs(B/DEG) < 6 ? ": nearly edge-on, as they are every fifteen years or so, when they all but vanish" : ""}.`; }
+    else if(["ven","mer","mar","ura","nep"].includes(t.id)){ const k = (1 + Math.cos((t.phase||0)*DEG))/2, sizes = {ven:.2, mer:.07, mar:.08, ura:.045, nep:.03}, cols = {ven:"#f4efe0", mer:"#cfc6b6", mar:"#d58a5a", ura:"#a9d6d9", nep:"#7f9fe0"}, r = R0*sizes[t.id];
+      disc(r, cols[t.id], t.id === "mar" ? () => { g.fillStyle = "rgba(120,60,40,.6)"; g.beginPath(); g.ellipse(-r*.2, r*.1, r*.5, r*.2, .3, 0, TAU); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.ellipse(0, -r*.85, r*.35, r*.15, 0, 0, TAU); g.fill(); } : null);
+      if(["ven","mer"].includes(t.id)) phaseMask(r, k, ((t.lam - (sk.sun.ra)) + 540) % 360 - 180 < 0);
+      say = `${t.name}, ${t.delta.toFixed(2)} AU away${["ven","mer"].includes(t.id) ? `, ${Math.round(k*100)}% lit: like the Moon it shows phases, which is how Galileo knew it goes round the sun` : t.id === "mar" ? ", with a polar cap if the air is steady" : ": a small, tinted disc, and no more, even in a great telescope"}.`; }
+    else if(t.kind === "nebula"){ const gr = g.createRadialGradient(C, C, 4, C, C, R0*.7); gr.addColorStop(0, "rgba(200,220,230,.55)"); gr.addColorStop(.5, "rgba(120,160,180,.25)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.ellipse(C, C, R0*.75, R0*.55, .5, 0, TAU); g.fill(); [[0,0],[9,4],[3,-8],[-6,5]].forEach(([x,y]) => { g.fillStyle = "#fff"; g.beginPath(); g.arc(C + x, C + y, 2.2, 0, TAU); g.fill(); }); }
+    else if(t.kind === "galaxy"){ const gr = g.createRadialGradient(C, C, 2, C, C, R0*.8); gr.addColorStop(0, "rgba(255,245,220,.8)"); gr.addColorStop(.25, "rgba(220,210,190,.25)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.save(); g.translate(C, C); g.rotate(-.6); g.scale(1, .3); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, R0*.85, 0, TAU); g.fill(); g.restore(); }
+    else if(t.kind === "cluster"){ [[0,0,3.5],[-60,-30,3],[40,-50,2.8],[70,20,3.2],[-30,60,2.6],[20,35,2.4],[-80,10,2.5],[95,-15,2],[-15,-80,2.2],[55,75,2]].forEach(([x,y,r]) => { g.fillStyle = "#dfe8ff"; g.shadowColor = "#9fb6ff"; g.shadowBlur = 12; g.beginPath(); g.arc(C + x*1.6, C + y*1.6, r, 0, TAU); g.fill(); }); g.shadowBlur = 0; }
+    else if(t.kind === "globular"){ const m = rng(3); for(let i=0;i<500;i++){ const a = m()*TAU, rr = Math.pow(m(), 2.2)*R0*.45; g.fillStyle = `rgba(255,248,230,${.3 + m()*.6})`; g.beginPath(); g.arc(C + Math.cos(a)*rr, C + Math.sin(a)*rr, .8, 0, TAU); g.fill(); } }
+    else if(t.kind === "double"){ g.shadowBlur = 14; [[-16,0,5,"#ffcf6a"],[16,6,3.6,"#8fb4ff"]].forEach(([x,y,r,c]) => { g.shadowColor = c; g.fillStyle = c; g.beginPath(); g.arc(C + x*2, C + y*2, r, 0, TAU); g.fill(); }); g.shadowBlur = 0; }
+    else if(t.kind === "double2"){ g.shadowBlur = 12; g.shadowColor = "#fff"; [[-8,0,4.4],[6,-4,3.4],[120,-60,2.6]].forEach(([x,y,r]) => { g.fillStyle = "#f4f6ff"; g.beginPath(); g.arc(C + x, C + y, r, 0, TAU); g.fill(); }); g.shadowBlur = 0; }
+    if(dayLight && !t.bright){ g.fillStyle = "rgba(95,134,179,.92)"; g.fillRect(0, 0, W, W); say = `It's daylight: the sky is too bright for ${t.name}. Come back after dark, or try the Moon, Venus, or Jupiter.`; }
+    g.restore(); const vg = g.createRadialGradient(C, C, R0*.8, C, C, R0); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.85)"); g.fillStyle = vg; g.beginPath(); g.arc(C, C, R0, 0, TAU); g.fill();
+    g.strokeStyle = "#1a140e"; g.lineWidth = W*.06; g.beginPath(); g.arc(C, C, R0 + W*.03, 0, TAU); g.stroke();
+    $("scope-t").innerHTML = `<b>${esc(t.name)}</b>, ${Math.round(t.alt)}° up in the ${["N","NE","E","SE","S","SW","W","NW"][Math.round((t.az != null ? t.az : altaz(t.ra, t.dec, L)[1])/45)%8]}. ${say}`; };
+  document.querySelectorAll(".scope-list .chip").forEach(b => b.onclick = () => draw(b.dataset.t));
+  draw(pick); award("telescope", 10);
+}
 /* ---------- the sky, as a place: notes and explorations for an observer in the court ---------- */
 const SHOWERS = [["Quadrantids",0,3,"Boötes",80],["Lyrids",3,22,"Lyra",18],["Eta Aquariids",4,6,"Aquarius",50],["Delta Aquariids",6,30,"Aquarius",25],["Perseids",7,12,"Perseus",100],["Draconids",9,8,"Draco",10],["Orionids",9,21,"Orion",20],["Leonids",10,17,"Leo",15],["Geminids",11,14,"Gemini",150],["Ursids",11,22,"Ursa Minor",10]];
 function skyView(){
@@ -1532,6 +1634,7 @@ const sound = (() => {
   }
   const fx = {
     cannon(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; burst("sfx", t, {buf:"brown", type:"lowpass", freq:300, a:.004, d:1.8, v:1.2, rate:.6}); burst("sfx", t, {buf:"pink", type:"lowpass", freq:2400, a:.002, d:.25, v:.7}); burst("amb", t + .35, {buf:"brown", type:"lowpass", freq:160, a:.2, d:3, v:.4, rate:.4}); },
+    lift(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; burst("amb", t, {buf:"brown", type:"lowpass", freq:140, a:.5, d:2.2, v:.55, rate:.5}); burst("sfx", t + .05, {buf:"pink", type:"bandpass", freq:2600, q:3, a:.01, d:.35, v:.25}); tone("chime", t + 2.45, 1318, {d:1.2, v:.14}); tone("chime", t + 2.45, 1976, {d:.9, v:.05}); },
     step(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; [0, .38].forEach(dt => burst("sfx", t + dt, {buf:"brown", type:"lowpass", freq: scene.open ? 700 : 380, a:.004, d:.13, v:.5, rate:.8})); },
     door(){ if(!init() || !S.snd.on) return; const t = ac.currentTime, o = mk("Oscillator"); o.type = "sawtooth"; o.frequency.setValueAtTime(90, t); o.frequency.linearRampToValueAtTime(140 + Math.random()*60, t + .5);
       const bp = mk("BiquadFilter"); bp.type = "bandpass"; bp.frequency.value = 900; bp.Q.value = 9; const e = g(0); o.connect(bp); bp.connect(e); e.connect(buses.sfx); env(e, t, .08, .07, .55); o.start(t); o.stop(t + .7);
@@ -1896,6 +1999,11 @@ const viewHash = (id, face, close) => "#" + id + (face||close ? "/" + FACES[face
 function setView(face, close){ S.face = ((face%4)+4)%4; S.close = close || null; save(); planned = "view"; const h = viewHash(cur.id, S.face, S.close); if(location.hash===h) render(); else location.hash = h; }
 function turn(k){ setView(S.face + k, null); }
 const RENO_NOTE = () => (P.renovation && P.renovation.note) || "Closed for renovation. The house is being rebuilt a few rooms at a time; this one will open again when it's ready. — W. K.";
+function landingOf(room){ const L = (S.landing||{})[room && room.id]; return L != null ? L : ((room && room.start) || 0); }
+function carOf(room){ const L = (S.car||{})[room && room.id]; return L != null ? L : ((room && room.start) || 0); }
+function setLanding(room, k){ const n = (room.landings||[]).length; if(k < 0 || k >= n) return false; S.landing = S.landing || {}; S.landing[room.id] = k; save(); render(); return true; }
+function carGo(room, k){ const f = (room.floors||[])[k]; if(!f) return; if(k === carOf(room)) return toast("You are on " + (f.name||"this floor") + "."); if(f.closed || (f.to!=null && ROOMS[String(f.to)] && ROOMS[String(f.to)].closed)) return toast("Floor " + f.n + " is closed for renovation. The button does nothing.");
+  S.car = S.car || {}; S.car[room.id] = k; save(); sound.lift && sound.lift(); window.dispatchEvent(new CustomEvent("wending-car", {detail:{to:k}})); setTimeout(() => render(), 2600); toast((k > carOf(room) ? "Going up" : "Going down") + " to " + f.n + ": " + (f.name||"")); }
 function tryDoor(d, room){
   if(reno(d)){ toast("A note is pinned to the boards: " + RENO_NOTE()); return; }
   if(!open(d, room)){
@@ -1905,6 +2013,8 @@ function tryDoor(d, room){
   const t = target(d, room);
   if(!ROOMS[t]){ toast("This door opens onto a wall. (Room "+t+" isn't built yet.)"); return; }
   if(d.say) toast(d.say);
+  if(d.landing != null){ S.landing = S.landing || {}; S.landing[t] = d.landing; }
+  if(d.car != null){ S.car = S.car || {}; S.car[t] = d.car; }
   sound.door();
   if(d.lift) liftSheets(d.lift);
   move(t, d.turn, room);
@@ -1957,6 +2067,7 @@ document.addEventListener("keydown", e => {
   if((e.shiftKey && k==="ArrowDown") || k==="PageDown"){ e.preventDefault(); setView(S.face, S.close==="up" ? null : "down"); return; }
   if(k==="f"){ e.preventDefault(); fullView(); return; }
   if(k==="c"){ e.preventDefault(); toggleCompass(); return; }
+  const rm = effective(cur); if(rm.landings && (k==="ArrowUp" || k==="w" || k==="ArrowDown" || k==="s")){ e.preventDefault(); const L = landingOf(rm), up = k==="ArrowUp" || k==="w"; if(!setLanding(rm, L + (up ? 1 : -1))) toast(up ? "The stair ends here." : "The stair goes no lower."); return; }
   if(k==="ArrowLeft" || k==="a"){ e.preventDefault(); turn(-1); }
   else if(k==="ArrowRight" || k==="d"){ e.preventDefault(); turn(1); }
   else if((k==="ArrowDown" || k==="s") && VIEW3D && VIEW3D.canWalk && VIEW3D.canWalk() && !S.close){ e.preventDefault(); VIEW3D.step(-1); }

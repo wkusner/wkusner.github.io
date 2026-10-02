@@ -284,30 +284,35 @@ The Sundial Court is now a wide court, 22 m across, with a longer colonnade, mor
 - `size: 22` sets the room's width in meters (the default is about 8).
 - `walk: true` lets visitors walk anywhere on the floor: click the paving to walk there, or use W/↑ and S/↓ to step forward and back. They stop short of the dial and the walls. Doors still work as usual.
 
-### The Great Hall
+### The Great Hall, its stair, its elevator, and the tower
 
-Off the Entry (the second door on its back wall) is room 42, the Great Hall, a homage to the Commons Room of Pittsburgh's Cathedral of Learning. I couldn't find a published floor plan (Klauder's drawings are in the University archives), so the plan follows what is written about the real room:
-- it rings the tower's core, which holds the elevators behind tall wrought-iron gates, with the Bridges inscription over them;
-- clustered piers carry a ribbed vault, with tiercerons and gilt bosses;
-- a stone turret stair winds up beside the core;
-- an enormous fireplace stands at the far end;
-- a walkway runs round at the third-floor level, the floor that looks down into the hall, with bridges to a balcony round the core;
-- rooms open off the floor and off the walkway.
+The Great Hall (off the Entry's back wall) is a homage to the Commons Room of Pittsburgh's Cathedral of Learning. The plan follows what is written about the real room, since no floor plan is published: a ring of vaulted bays round the tower's core, the elevators behind tall iron gates (with the Bridges inscription), a stone turret stair, an enormous fireplace, a walkway at the third-floor level with rooms off it, and rooms off the floor beneath.
 
-Getting about:
-- **Walking:** click the slate, or use W and S; turning turns you where you stand. On the walkway, click the walkway or its parapet. You walk round the core and over the bridges, never through stone or air.
-- **Changing level:** click the turret to climb its stair, or the elevator gates to ride up or down.
-- **Light:** the **Lamps** button cycles the light. *By the clock* is daylight from the great windows by day and lanterns by night. *Low* turns the lanterns down and leaves the fire: this is the hall as people remember it, which is dark. *All lit* is bright.
+**Each level is its own room.** Room 42 is the floor of the hall, and room 64 is the walkway. Each draws the whole hall, but only its own doors can be used; the other level's doors are drawn as part of the view. The stair (65) and the elevator (66) are rooms of their own too.
 
-Rooms 43–50 open off the floor, and 51–62 off the walkway. All are closed for renovation and waiting to be fitted out, perhaps as trial rooms for a new look for the whole house. To open one, delete its `closed: renovation` line in `_data/palace.yml` and give it decor, objects, and text like any room.
+**Moving about in the hall is Myst-style.** You stand only at fixed places, and glide between them along clear paths: click the floor where you want to go, or use W and S; A and D turn you. You can't end up inside a pier, a table, or a parapet. When you come in through a door, you start at the place nearest it, facing into the hall.
 
-The keys that shape a hall like this:
-- `ceiling: gothic` builds the hall.
-- `size` and `length` are its width and length in meters (42 × 56 here), and `height` is the wall height (16, the real room's 52 feet).
-- `core: [width, length]` is the core.
-- `gallery` is the walkway's height (8), and `walkway` its depth (4).
-- `floor: slate` is the green slate floor.
-- A door with `level: 1` opens off the walkway rather than the floor.
+**The turret stair** has a landing at every floor, with its door and a lamp. W and S, or a click on the stair going up or down, carry you round the spiral to the next landing. Only the door at your landing can be used. The landings are the undercroft (closed), the hall floor, the walkway, and the fourth floor (closed); add more as the house grows.
+
+**The elevator** is a walnut-and-bronze car with a folding gate, a dial, and a button for each floor: B (closed), 1 (the hall), 3 (the walkway), and 36 (the Overlook). Press a button and the gate folds shut, the needle swings, the car hums, and the gate opens on that floor's landing. Step out through the door ahead.
+
+**At the top of the tower** (floor 36):
+- **The Overlook** (67): tall windows on every side with the land laid out below in the light of the hour, and a reading lounge.
+- **The Roof and the Observatory** (68): the real sky overhead, an arcade all round, and a domed observatory. Click its telescope to look at what's up: the Moon in its phase, the planets, Jupiter's four great moons where they really are, Saturn's rings at their true tilt, and some showpieces such as M31, M42, the Pleiades, and Albireo.
+- **The Map Room** (69): a table map of the land below, from OpenStreetMap, which you can look at closer and zoom.
+- **The Weather Station** (70): barometer, hygrometer, anemometer, rain dial, wind repeater, thermometer, rain gauge, and barograph, reading the real weather, plus the week's record.
+- **Closed rooms:** 71–74.
+
+The Lamps button sets the hall's light: by the clock, low (dark and firelit), or all lit.
+
+The keys behind all this:
+- **A gothic hall:** `ceiling: gothic` with `size`, `length`, `height`, `core`, `gallery`, and `walkway`. `level: 0` or `1` says which floor of the hall the room is, and `see: <id>` names the room whose doors are drawn but not used.
+- **Fixture doors:** a door with `fixture: lift-front`, `lift-back`, `turret`, or `turret-up` belongs to the gates or the turret rather than a wall.
+- **Arriving:** on a door, `landing: k` says which stair landing you arrive at, and `car: k` which floor the car is at.
+- **A stair:** `landings: [{y, name}, …]`. Its doors carry `stop: k` (not `on`, which YAML reads as *true*).
+- **An elevator:** `floors: [{n, name, closed}, …]`. Its doors carry `stop: k` for the floor.
+- **Windows:** `windows: all` puts windows in every free stretch of wall (`winW`, `winH`, and `winSill` size them).
+- **Decor:** `panorama`, `lounge`, `observatory`, `maptable`, and `wxstation`.
 
 ### Going up into the sky
 

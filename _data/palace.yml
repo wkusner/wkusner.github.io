@@ -24,6 +24,7 @@ wings:
   garden:       {name: "The Gardens",                color: "#5E7A3A"}
   archive:      {name: "The Archive",                color: "#5E4A6E"}
   hall:         {name: "The Great Hall",             color: "#4F6A5A"}
+  tower:        {name: "The Tower",                  color: "#5A6A82"}
 
 ranks:   # earned by experience (xp): rooms, close looks, puzzles, items, sheets
   - {name: "Visitor",                     xp: 0,   color: "#D9D2C0"}
@@ -1351,16 +1352,18 @@ rooms:
   length: 56
   height: 16
   gallery: 8
-  walkway: 4
+  walkway: 5
   core: [12, 16]
   walk: true
+  level: 0
+  see: 64
   at: [6, 6]
   text: >-
     A stone hall four storeys high and more than fifty meters long, built round the footing of a tower. Down the middle stands the core, with the elevators behind tall wrought-iron gates, front and back, and a line of verse cut over each gate. Beside it a stone turret winds its stair up to the third floor. Round the core runs a ring of vaulted bays, ribbed and bossed in gilt, with lanterns on long chains, long oak tables, and a floor of green slate. At the far end is an enormous fireplace.
 
     Two storeys up, a walkway runs all the way round the walls behind a pierced stone parapet, with two bridges across to the core. Rooms open off the walkway, and off the floor beneath it. All of them are boarded up for now: they are for later.
 
-    Walk anywhere on the slate: click the floor, or use W and S. Click the turret, or the elevator gates, to go up to the walkway or come down. The Lamps button turns the lanterns down for the hall as it really is, which is dark, or lights them all. The Entry is behind you.
+    Move from place to place on the slate: click the floor where you want to go, or use W and S; A and D turn you. The turret stair and the elevators behind the gates take you up to the walkway, down to the undercroft, or up the tower. The Lamps button turns the lanterns down for the hall as it really is, which is dark, or lights them all. The Entry is behind you.
   again: The fire is still burning. Somewhere up on the walkway a door closes.
   marginalia:
     - "A homage to the Commons Room of the University of Pittsburgh's Cathedral of Learning: a fifteenth-century English Perpendicular Gothic hall, four storeys and about 52 feet (16 m) high, covering about half an acre, at the foot of the tower."
@@ -1376,14 +1379,40 @@ rooms:
     - "University of Pittsburgh, “Cathedral Commons Room,” tour.pitt.edu; “Commons Room Gates,” art.pitt.edu."
     - "John Fredette, “Cathedral Memories,” cathedral100.pitt.edu."
   doors:
-    - {to: 43, wall: left,  title: "the first room off the floor"}
-    - {to: 44, wall: left,  title: "the second room off the floor"}
-    - {to: 45, wall: left,  title: "the third room off the floor"}
-    - {to: 46, wall: left,  title: "the fourth room off the floor"}
+    - {to: 43, wall: left, title: "the first room off the floor"}
+    - {to: 44, wall: left, title: "the second room off the floor"}
+    - {to: 45, wall: left, title: "the third room off the floor"}
+    - {to: 46, wall: left, title: "the fourth room off the floor"}
     - {to: 47, wall: right, title: "the fifth room off the floor"}
     - {to: 48, wall: right, title: "the sixth room off the floor"}
     - {to: 49, wall: right, title: "the seventh room off the floor"}
     - {to: 50, wall: right, title: "the eighth room off the floor"}
+    - {to: 66, wall: back, fixture: lift-front, car: 1, title: "the elevators"}
+    - {to: 66, wall: back, fixture: lift-back, car: 1, title: "the elevators"}
+    - {to: 65, wall: back, fixture: turret, landing: 1, title: "the turret stair"}
+    - {to: 0,  wall: front, title: "back to the Entry"}
+
+- id: 64
+  name: The Walkway
+  wing: hall
+  floor: slate
+  ceiling: gothic
+  size: 42
+  length: 56
+  height: 16
+  gallery: 8
+  walkway: 5
+  core: [12, 16]
+  walk: true
+  level: 1
+  see: 42
+  at: [7, 5]
+  text: >-
+    The third-floor walkway of the Great Hall: a stone deck all the way round, behind a pierced parapet, looking down into the hall. Two bridges cross to a balcony round the core. Rooms open off the walkway, all boarded up for now.
+
+    Move from place to place along the walkway, over the bridges, and round the balcony: click where you want to go, or use W and S. The elevators and the turret stair are on the balcony.
+  again: Below you the lanterns burn over the long tables.
+  doors:
     - {to: 51, wall: left, level: 1, title: "a room off the walkway"}
     - {to: 52, wall: left, level: 1, title: "a room off the walkway"}
     - {to: 53, wall: left, level: 1, title: "a room off the walkway"}
@@ -1396,7 +1425,164 @@ rooms:
     - {to: 60, wall: right, level: 1, title: "a room off the walkway"}
     - {to: 61, wall: right, level: 1, title: "a room off the walkway"}
     - {to: 62, wall: right, level: 1, title: "a room off the walkway"}
-    - {to: 0,  wall: front, title: "back to the Entry"}
+    - {to: 66, wall: back, fixture: lift-front, car: 2, title: "the elevators"}
+    - {to: 65, wall: back, fixture: turret-up, landing: 2, title: "the turret stair"}
+
+- id: 65
+  name: The Turret Stair
+  wing: hall
+  at: [7, 7]
+  landings:
+    - {y: -4.4, name: "the undercroft"}
+    - {y: 0, name: "the floor of the Great Hall"}
+    - {y: 8, name: "the third-floor walkway"}
+    - {y: 12.4, name: "the fourth floor"}
+  start: 1
+  text: >-
+    A stone-lined stair winding up inside its turret, like a castle's: a landing at every floor, each with its door and a lamp by it, and slit windows on the way. Press W or S, or click the stair going up or down, and you climb or descend to the next landing.
+  doors:
+    - {to: 71, wall: back, stop: 0, title: "the undercroft"}
+    - {to: 42, wall: back, stop: 1, title: "out to the floor of the Great Hall"}
+    - {to: 64, wall: back, stop: 2, title: "out to the walkway"}
+    - {to: 72, wall: back, stop: 3, title: "the fourth floor"}
+
+- id: 66
+  name: The Elevator
+  wing: hall
+  at: [8, 7]
+  floors:
+    - {n: "B", name: "The undercroft", closed: true}
+    - {n: "1", name: "The Great Hall"}
+    - {n: "3", name: "The walkway"}
+    - {n: "36", name: "The Overlook"}
+  start: 1
+  text: >-
+    A walnut-and-bronze car behind a folding gate, with a dial over the gate and a button for every floor it serves. Press a button and the gate folds shut, the needle swings, and the car carries you there. When the gate opens, step out through the door ahead.
+  doors:
+    - {to: 71, wall: back, stop: 0, title: "the undercroft"}
+    - {to: 42, wall: back, stop: 1, title: "out to the Great Hall"}
+    - {to: 64, wall: back, stop: 2, title: "out to the walkway"}
+    - {to: 67, wall: back, stop: 3, title: "out to the Overlook"}
+
+- id: 67
+  name: The Overlook
+  wing: tower
+  floor: planks
+  ceiling: coffers
+  size: 18
+  height: 5.6
+  windows: all
+  winH: 3.8
+  winW: 1.8
+  decor: [panorama, lounge, rug]
+  at: [13, 1]
+  text: >-
+    The top of the tower: a quiet room with tall windows on every side and the whole land laid out below, in the light of the hour. Armchairs stand round a low table, with lamps for reading. (In the real Cathedral of Learning the top floors hold the Honors College, with its view over Pittsburgh.)
+
+    A stair goes on up to the roof and the observatory. On the left are the map room and a closed door; on the right, the weather station and another. The elevator is behind you.
+  again: The light has moved across the floor since you were last here.
+  doors:
+    - {to: 66, wall: front, car: 3, title: "the elevator"}
+    - {to: 68, wall: back, title: "up the stair to the roof"}
+    - {to: 69, wall: left, title: "the map room"}
+    - {to: 73, wall: left, title: "a closed room"}
+    - {to: 70, wall: right, title: "the weather station"}
+    - {to: 74, wall: right, title: "a closed room"}
+
+- id: 68
+  name: The Roof and the Observatory
+  wing: tower
+  floor: stone
+  ceiling: open
+  size: 24
+  height: 3.3
+  windows: all
+  winSill: 1.0
+  winH: 1.9
+  winW: 2.6
+  decor: [panorama, observatory]
+  at: [13, 0]
+  text: >-
+    The roof of the tower, open to the sky, with an arcade of stone all round and the land far below. In the middle stands a little observatory: a round stone house under a copper dome with its slit open, and inside it a long brass refractor on an iron pier, aimed at the sky.
+
+    Click the telescope to look through it: the Moon in its real phase, the planets that are up tonight, Jupiter with its four great moons where they really are, Saturn with its rings at their true tilt, and some of the sky's showpieces. The sky overhead is the real one; click it to go up into it.
+  again: The dome's slit is still open. The telescope hasn't moved.
+  doors:
+    - {to: 67, wall: front, title: "down the stair to the Overlook"}
+  objects:
+    - {kind: device, icon: orrery, wall: back, title: "The observing log", action: telescope, note: "What's up tonight, and a look at it through the telescope."}
+
+- id: 69
+  name: The Map Room
+  wing: tower
+  floor: planks
+  ceiling: coffers
+  size: 10
+  height: 4.6
+  windows: all
+  winH: 2.8
+  decor: [panorama, maptable]
+  at: [14, 1]
+  text: >-
+    A long table with the map of the land below spread on it, from OpenStreetMap, and the same land out of every window. Click the table to look closer, zoom in or out, and match the map to the view.
+  doors:
+    - {to: 67, wall: front, title: "back to the Overlook"}
+
+- id: 70
+  name: The Weather Station
+  wing: tower
+  floor: planks
+  ceiling: coffers
+  size: 10
+  height: 4.6
+  windows: all
+  winH: 2.8
+  decor: [panorama, wxstation]
+  at: [12, 1]
+  text: >-
+    The house's instruments, reading the real weather at the top of the tower: a barometer, a hygrometer, an anemometer and rain dial, the wind vane's repeater, a thermometer, a rain gauge, and a barograph turning on its drum. Click the instruments to read the week's record.
+  doors:
+    - {to: 67, wall: front, title: "back to the Overlook"}
+
+- id: 71
+  closed: renovation
+  name: The Undercroft
+  wing: tower
+  at: [13, 9]
+  text: >-
+    Beneath the Great Hall, at the foot of the turret stair. Closed for now.
+  doors:
+    - {to: 67, wall: front, title: "back"}
+
+- id: 72
+  closed: renovation
+  name: The Fourth Floor
+  wing: tower
+  at: [13, 8]
+  text: >-
+    Above the walkway, off the turret stair. Closed for now.
+  doors:
+    - {to: 67, wall: front, title: "back"}
+
+- id: 73
+  closed: renovation
+  name: A Room at the Top
+  wing: tower
+  at: [14, 0]
+  text: >-
+    Off the Overlook. Closed for now.
+  doors:
+    - {to: 67, wall: front, title: "back"}
+
+- id: 74
+  closed: renovation
+  name: Another Room at the Top
+  wing: tower
+  at: [12, 0]
+  text: >-
+    Off the Overlook. Closed for now.
+  doors:
+    - {to: 67, wall: front, title: "back"}
 
 - id: 43
   closed: renovation
@@ -1503,7 +1689,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 52
   closed: renovation
@@ -1514,7 +1700,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 53
   closed: renovation
@@ -1525,7 +1711,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 54
   closed: renovation
@@ -1536,7 +1722,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 55
   closed: renovation
@@ -1547,7 +1733,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 56
   closed: renovation
@@ -1558,7 +1744,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 57
   closed: renovation
@@ -1569,7 +1755,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 58
   closed: renovation
@@ -1580,7 +1766,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 59
   closed: renovation
@@ -1591,7 +1777,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 60
   closed: renovation
@@ -1602,7 +1788,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 61
   closed: renovation
@@ -1613,7 +1799,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 - id: 62
   closed: renovation
@@ -1624,7 +1810,7 @@ rooms:
   text: >-
     A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
   doors:
-    - {to: 42, wall: front, title: "out to the walkway"}
+    - {to: 64, wall: front, title: "out to the walkway"}
 
 primer:
   "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}
