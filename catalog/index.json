@@ -1,8 +1,46 @@
 {
  "version": 1,
- "updated": "2026-10-01T18:28:39.672Z",
- "count": 21,
+ "updated": "2026-10-02T02:03:35.014Z",
+ "count": 22,
  "items": [
+  {
+   "id": "sideways-stories-from-wayside-school-bk276",
+   "type": "book",
+   "title": "Sideways Stories from Wayside School",
+   "creators": [
+    {
+     "name": "Louis Sachar",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "Schools",
+    "Humorous stories",
+    "Schools in fiction",
+    "Fiction",
+    "Juvenile fiction",
+    "Children's fiction"
+   ],
+   "ids": {
+    "isbn": "9780545324847",
+    "url": "https://openlibrary.org/works/OL116266W"
+   },
+   "acquired": {
+    "date": "",
+    "source": ""
+   },
+   "images": [
+    "images/sideways-stories-from-wayside-school-bk276-cover.jpg"
+   ],
+   "publisher": "Perfection Learning Prebound",
+   "date": "1978",
+   "pages": 128,
+   "cover": "https://covers.openlibrary.org/b/id/6746131-L.jpg",
+   "private": false,
+   "source": "Open Library",
+   "added": "2026-10-02T02:03:32.514Z",
+   "updated": "2026-10-02T02:03:32.514Z"
+  },
   {
    "id": "the-craft-of-community-engaged-teaching--ur8c0",
    "type": "book",
