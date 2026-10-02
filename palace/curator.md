@@ -286,14 +286,28 @@ The Sundial Court is now a wide court, 22 m across, with a longer colonnade, mor
 
 ### The Great Hall
 
-Off the Entry (the second door on its back wall) is room 42, the Great Hall: a homage to the Commons Room of Pittsburgh's Cathedral of Learning, with clustered piers, a ribbed vault, galleries, a great window over an iron gate, lanterns, and oak tables on a green slate floor. Its eight alcoves (rooms 43–50) are closed for renovation, waiting to be fitted out, perhaps as trial rooms for a new look for the whole house. To open one, delete its `closed: renovation` line in `_data/palace.yml` and give it decor, objects, and text like any room. Alcoves 43–46 run down the left side from the entrance, and 47–50 come back up the right.
+Off the Entry (the second door on its back wall) is room 42, the Great Hall, a homage to the Commons Room of Pittsburgh's Cathedral of Learning. I couldn't find a published floor plan (Klauder's drawings are in the University archives), so the plan follows what is written about the real room:
+- it rings the tower's core, which holds the elevators behind tall wrought-iron gates, with the Bridges inscription over them;
+- clustered piers carry a ribbed vault, with tiercerons and gilt bosses;
+- a stone turret stair winds up beside the core;
+- an enormous fireplace stands at the far end;
+- a walkway runs round at the third-floor level, the floor that looks down into the hall, with bridges to a balcony round the core;
+- rooms open off the floor and off the walkway.
 
-The keys that make a hall like this, on any room:
-- `ceiling: gothic` builds the vaulted hall: piers, ribs, galleries, the window and gate, lanterns, and tables. Doors on the side walls become tall pointed arches, set in the middle bays.
-- `size:` is the width and `length:` the length, in meters (without `length` the room is square).
-- `height:` is the height of the walls in meters (the hall is 16).
-- `bays:` is how many bays of piers run down the hall (default 6).
-- `floor: slate` is green slate. `walk: true` lets visitors walk the floor. In rooms you can walk, turning now turns you where you stand.
+Getting about:
+- **Walking:** click the slate, or use W and S; turning turns you where you stand. On the walkway, click the walkway or its parapet. You walk round the core and over the bridges, never through stone or air.
+- **Changing level:** click the turret to climb its stair, or the elevator gates to ride up or down.
+- **Light:** the **Lamps** button cycles the light. *By the clock* is daylight from the great windows by day and lanterns by night. *Low* turns the lanterns down and leaves the fire: this is the hall as people remember it, which is dark. *All lit* is bright.
+
+Rooms 43–50 open off the floor, and 51–62 off the walkway. All are closed for renovation and waiting to be fitted out, perhaps as trial rooms for a new look for the whole house. To open one, delete its `closed: renovation` line in `_data/palace.yml` and give it decor, objects, and text like any room.
+
+The keys that shape a hall like this:
+- `ceiling: gothic` builds the hall.
+- `size` and `length` are its width and length in meters (42 × 56 here), and `height` is the wall height (16, the real room's 52 feet).
+- `core: [width, length]` is the core.
+- `gallery` is the walkway's height (8), and `walkway` its depth (4).
+- `floor: slate` is the green slate floor.
+- A door with `level: 1` opens off the walkway rather than the floor.
 
 ### Going up into the sky
 

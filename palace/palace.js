@@ -673,6 +673,7 @@ function render(){
   document.documentElement.setAttribute("data-ink", S.ink==="1bit" ? "1bit" : "two");
   if(S.ink==="1bit") document.documentElement.style.removeProperty("--spot"); else document.documentElement.style.setProperty("--spot", wingColor(room));
   $("b-ink").textContent = S.ink==="1bit" ? "Ink: 1-bit" : "Ink: two-color";
+  $("b-lamp").textContent = "Lamps: " + ({night:"low", day:"all lit"}[S.light] || "by the clock");
   $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : S.gfx==="photo" ? "View: photographic" : "View: engraved";
   $("b-q").textContent = "Quality: " + defaultQuality(); $("b-q").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none"; $("b-full").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none";
   const mirror = S.frame[1]===1;
@@ -751,9 +752,9 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror){
     room, frame:S.frame, mirror, band:light, spot:wingColor(room), F, lat:LAT,
     ahead:(1+S.face)%4, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
     decor: room.decor || [], names,
-    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), onClick:()=>tryDoor(d, room)})),
+    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), level: d.level||0, onClick:()=>tryDoor(d, room)})),
     objects: objs.map((o,i) => ({raw:o, mount:o.mount||null, board: o.mount ? boardContent(o) : null, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
-    lampLit: light==="night" || light==="dusk" || S.light==="night" || !!room.dark,
+    lampLit: light==="night" || light==="dusk" || S.light==="night" || !!room.dark, light: S.light || "auto",
     sunUp: sk.sun.alt > 0 && !overcast && !skyOff("sun"), sunAlt: sk.sun.alt, sunRel, overcast,
     sunInWindow: sk.sun.alt > -2 && !overcast && !skyOff("sun") ? inWin(sk.sun.alt, sunRel) : null, moonInWindow: sk.moon.alt > 0 && !skyOff("moon") ? inWin(sk.moon.alt, moonRel) : null,
     sunOff: skyOff("sun"), moonOff: skyOff("moon"),
@@ -2536,7 +2537,7 @@ $("b-ann").onclick = () => { S.annot = !S.annot; save(); annotations(effective(c
 $("ann-x").onclick = () => { S.annot = false; save(); annotations(effective(cur)); };
 $("b-ink").onclick = () => { S.ink = S.ink==="1bit" ? "two" : "1bit"; save(); render(); toast(S.ink==="1bit" ? "Black ink only, as on a 1-bit screen." : "A second block of color, wing by wing."); };
 setInterval(() => { if(cur && !$("ov").classList.contains("open")) tally(lightNow()); }, 30000);
-$("b-lamp").onclick = () => { S.light = {auto:"night", night:"day", day:"auto"}[S.light] || "auto"; save(); render(); toast(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down." : "You light every lamp."); };
+$("b-lamp").onclick = () => { S.light = {auto:"night", night:"day", day:"auto"}[S.light] || "auto"; save(); render(); toast(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down. The great rooms go dark." : "You light every lamp."); };
 rankIndex.cache = null;
 $("b-full").onclick = fullView;
 // skins: Myst (journals, brass, a dark room around the picture) or HyperCard (striped title bars, hard shadows, 1-bit chrome)

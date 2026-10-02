@@ -1347,39 +1347,55 @@ rooms:
   wing: hall
   floor: slate
   ceiling: gothic
-  size: 30
-  length: 46
+  size: 42
+  length: 56
   height: 16
-  bays: 6
+  gallery: 8
+  walkway: 4
+  core: [12, 16]
   walk: true
   at: [6, 6]
   text: >-
-    A stone hall four storeys high, forty-six meters long, with the vault lost in shadow overhead. Clustered piers march down both sides in six bays, their capitals carved with leaves, and from them the ribs spring up and cross: transverse arches, diagonals, and a single ridge rib running the length of the nave, with a gilt boss at every crossing. The floor is green slate. Long oak tables stand down the middle under iron lanterns on long chains.
+    A stone hall four storeys high and more than fifty meters long, built round the footing of a tower. Down the middle stands the core, with the elevators behind tall wrought-iron gates, front and back, and a line of verse cut over each gate. Beside it a stone turret winds its stair up to the third floor. Round the core runs a ring of vaulted bays, ribbed and bossed in gilt, with lanterns on long chains, long oak tables, and a floor of green slate. At the far end is an enormous fireplace.
 
-    Down each side, four tall pointed arches open into alcoves, all of them boarded up for now: they are for later. Above them run the galleries, three lancets to a bay behind an iron railing. At the far end a great traceried window stands over a wrought-iron gate, and cut in the stone over the gate is a line of Robert Bridges.
+    Two storeys up, a walkway runs all the way round the walls behind a pierced stone parapet, with two bridges across to the core. Rooms open off the walkway, and off the floor beneath it. All of them are boarded up for now: they are for later.
 
-    Walk anywhere on the slate: click the floor, or use W and S. The Entry is behind you.
-  again: The lanterns are still lit. Somewhere up in the galleries a chair scrapes.
+    Walk anywhere on the slate: click the floor, or use W and S. Click the turret, or the elevator gates, to go up to the walkway or come down. The Lamps button turns the lanterns down for the hall as it really is, which is dark, or lights them all. The Entry is behind you.
+  again: The fire is still burning. Somewhere up on the walkway a door closes.
   marginalia:
-    - "This hall is a homage to the Commons Room of the University of Pittsburgh's Cathedral of Learning: a fifteenth-century English Perpendicular Gothic hall, four storeys and about 52 feet (16 m) high, covering almost half an acre, ringed by three floors of classrooms."
-    - "The real arches are true arches. No steel holds them up: each is Indiana limestone, and the vault ribs are lined with Guastavino acoustic tile to keep the room quiet."
-    - "Samuel Yellin made the real room's wrought-iron gates, railings, and lanterns. The gates carry the line from Robert Bridges cut over the gate here."
+    - "A homage to the Commons Room of the University of Pittsburgh's Cathedral of Learning: a fifteenth-century English Perpendicular Gothic hall, four storeys and about 52 feet (16 m) high, covering about half an acre, at the foot of the tower."
+    - "The plan here is pieced together from what is written about the real room rather than from its drawings: it rings the tower's core, where the elevators are; its central piers are screens for the steel that carries the floors above; the Nationality Rooms ring it, 19 on the first floor and 12 on the third, from which you look down into the hall."
+    - "The real arches are true arches: Indiana limestone, no steel. The vault ribs are lined with Guastavino acoustic tile to keep the room quiet."
+    - "Samuel Yellin made the real wrought-iron gates, eighteen feet tall, between the Commons Room and the elevator bank, with the line from Robert Bridges cut over the gates here."
     - "Joseph Gattoni designed the real stonework, carving the plants of western Pennsylvania into it. The leaves on these capitals are a nod to his."
-    - "The alcoves stand where the Cathedral's Nationality Rooms would be: rooms each fitted out in a different country's style. Here they are empty, and may become rooms in different styles for the whole house."
+    - "There is a stone-lined circular stair into the real Commons Room that, as one alumnus remembered, feels like a castle turret, and an enormous fireplace that heats the room in winter. People who studied there remember it as dark."
   sources:
-    - "The Commons Room of the Cathedral of Learning, University of Pittsburgh (Charles Klauder, architect; the building completed in the 1930s)."
+    - "The Commons Room of the Cathedral of Learning, University of Pittsburgh (Charles Klauder, architect; completed in the 1930s)."
   bib:
-    - "“Cathedral of Learning,” Wikipedia: en.wikipedia.org/wiki/Cathedral_of_Learning."
-    - "University of Pittsburgh, “Cathedral Commons Room,” tour.pitt.edu."
+    - "“Cathedral of Learning” and “Nationality Rooms,” Wikipedia."
+    - "University of Pittsburgh, “Cathedral Commons Room,” tour.pitt.edu; “Commons Room Gates,” art.pitt.edu."
+    - "John Fredette, “Cathedral Memories,” cathedral100.pitt.edu."
   doors:
-    - {to: 43, wall: left,  title: "the first alcove"}
-    - {to: 44, wall: left,  title: "the second alcove"}
-    - {to: 45, wall: left,  title: "the third alcove"}
-    - {to: 46, wall: left,  title: "the fourth alcove"}
-    - {to: 47, wall: right, title: "the fifth alcove"}
-    - {to: 48, wall: right, title: "the sixth alcove"}
-    - {to: 49, wall: right, title: "the seventh alcove"}
-    - {to: 50, wall: right, title: "the eighth alcove"}
+    - {to: 43, wall: left,  title: "the first room off the floor"}
+    - {to: 44, wall: left,  title: "the second room off the floor"}
+    - {to: 45, wall: left,  title: "the third room off the floor"}
+    - {to: 46, wall: left,  title: "the fourth room off the floor"}
+    - {to: 47, wall: right, title: "the fifth room off the floor"}
+    - {to: 48, wall: right, title: "the sixth room off the floor"}
+    - {to: 49, wall: right, title: "the seventh room off the floor"}
+    - {to: 50, wall: right, title: "the eighth room off the floor"}
+    - {to: 51, wall: left, level: 1, title: "a room off the walkway"}
+    - {to: 52, wall: left, level: 1, title: "a room off the walkway"}
+    - {to: 53, wall: left, level: 1, title: "a room off the walkway"}
+    - {to: 54, wall: left, level: 1, title: "a room off the walkway"}
+    - {to: 55, wall: left, level: 1, title: "a room off the walkway"}
+    - {to: 56, wall: left, level: 1, title: "a room off the walkway"}
+    - {to: 57, wall: right, level: 1, title: "a room off the walkway"}
+    - {to: 58, wall: right, level: 1, title: "a room off the walkway"}
+    - {to: 59, wall: right, level: 1, title: "a room off the walkway"}
+    - {to: 60, wall: right, level: 1, title: "a room off the walkway"}
+    - {to: 61, wall: right, level: 1, title: "a room off the walkway"}
+    - {to: 62, wall: right, level: 1, title: "a room off the walkway"}
     - {to: 0,  wall: front, title: "back to the Entry"}
 
 - id: 43
@@ -1390,7 +1406,7 @@ rooms:
   ceiling: vault
   at: [11, 2]
   text: >-
-    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
 
@@ -1402,7 +1418,7 @@ rooms:
   ceiling: vault
   at: [11, 3]
   text: >-
-    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
 
@@ -1414,7 +1430,7 @@ rooms:
   ceiling: vault
   at: [11, 4]
   text: >-
-    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
 
@@ -1426,7 +1442,7 @@ rooms:
   ceiling: vault
   at: [11, 5]
   text: >-
-    An alcove off the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the left as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
 
@@ -1438,7 +1454,7 @@ rooms:
   ceiling: vault
   at: [11, 6]
   text: >-
-    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
 
@@ -1450,7 +1466,7 @@ rooms:
   ceiling: vault
   at: [11, 7]
   text: >-
-    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
 
@@ -1462,7 +1478,7 @@ rooms:
   ceiling: vault
   at: [11, 8]
   text: >-
-    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
 
@@ -1474,9 +1490,141 @@ rooms:
   ceiling: vault
   at: [11, 9]
   text: >-
-    An alcove off the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
+    A room off the floor of the Great Hall, on the right as you come in. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 42, wall: front, title: "back to the Great Hall"}
+
+- id: 51
+  closed: renovation
+  name: Gallery Room 1
+  wing: hall
+  floor: planks
+  at: [12, 0]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 52
+  closed: renovation
+  name: Gallery Room 2
+  wing: hall
+  floor: planks
+  at: [12, 1]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 53
+  closed: renovation
+  name: Gallery Room 3
+  wing: hall
+  floor: planks
+  at: [12, 2]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 54
+  closed: renovation
+  name: Gallery Room 4
+  wing: hall
+  floor: planks
+  at: [12, 3]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 55
+  closed: renovation
+  name: Gallery Room 5
+  wing: hall
+  floor: planks
+  at: [12, 4]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 56
+  closed: renovation
+  name: Gallery Room 6
+  wing: hall
+  floor: planks
+  at: [12, 5]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the left. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 57
+  closed: renovation
+  name: Gallery Room 7
+  wing: hall
+  floor: planks
+  at: [12, 6]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 58
+  closed: renovation
+  name: Gallery Room 8
+  wing: hall
+  floor: planks
+  at: [12, 7]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 59
+  closed: renovation
+  name: Gallery Room 9
+  wing: hall
+  floor: planks
+  at: [12, 8]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 60
+  closed: renovation
+  name: Gallery Room 10
+  wing: hall
+  floor: planks
+  at: [12, 9]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 61
+  closed: renovation
+  name: Gallery Room 11
+  wing: hall
+  floor: planks
+  at: [12, 10]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
+
+- id: 62
+  closed: renovation
+  name: Gallery Room 12
+  wing: hall
+  floor: planks
+  at: [12, 11]
+  text: >-
+    A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
+  doors:
+    - {to: 42, wall: front, title: "out to the walkway"}
 
 primer:
   "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}
