@@ -24,6 +24,20 @@ try { const s = JSON.parse(localStorage.getItem(KEY)); if(s) S = Object.assign(b
 if(S.lanternLvl == null) S.lanternLvl = S.lantern ? 2 : 0;
 if(S.shutters == null) S.shutters = 0;
 const LANTERN = ["shaded", "low", "steady", "bright"], SHUTTERS = ["open", "half closed", "drawn"], SHADE = [1, .45, .12];
+// salts in the lantern colour its flame: the flame test, as in a chemistry lab
+const SALTS = [
+  {k:"none",  name:"plain oil",          color:"#ffd28a", note:"An ordinary warm flame."},
+  {k:"Na",    name:"sodium (table salt)", color:"#ffb830", note:"Sodium: a strong yellow-orange, the colour of old street lamps."},
+  {k:"Sr",    name:"strontium",          color:"#ff2a2a", note:"Strontium: crimson, the red of flares and fireworks."},
+  {k:"Li",    name:"lithium",            color:"#ff2f6e", note:"Lithium: a deep carmine pink."},
+  {k:"Ca",    name:"calcium",            color:"#ff7a2a", note:"Calcium: a brick orange-red."},
+  {k:"Cu",    name:"copper chloride",    color:"#28b4ff", note:"Copper chloride: blue, edging to green."},
+  {k:"B",     name:"boric acid",         color:"#3cff6a", note:"Boric acid: a vivid green."},
+  {k:"Ba",    name:"barium",             color:"#b4f078", note:"Barium: a pale apple green."},
+  {k:"K",     name:"potassium",          color:"#c79bff", note:"Potassium: lilac, faint and violet."},
+  {k:"Cs",    name:"caesium",            color:"#7a7aff", note:"Caesium: blue-violet (its name means sky blue)."},
+];
+const saltOf = () => SALTS.find(s => s.k === S.salt) || SALTS[0];
 const lanternLvl = () => S.inv.includes("lantern") ? (S.lanternLvl||0) : 0;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
 
@@ -406,7 +420,7 @@ const DECOR = {
   bigtree(g){ // a tree growing out of the floor, three branches at every fork
     const br=(x,y,len,ang,n,w)=>{ const x2=x+Math.sin(ang)*len, y2=y-Math.cos(ang)*len; L(g,x,y,x2,y2,w); if(!n){ E("circle",{cx:x2,cy:y2,r:2.6,fill:"var(--spot)"},g); return; } [-.55,0,.55].forEach(d=>br(x2,y2,len*.58,ang+d,n-1,Math.max(.8,w*.62))); };
     br(400,BY1+30,62,0,3,7); },
-  gloom(g){ const lit = lanternLvl() > 0; E("rect",{x:0,y:0,width:W,height:H,fill:"url(#x-dark)",opacity:lit?.18:.55},g); E("ellipse",{cx:400,cy:330,rx:lit?330:210,ry:lit?190:120,fill:"var(--paper)",opacity:lit?.5:.35},g); },
+  gloom(g){ const lit = lanternLvl() > 0; if(lit && S.salt && S.salt !== "none") E("rect",{x:0,y:0,width:W,height:H,fill:saltOf().color,opacity:.12},g); E("rect",{x:0,y:0,width:W,height:H,fill:"url(#x-dark)",opacity:lit?.18:.55},g); E("ellipse",{cx:400,cy:330,rx:lit?330:210,ry:lit?190:120,fill:"var(--paper)",opacity:lit?.5:.35},g); },
   cot(g){ E("polygon",{points:"230,360 470,360 500,392 200,392",fill:"var(--paper)",stroke:"var(--ink)","stroke-width":2},g);
     E("polygon",{points:"200,392 500,392 500,402 200,402",fill:"url(#h-mid)",stroke:"var(--ink)"},g); L(g,205,402,205,428,3); L(g,495,402,495,428,3);
     E("ellipse",{cx:250,cy:368,rx:22,ry:8,fill:"var(--paper)",stroke:"var(--ink)"},g); E("path",{d:"M270,372 q90,-16 200,4",fill:"none",stroke:"var(--ink)","stroke-width":1.4},g);
@@ -645,6 +659,10 @@ const ICON = {
   bell:(g)=>{ E("rect",{x:-18,y:10,width:36,height:6,rx:2,fill:"var(--ink)"},g); E("path",{d:"M-14,10 A14,14 0 0 1 14,10 Z",fill:"url(#h-mid)",stroke:"var(--ink)","stroke-width":1.6},g); E("line",{x1:0,y1:-4,x2:0,y2:-12,stroke:"var(--ink)","stroke-width":2},g); E("circle",{cy:-13,r:3,fill:"var(--spot)",stroke:"var(--ink)"},g); },
   box:(g)=>{ E("rect",{x:-16,y:-14,width:32,height:28,fill:"var(--paper)",stroke:"var(--ink)"},g); }
 };
+if(window.RECKON) Object.assign(ICON, RECKON.icons);
+// the reckoning devices (reckoning.js) reach the house through these
+if(window.RECKON) RECKON.bind({ get S(){ return S; }, get cur(){ return cur; }, get now(){ return now; }, get overlay(){ return overlay; }, get save(){ return save; }, get render(){ return render; },
+  get toast(){ return toast; }, get award(){ return award; }, get sunTimes(){ return sunTimes; }, get audio(){ return audio; }, get sound(){ return sound; }, get ICON(){ return ICON; }, get E(){ return E; }, get clockView(){ return clockView; } });
 const KIND_ICON = {device:"box", book:"book", paper:"scroll", ref:"book", unwritten:"unwritten", key:"key", note:"note", link:"book", page:"note"};
 
 function hot(el, label, fn){
@@ -656,6 +674,8 @@ function hot(el, label, fn){
 
 /* ---------- rendering ---------- */
 let cur = null, LIGHT = {};
+// whichever timekeeper stands on the Entry desk takes the carriage clock's place
+function deskTimekeeper(o){ if(o.action !== "clock" || !window.RECKON) return o; const tk = RECKON.tkOf(RECKON.tkKey()); return tk.k === "carriage" ? o : Object.assign({}, o, {icon: tk.icon, title: tk.title, note: tk.note}); }
 function effective(base){
   const r = Object.assign({}, base);
   (base.phases||[]).forEach(ph => { if(!cond(ph.when, base)) return;
@@ -683,7 +703,7 @@ function render(){
   $("b-gfx").textContent = S.gfx==="2d" ? "View: woodcut" : S.gfx==="photo" ? "View: photographic" : "View: engraved";
   $("b-q").textContent = "Quality: " + defaultQuality(); $("b-q").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none"; $("b-full").style.display = VIEW3D && S.gfx!=="2d" ? "" : "none";
   const mirror = S.frame[1]===1;
-  $("rnum").textContent = room.label || id;
+  $("rnum").textContent = room.label || (window.RECKON ? RECKON.roomNum(id) : id);
   $("rname").innerHTML = mirror ? `<span class="mirror-text" title="${esc(room.name||"")}">${esc(room.name||"")}</span>` : esc(room.name||"");
   $("rwing").textContent = ((WINGS[room.wing] && WINGS[room.wing].name) || "") + " · facing " + FACENAME[S.face] + (S.close ? " · looking closer" : "");
   document.title = `${room.label||id} · ${room.name||"The Wending House"}`;
@@ -699,7 +719,7 @@ function render(){
   if(room.floors){ const L = carOf(room); allDoors = allDoors.filter(d => (d.stop||0) === L); }
   if(room.see && ROOMS[String(room.see)]){ const o = ROOMS[String(room.see)]; ghostDoors = ghostDoors.concat((o.doors||[]).filter(d => !d.fixture && visible(d, o)).map(d => Object.assign({}, d, {ghostOf:o}))); }
   const doorWall = (d,i) => d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3];
-  const objs = (room.objects||[]).filter(o => visible(o, room) && !((o.kind==="key" || o.portable) && S.inv.includes(o.item)));
+  const objs = (room.objects||[]).filter(o => visible(o, room) && !((o.kind==="key" || o.portable) && S.inv.includes(o.item))).map(deskTimekeeper);
   const byObjWall = [[],[],[],[]]; objs.forEach((o,i) => byObjWall[act(S.frame, objWall(o,i,objs.length))].push(o));
   const ahead = [0,1,2,3].find(w => (w - S.face + 4) % 4 === 1);
   if(use3d){ VIEW3D.show(plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors)); VIEW3D.snap = false; }
@@ -771,7 +791,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors){
     sunOff: skyOff("sun"), moonOff: skyOff("moon"),
     wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
     temp: wx ? wx.temperature_2m : null, wxRaw: wx || null, lat: LAT, lon: LON,
-    lantern: lanternLvl(), shade: SHADE[S.shutters||0], gloom: (room.decor||[]).includes("gloom"),
+    lantern: lanternLvl(), lanternColor: saltOf().color, shade: SHADE[S.shutters||0], gloom: (room.decor||[]).includes("gloom"),
     sheetKey: JSON.stringify(S.sheets) + ":" + (CATALOG ? CATALOG.length : -1) + ":" + (S.dial||""), minuteKey: Math.floor(now().getTime()/60000),
     snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
     skyCanvas: (room.decor||[]).includes("sky") ? skyCanvasFor : null,
@@ -887,6 +907,7 @@ function start3d(){
       stepBack: () => setView(S.face, null),
       useObject: o => useObject(o.raw, effective(cur)),
       palaceSeconds: () => now().getTime()/1000,
+      sunTimes: () => sunTimes(), reckon: () => window.RECKON,
       planets: () => planetsView(),
       sky: () => skyView(), skyClosed: () => { const sp = $("skypanel"); if(sp) sp.classList.remove("open"); }, footstep: () => sound.step(),
       setDial: t => setDial(t), landing: k => setLanding(effective(cur), k), car: k => carGo(effective(cur), k), telescope: () => telescopeView(), mapRoom: () => mapRoomView(), weatherStation: () => weatherStationView(),
@@ -1092,7 +1113,10 @@ function useObject(o, room){
   if(o.action==="logbook") return catalogView("");
   if(o.action==="link") return linkView(o, room);
   if(o.action==="music") return musicView(o);
-  if(o.action==="clock") return clockView();
+  if(o.action==="clock") return window.RECKON ? RECKON.timekeeperView() : clockView();
+  if(o.action==="calendars") return RECKON.calendarsView();
+  if(o.action==="timekeepers") return RECKON.caseView();
+  if(o.action==="numerals") return RECKON.numeralsView();
   if(o.action==="astrolabe"){ if(o.item && !S.inv.includes(o.item)) take(o.item, "You lift the astrolabe off its hook. The storm glass in its throne clouds and clears."); return astrolabeView(); }
   if(o.action==="combine"){ const uses=o.uses||[]; if(uses.every(k=>S.inv.includes(k))){ S.inv = S.inv.filter(k=>!uses.includes(k)); if(o.solve) S.solved[o.solve]=1; save(); take(o.gives, o.say); award("combine:"+o.gives, 40); } else toast(o.hint || "Something is missing."); return; }
   if(o.action==="directory") return directoryView();
@@ -1269,7 +1293,7 @@ function tally(light){
   $("tally").innerHTML = `
     <span class="chip" title="Level and experience"><span class="vest" style="background:${rk.color}"></span>L${ri} ${esc(rk.name)} <span class="xp"><span style="width:${(frac*100).toFixed(0)}%"></span></span> ${S.xp} xp</span>
     <span class="chip" title="Your frame: how the house has turned you">${f} ${nameG(g)}${sheets?" · "+esc(sheets):""}</span>
-    <button class="chip" id="t-time" type="button" title="${S.inv.includes("hourglass")?"Set the house's clock with the hourglass":"The house keeps your time"}">${icon} ${d.toLocaleDateString([], {month:"short", day:"numeric"})} ${d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}${S.clock?" ⧗":""}</button>
+    <button class="chip" id="t-time" type="button" title="${S.inv.includes("hourglass")?"Set the house's clock with the hourglass":"The house keeps your time"}">${icon} ${window.RECKON ? esc(RECKON.calShort(d)) : d.toLocaleDateString([], {month:"short", day:"numeric"})} ${d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}${S.clock?" ⧗":""}</button>
     <span class="chip" title="${wx? (wx.set ? "Weather set by the astrolabe's storm glass" : "Weather in "+placeName()+" now (Open-Meteo)") :"Weather unavailable"}">${wx? `${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F` : "· · ·"}</span>
     <button class="chip" id="t-code" type="button" title="Save code and warp codes">⌘ ${saveCode().slice(0,9)}…</button>
     <span class="chip" title="Your way of walking, by what you carry">${esc(walkMode())}</span>
@@ -1455,11 +1479,13 @@ function drawLightPanel(){
   const lampsCur = {auto:0, night:1, day:2}[S.light||"auto"];
   lp.innerHTML = `<div class="tb"><span class="t">The light</span><button class="box" type="button" id="lp-x" aria-label="Close" title="Close"></button></div><div class="wb">
     <h4>Your lantern</h4>${has ? `<p>${chips("lv", LANTERN, L)}</p><p class="note">You carry it with you. It matters most in the dark rooms and at night. L steps through it.</p>` : `<p class="note">You have no lantern. There is one on a hook in the Entry, and one on the desk.</p>`}
+${has ? `<h4>Salts in the flame</h4><p>${SALTS.map(s => `<button class="chip${s.k === (S.salt||"none") ? " on" : ""}" type="button" data-salt="${s.k}" title="${s.note}"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${s.color};border:1px solid #0006;margin-right:4px;vertical-align:0"></span>${s.name}</button>`).join(" ")}</p><p class="note">${saltOf().note} A pinch of a metal salt colours a flame: its electrons, heated, give off light at their own wavelengths.</p>` : ""}
     <h4>The house lamps</h4><p>${chips("lamps", ["by the clock", "low", "all lit"], lampsCur)}</p>
     <h4>The shutters</h4><p>${chips("sh", SHUTTERS, S.shutters||0)}</p><p class="note">${band === "night" ? "It is night; the shutters make no difference until morning." : "Close them to take the daylight down in the room you are in, and every room after."}</p></div>`;
   lp.querySelector("#lp-x").onclick = () => lp.classList.remove("open");
   const after = msg => { save(); render(); drawLightPanel(); if(msg) toast(msg); };
   lp.querySelectorAll("[data-lv]").forEach(b => b.onclick = () => { S.lanternLvl = +b.dataset.lv; S.lantern = S.lanternLvl > 0; after(S.lanternLvl ? "The lantern: " + LANTERN[S.lanternLvl] + "." : "You shade the lantern."); });
+  lp.querySelectorAll("[data-salt]").forEach(b => b.onclick = () => { S.salt = b.dataset.salt; if(!(S.lanternLvl > 0)){ S.lanternLvl = 2; S.lantern = true; } after(S.salt === "none" ? "Plain oil again." : "You add a pinch of " + saltOf().name + " to the lantern."); });
   lp.querySelectorAll("[data-lamps]").forEach(b => b.onclick = () => { S.light = ["auto","night","day"][+b.dataset.lamps]; after(S.light==="auto" ? "Lamps follow the clock again." : S.light==="night" ? "You turn the lamps down." : "You light every lamp."); });
   lp.querySelectorAll("[data-sh]").forEach(b => b.onclick = () => { S.shutters = +b.dataset.sh; after(["You open the shutters.", "You half close the shutters.", "You draw the shutters."][S.shutters]); });
 }
@@ -1715,7 +1741,7 @@ function chimeScore(kind, d){
 function playChime(kind, d, vol){ const ac = audio(); if(!ac) return; const t0 = ac.currentTime + .08; chimeScore(kind, d).forEach(([f, t, a, long]) => gong(ac, f, t0 + t, (vol!=null ? vol : (S.chimeVol!=null ? S.chimeVol : .5))*.35*a, long)); }
 // listen for the quarters (and, for ship's bells, the half hours)
 let lastQ = null;
-setInterval(() => { const kind = S.chime; if(!kind || kind==="silent" || !AC) return; if(S.clock && S.clock.rate > 60) return;
+setInterval(() => { const kind = S.chime; if(!kind || kind==="silent" || !AC) return; if(S.timekeeper && S.timekeeper !== "carriage") return; if(S.clock && S.clock.rate > 60) return;
   const d = now(), m = d.getMinutes(), every = kind==="ships" ? 30 : 15, key = d.getHours()*60 + Math.floor(m/every)*every;
   if(lastQ === null){ lastQ = key; return; } if(key === lastQ) return; lastQ = key;
   if(m % every > 1) return;   // only on the quarter itself
@@ -1859,7 +1885,7 @@ function noticesView(){
   overlay("The notice board", `<div class="board">
     <div class="pin"><h3>Problem of the week · week ${isoWeek(d)[1]}</h3>${pz ? `<p class="text">${pz.q}</p><p class="note">${esc(pz.source||"")}</p>` : `<p class="note">No problems on file.</p>`}
       ${last ? `<details><summary class="note">Last week's problem, and its answer</summary><p>${last.q}</p><p><b>Answer.</b> ${last.a}</p></details>` : ""}</div>
-    <div class="pin"><h3>${d.toLocaleString([], {month:"long", year:"numeric"})}</h3>${cal}
+    <div class="pin"><h3>${d.toLocaleString([], {month:"long", year:"numeric"})}</h3>${window.RECKON && (S.cal||"gregorian") !== "gregorian" ? `<p class="note">${RECKON.calLong(d)}</p>` : ""}${cal}
       ${ev.length ? `<ul class="list">${ev.map(e=>`<li><span class="mono">${esc(e.date)}${e.time?" "+esc(e.time):""}</span> ${e.href?`<a href="${esc(e.href)}">${esc(e.title)}</a>`:esc(e.title)}${e.where?` <span class="note">· ${esc(e.where)}</span>`:""}</li>`).join("")}</ul>` : `<p class="note">No events posted.</p>`}</div>
     <div class="pin"><h3>News</h3><ul class="list">${news.map(n=>`<li><span class="mono">${esc(n.date)}</span> ${n.href?`<a href="${esc(n.href)}">${esc(n.text)}</a>`:esc(n.text)}</li>`).join("") || "<li class='note'>Nothing new.</li>"}</ul></div>
     ${wanted ? `<div class="pin"><h3>Wanted</h3><p><b>${esc(wanted.o.title)}</b>: ${wanted.o.note||""}</p><p class="note">On the shelf of unwritten things in room ${esc(wanted.r.label||wanted.r.id)}, ${esc(wanted.r.name)}.</p></div>` : ""}
@@ -1914,6 +1940,7 @@ function almanacView(){
   const phaseName = ph<.03||ph>.97 ? "new" : ph<.22 ? "waxing crescent" : ph<.28 ? "first quarter" : ph<.47 ? "waxing gibbous" : ph<.53 ? "full" : ph<.72 ? "waning gibbous" : ph<.78 ? "last quarter" : "waning crescent";
   const compass = az => ["N","NE","E","SE","S","SW","W","NW"][Math.round(az/45)%8];
   overlay("The almanac", `<div class="board">
+    ${window.RECKON ? `<div class="pin"><h3>Today</h3><p class="big" style="font-size:18px">${RECKON.calLong(d)}</p><p class="note">Kept by the house: ${RECKON.calSelect("al-cal")} · all of them are in the calendar cabinet in the Archive.</p></div>` : ""}
     <div class="pin"><h3>Now, in ${esc(placeName())}${wx && wx.set ? " (by the storm glass)" : ""}</h3>${wx ? `<p class="big">${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F</p><p class="mono note">humidity ${wx.relative_humidity_2m}% · wind ${Math.round(wx.wind_speed_10m)} mph · ${(wx.surface_pressure*0.02953).toFixed(2)} inHg</p>` : `<p class="note">The instruments can't reach the weather service just now.</p>`}</div>
     <div class="pin"><h3>Forecast</h3>${fc ? `<ul class="list">${fc.time.slice(0,4).map((t,i)=>`<li><span class="mono">${new Date(t+"T12:00").toLocaleDateString([], {weekday:"short"})}</span> ${wxIcon(fc.weather_code[i], 1)} ${Math.round(fc.temperature_2m_max[i])}° / ${Math.round(fc.temperature_2m_min[i])}°${fc.precipitation_probability_max?` <span class="note">· ${fc.precipitation_probability_max[i]}% chance of rain</span>`:""}</li>`).join("")}</ul>` : `<p class="note">${forecast.failed ? "The forecast can't be fetched just now." : "Fetching…"}</p>`}</div>
     <div class="pin"><h3>The sun</h3><p class="mono">rises ${tf(st.rise)} · sets ${tf(st.set)}${len?` · ${Math.floor(len)}h ${Math.round((len%1)*60)}m of daylight`:""}</p></div>
@@ -1921,6 +1948,7 @@ function almanacView(){
       <p class="mono">${sky.planets.filter(p=>p.alt>0).map(p=>`${p.name} ${p.alt.toFixed(0)}° ${compass(p.az)}`).join(" · ") || "no bright planets up"}</p></div>
   </div><div class="row"><button class="btn" id="al-pl" type="button">All the planets…</button></div><p class="note">Weather from Open-Meteo. Sun, moon, and planets computed here, for latitude ${LAT}° and longitude ${LON}°.</p>`);
   $("al-pl").onclick = planetsView;
+  if($("al-cal")) $("al-cal").onchange = e => { RECKON.setCal(e.target.value); almanacView(); };
 }
 function officeHoursView(){
   const H = P.office_hours || [], st = officeStatus(), o = P.office || {};

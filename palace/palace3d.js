@@ -332,7 +332,7 @@ export function create(container, hooks){
   function show(p){
     const prevPlan = plan; plan = p; peeking = false;
     if(prevPlan && prevPlan.room && p.room && prevPlan.room.id === p.room.id) ['HG','half','halfX','halfZ','hallFog','envK','doorSpots'].forEach(k => { if(p[k] === undefined && prevPlan[k] !== undefined) p[k] = prevPlan[k]; });
-    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.shade, p.light, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
+    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.lanternColor, p.shade, p.light, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
     if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); }
     // where to stand and where to look
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5), stand:new THREE.Vector3(0,EYE,0)};
@@ -484,7 +484,7 @@ export function create(container, hooks){
     }
     // the lantern you carry: shaded, low, steady or bright, held a little to your right and below your eyes
     const LV = +p.lantern || 0;
-    if(LV){ const pl = new THREE.PointLight("#ffd28a", [0, 5, 12, 26][LV], [0, 5, 9, 15][LV], 1.5); pl.userData.lantern = true; scene.add(pl);
+    if(LV){ const pl = new THREE.PointLight(p.lanternColor || "#ffd28a", [0, 5, 12, 26][LV], [0, 5, 9, 15][LV], 1.5); pl.userData.lantern = true; scene.add(pl);
       const base = pl.intensity; anims.push((t) => { pl.position.copy(cam.pos).add(new THREE.Vector3(.3,-.4,0)); pl.intensity = base*(.95 + .05*Math.sin(t*5.3)*Math.sin(t*2.1+.7)); }); }
     if(p.gloom){ amb.intensity *= [.25, .55, .7, .85][LV]; }
     // ---- floor and wall fittings
@@ -1513,6 +1513,32 @@ export function create(container, hooks){
     stations["p" + (o.title||i)] = {view: at.clone().add(toward.clone().normalize().multiplyScalar(.9)).setY(1.55), top: at.clone().setY(.95)};
   }
   /* ---- the things themselves, as small models ---- */
+  // the incense trail: a square meander, outside in, burned from its start by the fraction of the day since 11 pm
+  function incensePath(){ const pts = [[.06,.06]]; let x = .06, y = .06, len = .88, k = 0; const step = .07; const legs = [len]; while(len > step){ legs.push(len); len -= step; legs.push(len); }
+    legs.forEach((L, i) => { const [dx, dy] = [[1,0],[0,1],[-1,0],[0,-1]][i % 4]; x += dx*L; y += dy*L; pts.push([x,y]); }); return pts; }
+  const INC = incensePath(), INC_SEG = INC.slice(1).map((p,i) => Math.hypot(p[0]-INC[i][0], p[1]-INC[i][1])), INC_LEN = INC_SEG.reduce((a,b) => a+b, 0);
+  const dayFrac = d => (((d.getHours() + 1) % 24)*3600 + d.getMinutes()*60 + d.getSeconds())/86400;
+  function incensePoint(d){ let r = dayFrac(d)*INC_LEN; for(let i=0;i<INC_SEG.length;i++){ if(r <= INC_SEG[i]){ const a = INC[i], b = INC[i+1], t = r/INC_SEG[i]; return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, i]; } r -= INC_SEG[i]; } return [...INC[INC.length-1], INC_SEG.length-1]; }
+  function incenseTrail(gg, w, h, d){ const [ex, ey, ei] = incensePoint(d); gg.lineCap = "round"; gg.lineJoin = "round"; gg.lineWidth = w*.022;
+    gg.strokeStyle = "#7a5a3a"; gg.beginPath(); gg.moveTo(ex*w, ey*h); INC.slice(ei+1).forEach(p => gg.lineTo(p[0]*w, p[1]*h)); gg.stroke();
+    gg.strokeStyle = "rgba(240,236,228,.95)"; gg.beginPath(); gg.moveTo(INC[0][0]*w, INC[0][1]*h); INC.slice(1, ei+1).forEach(p => gg.lineTo(p[0]*w, p[1]*h)); gg.lineTo(ex*w, ey*h); gg.stroke(); }
+  function wadokeiFace(gg, w, h, d){ const cx = w/2, cy = h/2, r = w*.48, st = hooks.sunTimes ? hooks.sunTimes() : {};
+    gg.fillStyle = "#1e1a16"; gg.beginPath(); gg.arc(cx, cy, r, 0, TAU); gg.fill();
+    if(st.rise && st.set){ const ang = t => { const x = new Date(t), hh = x.getHours() + x.getMinutes()/60; return (hh/24)*TAU + Math.PI/2; };   // noon at the top
+      const dawn = st.rise - 36*6e4, dusk = st.set + 36*6e4; gg.fillStyle = "#d9b866"; gg.beginPath(); gg.moveTo(cx, cy); gg.arc(cx, cy, r*.96, ang(dawn), ang(dusk)); gg.closePath(); gg.fill();
+      const names = ["卯","辰","巳","午","未","申","酉","戌","亥","子","丑","寅"], dl = (dusk - dawn)/6, nl = (dawn + 864e5 - dusk)/6;
+      gg.font = `bold ${w*.085}px serif`; gg.textAlign = "center"; gg.textBaseline = "middle";
+      names.forEach((c, k) => { const t0 = k < 6 ? dawn + k*dl : dusk + (k-6)*nl, a = ang(t0), am = ang(t0 + (k < 6 ? dl : nl)/2);
+        gg.strokeStyle = "#1e1a16"; gg.lineWidth = 3; gg.beginPath(); gg.moveTo(cx + Math.cos(a)*r*.5, cy + Math.sin(a)*r*.5); gg.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r); gg.stroke();
+        gg.fillStyle = k < 6 ? "#1e1a16" : "#e8dcc0"; gg.fillText(c, cx + Math.cos(am)*r*.76, cy + Math.sin(am)*r*.76); }); }
+    gg.fillStyle = "#b39a62"; gg.beginPath(); gg.arc(cx, cy, r*.12, 0, TAU); gg.fill(); }
+  function dialFace(gg, w, h, dec){ const cx = w/2, cy = h/2, r = w*.48; gg.fillStyle = "#f1ead8"; gg.beginPath(); gg.arc(cx, cy, r, 0, TAU); gg.fill(); gg.strokeStyle = "#2a251e"; gg.lineWidth = 3; gg.stroke();
+    gg.fillStyle = "#2a251e"; gg.textAlign = "center"; gg.textBaseline = "middle";
+    if(dec){ for(let k=0;k<100;k++){ const a = k/100*TAU - Math.PI/2, r0 = k%10 ? r*.9 : r*.82; gg.lineWidth = k%10 ? 1 : 3; gg.beginPath(); gg.moveTo(cx + Math.cos(a)*r0, cy + Math.sin(a)*r0); gg.lineTo(cx + Math.cos(a)*r*.97, cy + Math.sin(a)*r*.97); gg.stroke(); }
+      gg.font = `${w*.1}px ${FELL}`; for(let k=0;k<10;k++){ const a = k/10*TAU - Math.PI/2; gg.fillText(k === 0 ? "10" : String(k), cx + Math.cos(a)*r*.68, cy + Math.sin(a)*r*.68); } }
+    else { const R = ["I","II","III","IIII","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIIII","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIII","XXIIII"]; gg.font = `${w*.05}px ${FELL}`;
+      for(let k=1;k<=24;k++){ const a = -k/24*TAU + Math.PI/2; gg.save(); gg.translate(cx + Math.cos(a)*r*.8, cy + Math.sin(a)*r*.8); gg.rotate(a + Math.PI/2); gg.fillText(R[k-1], 0, 0); gg.restore(); }
+      gg.fillStyle = "#d9b866"; gg.beginPath(); gg.arc(cx, cy, r*.22, 0, TAU); gg.fill(); } }
   function model(icon, spot, R){
     const g = new THREE.Group(), s = .9;
     const paper = mat("#ece6d6"), ink = mat("#2a251e"), brass = mat("#b39a62", {metalness:.6, roughness:.35}), wood = mat("#6e5743"), sp = mat("#"+spot.getHexString());
@@ -1582,6 +1608,88 @@ export function create(container, hooks){
         const mb = new THREE.Mesh(new THREE.BoxGeometry(.005,.048,.002), ink); mb.position.y = .024; mh.add(mb);
         const balance = add(new THREE.TorusGeometry(.012,.002,8,32), brass, 0,.25,0, Math.PI/2,0,0);
         anims.push(t => { const d = hooks.now(), m = d.getMinutes() + d.getSeconds()/60, h = (d.getHours()%12) + m/60; mh.rotation.z = -m/60*TAU; hh.rotation.z = -h/12*TAU; balance.rotation.z = .9*Math.sin(t*TAU*2.5); });
+        break; }
+      /* ---- the timekeepers that can stand in for the carriage clock, and the reckoning devices ---- */
+      case "tk-hourglass": { // an hour glass in a turned frame; the sand runs down through the hour
+        const glass = mat("#e8eceb",{transparent:true, opacity:.3, roughness:.1}), sand = mat("#c9a86a");
+        add(new THREE.CylinderGeometry(.09,.09,.018,32), wood, 0,.009); add(new THREE.CylinderGeometry(.09,.09,.018,32), wood, 0,.33);
+        [0,1,2].forEach(k => { const a = k/3*TAU; add(new THREE.CylinderGeometry(.007,.007,.31,10), wood, Math.sin(a)*.075,.17,Math.cos(a)*.075); });
+        const bulb = [[.004,0],[.03,.012],[.058,.05],[.062,.09],[.05,.13],[.012,.155],[.005,.16]];
+        const lo = lathe(bulb.map(([r,y]) => [r, y]), glass, 32); lo.position.y = .018; g.add(lo);
+        const hi = lathe(bulb.map(([r,y]) => [r, .32 - y - .018]).reverse(), glass, 32); hi.position.y = .0; g.add(hi);
+        const top = add(new THREE.ConeGeometry(.052,.09,32), sand, 0,.235,0, Math.PI,0,0), bot = add(new THREE.ConeGeometry(.056,.07,32), sand, 0,.055);
+        const stream = add(new THREE.CylinderGeometry(.0015,.0015,.11,6), sand, 0,.13);
+        anims.push(() => { const d = hooks.now(), f = (d.getMinutes()*60 + d.getSeconds())/3600, t = Math.max(.02, 1-f), b = Math.max(.02, f);
+          top.scale.set(Math.sqrt(t), t, Math.sqrt(t)); top.position.y = .19 + .045*t; bot.scale.set(Math.sqrt(b), b, Math.sqrt(b)); bot.position.y = .02 + .035*b; stream.visible = t > .03; });
+        break; }
+      case "tk-clepsydra": { // an alabaster outflow vessel, wider at the top; the water falls through the night
+        const stone = mat("#d9d0bb", {roughness:.7}), water = mat("#7fa3b5", {transparent:true, opacity:.75, roughness:.1});
+        const v = lathe([[0,0],[.07,0],[.072,.01],[.11,.26],[.118,.27],[.112,.275],[.104,.265],[.066,.012],[0,.012]], stone, 48); g.add(v);
+        for(let k=0;k<12;k++){ const a = k/12*Math.PI*.8 - Math.PI*.4; for(let h=1;h<12;h++){ const y = .02 + h/12*.24, r = .07 + (y/.26)*.04 + .003; add(new THREE.SphereGeometry(.0025,6,4), ink, Math.sin(a)*r, y, Math.cos(a)*r); } }
+        add(new THREE.CylinderGeometry(.004,.004,.03,8), stone, 0,.02,.08, Math.PI/2,0,0);
+        const surf = add(new THREE.CylinderGeometry(1,1,.004,40), water, 0,.2);
+        anims.push(() => { const R = hooks.reckon && hooks.reckon(); const ns = R && R.nightSpan(hooks.now()); const f = !ns || ns.day ? 0 : (hooks.now().getTime() - ns.from)/(ns.to - ns.from);
+          const y = .26 - .24*Math.min(1, Math.max(0, f)), r = .068 + (y/.26)*.04; surf.position.y = y; surf.scale.set(r, 1, r); });
+        add(new THREE.CylinderGeometry(.13,.14,.02,32), wood, 0,-.01);
+        break; }
+      case "tk-candle": { // a horn lantern with a marked candle; one candle burns down every four hours
+        const horn = mat("#e9c98a", {transparent:true, opacity:.42, roughness:.6}), wax = mat("#f1e8d2"), tin = mat("#4a4540", {metalness:.5, roughness:.5});
+        add(new THREE.BoxGeometry(.16,.015,.16), tin, 0,.008); add(new THREE.BoxGeometry(.16,.015,.16), tin, 0,.36); add(new THREE.ConeGeometry(.11,.06,4), tin, 0,.395,0, 0,Math.PI/4,0); add(new THREE.TorusGeometry(.025,.005,8,20), tin, 0,.44,0);
+        [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([x,z]) => add(new THREE.BoxGeometry(.01,.35,.01), tin, x*.075,.18,z*.075));
+        [[0,.077,0],[0,-.077,0],[.077,0,Math.PI/2],[-.077,0,Math.PI/2]].forEach(([x,z,ry]) => add(new THREE.BoxGeometry(.15,.33,.002), horn, x,.18,z, 0,ry,0));
+        const candle = add(new THREE.CylinderGeometry(.016,.016,1,20), wax, 0,.17); const flame = add(new THREE.SphereGeometry(.012,12,10), new THREE.MeshBasicMaterial({color:"#ffcf6a"}), 0,.3); flame.scale.y = 1.8;
+        anims.push(t => { const d = hooks.now(), hrs = d.getHours() + d.getMinutes()/60, f = (hrs % 4)/4, h = .02 + .27*(1-f); candle.scale.y = h; candle.position.y = .016 + h/2; flame.position.y = .016 + h + .018; flame.scale.x = 1 + .12*Math.sin(t*13); });
+        break; }
+      case "tk-incense": { // a lacquered box, a bed of ash, and a trail of incense burning through the day
+        add(new THREE.BoxGeometry(.26,.05,.26), mat("#3a1e18", {roughness:.4}), 0,.025); add(new THREE.BoxGeometry(.24,.004,.24), mat("#c9c2b2"), 0,.051);
+        const tex = canvasTex(256, 256, (gg, w, h) => incenseTrail(gg, w, h, hooks.now()));
+        const top = add(new THREE.PlaneGeometry(.23,.23), new THREE.MeshBasicMaterial({map:tex, transparent:true}), 0,.054,0, -Math.PI/2,0,0);
+        let last = 0; anims.push(t => { if(t - last < 20) return; last = t; const gg = tex.image.getContext("2d"); gg.clearRect(0,0,256,256); incenseTrail(gg, 256, 256, hooks.now()); tex.needsUpdate = true; });
+        const ember = add(new THREE.SphereGeometry(.006,10,8), new THREE.MeshBasicMaterial({color:"#ff6a2a"}), 0,.058,0); anims.push(() => { const pt = incensePoint(hooks.now()); ember.position.set(pt[0]*.23 - .115, .058, pt[1]*.23 - .115); });
+        add(new THREE.BoxGeometry(.27,.012,.27), mat("#3a1e18"), 0,.002,0);
+        break; }
+      case "tk-wadokei": { // a Japanese lantern clock on its tall stand, the dial turning once a day under fixed hour plates set to today's dawn and dusk
+        const stand = mat("#2b1c14", {roughness:.5}); add(new THREE.BoxGeometry(.16,.2,.16), stand, 0,.1); add(new THREE.BoxGeometry(.18,.015,.18), stand, 0,.205);
+        add(new THREE.BoxGeometry(.13,.16,.13), brass, 0,.29); add(new THREE.SphereGeometry(.05,24,12,0,TAU,0,Math.PI/2), brass, 0,.37); add(new THREE.CylinderGeometry(.004,.004,.04,8), brass, 0,.43);
+        const tex = canvasTex(256, 256, (gg, w, h) => wadokeiFace(gg, w, h, hooks.now()));
+        const face = add(new THREE.CircleGeometry(.058, 48), new THREE.MeshBasicMaterial({map:tex}), 0,.29,.0655);
+        const hand = new THREE.Group(); hand.position.set(0,.29,.068); g.add(hand); const hb = new THREE.Mesh(new THREE.BoxGeometry(.006,.05,.002), ink); hb.position.y = .025; hand.add(hb);
+        let last = 0; anims.push(t => { const d = hooks.now(), h = d.getHours() + d.getMinutes()/60; hand.rotation.z = -(h/24)*TAU + Math.PI; if(t - last > 60){ last = t; const gg = tex.image.getContext("2d"); gg.clearRect(0,0,256,256); wadokeiFace(gg, 256, 256, d); tex.needsUpdate = true; } });
+        break; }
+      case "tk-decimal": case "tk-italian": { // a drum clock with a revolutionary dial (ten hours), or a 24-hour dial of Italian hours
+        const dec = icon === "tk-decimal"; add(new THREE.BoxGeometry(.2,.025,.12), dec ? mat("#e9e1cf") : wood, 0,.012);
+        add(new THREE.CylinderGeometry(.09,.09,.06,64), dec ? brass : wood, 0,.12,0, Math.PI/2,0,0); add(new THREE.BoxGeometry(.03,.03,.04), dec ? brass : wood, 0,.04);
+        const tex = canvasTex(256, 256, (gg, w, h) => dialFace(gg, w, h, dec));
+        add(new THREE.CircleGeometry(.08, 64), new THREE.MeshBasicMaterial({map:tex}), 0,.12,.031);
+        const hh = new THREE.Group(), mh = new THREE.Group(); hh.position.set(0,.12,.033); mh.position.set(0,.12,.035); g.add(hh); if(dec) g.add(mh);
+        const hb = new THREE.Mesh(new THREE.BoxGeometry(.007, dec ? .04 : .062, .002), ink); hb.position.y = dec ? .02 : .031; hh.add(hb);
+        const mb = new THREE.Mesh(new THREE.BoxGeometry(.004,.062,.002), ink); mb.position.y = .031; mh.add(mb);
+        anims.push(() => { const d = hooks.now(), R = hooks.reckon && hooks.reckon();
+          if(dec){ const f = (d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds())/86400; hh.rotation.z = -f*TAU; mh.rotation.z = -((f*10) % 1)*TAU; }
+          else { const ih = R ? R.italianHour(d) : 0; hh.rotation.z = (ih/24)*TAU + Math.PI; } });
+        break; }
+      case "tkcase": { // a glass-fronted case with a timekeeper on each shelf
+        const glass = mat("#e8eceb",{transparent:true, opacity:.22, roughness:.05});
+        add(new THREE.BoxGeometry(.34,.46,.18), wood, 0,.23,-.01); add(new THREE.BoxGeometry(.3,.42,.002), glass, 0,.23,.081);
+        [.13,.28].forEach(y => add(new THREE.BoxGeometry(.3,.008,.15), wood, 0,y,0));
+        const sandM = mat("#c9a86a"); add(new THREE.ConeGeometry(.02,.04,16), sandM, -.08,.05+.02,0); add(new THREE.ConeGeometry(.02,.04,16), sandM, -.08,.05+.06,0, Math.PI,0,0);
+        add(new THREE.CylinderGeometry(.008,.008,.07,10), mat("#f1e8d2"), .0,.17,0); add(new THREE.CylinderGeometry(.03,.025,.06,20), mat("#d9d0bb"), .08,.165,0);
+        add(new THREE.CylinderGeometry(.035,.035,.012,32), brass, -.06,.33,0, Math.PI/2,0,0); add(new THREE.BoxGeometry(.06,.06,.06), brass, .07,.32,0); add(new THREE.BoxGeometry(.05,.012,.05), mat("#3a1e18"), 0,.04,.02);
+        break; }
+      case "calcab": { // a cabinet of shallow drawers, with a brass drum on top that turns to the house's calendar
+        add(new THREE.BoxGeometry(.3,.3,.2), wood, 0,.15); for(let k=0;k<5;k++){ add(new THREE.BoxGeometry(.27,.045,.004), mat("#7d6450"), 0,.035+k*.056,.101); add(new THREE.SphereGeometry(.007,10,8), brass, 0,.035+k*.056,.106); }
+        const drum = add(new THREE.CylinderGeometry(.05,.05,.24,40), brass, 0,.36,0, 0,0,Math.PI/2); add(new THREE.CylinderGeometry(.051,.051,.14,40,1,true), paper, 0,.36,0, 0,0,Math.PI/2);
+        [-.13,.13].forEach(x => add(new THREE.BoxGeometry(.012,.07,.05), brass, x,.33,0));
+        anims.push(t => { drum.rotation.x = Math.sin(t*.1)*.2; });
+        break; }
+      case "numerary": { // an abacus-like reckoning frame: rods of beads, a bar, and a row of number wheels on top
+        const frame = mat("#3e2b1e"); [[-.16,0],[.16,0]].forEach(([x]) => add(new THREE.BoxGeometry(.015,.24,.04), frame, x,.12)); add(new THREE.BoxGeometry(.335,.015,.04), frame, 0,.24); add(new THREE.BoxGeometry(.335,.015,.04), frame, 0,.005); add(new THREE.BoxGeometry(.335,.01,.042), frame, 0,.17);
+        const beadA = mat("#"+spot.getHexString(), {roughness:.4}), beadB = mat("#e9e1cf", {roughness:.4});
+        for(let r=0;r<7;r++){ const x = -.135 + r*.045; add(new THREE.CylinderGeometry(.002,.002,.23,6), brass, x,.12);
+          const R2 = rng(r*7+3); const up = Math.floor(R2()*2), lo = Math.floor(R2()*5);
+          for(let k=0;k<2;k++){ const b = add(new THREE.SphereGeometry(.014,14,10), beadA, x, k < up ? .18 + k*.022 : .215 - (1-k)*.0, 0); b.scale.y = .7; b.position.y = k < up ? .182 + k*.021 : .212 + (k-1)*0 - (k===0 && up===0 ? .021 : 0); }
+          for(let k=0;k<5;k++){ const b = add(new THREE.SphereGeometry(.014,14,10), beadB, x, k < lo ? .16 - k*.021 : .02 + (4-k)*.021, 0); b.scale.y = .7; } }
+        for(let k=0;k<5;k++) add(new THREE.CylinderGeometry(.018,.018,.03,24), brass, -.08 + k*.04,.27,0, 0,0,Math.PI/2);
         break; }
       case "astrolabe": { const ring = add(new THREE.CylinderGeometry(.13,.13,.012,64), brass, 0,.2,0, Math.PI/2,0,0); add(new THREE.CylinderGeometry(.11,.11,.014,64), paper, 0,.2,.002, Math.PI/2,0,0);
         add(new THREE.TorusGeometry(.075,.006,12,64), ink, 0,.2,.012); add(new THREE.BoxGeometry(.22,.012,.006), sp, 0,.2,.014, 0,0,.5); add(new THREE.BoxGeometry(.04,.05,.02), brass, 0,.34,0);

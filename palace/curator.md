@@ -410,6 +410,14 @@ The **Light** button (and using the lantern from the bag) opens a small panel:
 - **The house lamps:** by the clock, low, or all lit (what the old Lamps button did).
 - **The shutters:** open, half closed, or drawn. By day they take the daylight down indoors, in every room until you open them; they do nothing at night or under an open sky.
 
+### Reckoning: calendars, timekeepers, and numerals
+
+- **The calendar cabinet** (Archive, `action: calendars`): today in sixteen calendars (Gregorian, Julian in Roman style, Hebrew, Islamic, Persian, Chinese, Japanese era, Coptic, Ethiopian, Indian national, Thai Buddhist, Maya, Babylonian, Egyptian civil, French Republican, ISO week and Julian Day). The one you keep dates the whole house: the clock chip, the almanac (which also has a switch), and the notice board. Calendars whose day begins at sunset turn over at sunset. The Babylonian one is reckoned, not observed.
+- **The case of timekeepers** (Archive, `action: timekeepers`): choose what stands on the Entry desk in place of the carriage clock: an hourglass, a water clock (Karnak style, draining through the real night), King Alfred's candle clock, an incense seal clock, a wadokei (temporal hours from today's real dawn and dusk; it can strike each toki), a French decimal clock, or a clock of Italian hours. The carriage clock's chimes only sound while it is on the desk.
+- **The numerary** (Office, `action: numerals`): a number in about sixty systems, ancient, East Asian, positional bases, tallies and cords (khipu, Kaktovik, Cistercian), scripts of the world, Braille and Morse, and two you can play (base-7 solfège and base-12 pitch classes). Any system with a plain-text form can number the rooms.
+- **The lantern's salts** (Light panel): sodium, strontium, lithium, calcium, copper, boric acid, barium, potassium, or caesium colour the flame.
+- Code: `systems.js` (calendars), `numerals.js` (numerals), and `reckoning.js` (the views and timekeepers). The lists "for later" sit at the bottom of each view.
+
 ### Moving and looking
 
 Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. You arrive facing away from the door you came through, so it is behind you.

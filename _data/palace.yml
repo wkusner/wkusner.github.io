@@ -814,6 +814,8 @@ rooms:
     - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:hardcore"}
     - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/"}
     - {hidden: true, kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
+    - {kind: device, icon: calcab, mount: pedestal, wall: left, title: "The calendar cabinet", action: calendars, note: "Today in sixteen calendars, and the one the house keeps."}
+    - {kind: device, icon: tkcase, mount: pedestal, wall: right, title: "The case of timekeepers", action: timekeepers, note: "Hourglass, water clock, candle clock, incense seal, wadokei, decimal clock, and Italian hours: choose one for the Entry desk."}
 
 - id: 23
   closed: renovation
@@ -1197,6 +1199,7 @@ rooms:
     - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours}
     - {kind: unwritten, icon: lectern, wall: left, title: "The real office, measured", note: "A model of the actual office: the desk, the shelves, the whiteboard, the window."}
     - {kind: device, icon: note, wall: left, title: "The calendar", action: notices}
+    - {kind: device, icon: numerary, mount: pedestal, wall: right, title: "The numerary", action: numerals, note: "A number in every way it has been written: cuneiform, khipu, Kaktovik, Cistercian, counting rods, and the rest."}
 
 - id: 36
   closed: renovation
