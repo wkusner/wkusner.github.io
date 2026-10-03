@@ -1,8 +1,84 @@
 {
  "version": 1,
- "updated": "2026-10-02T02:03:35.014Z",
- "count": 22,
+ "updated": "2026-10-02T16:23:27.540Z",
+ "count": 24,
  "items": [
+  {
+   "id": "linear-algebra-69v7r",
+   "type": "book",
+   "title": "Linear Algebra",
+   "creators": [
+    {
+     "name": "Stephen H. Friedberg",
+     "role": "author"
+    },
+    {
+     "name": "Arnold J. Insel",
+     "role": "author"
+    },
+    {
+     "name": "Lawrence E. Spence",
+     "role": "author"
+    }
+   ],
+   "ids": {
+    "isbn": "9789332549647",
+    "olid": "OL28277394M",
+    "url": "http://openlibrary.org/books/OL28277394M/Linear_Algebra"
+   },
+   "acquired": {
+    "date": "",
+    "source": ""
+   },
+   "images": [
+    "images/linear-algebra-69v7r-cover.jpg"
+   ],
+   "publisher": "Pearson",
+   "date": "Jun 21, 2015",
+   "cover": "https://covers.openlibrary.org/b/id/10203945-L.jpg",
+   "private": false,
+   "source": "Open Library",
+   "added": "2026-10-02T16:23:24.999Z",
+   "updated": "2026-10-02T16:23:24.999Z"
+  },
+  {
+   "id": "sabriel-68uyo",
+   "type": "book",
+   "title": "Sabriel",
+   "creators": [
+    {
+     "name": "Garth Nix",
+     "role": "author"
+    }
+   ],
+   "tags": [
+    "Fathers and daughters",
+    "Missing persons",
+    "Magic",
+    "Teen fantasy fiction",
+    "Fiction",
+    "Fantasy"
+   ],
+   "ids": {
+    "isbn": "9780063040502",
+    "url": "https://openlibrary.org/works/OL2628761W"
+   },
+   "acquired": {
+    "date": "",
+    "source": ""
+   },
+   "images": [
+    "images/sabriel-68uyo-cover.jpg"
+   ],
+   "publisher": "Collins",
+   "date": "1995",
+   "pages": 352,
+   "cover": "https://covers.openlibrary.org/b/id/13165306-L.jpg",
+   "private": false,
+   "source": "Open Library",
+   "added": "2026-10-02T16:22:38.016Z",
+   "updated": "2026-10-02T16:22:38.016Z"
+  },
   {
    "id": "sideways-stories-from-wayside-school-bk276",
    "type": "book",
