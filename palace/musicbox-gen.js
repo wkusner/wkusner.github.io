@@ -67,11 +67,16 @@ function degreeCents(sc, d, tuning){ const def = sc.def;
   const n = steps.length, P = def.period || 1200, o = Math.floor(d/n), i = ((d % n) + n) % n; return steps[i] + o*P; }
 
 /* ---------- ambiences ---------- */
-const AMBIENCES = [["none","None"],["rain","Rain"],["tinroof","Rain on a tin roof"],["wind","Wind"],["surf","Surf"],["stream","A stream"],["fire","A fire"],["insects","Night insects"],["birds","Birds at dawn"],["cave","Cave drips"],["city","Distant city"],["roomtone","Room tone"]];
+const AMBIENCES = [["none","None"],["rain","Rain"],["window","Rain on the window"],["tinroof","Rain on a tin roof"],["storm","A thunderstorm"],["wind","Wind"],["surf","Surf"],["harbor","A harbor, with a bell buoy"],["stream","A stream"],["fountain","A fountain"],["fire","A fire"],["cafe","A café"],["vinyl","Vinyl crackle"],["insects","Night insects"],["birds","Birds at dawn"],["cave","Cave drips"],["city","Distant city"],["roomtone","Room tone"]];
 
 /* ---------- the engine ---------- */
 function createEngine(ac, dest, onNote){
-  const out = ac.createGain(); out.gain.value = .9; out.connect(dest); const NY = ac.sampleRate*.45, fq = f => Math.max(20, Math.min(NY, f));
+  const out = ac.createGain(); out.gain.value = .9;
+  const tapeDry = ac.createGain(), tapeWet = ac.createGain(), wow = ac.createDelay(.1), tone = ac.createBiquadFilter(), sat = ac.createWaveShaper();
+  wow.delayTime.value = .012; tone.type = "lowpass"; tone.frequency.value = 3800; tone.Q.value = .4; sat.curve = Float32Array.from({length: 1024}, (_, i) => { const x = i/511.5 - 1; return Math.tanh(1.6*x)/Math.tanh(1.6); });
+  out.connect(tapeDry); tapeDry.connect(dest); out.connect(wow); wow.connect(tone); tone.connect(sat); sat.connect(tapeWet); tapeWet.connect(dest); tapeWet.gain.value = 0;
+  [[.55, .0011], [6.3, .00012]].forEach(([r, d]) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = r; g.gain.value = d; o.connect(g); g.connect(wow.delayTime); o.start(); });   // wow, then flutter
+  const setTape = on => { tapeDry.gain.setTargetAtTime(on ? 0 : 1, ac.currentTime, .1); tapeWet.gain.setTargetAtTime(on ? 1 : 0, ac.currentTime, .1); }; const NY = ac.sampleRate*.45, fq = f => Math.max(20, Math.min(NY, f));
   const ambOut = ac.createGain(); ambOut.gain.value = .5;
   const noiseBuf = (() => { const b = ac.createBuffer(1, ac.sampleRate*2, ac.sampleRate), d = b.getChannelData(0); for(let i = 0; i < d.length; i++) d[i] = Math.random()*2 - 1; return b; })();
   const env = (g, t, a, peak, d, sus = 0, rel = .3, end) => { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.setTargetAtTime(sus*peak, t + a, d/3); if(end){ g.gain.setTargetAtTime(0, end, rel/3); } };
@@ -109,6 +114,23 @@ function createEngine(ac, dest, onNote){
       const P = pan(p), g = ac.createGain(); env(g, t, 1, v*.12, 1, .9, 2, t + d); const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 22; bp.frequency.setValueAtTime(fq(f*6), t);
       [8, 9, 10, 12, 10, 9, 8, 6].forEach((h, i) => bp.frequency.setTargetAtTime(fq(f*h), t + i*d/8, .25)); g.connect(bp); bp.connect(P); const lg = gain(.25, P); g.connect(lg); osc("sawtooth", f, t, t + d + 3, g); },
   };
+  Object.assign(INST, {
+    keys: (f, t, d, v, p) => { // an electric piano: a struck tine (FM), a bell-like attack, and tremolo
+      const P = pan(p), g = gain(0, P), m = ac.createOscillator(), mg = ac.createGain(); m.frequency.value = f*14; mg.gain.setValueAtTime(f*1.1*v, t); mg.gain.setTargetAtTime(0, t, .05); m.connect(mg);
+      const c = osc("sine", f, t, t + d + 2, g); mg.connect(c.frequency); m.start(t); m.stop(t + .5); const o2 = gain(.18, g); osc("sine", f*2.001, t, t + d + 2, o2);
+      const tr = ac.createOscillator(), tg = ac.createGain(); tr.frequency.value = 4.2; tg.gain.value = .25; tr.connect(tg); tg.connect(g.gain); tr.start(t); tr.stop(t + d + 2);
+      env(g, t, .004, v*.2, 1.6, .35, .5, t + d); },
+    piano: (f, t, d, v, p) => { const P = pan(p); [[1, 1, 2.6], [2.003, .45, 1.6], [3.01, .22, 1.0], [4.02, .12, .7], [5.04, .06, .5]].forEach(([k, a, dd]) => { const g = gain(0, P); const L = dd*Math.min(1.6, Math.max(.5, 260/f));
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.22, t + .004); g.gain.setTargetAtTime(v*a*.08, t + .004, .12); g.gain.setTargetAtTime(0, t + Math.max(.1, d), L/4); osc("sine", f*k*(1 + .0004*k*k), t, t + d + L + .5, g); });
+      const n = ac.createBufferSource(); n.buffer = noiseBuf; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fq(f*6); const ng = gain(0, P); ng.gain.setValueAtTime(v*.05, t); ng.gain.setTargetAtTime(0, t, .01); n.connect(bp); bp.connect(ng); n.start(t, Math.random()); n.stop(t + .05); },
+    upright: (f, t, d, v, p) => { const P = pan(p*.3), lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.setValueAtTime(fq(f*8), t); lp.frequency.setTargetAtTime(fq(f*2.5), t, .08); lp.connect(P);
+      const g = ac.createGain(); g.connect(lp); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*.45, t + .012); g.gain.setTargetAtTime(v*.18, t + .02, .15); g.gain.setTargetAtTime(0, t + d, .08);
+      osc("triangle", f, t, t + d + .5, g); const h = gain(.35, g); osc("sine", f*2, t, t + d + .5, h); },
+    kalimba: (f, t, d, v, p) => { const P = pan(p); [[1, 1, 1.4], [5.9, .18, .12], [13.2, .05, .04]].forEach(([k, a, dd]) => { const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.32, t + .002); g.gain.setTargetAtTime(0, t + .002, dd/3); osc("sine", f*k, t, t + dd + .3, g); }); },
+    chimes: (f, t, d, v, p) => { const P = pan(p); [[1, 1, 4], [2.76, .5, 2.6], [5.4, .3, 1.6], [8.93, .15, 1]].forEach(([k, a, dd]) => { const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.12, t + .002); g.gain.setTargetAtTime(0, t + .002, dd/3); osc("sine", f*2*k, t, t + dd + .5, g); }); },
+    bowl: (f, t, d, v, p) => { const P = pan(p); [[1, 1, 9], [2.71, .45, 6], [5.1, .2, 4]].forEach(([k, a, dd]) => [0, 1.3].forEach(beat => { const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.11, t + .02); g.gain.setTargetAtTime(0, t + .02, dd/3); osc("sine", f*k + beat*k, t, t + dd + 1, g); })); },
+    temple: (f, t, d, v, p) => INST.gong(f*.5, t, d, v*1.2, p),
+  });
   const PERC = {
     frame: (t, v, p) => { const P = pan(p), g = gain(0, P); g.gain.setValueAtTime(v*.5, t); g.gain.setTargetAtTime(0, t, .08); const o = osc("sine", 160, t, t + .4, g); o.frequency.exponentialRampToValueAtTime(70, t + .2); },
     tek: (t, v, p) => { const P = pan(p), n = ac.createBufferSource(); n.buffer = noiseBuf; const hp = ac.createBiquadFilter(); hp.type = "bandpass"; hp.frequency.value = 3500; hp.Q.value = 2; const g = gain(0, P); g.gain.setValueAtTime(v*.35, t); g.gain.setTargetAtTime(0, t, .02); n.connect(hp); hp.connect(g); n.start(t, Math.random()); n.stop(t + .15); },
@@ -117,6 +139,14 @@ function createEngine(ac, dest, onNote){
     shaker: (t, v, p) => { const P = pan(p), n = ac.createBufferSource(); n.buffer = noiseBuf; const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 6000; const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*.12, t + .02); g.gain.setTargetAtTime(0, t + .03, .03); n.connect(hp); hp.connect(g); n.start(t, Math.random()); n.stop(t + .2); },
     block: (t, v, p) => { const P = pan(p), g = gain(0, P); g.gain.setValueAtTime(v*.3, t); g.gain.setTargetAtTime(0, t, .02); osc("sine", 1250, t, t + .1, g); },
     brush: (t, v, p) => PERC.shaker(t, v*.7, p),
+    kick: (t, v, p) => { const P = pan(p*.2), g = gain(0, P); g.gain.setValueAtTime(v*.9, t); g.gain.setTargetAtTime(0, t + .02, .09); const o = osc("sine", 120, t, t + .5, g); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(46, t + .12);
+      const c = gain(0, P); c.gain.setValueAtTime(v*.15, t); c.gain.setTargetAtTime(0, t, .004); osc("triangle", 900, t, t + .03, c); },
+    snare: (t, v, p) => { const P = pan(p), n = ac.createBufferSource(); n.buffer = noiseBuf; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2400; bp.Q.value = .6; const g = gain(0, P);
+      g.gain.setValueAtTime(v*.32, t); g.gain.setTargetAtTime(0, t, .07); n.connect(bp); bp.connect(g); n.start(t, Math.random()); n.stop(t + .4); const b = gain(0, P); b.gain.setValueAtTime(v*.25, t); b.gain.setTargetAtTime(0, t, .04); osc("triangle", 190, t, t + .2, b); },
+    rim: (t, v, p) => { const P = pan(p), g = gain(0, P); g.gain.setValueAtTime(v*.25, t); g.gain.setTargetAtTime(0, t, .012); osc("square", 1700, t, t + .06, g); },
+    hat: (t, v, p, open) => { const P = pan(p), n = ac.createBufferSource(); n.buffer = noiseBuf; const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 7500; const g = gain(0, P);
+      g.gain.setValueAtTime(v*.13, t); g.gain.setTargetAtTime(0, t, open ? .12 : .018); n.connect(hp); hp.connect(g); n.start(t, Math.random()); n.stop(t + (open ? .6 : .12)); },
+    ride: (t, v, p) => { const P = pan(p); [[3150, 1], [4700, .6], [6350, .4]].forEach(([f, a]) => { const g = gain(0, P); g.gain.setValueAtTime(v*a*.035, t); g.gain.setTargetAtTime(0, t, .35); osc("square", f, t, t + 1.2, g); }); PERC.hat(t, v*.4, p); },
   };
   const INSTRUMENTS = Object.keys(INST);
 
@@ -185,17 +215,59 @@ function createEngine(ac, dest, onNote){
         if(beat === 0 || (beat === 2 && chance(.4))) [0, 2, 4, 6].forEach((k, i) => play("harmony", ch + k, 0, t + (beat ? spb*.5 : 0), spb*1.6, .45, (i - 1.5)*.25));
         play("bass", ch + [0, 2, 4, 5][beat] - (beat === 3 ? 1 : 0), -1, t, spb*.9, .55);   // walking
         if(beat % 2 === 1) hit("brush", t, .4, .3); if(chance(st.density*.4)) play("lead", ch + pick([0, 2, 4, 6, 8]) + L, 0, t + (chance(.5) ? spb*.66 : 0), spb, .4, -.3); }},
+    lofi: {name:"Lo-fi beats", roles:{harmony:"keys", lead:"piano", bass:"upright"}, bpm:78, scale:"dorian", swing:.55, tape:true,
+      step(b, t, spb){ const L = scaleLen(), bar = Math.floor(b/4), beat = b % 4, prog = mem.prog || (mem.prog = pick([[1, 4, 0, 5], [0, 5, 3, 4], [5, 3, 0, 4], [1, 4, 2, 5]])), ch = prog[bar % 4], h = spb/2;
+        if(beat === 0){ [0, 2, 4, 6, 8].forEach((k, i) => play("harmony", ch + k, 0, t + i*.012, spb*3.8, .42, (i - 2)*.15)); play("bass", ch, -1, t, spb*1.6, .6); }
+        if(beat === 2 && chance(.6)) play("bass", ch + pick([0, 4, 7]), -1, t + h, spb*.9, .45);
+        // boom-bap: kick on 1 and the "and" of 2, snare on 2 and 4, hats in swung eighths
+        if(beat === 0 || (beat === 1 && chance(.7))) hit("kick", beat === 1 ? t + h : t, .8, 0);
+        if(beat === 1 || beat === 3) hit("snare", t, .55, .05);
+        hit("hat", t, .5, .25); hit("hat", t + h*(1 + st.swing*.33), .32, .25, chance(.08));
+        if(chance(st.density*.35)){ mem.m = Math.max(L, Math.min(2*L + 2, (mem.m ?? L + 2) + pick([-1, 1, -2, 2]))); play("lead", mem.m, 0, t + (chance(.5) ? h : 0), spb*1.2, .38, -.25); } }},
+    lofiup: {name:"Upbeat lo-fi", roles:{harmony:"keys", lead:"kalimba", bass:"bass"}, bpm:104, scale:"mixolydian", swing:.35, tape:true,
+      step(b, t, spb){ const L = scaleLen(), bar = Math.floor(b/4), beat = b % 4, prog = [0, 5, 3, 4], ch = prog[bar % 4], h = spb/2;
+        if(beat === 0 || beat === 2) [0, 2, 4, 6].forEach((k, i) => play("harmony", ch + k, 0, t + (beat ? h : 0), spb*1.4, .35, (i - 1.5)*.2));
+        play("bass", ch + (beat === 3 ? 4 : 0), -1, t, h*1.2, .5); if(chance(.4)) play("bass", ch + 7, -1, t + h, h*.8, .35);
+        hit("kick", t, beat === 0 ? .85 : .6, 0); if(beat % 2) hit("snare", t, .5, 0); hit("hat", t + h, .4, .3, beat === 3); if(chance(.5)) hit("hat", t + h*.5, .2, .3);
+        for(let k = 0; k < 2; k++) if(chance(st.density*.4)) play("lead", ch + pick([0, 2, 4, 7]) + L, 0, t + k*h, h, .4, -.3); }},
+    cafejazz: {name:"Café jazz", roles:{harmony:"piano", lead:"piano", bass:"upright"}, bpm:132, scale:"ionian", swing:.6, ambience:"cafe",
+      step(b, t, spb){ const L = scaleLen(), bar = Math.floor(b/4), beat = b % 4, h = spb/2, sw = h*(1 + st.swing*.33);
+        // a turnaround and a ii–V–I, as rootless voicings (3rd, 5th, 7th, 9th)
+        const prog = mem.prog || (mem.prog = [0, 5, 1, 4, 2, 5, 1, 4]), ch = prog[bar % prog.length], nx = prog[(bar + 1) % prog.length];
+        if(beat === 0 && chance(.8)) [2, 4, 6, 8].forEach((k, i) => play("harmony", ch + k - L, 1, t + (chance(.4) ? sw : 0) + i*.008, spb*1.1, .3, .15));   // comping, sometimes pushed
+        if(beat === 2 && chance(.5)) [2, 4, 6, 8].forEach((k, i) => play("harmony", ch + k - L, 1, t + sw + i*.008, spb*.6, .25, .15));
+        // a walking bass: chord tones, passing tones, and a chromatic approach to the next bar
+        const walk = [ch, ch + pick([1, 2]), ch + pick([2, 4]), nx + pick([1, -1])]; play("bass", walk[beat], -1, t, spb*.95, .55, -.1);
+        // brushes: ride on every beat and the skipped "and" of 2 and 4, a swish on 2 and 4
+        hit("ride", t, .5, .35); if(beat % 2) { hit("ride", t + sw, .35, .35); hit("brush", t, .5, .2); }
+        if(chance(.25 + st.density*.45)){ mem.m = Math.max(L - 1, Math.min(2*L + 3, (mem.m ?? L + 4) + pick([-2, -1, 1, 2, 1, -1, 3]))); play("lead", mem.m, 0, t + (chance(.5) ? sw : 0), spb*.9, .38, -.2);
+          if(chance(.3)) play("lead", mem.m + pick([-1, 1]), 0, t + sw, h*.8, .3, -.2); } }},
+    rainyday: {name:"Rainy day", roles:{harmony:"piano", lead:"piano", bass:"piano"}, bpm:66, scale:"aeolian", ambience:"window", tape:true,
+      step(b, t, spb){ const L = scaleLen(), bar = Math.floor(b/4), beat = b % 4, prog = [0, 5, 2, 6, 0, 3, 4, 4], ch = prog[bar % 8];
+        if(beat === 0){ play("bass", ch, -1, t, spb*4, .45); [0, 2, 4].forEach((k, i) => play("harmony", ch + k, 0, t + spb*(.5 + i*.5), spb*3, .3, (i - 1)*.3)); }   // a slow broken chord
+        if(beat === 2 && chance(.5)) play("harmony", ch + 6, 0, t, spb*2, .22, .3);
+        if(chance(st.density*.3)){ mem.m = Math.max(L, Math.min(2*L + 2, (mem.m ?? L + 2) + pick([-1, 1, -2, 0]))); play("lead", mem.m, 0, t + (chance(.5) ? spb*.5 : 0), spb*2, .35, -.3); } }},
+    windchimes: {name:"Wind chimes and bells", roles:{lead:"chimes", harmony:"bowl", bass:"temple"}, bpm:60, scale:"majpent", ambience:"wind",
+      step(b, t, spb){ // the wind comes in gusts: a slow random walk sets how often the chimes knock
+        mem.gust = Math.max(0, Math.min(1, (mem.gust ?? .3) + rand(-.18, .18))); const n = Math.floor(mem.gust*st.density*7 + (chance(mem.gust) ? 1 : 0));
+        for(let k = 0; k < n; k++) play("lead", Math.floor(rand(0, 6)), 1, t + rand(0, spb), spb*4, rand(.3, .7), rand(-.8, .8));
+        if(b % 12 === 0 && chance(.6)) play("harmony", pick([0, 2, 4]), 0, t, spb*14, .6, rand(-.4, .4));
+        if(b % 32 === 0) play("bass", 0, -1, t, spb*20, .45); }},
+    water: {name:"Water music (drops)", roles:{lead:"kalimba", harmony:"marimba", bass:"drone"}, bpm:90, scale:"yo", ambience:"stream",
+      step(b, t, spb){ const L = scaleLen(); // drops fall at random, bunching like a dripping eave
+        const n = Math.floor(rand(0, 3*st.density + 1)); for(let k = 0; k < n; k++){ const d = Math.floor(rand(L, 3*L)); play("lead", d, 0, t + rand(0, spb), spb, rand(.25, .55), rand(-.9, .9)); }
+        if(b % 8 === 0 && chance(.5)) play("harmony", pick([0, 2, 4]), 0, t, spb*2, .3, rand(-.5, .5)); if(b % 32 === 0) play("bass", 0, -1, t, spb*33, .35); }},
     sparse: {name:"Silence and single notes", roles:{lead:"comb", harmony:"bell", bass:"gong"}, bpm:40, scale:"hirajoshi",
       step(b, t, spb){ if(chance(.18*st.density + .05)) play(chance(.7) ? "lead" : "harmony", Math.floor(rand(0, scaleLen()*2)), 0, t, spb*4, .5, rand(-.8, .8)); if(b % 32 === 0) play("bass", 0, -2, t, spb*16, .4); }},
   };
 
   /* ---------- the transport ---------- */
   let timer = null, nextT = 0, beat = 0, running = false;
-  function tick(){ const spb = 60/st.bpm; while(nextT < ac.currentTime + .3){ const g = GENRES[st.genre] || GENRES.ambient; try { g.step(beat, nextT + (beat % 2 ? st.swing*spb*.33 : 0), spb); } catch(e){ console.warn(e); } beat++; nextT += spb; } }
+  function tick(){ const spb = 60/st.bpm; while(nextT < ac.currentTime + .3){ const g = GENRES[st.genre] || GENRES.ambient; try { g.step(beat, nextT + (beat % 2 && g.swing == null ? st.swing*spb*.33 : 0), spb); } catch(e){ console.warn(e); } beat++; nextT += spb; } }   // genres that swing their own eighths skip the quarter-note swing
   function start(){ if(running) return; running = true; nextT = ac.currentTime + .1; beat = 0; mem = {}; timer = setInterval(tick, 60); tick(); }
   function stop(){ running = false; clearInterval(timer); timer = null; out.gain.setTargetAtTime(0, ac.currentTime, .3); setTimeout(() => { if(!running) out.gain.value = .9; }, 1500); }
-  function set(o){ const g0 = st.genre; Object.assign(st, o); if(o.genre && o.genre !== g0){ mem = {}; } }
-  function useGenreDefaults(k){ const g = GENRES[k]; st.genre = k; st.bpm = g.bpm; st.roles = Object.assign({}, g.roles); if(g.scale) st.scale = g.scale; if(g.tuning) st.tuning = g.tuning; mem = {}; return st; }
+  function set(o){ const g0 = st.genre; Object.assign(st, o); if(o.genre && o.genre !== g0){ mem = {}; } if("tape" in o) setTape(!!o.tape); }
+  function useGenreDefaults(k){ const g = GENRES[k]; st.genre = k; st.bpm = g.bpm; st.roles = Object.assign({}, g.roles); if(g.scale) st.scale = g.scale; st.tuning = g.tuning || "12tet"; st.swing = g.swing || 0; st.tape = !!g.tape; setTape(st.tape); st.ambience = g.ambience || null; mem = {}; return st; }
   function preview(inst, f){ (INST[inst] || INST.comb)(f || st.root*2, ac.currentTime + .02, .8, .7, 0); }
 
   /* ---------- ambiences ---------- */
@@ -218,11 +290,46 @@ function createEngine(ac, dest, onNote){
         const o = ac.createOscillator(); o.connect(g); for(let i = 0; i < n; i++){ const tt = t + i*.12; o.frequency.setValueAtTime(base*rand(.9, 1.1), tt); o.frequency.exponentialRampToValueAtTime(base*rand(1.2, 1.6), tt + .08); g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(.04, tt + .02); g.gain.linearRampToValueAtTime(0, tt + .1); } o.start(t); o.stop(t + n*.12 + .1); }); loopNoise("lowpass", 400, .7, .03); }
     if(k === "cave"){ loopNoise("lowpass", 200, .7, .06); every(700, () => { if(chance(.5)) drop(rand(900, 1900), .12, .05); }); }
     if(k === "city"){ const n = loopNoise("lowpass", 250, .7, .25); lfo(n.g.gain, .03, .08, .25); every(3000, () => { if(chance(.3)){ const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = rand(380, 520); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.015, t + .3); g.gain.linearRampToValueAtTime(0, t + 1.2); o.connect(g); g.connect(ambOut); o.start(t); o.stop(t + 1.3); } }); }
+    if(k === "cafe"){ // a room of voices: noise through drifting vowel-like resonances, and now and then a cup
+      [[500, 1100], [700, 1500], [400, 2300]].forEach(([f1, f2], i) => { const n = loopNoise("bandpass", f1, 4, .1); lfo(n.fl.frequency, .3 + i*.17, 180, f1); lfo(n.g.gain, .5 + i*.23, .06, .09); const m = loopNoise("bandpass", f2, 6, .04); lfo(m.fl.frequency, .41 + i*.11, 300, f2); });
+      loopNoise("lowpass", 250, .7, .08);
+      every(900, () => { if(!chance(.25)) return; const t = ac.currentTime + rand(0, .5), f = rand(2400, 4200), g = ac.createGain(); g.connect(ambOut); [1, 2.7, 5.1].forEach((k, j) => { const o = ac.createOscillator(), gg = ac.createGain(); o.frequency.value = f*k; gg.gain.setValueAtTime(.03/(j + 1), t); gg.gain.setTargetAtTime(0, t, .08); o.connect(gg); gg.connect(g); o.start(t); o.stop(t + .5); }); }); }
+    if(k === "vinyl"){ loopNoise("bandpass", 4000, .4, .03); every(30, () => { if(chance(.3)) { const t = ac.currentTime + Math.random()*.03, s = ac.createBufferSource(); s.buffer = noiseBuf; const g = ac.createGain(); g.gain.setValueAtTime(rand(.03, .25)*(chance(.05) ? 2 : 1), t); g.gain.setTargetAtTime(0, t, .0015); const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1500; s.connect(hp); hp.connect(g); g.connect(ambOut); s.start(t, Math.random()); s.stop(t + .02); } }); }
+    if(k === "window"){ loopNoise("lowpass", 1400, .5, .2); loopNoise("bandpass", 600, .6, .08); every(45, () => { if(chance(.45)) drop(rand(1200, 3000), .05, .008); }); every(2500, () => { if(chance(.25)) drop(rand(300, 500), .08, .06); }); }
+    if(k === "storm"){ const n = loopNoise("lowpass", 3000, .5, .3); lfo(n.g.gain, .1, .1, .3); loopNoise("bandpass", 400, 1.5, .15); every(4000, () => { if(!chance(.2)) return; const t = ac.currentTime, s = ac.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+        const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.setValueAtTime(900, t); lp.frequency.exponentialRampToValueAtTime(90, t + 4); const g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.7, t + .05); g.gain.setTargetAtTime(0, t + .3, 1.5); s.connect(lp); lp.connect(g); g.connect(ambOut); s.start(t); s.stop(t + 8); }); }
+    if(k === "fountain"){ loopNoise("highpass", 900, .5, .12); loopNoise("bandpass", 2200, .8, .1); every(35, () => { if(chance(.7)) drop(rand(900, 2600), .03, .012); }); }
+    if(k === "harbor"){ const n = loopNoise("lowpass", 500, .7, .22); lfo(n.g.gain, .12, .15, .22); every(1300, () => { if(chance(.3)) drop(rand(250, 450), .1, .05); }); every(9000, () => { if(!chance(.2)) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = rand(880, 1000); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.02, t + .02); g.gain.setTargetAtTime(0, t + .02, 1.5); o.connect(g); g.connect(ambOut); o.start(t); o.stop(t + 6); }); }
     if(k === "roomtone"){ loopNoise("lowpass", 180, .7, .08); const o = ac.createOscillator(); o.frequency.value = 60; const g = ac.createGain(); g.gain.value = .006; o.connect(g); g.connect(ambOut); o.start(); ambNodes.push(o, g); }
   }
+  const NOISE_LEN = 8;
+  const noiseCache = {};
+  function colouredNoise(colour){ if(noiseCache[colour]) return noiseCache[colour]; const fs = ac.sampleRate, N = 1 << Math.ceil(Math.log2(fs*NOISE_LEN)), b = ac.createBuffer(2, N, fs);
+    for(let chn = 0; chn < 2; chn++){ const d = b.getChannelData(chn);
+      if(colour === "velvet"){ const dens = 1500, step = fs/dens; for(let k = 0; k < N/step; k++){ const i = Math.floor(k*step + Math.random()*step); if(i < N) d[i] = Math.random() < .5 ? -1 : 1; } continue; }
+      // white noise in the frequency domain, each bin scaled by the colour's slope, then back to time (the inverse transform is periodic, so the loop is seamless)
+      const re = new Float64Array(N), im = new Float64Array(N);
+      const gainAt = f => { if(f < 15) return 0; const aW = f2 => { const r = 12194**2*f2**4/((f2*f2 + 20.6**2)*Math.sqrt((f2*f2 + 107.7**2)*(f2*f2 + 737.9**2))*(f2*f2 + 12194**2)); return r*1.2589; };
+        switch(colour){ case "pink": return 1/Math.sqrt(f); case "brown": return 1/f; case "blue": return Math.sqrt(f); case "violet": return f; case "grey": return 1/Math.max(.02, aW(f));
+          case "green": return Math.exp(-Math.pow(Math.log2(f/500), 2)/1.2); case "deepbrown": return 1/(f*Math.sqrt(f)); default: return 1; } };
+      for(let k = 1; k < N/2; k++){ const f = k*fs/N, a = gainAt(f), ph = Math.random()*Math.PI*2, g = a*Math.sqrt(-2*Math.log(Math.random() + 1e-12)); re[k] = g*Math.cos(ph); im[k] = g*Math.sin(ph); re[N - k] = re[k]; im[N - k] = -im[k]; }
+      (root.MBDSP ? root.MBDSP.fft : null)(re, im, true); let m = 0; for(let i = 0; i < N; i++) m = Math.max(m, Math.abs(re[i])); for(let i = 0; i < N; i++) d[i] = re[i]/m*.9; }
+    return (noiseCache[colour] = b); }
+  let noiseNodes = null;
+  function noise(opts){ // {colour, level, breathe (0..1, a slow swell like breath or surf), rate (s per breath), width (stereo), tilt}
+    if(noiseNodes){ const n = noiseNodes; n.g.gain.setTargetAtTime(0, ac.currentTime, .15); setTimeout(() => { try { n.s.stop(); n.lfo.stop(); } catch(e){} }, 800); noiseNodes = null; }
+    if(!opts || !opts.colour || opts.colour === "off") return;
+    const s = ac.createBufferSource(); s.buffer = colouredNoise(opts.colour); s.loop = true; s.loopStart = Math.random()*2;
+    const sp = ac.createChannelSplitter(2), mg = ac.createChannelMerger(2), mid = ac.createGain(), cross = [ac.createGain(), ac.createGain()], w = opts.width == null ? 1 : opts.width;
+    s.connect(sp); [0, 1].forEach(c => { const direct = ac.createGain(); direct.gain.value = (1 + w)/2; sp.connect(direct, c); direct.connect(mg, 0, c); cross[c].gain.value = (1 - w)/2; sp.connect(cross[c], c); cross[c].connect(mg, 0, 1 - c); });
+    const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = opts.cutoff || 20000; const g = ac.createGain(), base = (opts.level ?? .3)*.6, br = Math.max(0, Math.min(1, opts.breathe || 0));
+    g.gain.value = 0; g.gain.setTargetAtTime(base*(1 - br/2), ac.currentTime, .2); const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 1/Math.max(1, opts.rate || 8); lg.gain.value = base*br/2; lfo.connect(lg); lg.connect(g.gain);
+    if(br > 0){ const lg2 = ac.createGain(); lg2.gain.value = (opts.cutoff || 12000)*br*.5; lfo.connect(lg2); lg2.connect(lp.frequency); }
+    mg.connect(lp); lp.connect(g); g.connect(dest); s.start(); lfo.start(); noiseNodes = {s, g, lfo}; }
+  const NOISES = [["off","Off"],["white","White: equal power per hertz"],["pink","Pink: equal power per octave (−3 dB/oct)"],["brown","Brown (red): −6 dB/oct, like surf"],["deepbrown","Deep brown: −9 dB/oct, a far roar"],["blue","Blue: +3 dB/oct, a hiss"],["violet","Violet: +6 dB/oct, a sizzle"],["grey","Grey: sounds equally loud at every pitch (inverse A-weighting)"],["green","Green: the middle of the spectrum, around 500 Hz"],["velvet","Velvet: sparse random clicks, 1,500 a second"]];
   const setAmbLevel = v => { ambOut.gain.setTargetAtTime(v, ac.currentTime, .2); };
 
-  return {st, start, stop, set, useGenreDefaults, preview, ambience, setAmbLevel, freq, get running(){ return running; }, out, ambOut, GENRES, INSTRUMENTS, PERC: Object.keys(PERC)};
+  return {st, start, stop, set, useGenreDefaults, preview, ambience, setAmbLevel, freq, noise, NOISES, setTape, _noiseBuffer: c => colouredNoise(c), get running(){ return running; }, out, ambOut, GENRES, INSTRUMENTS, PERC: Object.keys(PERC)};
 }
 
 const API = {TUNINGS, SCALES, scaleOf, degreeCents, AMBIENCES, createEngine, cents2ratio};

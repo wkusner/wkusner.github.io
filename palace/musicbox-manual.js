@@ -1,7 +1,7 @@
 /* The music box's manual, shown in its last drawer. */
 window.MBMANUAL = `<div class="mbx-manual text">
 <h3>The music box: a manual</h3>
-<p>The walnut box on the Entry's right wall opens into a workshop of six drawers. The first three make and shape sound; the fourth brings sound in from elsewhere; the fifth listens to the room with it; the sixth is this. <b>Play</b> and <b>Stop</b>, at the top, belong to the composer; everything else has its own controls. Escape closes the workshop. All of it is computed in your browser as it plays: nothing is recorded or sent anywhere.</p>
+<p>The walnut box on the Entry's right wall opens into a workshop of six drawers. The first three make and shape sound; the fourth brings sound in from elsewhere; the fifth listens to the room with it; the sixth is this. <b>Play</b> and <b>Stop</b>, at the top, belong to the composer; everything else has its own controls, and the noise generator runs on its own. Escape closes the workshop. All of it is computed in your browser as it plays: nothing is recorded or sent anywhere.</p>
 
 <h4>1. Compose</h4>
 <p><b>Kind.</b> Each kind of music is a small set of rules run once a beat:</p>
@@ -18,6 +18,34 @@ window.MBMANUAL = `<div class="mbx-manual text">
 <li><b>Overtone drone</b>: one pitch, with a narrow resonance walking up and down its harmonics, as in Tuvan throat singing.</li>
 <li><b>Lounge</b>: ii–V–I seventh chords, a walking bass, and brushes.</li>
 <li><b>Silence and single notes</b>: almost nothing.</li>
+</ul>
+<p><b>Moods.</b> The row of buttons at the top sets everything at once: the music, its players, the room, the ambience, and the noise. Choose one, then adjust anything below.</p>
+<ul>
+<li><b>Lo-fi beats</b>: electric-piano ninth chords, an upright bass, and a boom-bap kit (kick on one and the "and" of two, snare on two and four, swung hi-hats), all through tape, with vinyl crackle.</li>
+<li><b>Upbeat lo-fi</b>: the same at about 104 bpm, with kalimba and a busier kick.</li>
+<li><b>Café jazz</b>: a piano trio with brushes. The piano comps rootless voicings (third, fifth, seventh, and ninth), sometimes pushed ahead of the beat. The bass walks chord tones and passing tones, with a chromatic step into each bar. The ride plays its spang-a-lang. Behind it is a café: murmuring voices and the odd cup.</li>
+<li><b>Rainy day</b>: slow broken piano chords in a minor key, with rain on the window.</li>
+<li><b>Wind</b>, <b>Water</b>, and <b>Bells</b>. Wind chimes knock as gusts come and go: a slow random walk sets how hard the wind blows, and singing bowls and a temple bell sound under them. Water is drops on a kalimba, bunching like a dripping eave, over a stream.</li>
+<li><b>Drone</b>, <b>Storm</b>, and <b>Change ringing</b>.</li>
+<li><b>Sleep</b> and <b>Focus</b>: no music, just brown or pink noise.</li>
+</ul>
+<p><b>Tape.</b> When tape is on, the music runs through a short delay whose length wavers slowly (wow, about 0.5 Hz) and quickly (flutter, about 6 Hz), which bends the pitch the way a worn cassette does. Then comes a gentle low-pass filter and soft saturation.</p>
+<p><b>Noise.</b> Noise plays on its own, with or without music. Each colour is made in the frequency domain: random phases and amplitudes, with each frequency scaled to the colour's slope, then turned back into sound. Because the inverse Fourier transform is periodic, the eight-second buffer loops without a seam.</p>
+<ul>
+<li><b>White</b>: equal power per hertz.</li>
+<li><b>Pink</b>, or 1/f: equal power per octave, falling 3 dB per octave. It sounds even to most ears.</li>
+<li><b>Brown</b>, or red: 1/f², falling 6 dB per octave. This is Brownian motion, and it sounds like surf.</li>
+<li><b>Deep brown</b>: falling 9 dB per octave.</li>
+<li><b>Blue</b> and <b>violet</b>: rising 3 and 6 dB per octave.</li>
+<li><b>Grey</b>: shaped by the inverse of the A-weighting curve, so it sounds about equally loud at every pitch.</li>
+<li><b>Green</b>: a broad hump around 500 Hz.</li>
+<li><b>Velvet</b>: sparse random ±1 clicks, 1,500 a second. It sounds smooth despite being almost silent, and reverb designers use it.</li>
+</ul>
+<p>The noise has these controls:</p>
+<ul>
+<li><b>Breathing</b> swells the level and the brightness together, over the chosen breath length.</li>
+<li><b>Stereo width</b> runs from mono to two independent channels.</li>
+<li><b>Muffle above</b> is a low-pass filter.</li>
 </ul>
 <p><b>Tempo, density, swing.</b> Tempo is in beats per minute. Density is how likely the optional notes are. Swing delays every other beat.</p>
 <p><b>Root, scale, tuning.</b> The scale's degrees are counted in <i>cents</i>, hundredths of an equal-tempered semitone, so 1200 cents is an octave. The ruler under the menus shows where the degrees fall against the twelve equal semitones. Western scales take their notes from the chosen <b>tuning</b>:</p>
@@ -48,9 +76,10 @@ window.MBMANUAL = `<div class="mbx-manual text">
 <li><b>flute and shakuhachi</b>, with breath noise and vibrato;</li>
 <li><b>bowed</b>, a sawtooth through formants;</li>
 <li><b>metal</b>, gamelan bronze with the paired detuning (ombak) that makes it shimmer;</li>
-<li><b>gong, tanpura, marimba, electric piano, bass, drone, and throat</b>.</li>
+<li><b>gong, tanpura, marimba, electric piano, bass, drone, and throat</b>;</li>
+<li><b>keys</b> (a tine electric piano with tremolo), <b>piano</b>, <b>upright</b> bass, <b>kalimba</b>, <b>chimes</b>, singing <b>bowl</b>, and <b>temple</b> bell.</li>
 </ul>
-<p><b>Ambience.</b> Rain, a tin roof, wind, surf, a stream, a fire, night insects, birds, cave drips, a distant city, and room tone. All are made from noise and oscillators. Ticking <i>put the ambience in the room too</i> sends it through the reverberation as well.</p>
+<p><b>Ambience.</b> Rain, rain on the window, a tin roof, a thunderstorm, wind, surf, a harbor with a bell buoy, a stream, a fountain, a fire, a café, vinyl crackle, night insects, birds, cave drips, a distant city, and room tone. All are made from noise and oscillators. Ticking <i>put the ambience in the room too</i> sends it through the reverberation as well.</p>
 <p><b>The cylinder</b> at the bottom draws the notes just played as pins on a turning drum, passing the comb. Lead notes are red, harmony brown, and bass blue.</p>
 
 <h4>2. Room</h4>
