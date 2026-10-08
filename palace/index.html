@@ -342,6 +342,15 @@ html.skin-myst .primerdock{background:linear-gradient(#efe3c6,#e6d7b4);color:#2b
 .act3d{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);display:none;gap:8px;z-index:5}
 .act3d.on{display:flex} .act3d button{font:400 15px var(--fellsc,serif);letter-spacing:.04em;padding:5px 14px;border-radius:3px;border:1px solid #3d2f20;background:rgba(239,227,198,.94);color:#2b2118;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .act3d button:hover{background:#2b2118;color:#efe3c6}
+.stage3d{position:absolute;left:50%;top:12px;transform:translateX(-50%) translateY(-6px);z-index:5;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;font:400 17px var(--fellsc,serif);letter-spacing:.08em;color:#efe3c6;padding:4px 18px;border-top:1px solid rgba(239,227,198,.5);border-bottom:1px solid rgba(239,227,198,.5);background:rgba(20,15,10,.55)}
+.stage3d.on{opacity:1;transform:translateX(-50%)}
+.staged::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 8px rgba(18,13,9,.9),inset 0 0 0 9px rgba(201,170,110,.55);transition:opacity .4s}
+/* a device's own model in its pop-up, and the things it leads to */
+.ovmodel{float:right;width:250px;margin:0 0 10px 16px;text-align:center} .ovmodel canvas{width:250px!important;height:auto!important;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.ovmodel .note{font-size:12.5px;margin:3px 0} .ovmodel .see{display:flex;flex-direction:column;gap:3px;margin-top:6px;text-align:left}
+.ovmodel .see button{font:inherit;font-size:13.5px;background:none;border:0;border-bottom:1px dotted currentColor;padding:2px 0;cursor:pointer;color:inherit;text-align:left}
+.ovmodel .see b{font-size:12px;letter-spacing:.06em;opacity:.8}
+@media (max-width:640px){ .ovmodel{float:none;margin:0 auto 10px} }
 /* the materials library */
 .matlib .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
 .matlib button.chip{cursor:pointer;font:400 13px var(--chrome,serif);color:var(--ink)} .matlib button.chip.on{background:var(--ink);color:var(--paper)}
@@ -397,17 +406,17 @@ html.skin-myst .primerdock{background:linear-gradient(#efe3c6,#e6d7b4);color:#2b
 <div class="overlay" id="ov"><div class="sheet win"><div class="tb"><button class="box" type="button" id="ovx" aria-label="Close"></button><span class="t" id="ovt"></span></div><div class="wb" id="ovb"></div></div></div>
 <div class="toast" id="toast"></div>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap">
-<script src="data.js?v=20261008d"></script>
-<script src="sky.js?v=20261008d"></script>
-<script src="systems.js?v=20261008d"></script>
-<script src="numerals.js?v=20261008d"></script>
-<script src="reckoning.js?v=20261008d"></script>
-<script src="musicbox-dsp.js?v=20261008d"></script>
-<script src="musicbox-gen.js?v=20261008d"></script>
-<script src="musicbox-manual.js?v=20261008d"></script>
-<script src="musicbox.js?v=20261008d"></script>
-<script src="materials.js?v=20261008d"></script>
-<script src="furniture.js?v=20261008d"></script>
-<script src="palace.js?v=20261008d"></script>
+<script src="data.js?v=20261008h"></script>
+<script src="sky.js?v=20261008h"></script>
+<script src="systems.js?v=20261008h"></script>
+<script src="numerals.js?v=20261008h"></script>
+<script src="reckoning.js?v=20261008h"></script>
+<script src="musicbox-dsp.js?v=20261008h"></script>
+<script src="musicbox-gen.js?v=20261008h"></script>
+<script src="musicbox-manual.js?v=20261008h"></script>
+<script src="musicbox.js?v=20261008h"></script>
+<script src="materials.js?v=20261008h"></script>
+<script src="furniture.js?v=20261008h"></script>
+<script src="palace.js?v=20261008h"></script>
 </body>
 </html>

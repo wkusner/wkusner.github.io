@@ -810,9 +810,10 @@ rooms:
     - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/", info: "The curator's research papers, filed here as they are written."}
     - {hidden: true, kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
     - {kind: ref, icon: books, title: "The shelf of expositions", action: logbook, search: expositions, note: "Mathematicians writing about mathematics: Hardy, Thurston, Mumford, Lockhart, Poincaré, the Gelfand booklets, and more. Many can be read free online.", info: "A shelf of essays and short books on what mathematics is, how it is done, and how it should be taught. Each entry in the log book says whether a free copy is online."}
-    - {kind: device, icon: matcab, mount: pedestal, wall: back, title: "The materials library", action: materials, note: "A plan chest of samples: woods, stones, bricks, cloths, leathers, metals, plasters, and tiles. The house is built from them; try one in a room.", info: "Every sample here is also the recipe for a surface in the house. Pick one, rake the lamp over it, and lay it on the floor or walls of a room you know."}
-    - {kind: device, icon: calcab, mount: pedestal, wall: left, title: "The calendar cabinet", action: calendars, note: "Today in sixteen calendars, and the one the house keeps."}
-    - {kind: device, icon: tkcase, mount: pedestal, wall: right, title: "The case of timekeepers", action: timekeepers, note: "Hourglass, water clock, candle clock, incense seal, wadokei, decimal clock, and Italian hours: choose one for the Entry desk."}
+    - {kind: key, item: plan-sheets, icon: scroll, title: "The missing sheets of the plan", when: "not:has:plan", take: "You take the loose sheets: the parts of the house your folded map leaves out.", info: "Loose survey sheets, numbered to fit into the folded map from the porter's desk. Together they make the full plan."}
+    - {kind: device, icon: matcab, mount: pedestal, wall: back, title: "The materials library", see: ["The numerary", "The case of timekeepers"], action: materials, note: "A plan chest of samples: woods, stones, bricks, cloths, leathers, metals, plasters, and tiles. The house is built from them; try one in a room.", info: "Every sample here is also the recipe for a surface in the house. Pick one, rake the lamp over it, and lay it on the floor or walls of a room you know."}
+    - {kind: device, icon: calcab, mount: pedestal, wall: left, title: "The calendar cabinet", see: ["The case of timekeepers", "The almanac", "The numerary"], action: calendars, note: "Today in sixteen calendars, and the one the house keeps."}
+    - {kind: device, icon: tkcase, mount: pedestal, wall: right, title: "The case of timekeepers", see: ["A carriage clock", "The calendar cabinet", "An hourglass"], action: timekeepers, note: "Hourglass, water clock, candle clock, incense seal, wadokei, decimal clock, and Italian hours: choose one for the Entry desk."}
 
 - id: 23
   closed: renovation
@@ -1061,7 +1062,7 @@ rooms:
   objects:
     - {wall: back, kind: letter, icon: note, title: "A letter, left on the desk", action: letter, info: "A letter from the curator to whoever walks in first: what the house is, and how to get about in it. Read it again any time."}
     - {wall: back, kind: key, item: master-key, icon: key, title: "A ring of keys", take: "You take the ring of keys. Every ordinary lock will open for you now.", info: "The master key. It opens every door that has a lock, though not the ones that open only for a reason."}
-    - {wall: back, kind: key, item: map, icon: map, title: "A folded map", take: "You take the folded map. It fills in as you walk.", info: "A map that fills itself in as you walk: rooms appear on it once you have stood in them."}
+    - {wall: back, kind: key, item: map, icon: map, title: "A folded map", when: "not:has:plan", take: "You take the folded map. It fills in as you walk.", info: "A map that fills itself in as you walk: rooms appear on it once you have stood in them."}
     - {wall: back, kind: case, icon: drawer, title: "The porter's drawer", lock: master-key, holds: [plan, finding-aid], note: "A shallow drawer in the desk, locked. Inside: the full plan of the house and the finding aid.", info: "The porter keeps the full plan and the finding aid locked in the desk. The ring of keys on the desk opens it."}
     - {wall: back, kind: device, icon: book, title: "The guest book", action: register, note: "Sign it, and the Primer will know your name."}
     - {wall: back, kind: device, icon: bell, title: "A brass bell", action: bell, info: "A porter's bell. Ring it and someone, somewhere in the house, may hear."}
@@ -1069,10 +1070,10 @@ rooms:
     - {kind: device, mount: board, wall: left, icon: note, title: "The notice board", action: notices, note: "The problem of the week, the calendar, news, and a wanted card."}
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
-    - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
+    - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", see: ["An astrolabe, its throne empty", "A carriage clock", "The calendar cabinet"], action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
     - {kind: key, item: primer, icon: book, wall: back, title: "A Young Person's Illustrated Primer", when: "not:has:primer", note: "The house's field guide. Touch any glint of light over a thing and the Primer writes down what it is; open it to read your notes, and for the house's lessons."}
     - {kind: case, icon: devcase, wall: right, title: "The case of instruments", lock: master-key, holds: [compass, lantern, musicbox, hourglass, astrolabe], note: "A glass-fronted case, locked: a compass, a lantern, a music box, an hourglass, and an astrolabe, each with its page for the Primer.", info: "Copies of the house's instruments, for visitors to borrow. Each comes with its page; the Primer keeps the page once you take the instrument."}
-    - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
+    - {kind: device, icon: carriage, wall: right, title: "A carriage clock", see: ["The case of timekeepers", "The calendar cabinet", "The almanac"], action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
   marginalia:
     - "This is the front door, and a launch page: the link board is one click away from here, and pressing / anywhere in the house lets you type to go."
   sources:
@@ -1101,7 +1102,7 @@ rooms:
     - {to: 19, wall: back, title: "the lily pond"}
     - {to: 36, wall: front, title: "the garden gate", look: gate}
   objects:
-    - {kind: device, icon: astrolabe, wall: right, item: astrolabe, portable: true, action: astrolabe, title: "An astrolabe with a storm glass", note: "Turn the rete to stand somewhere else under the sky, or at another hour; tap the storm glass to change the weather."}
+    - {kind: device, icon: astrolabe, wall: right, item: astrolabe-bare, portable: true, action: astrolabe, when: "not:has:astrolabe", title: "An astrolabe, its throne empty", see: ["The almanac", "A storm glass"], note: "Turn the rete to stand somewhere else under the sky, or at another hour. The little throne at its top, where a storm glass should sit, is empty.", info: "An astrolabe without its storm glass: it carries the house to another place and hour, but not another weather. The glass is somewhere in the house."}
   marginalia:
     - "Hour lines: tan θ = sin φ · tan h. At the pole they'd be evenly spaced; at the equator they all crowd toward six o'clock."
   bib:
@@ -1194,7 +1195,8 @@ rooms:
     - {kind: device, icon: linkbook, mount: pedestal, wall: left, title: "A linking book: the Archive", action: link, to: 22, note: "A small book on a stand. Its panel shows the archive, moving faintly. Touch it to go there."}
     - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours, info: "When the office is open, and where. The plate on the door outside says the same."}
     - {kind: unwritten, icon: lectern, wall: left, title: "The real office, measured", note: "A model of the actual office: the desk, the shelves, the whiteboard, the window."}
-    - {kind: device, icon: numerary, mount: pedestal, wall: right, title: "The numerary", action: numerals, note: "A number in every way it has been written: cuneiform, khipu, Kaktovik, Cistercian, counting rods, and the rest."}
+    - {kind: key, item: storm-glass, icon: stormglass, wall: right, title: "A storm glass", when: "not:has:astrolabe", see: ["An astrolabe, its throne empty"], take: "You take the storm glass. It would fit something.", info: "A sealed glass of camphor and salts whose crystals grow and dissolve with the weather. It is the size of the empty throne on the astrolabe in the court."}
+    - {kind: device, icon: numerary, mount: pedestal, wall: right, title: "The numerary", see: ["The calendar cabinet", "The materials library"], action: numerals, note: "A number in every way it has been written: cuneiform, khipu, Kaktovik, Cistercian, counting rods, and the rest."}
 
 - id: 36
   closed: renovation
@@ -1840,6 +1842,15 @@ pages:    # one Primer page per thing you can carry; the page is written in when
   musicbox:
     title: "The music box"
     text: "Music made as it plays, in many styles, scales, and tunings; ambiences and coloured noise; and a small laboratory for rooms and their echoes. Opened from the bag, it is a workshop with a manual."
+  plan-sheets:
+    title: "The missing sheets of the plan"
+    text: "Loose survey sheets that fit into the folded map. Carry both, and they fold together into the full plan (the porter's drawer keeps a finished copy)."
+  storm-glass:
+    title: "The storm glass"
+    text: "Camphor and salts sealed in glass; its crystals grow and clear with the weather. It belongs in the empty throne of the astrolabe in the court: carry both and it settles in."
+  astrolabe-bare:
+    title: "The astrolabe, without its glass"
+    text: "Turn the rete and the house stands somewhere else, or at another hour. The throne at the top is empty; with a storm glass in it, it would set the weather too."
   hourglass:
     title: "The hourglass"
     text: "Turned, it sets the house's clock to a time of your choosing, so you can visit a room at night by day, or see the court's dial at noon. Turn it back to return to the real time."

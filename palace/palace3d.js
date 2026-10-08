@@ -102,6 +102,7 @@ function canvasTex(w, h, paint){ const c = document.createElement("canvas"); c.w
 const CHALK = '"Kalam", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive';
 const CHALK_ROWS = [
   ["Form / Perspective", ["On [−1, 1]:  −∂ₓ² u = C,  anchored at 0"], "Description & Conditions", true],
+  ["0. Fundamental Solution (distributional)", ["−∂ₓ² E = δ   ⇒   E(x) = −½ |x|", "(E ∗ f)(x) = ∫ E(x − s) f(s) ds", "−∂ₓ² (E ∗ f) = δ ∗ f = f"], "The free-space kernel, in the sense of distributions, with f = C on [−1, 1] and 0 outside: convolving with E inverts −∂ₓ² on the whole line, with no boundary in sight."],
   ["1. Separated Convolution Form", ["u(x) = (E ∗ C)(x) + ∫₋₁¹ h(x,s) C ds"], "Separates the true free-space convolution from the separate boundary correction term."],
   ["2. Corrector Requirements", ["−∂ₓ² h(x,s) = 0   (inside [−1, 1])", "h(±1, s) = −E(±1 − s) = ½ |±1 − s|"], "The space-variant homogeneous function designed strictly to cancel out E at the zero-anchored boundaries."],
   ["3. Direct Green's Function Form", ["u(x) = ∫₋₁¹ G(x,s) C ds,  where", "G(x,s) = { ½(1+x)(1−s),  x ≤ s", "              { ½(1−x)(1+s),  x > s"], "Combines the free-space fundamental solution and the corrector into a single unified kernel (G = E + h)."],
@@ -110,7 +111,7 @@ function chalkNote(g, w, h){
   const R = rng(7);
   g.fillStyle = "#26302c"; g.fillRect(0,0,w,h);
   for(let i=0;i<220;i++){ g.fillStyle = `rgba(215,222,212,${.012 + R()*.03})`; g.save(); g.translate(R()*w, R()*h); g.rotate((R()-.5)*.6); g.fillRect(-160, -18, 320 + R()*200, 36 + R()*30); g.restore(); }   // old erasures
-  const col = [40, 560, 1330, w - 40], top = 40, rowH = [92, 150, 176, 246, 150];
+  const col = [40, 560, 1330, w - 40], top = 30, rowH = [80, 200, 124, 160, 232, 130];
   const wrap = (txt, x, y, maxW, lh) => { const words = txt.split(" "); let line = "", yy = y; words.forEach(wd => { const t = line ? line + " " + wd : wd; if(g.measureText(t).width > maxW && line){ g.fillText(line, x, yy); line = wd; yy += lh; } else line = t; }); if(line) g.fillText(line, x, yy); };
   g.textBaseline = "alphabetic"; let y = top;
   CHALK_ROWS.forEach((r, i) => { const hh = rowH[i], head = r[3];
@@ -136,7 +137,7 @@ const POST_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(pos
 const POST_FS = `
 precision highp float;
 uniform sampler2D tColor; uniform sampler2D tDepth;
-uniform vec2 res; uniform float dpr, night, time, cnear, cfar, spacing, aoK, exposure;
+uniform vec2 res; uniform float dpr, night, time, cnear, cfar, spacing, aoK, exposure, stageK, focusZ, focusR;
 uniform mat4 projInv; uniform mat4 proj; uniform vec3 paper, ink, paperN, inkN;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
@@ -199,6 +200,9 @@ void main(){
   c *= .965 + .035*hash(floor(px/1.7));
   float vig = smoothstep(1.25, .45, length(vUv - .5)*1.4);
   c = mix(c*.86, c, vig);
+  if(stageK > 0.){ float z = dep < .9999 ? zc : 1e3, away = smoothstep(focusR, focusR*2.8, abs(z - focusZ)), rim = 1. - smoothstep(.98, .42, length((vUv - .5)*vec2(1.25, 1.))*1.45);
+    float m = stageK*clamp(max(away*.85, rim), 0., 1.); vec3 dim = mix(vec3(dot(c, vec3(.333))), c, .35)*mix(vec3(.42,.37,.31), vec3(.3,.28,.26), night);
+    c = mix(c, dim, m*.8); }
   gl_FragColor = vec4(c, 1.);
 }`;
 
@@ -206,7 +210,7 @@ void main(){
 
 const PHOTO_FS = `
 precision highp float;
-uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float time, aoK, night, exposure; uniform mat4 projInv; uniform mat4 proj;
+uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float time, aoK, night, exposure, stageK, focusZ, focusR; uniform mat4 projInv; uniform mat4 proj;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
 vec3 viewPos(vec2 uv){ float d = texture2D(tDepth, uv).x; vec4 p = projInv * vec4(uv*2.-1., d*2.-1., 1.); return p.xyz/p.w; }
@@ -229,6 +233,8 @@ void main(){
   col = pow(col, vec3(1./2.2));
   // a little of the lens: vignette and grain, as on film
   float vig = smoothstep(1.3, .35, length(vUv - .5)*1.5); col *= mix(.78, 1., vig);
+  if(stageK > 0.){ float z = dep < .9999 ? -viewPos(vUv).z : 1e3, away = smoothstep(focusR, focusR*2.8, abs(z - focusZ)), rim = 1. - smoothstep(.98, .42, length((vUv - .5)*vec2(1.25, 1.))*1.45);
+    float m = stageK*clamp(max(away*.85, rim), 0., 1.); col = mix(col, mix(vec3(dot(col, vec3(.333))), col, .3)*.32, m*.82); }
   col += (hash(vUv*res + time) - .5)*.022;
   gl_FragColor = vec4(col, 1.);
 }`;
@@ -252,14 +258,14 @@ export function create(container, hooks){
   const post = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:POST_FS, uniforms:{
     tColor:{value:null}, tDepth:{value:null}, res:{value:new THREE.Vector2()}, dpr:{value:dpr}, night:{value:0}, time:{value:0},
     cnear:{value:camera.near}, cfar:{value:camera.far}, spacing:{value:Q.hatch}, projInv:{value:new THREE.Matrix4()},
-    aoK:{value: Q.ss > 1 ? .85 : 0}, exposure:{value:1}, proj:{value:new THREE.Matrix4()},
+    aoK:{value: Q.ss > 1 ? .85 : 0}, exposure:{value:1}, proj:{value:new THREE.Matrix4()}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6},
     paper:{value:new THREE.Color("#EEE4CF")}, ink:{value:new THREE.Color("#2a1f17")}, paperN:{value:new THREE.Color("#14110d")}, inkN:{value:new THREE.Color("#e9ddc4")} }});
   post.extensions = {derivatives:true};
   const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
   const tri = new THREE.BufferGeometry(); tri.setAttribute("position", new THREE.Float32BufferAttribute([-1,-1,0, 3,-1,0, -1,3,0],3)); tri.setAttribute("uv", new THREE.Float32BufferAttribute([0,0, 2,0, 0,2],2));
   const postMesh = new THREE.Mesh(tri, post); postScene.add(postMesh);
   // the photographic view: no engraving, a tone curve, light reflected from the room, and soft shadow in every corner
-  const photo = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:PHOTO_FS, uniforms:{tColor:{value:null}, tDepth:{value:null}, res:{value:new THREE.Vector2()}, time:{value:0}, aoK:{value:1}, night:{value:0}, exposure:{value:1.0}, projInv:{value:new THREE.Matrix4()}, proj:{value:new THREE.Matrix4()}}});
+  const photo = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:PHOTO_FS, uniforms:{tColor:{value:null}, tDepth:{value:null}, res:{value:new THREE.Vector2()}, time:{value:0}, aoK:{value:1}, night:{value:0}, exposure:{value:1.0}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6}, projInv:{value:new THREE.Matrix4()}, proj:{value:new THREE.Matrix4()}}});
   photo.extensions = {derivatives:true};
   const isPhoto = () => !!(hooks.style && hooks.style() === "photo");
   let envTex = null;
@@ -368,7 +374,7 @@ export function create(container, hooks){
   function step(dir){ if(focusKind()){ exitFocus(); return; } if(plan && plan.HG){ if(!walking) hallStep(dir); return; } const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); walkTo(goal.pos.clone().addScaledVector(f, 2.4*dir)); }
   // step up to something without leaving where you are: the shelves, a picture; any other move steps back
   function peek(eye, aim, opt){ peeking = true; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3;
-    orbit = null; setActions(opt && opt.actions);
+    orbit = null; setActions(opt && opt.actions); stage.title = (opt && opt.title) || "";
     if(opt && opt.orbit){ const d = eye.clone().sub(aim), r = d.length(); orbit = {c: aim.clone(), r, r0: r, az: Math.atan2(d.x, d.z), az0: Math.atan2(d.x, d.z), el: Math.asin(Math.max(-.99, Math.min(.99, d.y/r))), span: opt.span == null ? 1.2 : opt.span, rmin: opt.rmin || r*.45, rmax: opt.rmax || r*1.8, key: opt.key || null}; orbitApply(); } }
   /* ---- orbiting: in a close look at a thing, dragging walks you round it and the wheel brings you nearer ---- */
   let orbit = null;
@@ -376,6 +382,7 @@ export function create(container, hooks){
     goal.pos.copy(p); goal.yaw = Math.atan2(-(o.c.x - p.x), -(o.c.z - p.z)); goal.pitch = Math.atan2(o.c.y - p.y, Math.hypot(o.c.x - p.x, o.c.z - p.z)); look.yaw = 0; look.pitch = 0; dirty = 3; }
   // the buttons that go with a close look at a thing: use it, take it, open it
   const actBar = document.createElement("div"); actBar.className = "act3d"; let actList = [];
+  const stage = {k:0, z:1, r:.6, title:""}, stageTitle = document.createElement("div"); stageTitle.className = "stage3d";
   function setActions(list){ actList = list || []; actBar.innerHTML = ""; actList.forEach(a => { const b = document.createElement("button"); b.type = "button"; b.textContent = a.label; b.addEventListener("click", e => { e.stopPropagation(); a.fn(); }); actBar.appendChild(b); }); }
   /* ---- moving: a few steps toward a door before the next room, and a dissolve between rooms ---- */
   let walking = false;
@@ -386,7 +393,7 @@ export function create(container, hooks){
   function dissolve(){ try { veil.width = Math.max(1, Math.round(canvas.width/2)); veil.height = Math.max(1, Math.round(canvas.height/2)); veil.getContext("2d").drawImage(canvas, 0, 0, veil.width, veil.height);
       veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .5s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
   const flash = document.createElement("div"); flash.className = "flash3d"; container.appendChild(flash);
-  const backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "back3d"; backBtn.textContent = "↩ Step back"; container.appendChild(backBtn); container.appendChild(actBar);
+  const backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "back3d"; backBtn.textContent = "↩ Step back"; container.appendChild(backBtn); container.appendChild(actBar); container.appendChild(stageTitle);
   canvas.addEventListener("wheel", e => { if(!(orbit && peeking)) return; e.preventDefault(); orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*Math.exp(e.deltaY*.0012))); orbitApply(); }, {passive:false});
   backBtn.addEventListener("click", e => { e.stopPropagation(); exitFocus(); });
   window.addEventListener("wending-lightning", () => { if(!plan || !((plan.room.ceiling||"") === "open" || plan.decor.includes("window"))) return;
@@ -417,7 +424,14 @@ export function create(container, hooks){
     cam.yaw += dy*k; cam.pitch += (gp-cam.pitch)*k; cam.pos.lerp(goal.pos, k);
     camera.position.copy(cam.pos); camera.rotation.set(cam.pitch, cam.yaw, 0);
     anims.forEach(a => a(t/1000, dt));
-    const fk = focusKind(); backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back";
+    const fk = focusKind(), staged = fk === "close" || fk === "peek";
+    stage.k += ((staged ? 1 : 0) - stage.k)*(1 - Math.exp(-dt*5)); if(Math.abs((staged ? 1 : 0) - stage.k) < .002) stage.k = staged ? 1 : 0; else dirty = Math.max(dirty, 1);
+    const fov = 62 - 16*stage.k; if(Math.abs(camera.fov - fov) > .01){ camera.fov = fov; camera.updateProjectionMatrix(); }
+    const fp = fk === "peek" ? focusPt : fk === "close" && plan && stations[plan.ahead] ? stations[plan.ahead].top : null;
+    if(fp){ stage.z = -fp.clone().applyMatrix4(camera.matrixWorldInverse).z; stage.r = fk === "close" ? .9 : orbit ? Math.max(.35, orbit.r*.55) : .8; }
+    [post, photo].forEach(m => { m.uniforms.stageK.value = stage.k; m.uniforms.focusZ.value = stage.z; m.uniforms.focusR.value = stage.r; });
+    container.classList.toggle("staged", stage.k > .5); stageTitle.textContent = staged ? (fk === "peek" ? stage.title : (stations[plan.ahead] && stations[plan.ahead].title) || "") : ""; stageTitle.classList.toggle("on", staged && !!stageTitle.textContent);
+    backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back";
     if(moving || anims.length || dirty>0){
       dirty = Math.max(0, dirty-1);
       if(RAW){ camera.layers.enableAll(); renderer.setRenderTarget(null); renderer.render(scene, camera); requestAnimationFrame(frame); return; }
@@ -553,8 +567,13 @@ export function create(container, hooks){
       along(new THREE.BoxGeometry(len, .035, .07), WALL_H - .24, .035, corM);                                        // bed moulding
       along(new THREE.BoxGeometry(len, .12, .03), WALL_H - .32, .015, corM);                                         // fascia
       if(WALL_H > 3.6 && !gothic) along(new THREE.BoxGeometry(len, .045, .03), WALL_H - .78, .015, mat("#8a6f50"));   // the picture rail
-      along(new THREE.BoxGeometry(len, .22, .05), .11, .025, mat("#8f8573"));
-      const bead = along(new THREE.CylinderGeometry(.018, .018, len, 8), .225, .03, mat("#8f8573")); bead.rotation.set(0, ry, Math.PI/2);
+      // the skirting stops at each doorway, so the threshold is clear and level with the floor
+      const skM = mat("#8f8573"), gaps = holes.filter(hh => hh.kind === "door" && hh.sill < .05).map(hh => [hh.at - hh.w/2 - .1, hh.at + hh.w/2 + .1]).sort((a, b) => a[0] - b[0]);
+      let x0 = 0; gaps.concat([[len, len]]).forEach(([g0, g1]) => { const a = Math.max(0, x0), b = Math.min(len, g0); if(b - a > .05){ const mx = (a + b)/2 - len/2, seg = b - a;
+          const at = (y, out) => mid(f).add(u.clone().multiplyScalar(mx)).add(n.clone().multiplyScalar(out)).setY(y);
+          const sk = new THREE.Mesh(new THREE.BoxGeometry(seg, .22, .05), skM); sk.position.copy(at(.11, .025)); sk.rotation.y = ry; scene.add(sk);
+          const bd = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, seg, 8), skM); bd.position.copy(at(.225, .03)); bd.rotation.set(0, ry, Math.PI/2); scene.add(bd); }
+        x0 = Math.max(x0, g1); });
       }
       if(!hedged && !gothic && f.slot >= 0 && len > 5 && (p.room.ceiling || "") !== "open" && !p.decor.includes("shelves")){
         const busy = f.slot >= 0 ? (objsBySlot[f.slot] || []).filter(o => o.mount === "board").length : 0;
@@ -1291,6 +1310,13 @@ export function create(container, hooks){
   function buildDoor(hh, c, u, n, p, f){
     let d = hh.d; const g = new THREE.Group(), yaw = Math.atan2(-u.z, u.x);
     const out = n.clone().negate();
+    // the threshold: a worn stone sill, level with the floor. Where the door leads out to open ground there is a step down beyond it;
+    // coming in from open ground, a step up. A door can say so itself with step: up or step: down.
+    if(!hh.sill || hh.sill < .05){ const sill = new THREE.Mesh(new THREE.BoxGeometry(hh.w + .12, .02, .34), mat("#b4aa95")); sill.position.copy(c).add(out.clone().multiplyScalar(.12)); sill.position.y = .006; sill.rotation.y = yaw; sill.receiveShadow = true; g.add(sill);
+      const here = (p.room.ceiling || "") === "open", there = (d.toCeiling || "") === "open", step = d.step || (!here && there ? "down" : here && !there ? "up" : null);
+      if(step){ const riser = .16, tread = new THREE.Mesh(new THREE.BoxGeometry(hh.w + .1, step === "up" ? riser : .04, .5), mat("#a89e88"));
+        tread.position.copy(c).add(out.clone().multiplyScalar(.55)); tread.position.y = step === "up" ? riser/2 : -riser + .02; tread.rotation.y = yaw; g.add(tread);
+        if(step === "down"){ const lip = new THREE.Mesh(new THREE.BoxGeometry(hh.w + .1, riser, .03), mat("#8f8573")); lip.position.copy(c).add(out.clone().multiplyScalar(.3)); lip.position.y = -riser/2 + .01; lip.rotation.y = yaw; g.add(lip); } } }
     // a passage beyond: dark, receding
     const pass = new THREE.Mesh(new THREE.BoxGeometry(hh.w, hh.h, 1.6), new THREE.MeshBasicMaterial({color: d.open ? "#0f0d0b" : "#2a241c"}));
     pass.position.copy(c).add(out.clone().multiplyScalar(1.1)); pass.position.y = hh.h/2; pass.rotation.y = yaw; g.add(pass);
@@ -1463,7 +1489,7 @@ export function create(container, hooks){
     return () => { const acts = hooks.actionsFor ? hooks.actionsFor(o) : null;
       if(!acts || (orbit && orbit.key === key) || !(plan && plan.close)) return hooks.useObject(o);
       const c = og.getWorldPosition(new THREE.Vector3()); c.y += .1; const d = cam.pos.clone().sub(c).setY(0); if(d.lengthSq() < 1e-4) d.set(0,0,1); d.setLength(.62);
-      peek(c.clone().add(d).setY(c.y + .34), c, {orbit:true, span:1.4, rmin:.3, rmax:1.2, key, actions:acts}); }; }
+      peek(c.clone().add(d).setY(c.y + .34), c, {orbit:true, span:1.4, rmin:.3, rmax:1.2, key, actions:acts, title:o.title}); }; }
   function buildStation(slot, sl, objs, p, R, spot){
     const f = sl.face, u = f.b.clone().sub(f.a).normalize(), n = f.n, yaw = Math.atan2(-u.z, u.x);
     const len = f.a.distanceTo(f.b), free = [len*.5, len*.3, len*.7].find(at => !f.holes.some(h => Math.abs(h.at-at) < h.w/2 + 1.1)) ?? len*.5;
@@ -1499,7 +1525,7 @@ export function create(container, hooks){
     scene.add(g);
     // a close-up viewpoint over this station
     const view = c.clone().add(n.clone().multiplyScalar(.82 + w*.22)).setY(1.42 + w*.08), topW = c.clone().add(n.clone().multiplyScalar(-.05)).setY(topY);
-    stations[slot] = {view, top:topW};
+    stations[slot] = {view, top:topW, title: bookish ? "The bookcase" : objs.some(o => o.kind === "letter") ? "The porter's desk" : "The desk"};
   }
 
 
@@ -1661,7 +1687,7 @@ export function create(container, hooks){
   let winL = []; function onWin(type, fn){ window.addEventListener(type, fn); winL.push([type, fn]); }
   // step up to the dial in the middle of the court and look down at its face (or, for the glass sphere, at the paving)
   function lookAtDial(near){ const from = cam.pos.clone().setY(0); if(from.lengthSq() < .01) from.set(0,0,1); from.normalize();
-    if(near) peek(from.clone().multiplyScalar(1.6).setY(1.9), new THREE.Vector3(0, .92, 0), {orbit:true, span:Math.PI, rmin:.9, rmax:3.2});
+    if(near) peek(from.clone().multiplyScalar(1.6).setY(1.9), new THREE.Vector3(0, .92, 0), {orbit:true, span:Math.PI, rmin:.9, rmax:3.2, title: plan && plan.dialType && plan.dials && plan.dials[plan.dialType] ? plan.dials[plan.dialType].name : "The dial"});
     else peek(from.clone().multiplyScalar(3.2).setY(2.6), new THREE.Vector3(0, 0, 0), {orbit:true, span:Math.PI, rmin:1.6, rmax:5}); }
   function stoneM2(){ return mat("#c4bba6"); }
   function miniDial(k, brass, stone, spot){
@@ -1695,7 +1721,7 @@ export function create(container, hooks){
     const book = model(o.icon, spot, R0); book.position.y = .02; book.scale.multiplyScalar(centre ? 2.2 : 1.6); desk.add(book);
     const pEye = at.clone().add(toward.clone().normalize().multiplyScalar(1.05)).setY(1.5), pAim = at.clone().setY(1.0), pKey = "ped:" + o.title;
     const hit = {kind:"use", get label(){ return orbit && orbit.key === pKey ? o.title + ": use it" : o.title + ": step up to it"; }, onClick:()=>{ const acts = hooks.actionsFor ? hooks.actionsFor(o) : null;
-      if(orbit && orbit.key === pKey || !acts) return hooks.useObject(o); peek(pEye, pAim, {orbit:true, span:1.3, rmin:.55, rmax:2, key:pKey, actions:acts}); }};
+      if(orbit && orbit.key === pKey || !acts) return hooks.useObject(o); peek(pEye, pAim, {orbit:true, span:1.3, rmin:.55, rmax:2, key:pKey, actions:acts, title:o.title}); }};
     g.userData.hit = hit; picks.push(g); glint(g, new THREE.Vector3(.22, 1.25, .1), o, sl.face.slot);
     if(o.icon === "linkbook"){ // the panel glows faintly, and moves
       const glow = new THREE.PointLight("#cfe0ff", .8, 1.6, 2); glow.position.set(0, 1.15, .15); g.add(glow);
@@ -1865,6 +1891,11 @@ export function create(container, hooks){
         const sandM = mat("#c9a86a"); add(new THREE.ConeGeometry(.02,.04,16), sandM, -.08,.05+.02,0); add(new THREE.ConeGeometry(.02,.04,16), sandM, -.08,.05+.06,0, Math.PI,0,0);
         add(new THREE.CylinderGeometry(.008,.008,.07,10), mat("#f1e8d2"), .0,.17,0); add(new THREE.CylinderGeometry(.03,.025,.06,20), mat("#d9d0bb"), .08,.165,0);
         add(new THREE.CylinderGeometry(.035,.035,.012,32), brass, -.06,.33,0, Math.PI/2,0,0); add(new THREE.BoxGeometry(.06,.06,.06), brass, .07,.32,0); add(new THREE.BoxGeometry(.05,.012,.05), mat("#3a1e18"), 0,.04,.02);
+        break; }
+      case "stormglass": { // a sealed glass of camphor crystals on a small brass foot
+        add(new THREE.CylinderGeometry(.03,.034,.02,24), brass, 0,.01); add(new THREE.CylinderGeometry(.022,.022,.16,24), mat("#e8eef0",{transparent:true, opacity:.35, roughness:.05}), 0,.1);
+        for(let k=0;k<7;k++) add(new THREE.ConeGeometry(.006 + k*.0012,.02 + (k%3)*.012,6), mat("#f2f0e6"), (k%3 - 1)*.008, .03 + k*.006, ((k*7)%3 - 1)*.007, 0, k, 0);
+        add(new THREE.SphereGeometry(.022,20,12,0,TAU,0,Math.PI/2), brass, 0,.18);
         break; }
       case "drawer": { // a shallow locked drawer box, with a brass escutcheon
         add(new THREE.BoxGeometry(.3,.07,.2), wood, 0,.035); add(new THREE.BoxGeometry(.27,.05,.004), mat("#7d6450"), 0,.035,.102); add(new THREE.CylinderGeometry(.012,.012,.004,20), brass, 0,.04,.105, Math.PI/2,0,0); add(new THREE.BoxGeometry(.004,.012,.004), mat("#1a1410"), 0,.033,.107);
@@ -2149,7 +2180,7 @@ export function create(container, hooks){
       for(let k=0;k<4;k++){ const dr = new THREE.Mesh(new THREE.BoxGeometry(.44,.28,.012), mat("#8a7a63")); dr.position.set(0,.2+k*.31,.315); cab.add(dr); const hd = new THREE.Mesh(new THREE.BoxGeometry(.12,.02,.02), mat("#b39a62",{metalness:.6})); hd.position.set(0,.27+k*.31,.33); cab.add(hd); const lab = new THREE.Mesh(new THREE.BoxGeometry(.07,.04,.004), mat("#ece6d6")); lab.position.set(0,.31+k*.31,.323); cab.add(lab); }
       place(cab, -4.85, -5.05, 0);
       const Fw = wallAt(faces, 3); if(Fw){ const at = Fw.at(Fw.len*.5, .04), bb = new THREE.Group();
-        const BW = Math.min(4.4, Fw.len*.5), BH = 2.0;
+        const BW = Math.min(4.4, Fw.len*.5), BH = 2.12;
         const fr = new THREE.Mesh(new THREE.BoxGeometry(BW + .16, BH + .16, .05), mat("#5a4634")); bb.add(fr);
         const bc = document.createElement("canvas"); bc.width = 2048; bc.height = Math.round(2048*BH/BW); chalkNote(bc.getContext("2d"), bc.width, bc.height);
         const bt = new THREE.CanvasTexture(bc); bt.colorSpace = THREE.SRGBColorSpace; bt.anisotropy = 8;
@@ -2158,7 +2189,7 @@ export function create(container, hooks){
         slate.position.z = .03; label(slate); bb.add(slate); const tray = new THREE.Mesh(new THREE.BoxGeometry(BW - .1,.04,.1), mat("#5a4634")); tray.position.set(0,-BH/2 - .06,.05); bb.add(tray);
         [[-.4,"#efeee6"],[-.25,"#e9e2b8"],[.1,"#efeee6"]].forEach(([x,c]) => { const ch = new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.08,8), mat(c)); ch.rotation.z = Math.PI/2; ch.position.set(x, -BH/2 - .025, .07); bb.add(ch); });
         const bo = {raw:{title:"The blackboard", action:"blackboard"}}; slate.userData.hit = {kind:"look", label:"The blackboard: read it", onClick:() => hooks.useObject(bo)}; picks.push(slate);
-        bb.position.set(at.x, 1.9, at.z); bb.rotation.y = Fw.yaw; scene.add(bb); }
+        bb.position.set(at.x, 2.33, at.z); bb.rotation.y = Fw.yaw; scene.add(bb); }
       // the balance rocker and its nesting footstool, by the window corner; the staircase cabinet along the left wall
       const rk = balanceRocker(), rkAt = new THREE.Vector3(-3.3, 0, 3.0); rk.group.position.copy(rkAt); rk.group.rotation.y = Math.PI*.8; scene.add(rk.group);
       const fs = nestingStool(); const fsOff = new THREE.Vector3(0, 0, .78).applyAxisAngle(new THREE.Vector3(0,1,0), Math.PI*.8); place(fs, rkAt.x + fsOff.x, rkAt.z + fsOff.z, Math.PI*.8);
@@ -2326,7 +2357,10 @@ export function create(container, hooks){
     const sc = new THREE.Scene(), c2 = new THREE.PerspectiveCamera(35, 520/360, .02, 20); c2.position.set(0,.45,.9); c2.lookAt(0,.12,0);
     sc.add(new THREE.HemisphereLight("#f4efe2","#7d7466",.9)); const dl = new THREE.DirectionalLight("#fff3d9",2.2); dl.position.set(1,2,1.5); dl.castShadow = true; sc.add(dl);
     const plinth = new THREE.Mesh(new THREE.CylinderGeometry(.42,.46,.06,48), mat("#b4aa95")); plinth.position.y = -.03; plinth.receiveShadow = true; sc.add(plinth);
-    const m = model(o.icon, muted(spotHex,.6), rng(hashStr(o.title))); m.scale.multiplyScalar(1.9); m.traverse(x => { if(x.isMesh) x.castShadow = true; }); sc.add(m);
+    const m = model(o.icon, muted(spotHex,.6), rng(hashStr(o.title))); m.scale.multiplyScalar(1.9); m.traverse(x => { if(x.isMesh) x.castShadow = true; });
+    // fit it to the plinth, whatever its size: the largest side about half a metre, standing on the plinth, centred
+    { const bx = new THREE.Box3().setFromObject(m), sz = bx.getSize(new THREE.Vector3()), k = .5/Math.max(.05, sz.x, sz.y, sz.z); m.scale.multiplyScalar(k); const b2 = new THREE.Box3().setFromObject(m), cx = (b2.min.x + b2.max.x)/2, cz = (b2.min.z + b2.max.z)/2;
+      const pv = new THREE.Group(); m.position.set(-cx, -b2.min.y, -cz); pv.add(m); sc.add(pv); var turn = pv; }
     const t2 = new THREE.WebGLRenderTarget(520, 360, {depthTexture:new THREE.DepthTexture(520,360)});
     const pm = post.clone(); pm.uniforms = THREE.UniformsUtils.clone(post.uniforms); pm.uniforms.res.value.set(520,360); pm.uniforms.dpr.value = 1; pm.uniforms.spacing.value = 3.2; pm.uniforms.night.value = 0;
     const ps = new THREE.Scene(); ps.add(new THREE.Mesh(tri, pm));
@@ -2339,8 +2373,8 @@ export function create(container, hooks){
     cv.addEventListener("wheel", e => { e.preventDefault(); dist = Math.max(.45, Math.min(1.8, dist*Math.exp(e.deltaY*.0012))); }, {passive:false});
     let lastT = 0;
     const loop = (t) => { if(!alive || !cv.isConnected){ r2.dispose(); t2.dispose(); return; } const dtt = lastT ? Math.min(.05, (t - lastT)/1000) : 0; lastT = t;
-      if(!held && performance.now() - idle > 2500) spin += dtt*.42; m.rotation.y = spin; m.rotation.x = 0;
-      c2.position.set(0, .12 + Math.sin(.42 + tilt)*.9*dist, Math.cos(.42 + tilt)*.9*dist); c2.lookAt(0,.12,0); r2.setRenderTarget(t2); r2.render(sc, c2); pm.uniforms.tColor.value = t2.texture; pm.uniforms.tDepth.value = t2.depthTexture; pm.uniforms.projInv.value.copy(c2.projectionMatrixInverse); r2.setRenderTarget(null); r2.render(ps, postCam); requestAnimationFrame(loop); };
+      if(!held && performance.now() - idle > 2500) spin += dtt*.42; turn.rotation.y = spin;
+      c2.position.set(0, .2 + Math.sin(.42 + tilt)*1.05*dist, Math.cos(.42 + tilt)*1.05*dist); c2.lookAt(0,.2,0); r2.setRenderTarget(t2); r2.render(sc, c2); pm.uniforms.tColor.value = t2.texture; pm.uniforms.tDepth.value = t2.depthTexture; pm.uniforms.projInv.value.copy(c2.projectionMatrixInverse); r2.setRenderTarget(null); r2.render(ps, postCam); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
     return () => { alive = false; };
   }

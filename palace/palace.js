@@ -40,6 +40,7 @@ const SALTS = [
 const saltOf = () => SALTS.find(s => s.k === S.salt) || SALTS[0];
 const lanternLvl = () => S.inv.includes("lantern") ? (S.lanternLvl||0) : 0;
 if(S.mode && S.mode !== "hardcore" && !S.inv.includes("primer")) S.inv.push("primer");   // the Primer is now the house's field guide: everyone but the hardcore carries it
+["map","plan-sheets"].forEach(k => { if(S.inv.includes("plan")) S.inv = S.inv.filter(x => x !== k); });
 S.pages = S.pages || {}; S.inv.forEach(k => { if(P.pages && P.pages[k] && !S.pages[k]) S.pages[k] = 1; });
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
 
@@ -639,6 +640,7 @@ const ICON = {
   crystal:(g)=>{ for(let j=-2;j<=2;j++) for(let i=-3;i<=3;i++){ const x=i*8+(j&1)*4, y=j*7; if(x*x+y*y<480) E("circle",{cx:x,cy:y,r:2.6,fill:(i===1&&j===0)?"var(--accent)":"var(--ink)"},g);} },
   tree:(g)=>{ const br=(x,y,dx,n)=>{ if(!n) return; [-1,1].forEach(s=>{ E("line",{x1:x,y1:y,x2:x+s*dx,y2:y-10,stroke:"var(--ink)"},g); br(x+s*dx,y-10,dx/2,n-1); }); }; E("line",{x1:0,y1:18,x2:0,y2:10,stroke:"var(--ink)"},g); br(0,10,16,3); },
   book:(g)=>{ E("rect",{x:-14,y:-18,width:28,height:36,rx:2,fill:"url(#s-dark)",stroke:"var(--ink)"},g); E("line",{x1:-9,y1:-18,x2:-9,y2:18,stroke:"var(--ink)",opacity:.5},g); E("rect",{x:-4,y:-9,width:14,height:5,fill:"url(#h-mid)"},g); },
+  stormglass:(g)=>{ E("rect",{x:-7,y:-24,width:14,height:40,rx:6,fill:"var(--paper2)",stroke:"var(--ink)","stroke-width":1.6},g); E("path",{d:"M-4 10 L-1 0 L1 6 L3 -4 L5 10Z",fill:"var(--ink)",opacity:.6},g); E("rect",{x:-11,y:16,width:22,height:6,fill:"var(--spot)",stroke:"var(--ink)"},g); },
   drawer:(g)=>{ E("rect",{x:-24,y:-10,width:48,height:22,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":1.6},g); E("rect",{x:-6,y:-3,width:12,height:5,fill:"var(--spot)",stroke:"var(--ink)"},g); E("circle",{cx:0,cy:6,r:2.2,fill:"var(--ink)"},g); },
   devcase:(g)=>{ E("rect",{x:-22,y:-24,width:44,height:46,fill:"var(--paper2)",stroke:"var(--ink)","stroke-width":1.8},g); E("line",{x1:-22,y1:0,x2:22,y2:0,stroke:"var(--ink)"},g); E("circle",{cx:-10,cy:-11,r:6,fill:"none",stroke:"var(--ink)"},g); E("rect",{x:4,y:-17,width:10,height:12,fill:"var(--spot)",stroke:"var(--ink)"},g); E("path",{d:"M-14 14 L-6 6 L-6 14Z M6 6 h10 v10 h-10Z",fill:"none",stroke:"var(--ink)"},g); E("circle",{cx:18,cy:-20,r:1.6,fill:"var(--ink)"},g); },
   matcab:(g)=>{ E("rect",{x:-22,y:-6,width:44,height:30,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":1.6},g); for(let i=0;i<4;i++) E("line",{x1:-22,y1:1+i*6,x2:22,y2:1+i*6,stroke:"var(--ink)"},g);
@@ -789,7 +791,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors){
     room, frame:S.frame, mirror, band:light, spot:wingColor(room), F, lat:LAT,
     ahead:(1+S.face)%4, node: S.node == null ? null : S.node, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
     decor: room.decor || [], names,
-    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), level: d.level||0, fixture: d.fixture||null, stop: d.stop||0, to: d.to, onClick:()=>tryDoor(d, room)})),
+    doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), level: d.level||0, fixture: d.fixture||null, stop: d.stop||0, to: d.to, step: d.step||null, toCeiling: (ROOMS[String(d.to)]||{}).ceiling||"", onClick:()=>tryDoor(d, room)})),
     ghosts: (ghostDoors||[]).map((d,i) => { const r = d.ghostOf || room; return {id:"g"+i+":"+(d.to||""), ghost:true, wall:act(S.frame, d.wall!=null ? WALLS[d.wall] : 1), label:doorLabel(d, r), name:doorName(d), title:d.title||"", open:false, look: reno(d) ? "boarded" : "", level: d.level||0, stop: d.stop||0, fixture: d.fixture||null}; }),
     landing: room.landings ? landingOf(room) : null, car: room.floors ? carOf(room) : null, cameFrom: S.walk.length > 1 ? String(S.walk[S.walk.length-2]) : null,
     objects: objs.map((o,i) => ({raw:o, mount:o.mount||null, board: o.mount ? boardContent(o) : null, title:o.title, by:o.by||"", kind:o.kind||"device", href:o.href, action:o.action, icon:o.icon || KIND_ICON[o.kind] || "box", bookish:BOOKISH(o), wall:act(S.frame, objWall(o,i,objs.length))})),
@@ -907,7 +909,7 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js?v=20261008d").then(m => {
+  import("./palace3d.js?v=20261008h").then(m => {
     VIEW3D = m.create($("stage"), {
       turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
@@ -1103,11 +1105,24 @@ const ITEMS = {
   "mended-page": {icon:"scroll",    name:"A mended page", use:()=>overlay("The mended page", `<div class="text"><p>Once mended, the page is a short poem about square roots: every number has two, and you cannot choose one consistently all the way around zero. Walk around the pillar once and you have changed your mind about which root you meant.</p><p>At the bottom, in a different hand, a warp word: <b class="mono">SHEET</b>.</p></div>`)},
   "primer":      {icon:"book",      name:"A Young Person's Illustrated Primer", use:()=>primerView()},
   "musicbox":    {icon:"musicbox",  name:"A music box: music, rooms, a sound lab, and sonar", use:()=>musicView()},
+  "astrolabe-bare": {icon:"astrolabe", name:"An astrolabe, its throne empty: sets the place and the date", use:()=>astrolabeView()},
+  "storm-glass": {icon:"stormglass", name:"A storm glass, for the astrolabe's empty throne", use:()=>toast("A storm glass. It would sit in the empty throne of the astrolabe in the court.")},
+  "plan-sheets": {icon:"scroll",    name:"The missing sheets of the plan", use:()=>toast("Loose sheets of the plan. They would fold into the folded map from the porter's desk.")},
   "astrolabe":   {icon:"astrolabe", name:"An astrolabe with a storm glass: sets the place, the date, and the weather", use:()=>astrolabeView()},
 };
-function take(item, msg){ if(S.inv.includes(item)) return; S.inv.push(item); if((P.pages||{})[item]){ S.pages = S.pages || {}; if(!S.pages[item]) S.pages[item] = Date.now(); } sound.take(); save(); award("item:"+item, item==="golden-key"?40:15); toast(msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
+const UPGRADES = [
+  {gives:"plan", from:"map", with:"plan-sheets", say:"You fold the missing sheets into your map. It is the full plan of the house now."},
+  {gives:"astrolabe", from:"astrolabe-bare", with:"storm-glass", say:"The storm glass settles into the astrolabe's empty throne. It clouds, then clears: the astrolabe sets the weather now."}];
+function upgrade(){ let did = null; UPGRADES.forEach(u => {
+    if(S.inv.includes(u.gives)){ if(S.inv.some(k => k === u.from || k === u.with)){ S.inv = S.inv.filter(k => k !== u.from && k !== u.with); did = did || ""; } return; }
+    if(S.inv.includes(u.from) && S.inv.includes(u.with)){ S.inv = S.inv.filter(k => k !== u.from && k !== u.with); S.inv.push(u.gives); S.pages = S.pages || {}; if((P.pages||{})[u.gives] && !S.pages[u.gives]) S.pages[u.gives] = Date.now(); award("upgrade:" + u.gives, 25); did = u.say; } });
+  if(did !== null){ save(); } return did; }
+function take(item, msg){ if(S.inv.includes(item)) return;
+  const sup = UPGRADES.find(u => (u.from === item || u.with === item) && S.inv.includes(u.gives)); if(sup){ toast(`You have ${(ITEMS[sup.gives]||{}).name ? ITEMS[sup.gives].name.toLowerCase() : "the whole thing"} already.`); return; } S.inv.push(item); if((P.pages||{})[item]){ S.pages = S.pages || {}; if(!S.pages[item]) S.pages[item] = Date.now(); } sound.take(); save(); award("item:"+item, item==="golden-key"?40:15); const up = upgrade(); toast(up || msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
 function useObject(o, room){
   if(o.more) return setView(S.face, "ahead");
+  // the pop-up a device opens carries its model, to turn in the hand, and the things it leads to
+  OVSUBJECT = (o.kind === "device" && !NOMODEL.has(o.action) && o.icon && !o.href) ? {o, room, title:null} : null;
   if(o.kind==="key"){ take(o.item, o.take); return; }
   if(o.action==="mode") return modeView();
   if(o.action==="letter") return letterView();
@@ -1127,7 +1142,8 @@ function useObject(o, room){
   if(o.action==="clock") return window.RECKON ? RECKON.timekeeperView() : clockView();
   if(o.kind==="case") return caseView(o);
   if(o.action==="materials") return materialsView();
-  if(o.action==="blackboard") return overlay("The blackboard", `<div class="chalkpage"><p class="chalknote">−∂ₓ² u = C on [−1, 1], anchored at 0 at both ends: four ways to write the same solution.</p><table class="chalk"><tr><th>Form / Perspective</th><th>On [−1, 1] (−∂ₓ² u = C, anchored at 0)</th><th>Description &amp; Conditions</th></tr>
+  if(o.action==="blackboard") return overlay("The blackboard", `<div class="chalkpage"><p class="chalknote">−∂ₓ² u = C on [−1, 1], anchored at 0 at both ends: the free-space kernel, then four ways to write the same solution.</p><table class="chalk"><tr><th>Form / Perspective</th><th>On [−1, 1] (−∂ₓ² u = C, anchored at 0)</th><th>Description &amp; Conditions</th></tr>
+    <tr><td>0. Fundamental Solution (distributional)</td><td>−∂ₓ² E = δ &nbsp;⇒&nbsp; E(x) = −½ |x|<br>(E ∗ f)(x) = ∫ E(x − s) f(s) ds<br>−∂ₓ² (E ∗ f) = δ ∗ f = f</td><td>The free-space kernel, in the sense of distributions, with f = C on [−1, 1] and 0 outside: convolving with E inverts −∂ₓ² on the whole line, with no boundary in sight.</td></tr>
     <tr><td>1. Separated Convolution Form</td><td>u(x) = (E ∗ C)(x) + ∫<sub>−1</sub><sup>1</sup> h(x,s) C ds</td><td>Separates the true free-space convolution from the separate boundary correction term.</td></tr>
     <tr><td>2. Corrector Requirements</td><td>−∂ₓ² h(x,s) = 0 &nbsp;(inside [−1, 1])<br>h(±1, s) = −E(±1 − s) = ½ |±1 − s|</td><td>The space-variant homogeneous function designed strictly to cancel out E at the zero-anchored boundaries.</td></tr>
     <tr><td>3. Direct Green's Function Form</td><td>u(x) = ∫<sub>−1</sub><sup>1</sup> G(x,s) C ds, &nbsp;where<br>G(x,s) = ½(1+x)(1−s) &nbsp;for x ≤ s,<br>G(x,s) = ½(1−x)(1+s) &nbsp;for x &gt; s</td><td>Combines the free-space fundamental solution and the corrector into a single unified kernel (G = E + h).</td></tr>
@@ -1136,7 +1152,7 @@ function useObject(o, room){
   if(o.action==="calendars") return RECKON.calendarsView();
   if(o.action==="timekeepers") return RECKON.caseView();
   if(o.action==="numerals") return RECKON.numeralsView();
-  if(o.action==="astrolabe"){ if(o.item && !S.inv.includes(o.item)) take(o.item, "You lift the astrolabe off its hook. The storm glass in its throne clouds and clears."); return astrolabeView(); }
+  if(o.action==="astrolabe"){ if(o.item && !S.inv.includes(o.item)) take(o.item, o.item === "astrolabe-bare" ? "You lift the astrolabe off its hook. The little throne at its top is empty." : "You lift the astrolabe off its hook."); return astrolabeView(); }
   if(o.action==="combine"){ const uses=o.uses||[]; if(uses.every(k=>S.inv.includes(k))){ S.inv = S.inv.filter(k=>!uses.includes(k)); if(o.solve) S.solved[o.solve]=1; save(); take(o.gives, o.say); award("combine:"+o.gives, 40); } else toast(o.hint || "Something is missing."); return; }
   if(o.action==="directory") return directoryView();
   if(o.action==="codes") return codesView();
@@ -1816,7 +1832,8 @@ function clockView(){
 /* ---------- the astrolabe: carry the house to another place, day, or weather ---------- */
 const PLACES = [["Appleton, Wisconsin", 44.26, -88.41], ["Reykjavík", 64.15, -21.94], ["Tromsø, in the midnight sun", 69.65, 18.96], ["Quito, on the equator", -0.18, -78.47], ["Alexandria, after Eratosthenes", 31.2, 29.92], ["Kyoto", 35.01, 135.77], ["Sydney", -33.87, 151.21], ["the South Pole", -89.99, 0]];
 function astrolabeView(){
-  if(!S.inv.includes("astrolabe") && !S.showAll){ toast("You'd need the astrolabe. It hangs in the Sundial Court."); return; }
+  if(!S.inv.includes("astrolabe") && !S.inv.includes("astrolabe-bare") && !S.showAll){ toast("You'd need the astrolabe. It hangs in the Sundial Court."); return; }
+  const bare = !S.inv.includes("astrolabe") && !S.showAll;
   const d = now(), pad = n => String(n).padStart(2,"0"), v = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const wxo = [["", "live, from the weather service"], ["clear","clear"], ["cloud","broken cloud"], ["overcast","overcast"], ["fog","fog"], ["rain","rain"], ["snow","snow"], ["storm","a storm"]];
   overlay("The astrolabe", `<div class="text"><p>A brass astrolabe, its rete pierced with star pointers, and set into its throne a little storm glass. Turn the rete and the house stands somewhere else under the sky; tap the glass and the weather changes its mind.</p></div>
@@ -1830,10 +1847,10 @@ function astrolabeView(){
         <div class="row widget"><input id="as-d" type="datetime-local" value="${v}" style="width:240px"><select id="as-r"><option value="1">runs at 1×</option><option value="60">60×</option><option value="3600">3600×</option><option value="0">stopped</option></select></div>
         <div class="row"><button class="btn primary" id="as-t" type="button">Set the clock</button> <button class="btn" id="as-tn" type="button">Real time</button></div>
         <p class="note">Times are on your own clock's zone, wherever the house stands.</p></div>
-      <div class="pin"><h3>The storm glass</h3><div class="row widget"><select id="as-w">${wxo.map(([k,l])=>`<option value="${k}" ${(S.wxSet||"")===k?"selected":""}>${l}</option>`).join("")}</select></div>
+      <div class="pin"><h3>The storm glass</h3>${bare ? `<p>The throne at the top of the astrolabe is empty. A storm glass would sit there, and the weather would answer to it.</p>` : ""}<div style="${bare ? "display:none" : ""}"><div class="row widget"><select id="as-w">${wxo.map(([k,l])=>`<option value="${k}" ${(S.wxSet||"")===k?"selected":""}>${l}</option>`).join("")}</select></div>
         <div class="row"><button class="btn primary" id="as-clear" type="button">Clear the sky</button></div>
         <div class="row widget"><label class="note"><input type="checkbox" id="as-sun" ${skyOff("sun")?"":"checked"}> the sun</label> <label class="note"><input type="checkbox" id="as-moon" ${skyOff("moon")?"":"checked"}> the moon</label></div>
-        <p class="note">Clouds dim the sun and hide the stars; under a clear sky a bright moon throws shadows of its own. Put out the sun and the court's sky goes dark, so the stars and planets show by day; put out the moon and its glare and shadows go with it.</p></div>
+        <p class="note">Clouds dim the sun and hide the stars; under a clear sky a bright moon throws shadows of its own. Put out the sun and the court's sky goes dark, so the stars and planets show by day; put out the moon and its glare and shadows go with it.</p></div></div>
     </div>`);
   if(S.clock) $("as-r").value = String(S.clock.rate);
   $("as-p").onchange = e => { const pl = PLACES[+e.target.value]; if(!pl) return; $("as-lat").value = pl[1]; $("as-lon").value = pl[2]; $("as-n").value = pl[0]; };
@@ -2022,7 +2039,7 @@ function wrapText(s, n){ const out=[]; let line=""; s.split(/\s+/).forEach(w => 
 
 /* ---------- save codes and warp codes ---------- */
 const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-const ITEM_ORDER = ["map","plan","finding-aid","master-key","golden-key","compass","lantern","hourglass","primer","page-left","page-right","mended-page","astrolabe","musicbox"];
+const ITEM_ORDER = ["map","plan","finding-aid","master-key","golden-key","compass","lantern","hourglass","primer","page-left","page-right","mended-page","astrolabe","musicbox","plan-sheets","storm-glass","astrolabe-bare"];
 const SOLVED_ORDER = ["galois","island","mended"];
 function roomOrder(){ return P.rooms.map(r => String(r.id)); }
 function crc8(bytes){ let c=0; bytes.forEach(b => { c ^= b; for(let k=0;k<8;k++) c = (c&0x80) ? ((c<<1)^0x07)&255 : (c<<1)&255; }); return c; }
@@ -2269,8 +2286,21 @@ function materialsView(state){
   const draw = () => { raf = 0; ML.swatch(big, sel.id, light, {N:256}); }; draw();
   big.onpointermove = e => { const r = big.getBoundingClientRect(), x = (e.clientX - r.left)/r.width*2 - 1, y = -((e.clientY - r.top)/r.height*2 - 1); light = [x*1.4, y*1.4, .35]; if(!raf) raf = requestAnimationFrame(draw); };
 }
-function overlay(title, html){ if(typeof sound !== "undefined" && sound.ac) sound.page(); $("ovt").textContent=title; $("ovb").innerHTML=html; $("ov").classList.add("open"); }
-function closeOv(){ $("ov").classList.remove("open"); }
+let OVSUBJECT = null;
+const NOMODEL = new Set(["music","materials","blackboard","letter","register","bell","return","codes","notices","links","almanac","officehours","search","directory","mode","link","logbook","catalogue","map","primer","ranks","combine"]);
+function findObject(title){ for(const r of P.rooms){ const o = (r.objects||[]).find(x => x.title === title); if(o) return {o, r}; } return null; }
+function ovModel(sub){ const o = sub.o, ov = $("ovb"); if(!ov || !VIEW3D || S.gfx === "2d") return;
+  const see = (o.see || []).map(findObject).filter(Boolean).filter(x => !x.r.closed || S.showAll);
+  const here = sub.room && cur && String(sub.room.id) !== String(cur.id) ? sub.room : null;
+  const box = document.createElement("div"); box.className = "ovmodel";
+  box.innerHTML = `<div class="ovm-c"></div><p class="note">Drag to turn it; scroll to bring it nearer.</p>${here ? `<p class="note">It is in ${esc(here.name)}. <button class="btn" type="button" data-go="${here.id}">Go there</button></p>` : ""}${see.length ? `<div class="see"><b>SEE ALSO</b>${see.map((x, i) => `<button type="button" data-see="${i}">${esc(x.o.title)}<span class="note"> · ${esc(x.r.name)}</span></button>`).join("")}</div>` : ""}`;
+  ov.insertBefore(box, ov.firstChild);
+  VIEW3D.inspect(box.querySelector(".ovm-c"), Object.assign({}, o), wingColor(sub.room || effective(cur)));
+  box.querySelectorAll("[data-see]").forEach(b => b.onclick = () => { const x = see[+b.dataset.see]; closeOv(); useObject(x.o, x.r); });
+  const g = box.querySelector("[data-go]"); if(g) g.onclick = () => { closeOv(); move(String(g.dataset.go), null, effective(cur)); }; }
+function overlay(title, html){ if(typeof sound !== "undefined" && sound.ac) sound.page(); $("ovt").textContent=title; $("ovb").innerHTML=html; $("ov").classList.add("open");
+  if(OVSUBJECT){ if(OVSUBJECT.title == null) OVSUBJECT.title = title; if(OVSUBJECT.title === title) ovModel(OVSUBJECT); } }
+function closeOv(){ $("ov").classList.remove("open"); OVSUBJECT = null; }
 $("ovx").onclick = closeOv; $("ov").onclick = e => { if(e.target.id==="ov") closeOv(); };
 document.addEventListener("keydown", e => { if(e.key!=="Escape") return; if($("ov").classList.contains("open")) return closeOv(); if(VIEW3D && VIEW3D.focused && VIEW3D.focused()) return VIEW3D.exitFocus(); if(S.close) setView(S.face, null); });
 

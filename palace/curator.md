@@ -461,6 +461,14 @@ Clicking any of them opens drawings. The full build specification is in the proj
 - **Eyes that adjust.** Each standing place meters its own light (a centre-weighted average, read from a 16 × 9 shrink of the picture) and the exposure eases toward it, so a dim corner opens up and a sunny window closes down. Settings → Seeing → Eyes turns it off. A room can bias it with `exposure: 1.2`.
 - **Fittings.** Ordinary rooms have a moulded cornice (fillet, cove, bed moulding, fascia), a picture rail in tall rooms, a skirting with a bead, brass sconces on long clear walls (they glow when the lamps are lit or at night), and a plaster rose where a pendant lamp hangs.
 
+### Close looks as their own pictures, devices that grow, and doorways (v4 part 4b)
+
+- **Close looks are staged.** Looking closely at a desk, a pedestal device, a desk instrument, or the dial narrows the lens (a zoom), frames the picture, sinks everything away from the thing into shadow, and puts its name at the top. Stepping back zooms out again.
+- **Device pop-ups carry the device.** A device's pop-up (the carriage clock, the numerary, the calendar cabinet, the case of timekeepers, the almanac, the astrolabe, the materials library) has its model at the top right, to drag round and scroll nearer. `see: [titles]` on an object adds a "See also" list; each opens that thing's pop-up, with "Go there" when it lives in another room.
+- **Devices grow instead of doubling.** `UPGRADES` in `palace.js`: the folded map plus the missing sheets of the plan (in the Archive) fold into the full plan; the astrolabe with an empty throne (in the court) plus the storm glass (in the Office) becomes the astrolabe with its glass. Only the finished forms are in the porter's drawer and case. You never carry both forms; the lesser one is left behind, and a found part you no longer need stays where it is.
+- **Doorways.** The skirting stops at each door, and a stone sill lies flush with the floor. A door that leads out to open ground has a step down beyond it; coming in from open ground, a step up. A door can say `step: up` or `step: down` itself.
+- **The Office blackboard** now begins with the fundamental solution in the sense of distributions: −∂ₓ²E = δ, E(x) = −½|x|, and −∂ₓ²(E ∗ f) = δ ∗ f = f.
+
 ### Finding things, close looks, and one of each (v4 part 4, October 2026)
 
 - **Everyone starts empty-handed.** The porter's desk has the letter, a folded map, the Primer, and the ring of keys (the master key). Take what you like. Modes are no longer chosen; the tally's mode word just describes what you carry.
