@@ -439,6 +439,13 @@ There are three original pieces, designed for the house (`furniture.js` for the 
 
 Clicking any of them opens drawings. The full build specification is in the project doc `claude/Wending-Furniture-Designs.md`. The cabinet sits at 0.76 of the way along wall slot 0; the rocker is in the window corner.
 
+### Standing places, looking closer, and the Primer (v4, October 2026)
+
+- **Standing places (nodes).** Every ordinary room (not the court, the hall, stairs, or the car) has a middle and a standing place about 2 m in front of each wall. You stand at one at a time and turn on the spot. Hovering the floor shows a ring where a click will take you ("Walk over to the desk"). W walks toward what you face (middle → wall → look closely at the desk); S goes back to the middle. Clicking a desk or bookcase from across the room walks you up to it; clicking it again looks closely. You arrive in a room at the standing place by the door you came in through, facing into the room. State: `S.node` (a wall slot, or null for the middle).
+- **Looking closer** is a mode of its own: only the thing answers clicks; click elsewhere or press Escape to step back.
+- **The Primer is the field guide.** Things with a `note` or an `info` field show a pulsing glint when you stand at their wall. Touching it writes the note into the Primer (`S.notes`), and the Primer's Notes tab lists them by room. Everyone except hardcore players starts with the Primer; hardcore players find it on the Entry's return tray. Use `info:` on any object for a field-guide line separate from its `note`.
+- **Settings.** The menu bar now holds Map, Primer, Finding aid, Full view, and Settings. View, quality, skin, ink, light, sound levels, the music box, annotations, and How to walk are in Settings.
+
 ### Moving and looking
 
 Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. You arrive facing away from the door you came through, so it is behind you.

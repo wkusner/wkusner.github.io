@@ -317,6 +317,13 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
 .mbx-moods{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px} .mbx-moods .btn{font-size:13.5px} .mbx-cv{width:100%;max-width:560px;display:block;margin:6px 0;border:1px solid var(--line,#bbb);background:rgba(255,255,255,.25)} .mbx-modes label{margin:3px 0} .mbx-ops .btn{margin:2px}
 .mbx-manual{max-width:760px;font-size:15px;line-height:1.55} .mbx-manual h4{margin-top:22px} .mbx-manual li{font-size:15px;line-height:1.5;margin:3px 0} .mbx-manual .mono{font-family:ui-monospace,monospace;font-size:13.5px;background:rgba(0,0,0,.05);padding:4px 8px;display:inline-block}
 @media (max-width:700px){ .mbx{inset:0} .mbx-r span{width:80px} }
+
+/* the settings menu: most of the old menu bar lives here now; the hidden buttons still carry their handlers */
+#b-lamp,#b-ink,#b-skin,#b-gfx,#b-q,#b-ann,#b-help{display:none!important}
+.set-sec{margin:14px 0 4px;font:400 13px var(--fellsc,serif);letter-spacing:.14em;text-transform:uppercase}
+.set-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid var(--line,#bbb)} .set-row > span:first-child{width:9em} .set-row .val{flex:1;color:var(--muted,#555)}
+.primercard,html.skin-myst .primercard.win{position:absolute} .primercard{left:50%;bottom:16px;transform:translateX(-50%);width:min(520px,92%);z-index:6;display:none} .primercard.open{display:block}
+.primercard .wb{padding:6px 16px 12px;font-size:15px;line-height:1.45}
 </style>
 </head>
 <body>
@@ -324,6 +331,7 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
   <a class="home" href="/">❦ <b>Wöden Kusner</b></a>
   <span class="sep">·</span><a class="home" href="#0"><b>The Wending House</b></a>
   <button type="button" id="b-map">Map</button>
+  <button type="button" id="b-primer">Primer</button>
   <button type="button" id="b-cat">Finding aid</button>
   <button type="button" id="b-lamp">Lamps</button>
   <button type="button" id="b-ink">Ink</button>
@@ -333,6 +341,7 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
   <button type="button" id="b-full" title="Full screen (F)">Full view</button>
   <button type="button" id="b-ann">Annotations</button>
   <button type="button" id="b-help">How to walk</button>
+  <button type="button" id="b-set" title="Settings: view, light, sound, reading, walking">Settings</button>
 </div>
 <main>
   <div class="roomhead"><span class="roomnum" id="rnum"></span><span><div class="roomname" id="rname"></div><br><div class="wingname" id="rwing"></div></span></div>

@@ -39,6 +39,7 @@ const SALTS = [
 ];
 const saltOf = () => SALTS.find(s => s.k === S.salt) || SALTS[0];
 const lanternLvl = () => S.inv.includes("lantern") ? (S.lanternLvl||0) : 0;
+if(S.mode && S.mode !== "hardcore" && !S.inv.includes("primer")) S.inv.push("primer");   // the Primer is now the house's field guide: everyone but the hardcore carries it
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
 
 /* ---------- the dihedral group D4: g = r^k s^f ---------- */
@@ -661,6 +662,7 @@ const ICON = {
 };
 if(window.RECKON) Object.assign(ICON, RECKON.icons);
 // the reckoning devices (reckoning.js) reach the house through these
+if(window.FURNITURE) FURNITURE.bind({ get overlay(){ return overlay; } });
 if(window.MUSICBOX) MUSICBOX.bind({ get levels(){ return () => musicView({levels:true}); }, get S(){ return S; }, get save(){ return save; }, get sound(){ return sound; }, get audio(){ return audio; }, get toast(){ return toast; }, get award(){ return award; } });
 if(window.RECKON) RECKON.bind({ get S(){ return S; }, get cur(){ return cur; }, get now(){ return now; }, get overlay(){ return overlay; }, get save(){ return save; }, get render(){ return render; },
   get toast(){ return toast; }, get award(){ return award; }, get sunTimes(){ return sunTimes; }, get audio(){ return audio; }, get sound(){ return sound; }, get ICON(){ return ICON; }, get E(){ return E; }, get clockView(){ return clockView; } });
@@ -674,7 +676,7 @@ function hot(el, label, fn){
 }
 
 /* ---------- rendering ---------- */
-let cur = null, LIGHT = {};
+let cur = null, LIGHT = {}; const furnSeen = {};
 // whichever timekeeper stands on the Entry desk takes the carriage clock's place
 function deskTimekeeper(o){ if(o.action !== "clock" || !window.RECKON) return o; const tk = RECKON.tkOf(RECKON.tkKey()); return tk.k === "carriage" ? o : Object.assign({}, o, {icon: tk.icon, title: tk.title, note: tk.note}); }
 function effective(base){
@@ -780,7 +782,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors){
   const names = room.widget && room.widget.names;
   return {
     room, frame:S.frame, mirror, band:light, spot:wingColor(room), F, lat:LAT,
-    ahead:(1+S.face)%4, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
+    ahead:(1+S.face)%4, node: S.node == null ? null : S.node, close: S.close==="ahead" ? "ahead" : null, pitch: S.close==="up" ? 1 : S.close==="down" ? -1 : 0,
     decor: room.decor || [], names,
     doors: allDoors.map((d,i) => ({id:i+":"+(d.to||""), wall:act(S.frame, doorWall(d,i)), label:doorLabel(d, room), name:doorName(d), title:d.title||"", open:open(d, room), look: reno(d) ? "boarded" : (d.look||""), level: d.level||0, fixture: d.fixture||null, stop: d.stop||0, to: d.to, onClick:()=>tryDoor(d, room)})),
     ghosts: (ghostDoors||[]).map((d,i) => { const r = d.ghostOf || room; return {id:"g"+i+":"+(d.to||""), ghost:true, wall:act(S.frame, d.wall!=null ? WALLS[d.wall] : 1), label:doorLabel(d, r), name:doorName(d), title:d.title||"", open:false, look: reno(d) ? "boarded" : "", level: d.level||0, stop: d.stop||0, fixture: d.fixture||null}; }),
@@ -904,11 +906,13 @@ function start3d(){
     VIEW3D = m.create($("stage"), {
       turn, toast, now, quality: defaultQuality, style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
-      closer: slot => { const f = (slot + 3) % 4; if(f===S.face) setView(S.face, "ahead"); else setView(f, null); },
+      closer: slot => { const f = (slot + 3) % 4; if(String(S.node) === String(slot) && f === S.face) setView(S.face, "ahead"); else { S.node = slot; setView(f, null); } },
+      goNode: k => goNode(k), info: o => primerNote(o), noted: o => !!(S.notes && S.notes[noteKey(o)]),
       stepBack: () => setView(S.face, null),
       useObject: o => useObject(o.raw, effective(cur)),
       palaceSeconds: () => now().getTime()/1000,
       sunTimes: () => sunTimes(), reckon: () => window.RECKON,
+      furniture: k => { if(!window.FURNITURE) return; if(k === "rocker"){ if(furnSeen.rocker) return; furnSeen.rocker = true; } FURNITURE.view(k); award("furniture:" + k, 3); },
       planets: () => planetsView(),
       sky: () => skyView(), skyClosed: () => { const sp = $("skypanel"); if(sp) sp.classList.remove("open"); }, footstep: () => sound.step(),
       setDial: t => setDial(t), landing: k => setLanding(effective(cur), k), car: k => carGo(effective(cur), k), telescope: () => telescopeView(), mapRoom: () => mapRoomView(), weatherStation: () => weatherStationView(),
@@ -1831,7 +1835,7 @@ function modeView(){
    </div><p class="note">You can come back to the desk and change your mind. Your walk and experience are kept either way.</p>`);
   document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
     const m = b.dataset.m; S.mode = m;
-    const give = {guided:["map","plan","finding-aid","master-key","compass","lantern","hourglass"], wanderer:["map","compass","lantern"], hardcore:[]}[m];
+    const give = {guided:["map","plan","finding-aid","master-key","compass","lantern","hourglass","primer"], wanderer:["map","compass","lantern","primer"], hardcore:[]}[m];
     if(m!=="guided") S.inv = S.inv.filter(k => !["plan","master-key"].includes(k) || S.awards["earned:"+k]);
     give.forEach(k => { if(!S.inv.includes(k)) S.inv.push(k); });
     save(); closeOv(); render(); toast({guided:"The porter hands you a heavy ring of keys.", wanderer:"The porter hands you a folded map and a compass.", hardcore:"The porter nods, and gives you nothing at all."}[m]);
@@ -2053,6 +2057,20 @@ let planned = null;
 const viewHash = (id, face, close) => "#" + id + (face||close ? "/" + FACES[face||0] : "") + (close ? "/" + close : "");
 function setView(face, close){ S.face = ((face%4)+4)%4; S.close = close || null; save(); planned = "view"; const h = viewHash(cur.id, S.face, S.close); if(location.hash===h) render(); else location.hash = h; }
 function turn(k){ setView(S.face + k, null); }
+// walking between the standing places of a room: k is a wall (you face it), or null for the middle (you keep facing as you were)
+function goNode(k){ S.close = null; if(k == null){ S.node = null; save(); render(); return; } S.node = k; setView((k + 3) % 4, null); if(window.sound && sound.step) sound.step(); }
+const nodeRoomP = room => !!(room && !room.walk && (room.ceiling||"") !== "gothic" && !room.landings && !room.floors);
+/* the Primer keeps notes: touch a glint over a thing and the book writes down what it is */
+const noteKey = o => (o && (o.id || o.title)) || "";
+function primerNote(o){ if(!o) return; S.notes = S.notes || {}; const k = noteKey(o), have = S.inv.includes("primer");
+  if(have && !S.notes[k]){ S.notes[k] = {title: o.title, note: o.info || o.note || "", room: String(cur.id), t: Date.now()}; save(); award("note:" + k, 2); }
+  const n = Object.keys(S.notes).length;
+  primerCard(o.title, have ? (o.info || o.note || "") : "", have ? `Written into your Primer · ${n} note${n === 1 ? "" : "s"}` : "Your Primer would know what this is. It is on the desk in the Entry.");
+}
+function primerCard(title, text, foot){ let c = $("primercard"); if(!c){ c = document.createElement("aside"); c.id = "primercard"; c.className = "primercard win"; document.querySelector(".viewport").appendChild(c); }
+  c.innerHTML = `<div class="tb"><span class="t">${esc(title)}</span><button class="box" type="button" id="pc-x" aria-label="Close"></button></div><div class="wb">${text ? `<p>${text}</p>` : ""}<p class="note">${foot} <a href="#" id="pc-open">Open the Primer</a></p></div>`;
+  c.classList.add("open"); $("pc-x").onclick = () => c.classList.remove("open"); $("pc-open").onclick = e => { e.preventDefault(); c.classList.remove("open"); primerView("notes"); };
+  clearTimeout(primerCard.t); primerCard.t = setTimeout(() => c.classList.remove("open"), 12000); }
 const RENO_NOTE = () => (P.renovation && P.renovation.note) || "Closed for renovation. The house is being rebuilt a few rooms at a time; this one will open again when it's ready. — W. K.";
 function landingOf(room){ const L = (S.landing||{})[room && room.id]; return L != null ? L : ((room && room.start) || 0); }
 function carOf(room){ const L = (S.car||{})[room && room.id]; return L != null ? L : ((room && room.start) || 0); }
@@ -2092,7 +2110,8 @@ function arrive(id){
   // come in facing into the room, with the door you came through behind you
   const prev = S.walk[S.walk.length-1];
   if(prev && String(prev) !== String(id)){ const ds = (effective(cur).doors||[]), i = ds.findIndex(d => String(d.to) === String(prev));
-    if(i >= 0){ const d = ds[i], w = d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3], a = act(S.frame, w); S.face = ((a + 2) % 4 + 3) % 4; } }
+    if(i >= 0){ const d = ds[i], w = d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3], a = act(S.frame, w); S.face = ((a + 2) % 4 + 3) % 4; S.node = d.fixture ? null : a; } else S.node = null; }
+  else S.node = null;
   if(id===START) S.walk = [];
   S.walk.push(id);
   S.visits[id] = (S.visits[id]||0)+1;
@@ -2132,6 +2151,9 @@ document.addEventListener("keydown", e => {
   else if(k==="ArrowRight" || k==="d"){ e.preventDefault(); turn(1); }
   else if((k==="ArrowDown" || k==="s") && VIEW3D && VIEW3D.canWalk && VIEW3D.canWalk() && !S.close){ e.preventDefault(); VIEW3D.step(-1); }
   else if((k==="ArrowUp" || k==="w") && VIEW3D && VIEW3D.canWalk && VIEW3D.canWalk() && !S.close){ e.preventDefault(); VIEW3D.step(1); }
+  else if((k==="ArrowDown" || k==="s") && nodeRoomP(effective(cur)) && !S.close && S.node != null){ e.preventDefault(); goNode(null); }
+  else if((k==="ArrowUp" || k==="w") && nodeRoomP(effective(cur)) && !S.close && String(S.node) !== String((1+S.face)%4)){ e.preventDefault(); const ah = (1+S.face)%4; goNode(S.node == null ? ah : null); }
+  else if((k==="ArrowUp" || k==="w") && nodeRoomP(effective(cur)) && !S.close && VIEW3D && VIEW3D.hasStation && VIEW3D.hasStation((1+S.face)%4)){ e.preventDefault(); setView(S.face, "ahead"); }   // at a wall with a desk, W looks closely at the desk; doors there take a click
   else if(k==="ArrowDown" || k==="s"){ e.preventDefault(); if(S.close) setView(S.face,null); else turn(2); }
   else if(k==="ArrowUp" || k==="w"){ e.preventDefault(); const room=effective(cur); const ds=(room.doors||[]).filter(d=>visible(d,room)); const d=ds.find((d,i)=>pos(d.wall!=null?WALLS[d.wall]:[1,0,2][i%3])===1); if(d) tryDoor(d, room); }
 });
@@ -2211,7 +2233,10 @@ function catalogueView(force){
 }
 function helpView(){
   overlay("How to walk the house", `<div class="text">${P.help || ""}
-  <p><b>Looking.</b> Drag anywhere in the picture to look around, up at the sky or down at the floor; let go past half a quarter turn and you'll face that way. The edges of the picture turn you, and the top and bottom look up and down. Keys: ← → or A D turn, ↑ or W goes through the door ahead, ↓ or S turns around or steps back, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, and F fills the screen. Press / to go anywhere.</p>
+  <p><b>Standing places.</b> Each room has a middle and a standing place in front of each wall that has something on it. You stand at one place at a time and turn on the spot, as in Myst. Hover over the floor to see where a click will take you, and click to glide there. ↑ or W walks toward what you face: from the middle to the wall ahead, then up to the desk or through the door. ↓ or S goes back to the middle, or turns you round if you are already there.</p>
+  <p><b>Looking closer.</b> Click a desk, a shelf, or a stand to walk up to it, and click it again to look closely. While you look closely, only that thing answers your clicks; click anywhere else, or press Escape, to step back. The sky in the court works the same way.</p>
+  <p><b>The Primer.</b> A small glint of light hangs over things that have something to tell, when you stand near them. Touch it and the Primer writes the note down; the Primer button on the menu bar opens your notes.</p>
+  <p><b>Looking around.</b> Drag anywhere in the picture to look around, up, and down; let go past half a quarter turn and you'll face that way. The edges of the picture turn you. Keys: ← → or A D turn, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, F is the full view, C holds up the compass, L steps through the lantern, and / searches the house.</p>
   <p><b>Doors</b> are numbered. Click a door in the picture or in the list. Some doors appear only at certain hours, after certain rooms, or when you are facing a certain way.</p>
   <p><b>Facing.</b> Some corridors turn you, and some flip you as in a mirror. The small F in the top bar shows your frame, an element of the symmetry group of a square. Walk a loop and you may come back turned: that is holonomy. Some things can only be seen in a mirror.</p>
   <p><b>Time.</b> The house keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. The Light button sets your lantern, the house lamps and the shutters.</p>
@@ -2479,13 +2504,22 @@ WIDGETS.knights = (el, spec) => {
 };
 
 /* ---- the Primer ---- */
-function primerView(){
+function primerView(tab){
   const name = S.reader;
   if(!name){
     overlay("A Young Lady's Illustrated Primer", `<div class="text"><p>The book is heavier than it looks. The first page is blank, and then it isn't: <i>Who is reading?</i></p></div><div class="row widget"><input id="pr-n" style="width:220px" placeholder="your name"><button class="btn primary" id="pr-b" type="button">Answer the book</button></div>`);
     const go = () => { const v=$("pr-n").value.trim(); if(!v) return; S.reader=v; save(); primerView(); };
     $("pr-b").onclick = go; $("pr-n").onkeydown = e => { if(e.key==="Enter") go(); }; return;
   }
+  const notes = Object.values(S.notes || {});
+  tab = tab || S.primerTab || (notes.length ? "notes" : "story"); S.primerTab = tab;
+  const tabs = `<p class="row">${[["notes", `Notes (${notes.length})`], ["story", "The story"]].map(([k, n]) => `<button class="btn${k === tab ? " primary" : ""}" type="button" data-ptab="${k}">${n}</button>`).join(" ")}</p>`;
+  if(tab === "notes"){ const byRoom = {}; notes.forEach(n => (byRoom[n.room] = byRoom[n.room] || []).push(n));
+    const total = P.rooms.filter(r => !r.closed && !r.secret).reduce((a, r) => a + (r.objects||[]).filter(o => o.note || o.info).length, 0);
+    overlay(`A Young Lady's Illustrated Primer · ${name}'s notes`, `${tabs}<div class="text" style="max-width:680px">${notes.length ? Object.keys(byRoom).map(rid => `<h4 class="cal-h">${esc((ROOMS[rid]||{}).name || rid)}</h4>${byRoom[rid].sort((a, b) => a.t - b.t).map(n => `<p><b>${esc(n.title)}.</b> ${n.note}</p>`).join("")}`).join("")
+      : `<p>The notes pages are empty. Wherever a thing in the house has something to tell, a small glint of light hangs over it when you stand near; touch the glint and the Primer writes it down.</p>`}
+      <p class="note">${notes.length} of about ${total} things noted in the open rooms.</p></div>`);
+    document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab)); return; }
   const L2 = P.primer || {}, order = P.rooms.filter(r=>!r.secret&&!r.closed).map(r=>String(r.id));
   const unseen = order.filter(id => !S.visits[id]);
   const secret = P.rooms.filter(r=>r.secret && !S.visits[r.id]).map(r=>String(r.id));
@@ -2500,7 +2534,7 @@ function primerView(){
     <div class="row"><button class="btn primary" id="pr-go" type="button">Touch the picture</button></div>`;
   } else html += `<p>${esc(name)} had seen every room, even the hidden ones. The last page is still blank, which is the book's way of asking for a new room.</p>`;
   html += `<p class="note">The book rewrites itself for whoever holds it. Close it and open it again somewhere else.</p></div>`;
-  overlay(`A Young Lady's Illustrated Primer · for ${name}`, html);
+  overlay(`A Young Lady's Illustrated Primer · for ${name}`, tabs + html); document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab));
   const b = $("pr-go"); if(b) b.onclick = () => { closeOv(); toast("The picture swallows you, gently."); move(pick, "e", null); };
 }
 
@@ -2702,6 +2736,31 @@ WIDGETS.rank = (el) => {
 
 /* ---------- controls ---------- */
 $("b-map").onclick = mapView;
+$("b-primer").onclick = () => S.inv.includes("primer") ? primerView() : toast("You haven't the Primer yet. It is on the desk in the Entry.");
+/* ---------- settings: the ways of seeing, light, sound, reading, and walking, gathered in one place ---------- */
+function settingsView(){
+  const row = (label, val, id, act) => `<div class="set-row"><span>${label}</span><span class="val">${val}</span><button class="btn" type="button" data-set="${id}">${act}</button></div>`;
+  const has3d = !!VIEW3D && S.gfx !== "2d";
+  overlay("Settings", `<div class="text" style="max-width:640px">
+    <h4 class="set-sec">Seeing</h4>
+    ${row("View", ({"2d":"woodcut (flat pictures)", photo:"photographic", "3d":"engraved"})[S.gfx||"3d"] || "engraved", "gfx", "Change")}
+    ${has3d ? row("Quality", defaultQuality(), "q", "Change") : ""}
+    ${row("Skin", (S.skin||"myst")==="myst" ? "Myst (journals)" : "HyperCard (stacks)", "skin", "Change")}
+    ${row("Ink", S.ink==="1bit" ? "black only" : "two colours", "ink", "Change")}
+    ${has3d ? row("Full view", "the picture fills the screen (F)", "full", "Go") : ""}
+    <h4 class="set-sec">Light</h4>${row("Light", "your lantern, the house lamps, the shutters", "lamp", "Open")}
+    <h4 class="set-sec">Sound</h4>${row("Sound", S.snd && S.snd.on ? "on" : "off", "snd", "Levels")}${row("Music", "the music box in the Entry, or in your bag", "mbox", "Open")}
+    <h4 class="set-sec">Reading</h4>${row("Annotations", S.annot ? "shown beside each room" : "hidden", "ann", S.annot ? "Hide" : "Show")}${row("Primer", S.inv.includes("primer") ? Object.keys(S.notes||{}).length + " notes" : "not yet found", "primer", "Open")}
+    <h4 class="set-sec">Walking</h4>${row("How to walk", "keys, clicks, and the standing places", "help", "Read")}
+    <p class="note">The map and the finding aid stay on the menu bar; everything else is here.</p></div>`);
+  const click = id => { const b = $("b-" + id); if(b) b.onclick(); };
+  document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const id = b.dataset.set;
+    if(id === "lamp"){ closeOv(); return lightView(); } if(id === "help"){ return helpView(); } if(id === "full"){ closeOv(); return fullView(); }
+    if(id === "snd"){ return musicView({levels:true}); } if(id === "mbox"){ closeOv(); return window.MUSICBOX ? MUSICBOX.open() : musicView({levels:true}); }
+    if(id === "primer"){ return S.inv.includes("primer") ? primerView() : toast("The Primer is on the desk in the Entry."); }
+    click(id); setTimeout(settingsView, 50); });
+}
+$("b-set").onclick = settingsView;
 $("b-cat").onclick = catalogueView;
 $("b-help").onclick = helpView;
 $("b-ann").onclick = () => { S.annot = !S.annot; save(); annotations(effective(cur)); if(S.annot) $("annwin").scrollIntoView({behavior:"smooth",block:"nearest"}); };

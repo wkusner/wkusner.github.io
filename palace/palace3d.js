@@ -192,7 +192,7 @@ export function create(container, hooks){
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({color:new THREE.Color(c).multiplyScalar(k), side:THREE.DoubleSide})); pl.position.set(x,y,z); pl.lookAt(0,0,0); es.add(pl); });
     envTex = pm.fromScene(es, .04).texture; pm.dispose(); return envTex; }
 
-  let scene = new THREE.Scene(), key = null, picks = [], anims = [], stations = {}, slots = {}, plan = null, labelDim = 1;
+  let scene = new THREE.Scene(), key = null, picks = [], anims = [], stations = {}, slots = {}, plan = null, labelDim = 1, glints = [], nodeMarks = [];
   const depthOnly = new THREE.MeshBasicMaterial({colorWrite:false});
   // lettering, pictures and the sky are printed on top of the engraving, so they stay legible
   function label(mesh){ const old = mesh.material; mesh.material = new THREE.MeshBasicMaterial({map:old.map||null, color:new THREE.Color(old.color||"#ffffff").multiplyScalar(labelDim), side:old.side||THREE.FrontSide, toneMapped:false, transparent:old.transparent, opacity:old.opacity}); old.dispose(); mesh.layers.set(1); return mesh; }
@@ -237,11 +237,13 @@ export function create(container, hooks){
   let lastHit = null, walkPos = null, walkRoom = null;
   function pickAt(cx, cy){
     const r = canvas.getBoundingClientRect(), x = cx - r.left, y = cy - r.top;
-    const z = zoneAt(x, y); if(z) return z;
+    const z = zoneAt(x, y);
     mouse.set(x/r.width*2-1, -(y/r.height)*2+1);
     ray.setFromCamera(mouse, camera);
     const hits = ray.intersectObjects(picks, true);
-    for(const h of hits){ let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; lastHit = h.point.clone(); return o.userData.hit; } }
+    // things in the picture win over the turning edges, except for walking, which the edges win
+    for(const h of hits){ let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; if(z && o.userData.hit.kind === "walk") return z; lastHit = h.point.clone(); return o.userData.hit; } }
+    if(z) return z;
     const f = focusKind(); if(f) return {kind:"back", label: f === "sky" ? "Come back down" : "Step back", onClick: exitFocus};
     return null;
   }
@@ -264,7 +266,7 @@ export function create(container, hooks){
       const base = goal.pitch; look.pitch = Math.max(-1.35 - base, Math.min(1.52 - base, look.pitch));
       drag.x = e.clientX; drag.y = e.clientY; dirty = 3; return; }
     const h = pickAt(e.clientX, e.clientY); hover = h;
-    canvas.dataset.cursor = h ? h.kind : "none"; showAim(h && h.kind === "walk" && lastHit ? (plan && plan.HG ? null : lastHit) : null);
+    canvas.dataset.cursor = h ? h.kind : "none"; showAim(h && h.kind === "walk" ? (h.at || (lastHit && !(plan && plan.HG) ? lastHit : null)) : null);
     if(h && h.label){ const r = container.getBoundingClientRect(); tip.textContent = h.label; tip.style.left = Math.min(e.clientX - r.left + 16, r.width - 220) + "px"; tip.style.top = (e.clientY - r.top + 18) + "px"; tip.classList.add("on"); }
     else tip.classList.remove("on");
   });
@@ -338,6 +340,7 @@ export function create(container, hooks){
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5), stand:new THREE.Vector3(0,EYE,0)};
     let pos, yaw = Math.atan2(-sl.dir.x, -sl.dir.z), pitch = p.pitch*((p.room.ceiling||"")==="open" && p.pitch>0 ? 1.32 : 0.95);
     if(p.close==="ahead" && stations[p.ahead]){ const st = stations[p.ahead]; pos = st.view.clone(); pitch = -0.66; yaw = Math.atan2(-(st.top.x-pos.x), -(st.top.z-pos.z)); }
+    else if(nodeRoom(p) && p.node != null && nodePos(p.node)){ pos = nodePos(p.node); if(String(p.node) === String(p.ahead) && stations[p.ahead] && !p.pitch) pitch = -.3; }
     else { pos = sl.stand.clone(); }
     if(p.room.landings){ const kL = p.landing || 0, turnYaw = -(((p.ahead || 1) - 1 + 4) % 4)*Math.PI/2; pitch = p.pitch*.95 - .14;
       if(stairRoom === p.room.id && stairAt != null && stairAt !== kL && !walking){ stairTransit(p, stairAt, kL); pos = goal.pos.clone(); yaw = goal.yaw; }
@@ -357,6 +360,9 @@ export function create(container, hooks){
           const k = nearestNode(G, lv, at || pos); if(k >= 0){ walkPos = G.nodes[lv][k].clone(); if(out != null) setTimeout(() => faceYaw(out), 30); } } }
       pos = walkPos.clone(); } else if(walkRoom !== p.room.id) walkPos = null; walkRoom = p.room.id;   // in rooms you can walk, a turn turns you where you stand
     if(skyOn && !(p.room.ceiling === "open")) skyOn = false;
+    // the info spots of a wall glint only when you stand at it, or look closely at it
+    glints.forEach(gl => { gl.mesh.visible = !p.close ? (p.node != null && String(gl.slot) === String(p.node)) : String(gl.slot) === String(p.ahead); });
+    nodeMarks.forEach(m => { m.visible = !p.close && String(m.userData.node) !== String(p.node == null ? "mid" : p.node); });
     goal.pos.copy(pos); goal.yaw = yaw; goal.pitch = skyOn ? 1.2 : pitch;
     if(p.snap){ cam.pos.copy(pos); cam.yaw = yaw; cam.pitch = pitch; }
     post.uniforms.night.value = p.band==="night" ? 1 : 0;
@@ -367,7 +373,7 @@ export function create(container, hooks){
   function build(p){
     scene.traverse(o => { if(o.geometry) o.geometry.dispose(); if(o.material){ [].concat(o.material).forEach(m => { if(m.map) m.map.dispose(); m.dispose(); }); } });
     winL.forEach(([ty, fn]) => window.removeEventListener(ty, fn)); winL = [];
-    scene = new THREE.Scene(); picks = []; anims = [];
+    scene = new THREE.Scene(); picks = []; anims = []; glints = []; nodeMarks = [];
     if(isPhoto()){ scene.environment = roomEnvironment(); scene.environmentIntensity = p.band === "night" ? .15 : .45; } stations = {}; slots = {}; labelDim = p.band==="night" ? .72 : p.band==="dusk" ? .9 : 1;
     const hedged = (p.room.decor||[]).includes("hedges");
     WALL_H = p.room.height || (hedged ? 2.9 : (p.room.ceiling==="open") ? 3.3 : 4.2);
@@ -502,11 +508,22 @@ export function create(container, hooks){
       boards.forEach((o,i) => buildBoard(sl, o, i, boards.length, p, spot));
       stands.forEach((o,i) => buildPedestal(sl, o, i, p, spot));
       if(loose.length) buildStation(+sk, sl, loose, p, R, spot); });
+    if(nodeRoom(p)){ const wallsWith = {}; p.objects.forEach(o => (wallsWith[o.wall] = wallsWith[o.wall] || []).push(o.title)); p.doors.forEach(d => (wallsWith[d.wall] = wallsWith[d.wall] || []).push(d.label + (d.name ? " " + d.name : "")));
+      const disc = (pos, node, label) => { const m = new THREE.Mesh(new THREE.CircleGeometry(.75, 24), new THREE.MeshBasicMaterial({visible:false})); m.rotation.x = -Math.PI/2; m.position.set(pos.x, .01, pos.z); m.userData.node = node;
+        m.userData.hit = {kind:"walk", label, at: new THREE.Vector3(pos.x, 0, pos.z), onClick:() => hooks.goNode && hooks.goNode(node === "mid" ? null : node)}; scene.add(m); picks.push(m); nodeMarks.push(m); };
+      Object.keys(slots).forEach(k => { const np = nodePos(k); if(!np) return; const os = p.objects.filter(o => String(o.wall) === String(k)), ds = p.doors.filter(d => String(d.wall) === String(k)); if(!os.length && !ds.length) return;
+        const board = os.find(o => o.mount === "board"), stand = os.find(o => o.mount && o.mount !== "board"), loose = os.filter(o => !o.mount);
+        const what = loose.length ? (loose.some(o => o.bookish) ? "the bookcase" : "the desk") + (loose.length > 1 ? ` (${loose.length} things)` : `: ${loose[0].title}`) : board ? board.title.replace(/^the /i, "the ") : stand ? stand.title : `the door, ${ds[0].label}${ds[0].name ? " " + ds[0].name : ""}`;
+        disc(np, k, "Walk over to " + what.charAt(0).toLowerCase() + what.slice(1)); });
+      const ms = (slots[p.ahead] || slots[0] || {stand:new THREE.Vector3(0, EYE, 0)}).stand; disc(new THREE.Vector3(0, 0, 0), "mid", "Back to the middle of the room"); }
     if(p.envK != null) scene.traverse(o => { if(o.material) [].concat(o.material).forEach(m => { if("envMapIntensity" in m) m.envMapIntensity = p.envK; }); });
     scene.fog = (p.wxKind === "fog" && (p.room.ceiling||"") === "open") ? new THREE.Fog(night ? "#24262a" : "#d8d8d2", 2.5, 16) : p.hallFog ? p.hallFog : night ? new THREE.Fog("#0d0c0b", p.half > 12 ? 30 : 10, p.half > 12 ? 85 : 30) : null;
   }
 
   function mid(f){ return f.a.clone().add(f.b).multiplyScalar(.5); }
+  /* ---- nodes: in an ordinary room you stand in the middle, or at a standing place in front of a wall; you turn on the spot and glide between them ---- */
+  const nodeRoom = p => !!(p && p.room && !p.room.walk && (p.room.ceiling || "") !== "gothic" && !p.room.landings && !p.room.floors);
+  function nodePos(k){ const sl = slots[k]; if(!sl) return null; const d = sl.center.clone().setY(0), L = d.length(); if(L < .5) return null; const back = Math.min(2.1, L*.55); return d.multiplyScalar(1 - back/L).setY(EYE); }
   function freeSpot(len, holes, w){ const cands = [len*.25, len*.75, len*.5, len*.15, len*.85]; return cands.find(c => !holes.some(h => Math.abs(h.at-c) < h.w/2 + w/2 + .25)) ?? null; }
 
   // room outlines in plan: faces in order, each with its inward normal and which compass slot it serves
@@ -1274,10 +1291,18 @@ export function create(container, hooks){
     const frame = new THREE.Mesh(new THREE.BoxGeometry(bw+.12, bh+.12, .06), mat("#4a3b2e")); frame.position.copy(c); frame.position.y = 2.15; frame.rotation.y = yaw; frame.castShadow = true; scene.add(frame);
     const m = label(new THREE.Mesh(new THREE.PlaneGeometry(bw, bh), mat("#ffffff",{map:tex}))); m.position.copy(c).add(f.n.clone().multiplyScalar(.035)); m.position.y = 2.15; m.rotation.y = yaw; scene.add(m);
     frame.userData.hit = {kind: o.raw && o.raw.action==="links" ? "open" : "look", label: o.title, onClick:()=>hooks.useObject(o)}; picks.push(frame);
-    m.userData.hit = frame.userData.hit; picks.push(m);
+    m.userData.hit = frame.userData.hit; picks.push(m); glint(scene, c.clone().add(u.clone().multiplyScalar(bw/2 - .1)).add(f.n.clone().multiplyScalar(.12)).setY(2.15 + bh/2 - .1), o, f.slot);
   }
 
   /* ---- stations: a desk, a table, or a low bookcase, with the things on it ---- */
+  // an info spot: a small glint of light over a thing; touching it lets the Primer tell you about it
+  let glintTex = null;
+  function glint(parent, at, o, slot){ if(!o || !(o.raw && (o.raw.note || o.raw.info))) return;
+    if(!glintTex) glintTex = canvasTex(64, 64, (g, w, h) => { const gr = g.createRadialGradient(w/2, h/2, 0, w/2, h/2, w/2); gr.addColorStop(0, "rgba(255,248,220,1)"); gr.addColorStop(.25, "rgba(255,226,150,.85)"); gr.addColorStop(1, "rgba(255,210,120,0)"); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.strokeStyle = "rgba(255,250,230,.9)"; g.lineWidth = 2; g.beginPath(); g.moveTo(w/2, 8); g.lineTo(w/2, h - 8); g.moveTo(8, h/2); g.lineTo(w - 8, h/2); g.stroke(); });
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({map: glintTex, transparent:true, depthTest:false, depthWrite:false, toneMapped:false})); s.scale.setScalar(.11); s.position.copy(at); s.layers.set(1); s.renderOrder = 10; parent.add(s);
+    const seen = hooks.noted && hooks.noted(o.raw); s.material.opacity = seen ? .45 : 1;
+    s.userData.hit = {kind:"info", label: (seen ? "In your Primer: " : "What is it? ") + o.title, onClick:() => { hooks.info && hooks.info(o.raw); s.material.opacity = .45; dirty = 2; }}; picks.push(s);
+    const ph = Math.random()*6; anims.push(t => { if(s.visible){ s.scale.setScalar(.09 + .025*Math.sin(t*2.2 + ph)); } }); glints.push({mesh: s, slot}); }
   function buildStation(slot, sl, objs, p, R, spot){
     const f = sl.face, u = f.b.clone().sub(f.a).normalize(), n = f.n, yaw = Math.atan2(-u.z, u.x);
     const len = f.a.distanceTo(f.b), free = [len*.5, len*.3, len*.7].find(at => !f.holes.some(h => Math.abs(h.at-at) < h.w/2 + 1.1)) ?? len*.5;
@@ -1300,14 +1325,15 @@ export function create(container, hooks){
       const tg = model("tray", spot, R); tg.scale.setScalar(1.35); tg.position.set(w/2 - .55, topY+.035, .12); tg.traverse(m => { if(m.isMesh) m.receiveShadow = true; });
       tg.userData.hit = {kind:"use", label: trayO.title + (onTray.length ? "" : " (empty: everything is in your bag)"), onClick:()=>hooks.useObject(trayO)}; g.add(tg); picks.push(tg);
       onTray.forEach((o, k) => { const og = model(o.icon, spot, R); og.scale.multiplyScalar(1.15); og.position.set(w/2 - .55 - .26 + (k%2)*.28, topY+.055, .12 - .1 + Math.floor(k/2)*.17); og.rotation.y = (R()-.5)*.6;
-        og.traverse(m => { if(m.isMesh) m.castShadow = true; }); og.userData.hit = {kind:"take", label: o.title, onClick:()=>hooks.useObject(o)}; g.add(og); picks.push(og); });
+        og.traverse(m => { if(m.isMesh) m.castShadow = true; }); og.userData.hit = {kind:"take", label: o.title, onClick:()=>hooks.useObject(o)}; g.add(og); picks.push(og);
+        glint(g, new THREE.Vector3(w/2 - .55 - .26 + (k%2)*.28 + .08, topY + .26, .12 - .1 + Math.floor(k/2)*.17), o, slot); });
     }
     const spacing = (w-.4 - (trayO ? 1.1 : 0))/Math.max(1, shown.length-1 || 1);
     shown.forEach((o, i) => {
       const og = model(o.icon, spot, R); og.scale.multiplyScalar(1.35); const x = shown.length===1 ? (trayO ? -w/2 + .5 : 0) : -w/2+.2 + i*spacing;
       og.position.set(x, topY+.035, .05 + (i%2)*.12); og.rotation.y = (R()-.5)*.5; og.traverse(m => { if(m.isMesh){ m.castShadow = true; } });
       og.userData.hit = {kind: o.kind==="key" ? "take" : o.href ? "open" : o.action ? "use" : "look", label: o.title + (o.by ? " · " + o.by : ""), onClick:()=>hooks.useObject(o)};
-      g.add(og); picks.push(og);
+      g.add(og); picks.push(og); glint(g, new THREE.Vector3(x + .12, topY + .32, .05 + (i%2)*.12), o, slot);
     });
     scene.add(g);
     // a close-up viewpoint over this station
@@ -1506,7 +1532,7 @@ export function create(container, hooks){
     const slab = new THREE.Mesh(new THREE.BoxGeometry(centre ? .78 : .52, .04, centre ? .58 : .4), wood); slab.castShadow = true; desk.add(slab);
     const lip = new THREE.Mesh(new THREE.BoxGeometry(centre ? .78 : .52, .05, .02), wood); lip.position.set(0, .04, (centre ? .29 : .2)); desk.add(lip);
     const book = model(o.icon, spot, R0); book.position.y = .02; book.scale.multiplyScalar(centre ? 2.2 : 1.6); desk.add(book);
-    const hit = {kind:"use", label: o.title, onClick:()=>hooks.useObject(o)}; g.userData.hit = hit; picks.push(g);
+    const hit = {kind:"use", label: o.title, onClick:()=>hooks.useObject(o)}; g.userData.hit = hit; picks.push(g); glint(g, new THREE.Vector3(.22, 1.25, .1), o, sl.face.slot);
     if(o.icon === "linkbook"){ // the panel glows faintly, and moves
       const glow = new THREE.PointLight("#cfe0ff", .8, 1.6, 2); glow.position.set(0, 1.15, .15); g.add(glow);
       anims.push(t => { glow.intensity = .6 + .25*Math.sin(t*1.7); }); }
@@ -2104,5 +2130,5 @@ export function create(container, hooks){
 
   // a small picture of the room as it is now, for the linking books' panels
   function thumb(){ const c = document.createElement("canvas"); c.width = 480; c.height = 270; c.getContext("2d").drawImage(canvas, 0, 0, 480, 270); return c.toDataURL("image/jpeg", .82); }
-  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
+  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), hasStation: k => !!stations[k], _glints: () => glints.filter(gl => gl.mesh.visible).map(gl => { const v = gl.mesh.getWorldPosition(new THREE.Vector3()).project(camera); return [(v.x + 1)/2, (1 - v.y)/2, gl.mesh.userData.hit.label]; }), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
 }

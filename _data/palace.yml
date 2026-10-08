@@ -400,7 +400,7 @@ rooms:
     - {to: 7, wall: back, turn: s, look: mirror, title: "a door of silvered glass", say: "Through the glass again."}
     - {to: 9, wall: left}
   objects:
-    - {kind: key, item: compass, icon: compass, title: "A compass", when: "mode:hardcore"}
+    - {kind: key, item: compass, icon: compass, title: "A compass", when: "mode:hardcore", info: "A brass pocket compass. Held up (C), it shows true north in the room, which is how you notice a corridor that turned you."}
     - {kind: device, icon: turns, title: "Hamilton's Turns", href: "/turns/", note: "Compose rotations by laying arcs head to tail on a sphere."}
     - {kind: device, icon: net, title: "The SO(3) slide rule", href: "/stereonet/", hide: true, note: "Also in the Observatory."}
 
@@ -811,8 +811,8 @@ rooms:
   objects:
     - {kind: device, icon: logbook, mount: center, title: "The log book", action: logbook, note: "The catalogue of everything in the house: search it, read the entries, and, if you're the archivist, add to it."}
     - {kind: device, icon: linkbook, mount: pedestal, wall: front, title: "A linking book: the Office", action: link, to: 35, note: "Its panel shows the office, moving faintly. Touch it to go there."}
-    - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:hardcore"}
-    - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/"}
+    - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:hardcore", info: "The house's catalogue in a ledger: everything in every room, listed plainly, for when you would rather look it up than walk."}
+    - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/", info: "The curator's research papers, filed here as they are written."}
     - {hidden: true, kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
     - {kind: device, icon: calcab, mount: pedestal, wall: left, title: "The calendar cabinet", action: calendars, note: "Today in sixteen calendars, and the one the house keeps."}
     - {kind: device, icon: tkcase, mount: pedestal, wall: right, title: "The case of timekeepers", action: timekeepers, note: "Hourglass, water clock, candle clock, incense seal, wadokei, decimal clock, and Italian hours: choose one for the Entry desk."}
@@ -1061,22 +1061,23 @@ rooms:
     - {to: 20, wall: right, title: "the schoolroom"}
     - {to: 35, wall: front, title: "the office"}
   objects:
-    - {wall: back, kind: letter, icon: note, title: "A letter, left on the desk", action: letter}
-    - {wall: back, kind: key, item: master-key, icon: key, title: "A ring of keys", take: "You take the ring of keys. Every ordinary lock will open for you now."}
-    - {wall: back, kind: key, item: plan, icon: map, title: "The full plan", take: "You take the full plan of the house."}
-    - {wall: back, kind: key, item: map, icon: map, title: "A folded map", take: "You take the folded map. It fills in as you walk."}
-    - {wall: back, kind: key, item: compass, icon: compass, title: "A compass", take: "You take the compass. It will always tell you which way is true."}
+    - {wall: back, kind: letter, icon: note, title: "A letter, left on the desk", action: letter, info: "A letter from the curator to whoever walks in first: what the house is, and how to get about in it. Read it again any time."}
+    - {wall: back, kind: key, item: master-key, icon: key, title: "A ring of keys", take: "You take the ring of keys. Every ordinary lock will open for you now.", info: "The master key. It opens every door that has a lock, though not the ones that open only for a reason."}
+    - {wall: back, kind: key, item: plan, icon: map, title: "The full plan", take: "You take the full plan of the house.", info: "The whole house drawn out, every room and door, including the ones still closed for renovation."}
+    - {wall: back, kind: key, item: map, icon: map, title: "A folded map", take: "You take the folded map. It fills in as you walk.", info: "A map that fills itself in as you walk: rooms appear on it once you have stood in them."}
+    - {wall: back, kind: key, item: compass, icon: compass, title: "A compass", take: "You take the compass. It will always tell you which way is true.", info: "A brass pocket compass. Held up (C), it shows true north in the room, which is how you notice a corridor that turned you."}
     - {wall: back, kind: device, icon: book, title: "The guest book", action: register, note: "Sign it, and the Primer will know your name."}
-    - {wall: back, kind: device, icon: bell, title: "A brass bell", action: bell}
+    - {wall: back, kind: device, icon: bell, title: "A brass bell", action: bell, info: "A porter's bell. Ring it and someone, somewhere in the house, may hear."}
     - {wall: back, kind: device, icon: tray, title: "A tray for putting things back", action: return, note: "Return what you took from the desk."}
     - {kind: device, mount: board, wall: left, icon: note, title: "The notice board", action: notices, note: "The problem of the week, the calendar, news, and a wanted card."}
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
     - {kind: device, icon: musicbox, wall: right, item: musicbox, portable: true, action: music, title: "A music box", note: "Take it with you. Opened, it is a workshop: music made as it plays in many scales and tunings, rooms to play it in (made, measured, or loaded), a lab for convolving sounds, the radio, and a little sonar."}
+    - {kind: key, item: primer, icon: book, wall: back, title: "A Young Lady's Illustrated Primer", when: "not:has:primer", note: "The house's field guide. Touch any glint of light over a thing and the Primer writes down what it is; open it to read your notes, and for the house's lessons."}
     - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
-    - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook"}
-    - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly."}
+    - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook", info: "A lantern for the dark rooms. Its flame can be coloured with salts: strontium red, copper blue, sodium yellow."}
+    - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly.", info: "The house's catalogue in a ledger: everything in every room, listed plainly, for when you would rather look it up than walk."}
   marginalia:
     - "This is the front door, and a launch page: the link board is one click away from here, and pressing / anywhere in the house lets you type to go."
   sources:
@@ -1196,9 +1197,9 @@ rooms:
     - {to: 0, wall: back, title: "back to the Entry"}
   objects:
     - {kind: device, icon: linkbook, mount: pedestal, wall: left, title: "A linking book: the Archive", action: link, to: 22, note: "A small book on a stand. Its panel shows the archive, moving faintly. Touch it to go there."}
-    - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours}
+    - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours, info: "When the office is open, and where. The plate on the door outside says the same."}
     - {kind: unwritten, icon: lectern, wall: left, title: "The real office, measured", note: "A model of the actual office: the desk, the shelves, the whiteboard, the window."}
-    - {kind: device, icon: note, wall: left, title: "The calendar", action: notices}
+    - {kind: device, icon: note, wall: left, title: "The calendar", action: notices, info: "The month on a card: events, the problem of the week, and the news of the house."}
     - {kind: device, icon: numerary, mount: pedestal, wall: right, title: "The numerary", action: numerals, note: "A number in every way it has been written: cuneiform, khipu, Kaktovik, Cistercian, counting rods, and the rest."}
 
 - id: 36
