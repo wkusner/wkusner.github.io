@@ -1734,6 +1734,76 @@ export function create(container, hooks){
     const gal = new THREE.Mesh(new THREE.BoxGeometry(w-.1, .012, .012), brass); gal.position.set(0, h+.09, -d/2+.04); g.add(gal);
     for(let k=0;k<=12;k++){ const post = new THREE.Mesh(new THREE.CylinderGeometry(.005,.005,.09,6), brass); post.position.set(-w/2+.05 + k*(w-.1)/12, h+.045, -d/2+.04); g.add(post); }
     return g; }
+  /* ---- original furniture for the Office (designs in claude/Wending-Furniture-Designs.md) ---- */
+  // a flat ribbon of bent laminate: a centreline in the (z, y) plane, given a thickness in that plane and a width across (x)
+  function ribbon(pts, thick, width, m){ const L = pts.length, up = [], dn = [];
+    for(let i = 0; i < L; i++){ const a = pts[Math.max(0, i-1)], b = pts[Math.min(L-1, i+1)], tz = b[0] - a[0], ty = b[1] - a[1], n = Math.hypot(tz, ty) || 1, nz = -ty/n, ny = tz/n;
+      up.push([pts[i][0] + nz*thick/2, pts[i][1] + ny*thick/2]); dn.push([pts[i][0] - nz*thick/2, pts[i][1] - ny*thick/2]); }
+    const sh = new THREE.Shape(); sh.moveTo(up[0][0], up[0][1]); up.slice(1).forEach(q => sh.lineTo(q[0], q[1])); dn.reverse().forEach(q => sh.lineTo(q[0], q[1])); sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, {depth: width, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 4});
+    g.rotateY(Math.PI/2); g.translate(-width/2, 0, 0); return new THREE.Mesh(g, m); }
+  const arcPts = (cz, cy, r, a0, a1, n = 24) => Array.from({length: n + 1}, (_, i) => { const a = a0 + (a1 - a0)*i/n; return [cz + r*Math.sin(a), cy - r*Math.cos(a)]; });
+  const WALNUT = () => mat("#5b3a24", {roughness:.45}), LEATHER = () => mat("#7a4326", {roughness:.55}), BRASS = () => mat("#b39a62", {metalness:.7, roughness:.3});
+  // The balance rocker. Its runners are arcs of one circle (R = 0.60 m) centred near the seated body's centre of mass, so rocking hardly lifts the sitter:
+  // it reclines with a fingertip and stays where it's left. A brass weight sliding under the seat sets how strongly it returns upright.
+  function balanceRocker(){ const R = .60, group = new THREE.Group(), body = new THREE.Group(); group.add(body);
+    const wal = WALNUT(), lea = LEATHER(), br = BRASS(), C = [0, R];   // the rocker's centre, R above the floor
+    // each side frame: the runner (arc of the circle), curled-up ends as soft stops, a front post sweeping up into the arm, and a rear post from the arm's end down to the runner
+    const A = .45, runner = arcPts(0, R, R, -A, A, 30), curlF = arcPts((R - .1)*Math.sin(A), R - (R - .1)*Math.cos(A), .1, A, A + 1, 8).slice(1), curlB = arcPts(-(R - .1)*Math.sin(A), R - (R - .1)*Math.cos(A), .1, -A, -A - 1, 8).slice(1);   // tangent-continuous curls of radius 0.1 m
+    const frame = [...curlB.reverse(), ...runner, ...curlF];
+    const post = [[.2, .05], [.27, .3], [.3, .52], [.24, .6], [.05, .62], [-.15, .6], [-.25, .56]];   // front post sweeping back into the arm
+    [-1, 1].forEach(sx => { const x = sx*.36; const f = ribbon(frame, .03, .055, wal); f.position.x = x; body.add(f); const a = ribbon(post, .032, .055, wal); a.position.x = x; body.add(a); const rp = ribbon([[-.205, .038], [-.225, .3], [-.25, .56]], .032, .055, wal); rp.position.x = x; body.add(rp);
+      const pv = new THREE.Mesh(new THREE.CylinderGeometry(.022, .022, .012, 24), br); pv.rotation.z = Math.PI/2; pv.position.set(x + sx*.03, .42, -.02); body.add(pv); });
+    // stretchers: two turned walnut rails and a brass rod tie the sides
+    [[.2, .06], [-.22, .07]].forEach(([z, y]) => { const s = new THREE.Mesh(new THREE.CylinderGeometry(.016, .016, .72, 16), wal); s.rotation.z = Math.PI/2; s.position.set(0, y + .015, z); body.add(s); });
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .72, 10), br); rod.rotation.z = Math.PI/2; rod.position.set(0, .26, -.05); body.add(rod);
+    // the cradle: a seat-and-back curve in channel-stitched leather over a webbing of straps, with a head bolster
+    const seat = [[.3, .43], [.18, .40], [.05, .37], [-.08, .38], [-.18, .45], [-.27, .6], [-.34, .78], [-.39, .95]];
+    const cr = []; for(let i = 0; i < seat.length - 1; i++){ const a = seat[i], b = seat[i+1], n = Math.max(1, Math.round(Math.hypot(b[0]-a[0], b[1]-a[1])/.055)); for(let k = 0; k < n; k++) cr.push([a[0] + (b[0]-a[0])*k/n, a[1] + (b[1]-a[1])*k/n]); }
+    cr.forEach(([z, y], i) => { const roll = new THREE.Mesh(new THREE.CapsuleGeometry(.028, .6, 4, 14), lea); roll.rotation.z = Math.PI/2; roll.position.set(0, y + .02, z); roll.scale.set(1, 1, .95 + .1*Math.sin(i)); body.add(roll); });
+    [-1, 1].forEach(sx => { const rail = ribbon(seat.map(([z, y]) => [z, y - .01]), .03, .03, wal); rail.position.x = sx*.325; body.add(rail); });
+    const bolster = new THREE.Mesh(new THREE.CapsuleGeometry(.055, .5, 6, 16), lea); bolster.rotation.z = Math.PI/2; bolster.position.set(0, .99, -.36); body.add(bolster);
+    // the sliding weight, under the seat
+    const wt = new THREE.Mesh(new THREE.BoxGeometry(.12, .035, .07), br); wt.position.set(0, .31, -.02); body.add(wt);
+    body.traverse(m => { if(m.isMesh){ m.castShadow = true; m.receiveShadow = true; } });
+    // rolling: tilt θ about the circle's centre, which moves level with the floor by Rθ
+    // rolling without slipping: turn by θ about the circle's centre C, and C travels level with the floor by Rθ
+    let th = 0, target = 0; body.matrixAutoUpdate = false;
+    const pose = () => { body.matrix.copy(new THREE.Matrix4().makeTranslation(0, R, R*th).multiply(new THREE.Matrix4().makeRotationX(th)).multiply(new THREE.Matrix4().makeTranslation(0, -R, 0))); body.matrixWorldNeedsUpdate = true; };
+    pose();
+    anims.push(() => { if(Math.abs(target - th) > .0005){ th += (target - th)*.06; pose(); } });
+    const hit = new THREE.Mesh(new THREE.BoxGeometry(.8, 1.0, 1.0), new THREE.MeshBasicMaterial({visible:false})); hit.position.set(0, .5, 0); group.add(hit);
+    return {group, hit, toggle(){ target = target ? 0 : -.26; }}; }
+  // the rocking footstool: its runners are arcs of a 0.9 m circle, so as the rocker leans back the stool tips a little to meet the legs; felt pads at the ends stop it
+  function nestingStool(){ const g = new THREE.Group(), wal = WALNUT(), lea = LEATHER(), Ro = .9;
+    const run = arcPts(0, Ro, Ro, -.24, .24, 16), side = [[-.24, .2], [-.235, .1], ...run, [.235, .1], [.24, .2]].concat([[.2, .33], [0, .35], [-.2, .32], [-.24, .2]]);
+    [-1, 1].forEach(sx => { const r = ribbon(side, .028, .05, wal); r.position.x = sx*.24; g.add(r); });
+    for(let k = 0; k < 7; k++){ const z = -.17 + k*.057, y = .335 + .02*(z/.17); const roll = new THREE.Mesh(new THREE.CapsuleGeometry(.026, .42, 4, 12), lea); roll.rotation.z = Math.PI/2; roll.position.set(0, y + .03, z); g.add(roll); }
+    const s = new THREE.Mesh(new THREE.CylinderGeometry(.014, .014, .5, 12), wal); s.rotation.z = Math.PI/2; s.position.set(0, .14, 0); g.add(s); return g; }
+  // the staircase cabinet: an egg-crate of slotted boards (no hardware) whose cells, 360 mm square, step down like a Young diagram, 4-4-3-2-1;
+  // any cell takes any front: open, a door, two drawers, a tambour, or glass. Fronts in muted red, yellow, and blue linoleum, edged in walnut.
+  function staircaseCabinet(){ const g = new THREE.Group(), cols = [4, 4, 3, 2, 1], C = .36, T = .018, D = .4, base = .1, W = cols.length*C;
+    const wal = WALNUT(), ply = mat("#7a5638", {roughness:.5}), steel = mat("#24221f", {metalness:.5, roughness:.5}), br = BRASS();
+    const LINO = {red: mat("#a8493c", {roughness:.7}), yellow: mat("#c4a04a", {roughness:.7}), blue: mat("#3f5f86", {roughness:.7})};
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(W - .06, base - .01, D - .08), steel); plinth.position.set(W/2, base/2, -.02); g.add(plinth);
+    const box = (w, h, d, m, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); g.add(b); return b; };
+    // verticals: one board per column line, as tall as the taller neighbour; horizontals: one per row line, as long as that row
+    for(let i = 0; i <= cols.length; i++){ const h = Math.max(cols[i-1] || 0, cols[i] || 0)*C; box(T, h + T, D, ply, i*C, base + h/2, 0); }
+    for(let r = 0; r <= 4; r++){ let n = cols.filter(c => c >= Math.max(1, r)).length; if(r === 0) n = cols.length; const len = n*C; if(len) box(len + T, T, D, ply, len/2, base + r*C, 0); }
+    // the stepped top edge, capped in solid walnut
+    cols.forEach((c, i) => box(C + T, .012, D + .01, wal, i*C + C/2, base + c*C + .015, 0));
+    box(W + T, .5, .01, ply, W/2, base + .25, -D/2);   // a back panel low down; above it the cells are open behind, like a room divider
+    // fronts
+    const plan = [["drawers","door:red","open","open"],["tambour","tambour","door:yellow","open"],["drawers","open","door:blue"],["door:red","open"],["drawers"]];
+    plan.forEach((col, i) => col.forEach((kind, r) => { const cx = i*C + C/2, cy = base + r*C + C/2, z = D/2 - .01, iw = C - T - .006, ih = C - T - .006;
+      if(kind === "open"){ for(let k = 0; k < 6; k++){ const bh = .2 + ((i*7 + r*3 + k*5) % 7)*.016, bw = .022 + ((k*3 + i) % 4)*.006; box(bw, bh, .2, mat(["#6b4a3a","#3e4a58","#55583e","#8a6a3a","#5a3a3a"][(i + r + k) % 5]), i*C + .04 + k*.045, base + r*C + T/2 + bh/2, .02); } return; }
+      if(kind.startsWith("door")){ const m = LINO[kind.split(":")[1]]; box(iw, ih, .016, m, cx, cy, z); box(iw + .006, .006, .018, wal, cx, cy + ih/2, z); box(iw + .006, .006, .018, wal, cx, cy - ih/2, z);
+        const hole = new THREE.Mesh(new THREE.CylinderGeometry(.014, .014, .02, 20), mat("#1e1a16")); hole.rotation.x = Math.PI/2; hole.position.set(cx + iw/2 - .04, cy, z + .002); g.add(hole); return; }
+      if(kind === "drawers"){ [.25, -.25].forEach(f => { box(iw, ih/2 - .004, .018, wal, cx, cy + f*ih, z); const sc = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, .02, 20, 1, false, 0, Math.PI), mat("#2c1d12")); sc.rotation.set(Math.PI/2, 0, 0); sc.position.set(cx, cy + f*ih + ih/4 - .006, z + .003); g.add(sc); }); return; }
+      if(kind === "tambour"){ const n = 13; for(let k = 0; k < n; k++) box(iw/n - .002, ih, .014, wal, cx - iw/2 + (k + .5)*iw/n, cy, z); const pull = new THREE.Mesh(new THREE.CylinderGeometry(.005, .005, .08, 10), br); pull.position.set(cx + iw/2 - .03, cy, z + .012); g.add(pull); } }));
+    g.children.forEach(m => { m.castShadow = true; m.receiveShadow = true; }); g.position.x = -W/2;
+    const outer = new THREE.Group(); outer.add(g); const hit = new THREE.Mesh(new THREE.BoxGeometry(W, 4*C + base, D + .1), new THREE.MeshBasicMaterial({visible:false})); hit.position.set(0, (4*C + base)/2, 0); outer.add(hit);
+    return {group: outer, hit}; }
   function chair(m){ // a Windsor-ish chair: turned legs, saddle seat, spindle back
     const g = new THREE.Group(), wood = mat(m || "#5e4a37");
     const seat = new THREE.Mesh(new THREE.CylinderGeometry(.24,.22,.05,20), wood); seat.position.y = .45; seat.scale.z = .9; seat.castShadow = true; g.add(seat);
@@ -1859,11 +1929,12 @@ export function create(container, hooks){
           g.strokeStyle = "#e6e8e0"; g.lineWidth = 3; g.beginPath(); g.arc(800, 200, 110, 0, TAU); g.stroke(); g.beginPath(); g.moveTo(690, 200); g.lineTo(910, 200); g.moveTo(800, 90); g.lineTo(800, 310); g.stroke(); g.beginPath(); g.moveTo(800,200); g.lineTo(800+110*Math.cos(-.6), 200+110*Math.sin(-.6)); g.stroke(); })}));
         slate.position.z = .03; label(slate); bb.add(slate); const tray = new THREE.Mesh(new THREE.BoxGeometry(3.1,.04,.1), mat("#5a4634")); tray.position.set(0,-.78,.05); bb.add(tray);
         bb.position.set(at.x, 1.75, at.z); bb.rotation.y = Fw.yaw; scene.add(bb); }
-      const arm = new THREE.Group(), am = mat("#6b3a2e"); const seat = new THREE.Mesh(new THREE.BoxGeometry(.75,.22,.7), am); seat.position.y = .32; arm.add(seat);
-      const back = new THREE.Mesh(new THREE.BoxGeometry(.75,.7,.18), am); back.position.set(0,.68,-.28); back.rotation.x = -.12; arm.add(back);
-      [-1,1].forEach(sx => { const a = new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.62,12), am); a.rotation.x = Math.PI/2; a.position.set(sx*.38,.5,0); arm.add(a); });
-      [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => { const L = turnedLeg(.2,.025,mat("#3f3024")); L.position.set(sx*.3,0,sz*.28); arm.add(L); });
-      place(arm, -3.6, 3.4, Math.PI*.8);
+      // the balance rocker and its nesting footstool, by the window corner; the staircase cabinet along the left wall
+      const rk = balanceRocker(), rkAt = new THREE.Vector3(-3.3, 0, 3.0); rk.group.position.copy(rkAt); rk.group.rotation.y = Math.PI*.8; scene.add(rk.group);
+      const fs = nestingStool(); const fsOff = new THREE.Vector3(0, 0, .78).applyAxisAngle(new THREE.Vector3(0,1,0), Math.PI*.8); place(fs, rkAt.x + fsOff.x, rkAt.z + fsOff.z, Math.PI*.8);
+      rk.hit.userData.hit = {kind:"look", label:"The balance rocker: lean back", onClick:() => { rk.toggle(); hooks.furniture && hooks.furniture("rocker"); }}; picks.push(rk.hit);
+      const Lw = wallAt(faces, 0); if(Lw){ const sc = staircaseCabinet(), t = +(window.__cabT || .76)*Lw.len; if(Lw.free(t, 2)){ const at = Lw.at(t, .24); sc.group.position.set(at.x, 0, at.z); sc.group.rotation.y = Lw.yaw; scene.add(sc.group);
+        sc.hit.userData.hit = {kind:"look", label:"The staircase cabinet", onClick:() => hooks.furniture && hooks.furniture("cabinet")}; picks.push(sc.hit); } }
       const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.4), mat("#ffffff",{map: canvasTex(512, 360, (g,w,h) => { g.fillStyle = "#4f3a5a"; g.fillRect(0,0,w,h); g.strokeStyle = "#cdb88a"; g.lineWidth = 10; g.strokeRect(14,14,w-28,h-28); g.lineWidth = 3; for(let i=0;i<7;i++){ g.beginPath(); g.ellipse(w/2,h/2,40+i*26,24+i*17,0,0,TAU); g.stroke(); } })}));
       rug.rotation.x = -Math.PI/2; rug.position.set(1.4,.008,-.9); rug.receiveShadow = true; scene.add(rug);
     }
