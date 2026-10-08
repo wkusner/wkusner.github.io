@@ -39,9 +39,9 @@ const SALTS = [
 ];
 const saltOf = () => SALTS.find(s => s.k === S.salt) || SALTS[0];
 const lanternLvl = () => S.inv.includes("lantern") ? (S.lanternLvl||0) : 0;
-if(S.mode && S.mode !== "hardcore" && !S.inv.includes("primer")) S.inv.push("primer");   // the Primer is now the house's field guide: everyone but the hardcore carries it
 ["map","plan-sheets"].forEach(k => { if(S.inv.includes("plan")) S.inv = S.inv.filter(x => x !== k); });
 S.pages = S.pages || {}; S.inv.forEach(k => { if(P.pages && P.pages[k] && !S.pages[k]) S.pages[k] = 1; });
+setTimeout(() => { try { if(upgrade()) render(); } catch(e){} }, 0);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
 
 /* ---------- the dihedral group D4: g = r^k s^f ---------- */
@@ -215,7 +215,6 @@ function cond(c, room){
     case "has": return S.inv.includes(val);
     case "solved": return !!S.solved[val];
     case "seen": return seen() >= +val;
-    case "mode": return walkMode()===val;
     case "landing": return landingOf(room) === +val;
     case "car": return carOf(room) === +val;
     case "level": return rankIndex() >= +val;
@@ -909,7 +908,7 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js?v=20261008h").then(m => {
+  import("./palace3d.js?v=20261009c").then(m => {
     VIEW3D = m.create($("stage"), {
       turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
@@ -1117,14 +1116,14 @@ function upgrade(){ let did = null; UPGRADES.forEach(u => {
     if(S.inv.includes(u.gives)){ if(S.inv.some(k => k === u.from || k === u.with)){ S.inv = S.inv.filter(k => k !== u.from && k !== u.with); did = did || ""; } return; }
     if(S.inv.includes(u.from) && S.inv.includes(u.with)){ S.inv = S.inv.filter(k => k !== u.from && k !== u.with); S.inv.push(u.gives); S.pages = S.pages || {}; if((P.pages||{})[u.gives] && !S.pages[u.gives]) S.pages[u.gives] = Date.now(); award("upgrade:" + u.gives, 25); did = u.say; } });
   if(did !== null){ save(); } return did; }
-function take(item, msg){ if(S.inv.includes(item)) return;
+function take(item, msg){ if(S.inv.includes(item)){ toast("It is in your bag already."); return; }
   const sup = UPGRADES.find(u => (u.from === item || u.with === item) && S.inv.includes(u.gives)); if(sup){ toast(`You have ${(ITEMS[sup.gives]||{}).name ? ITEMS[sup.gives].name.toLowerCase() : "the whole thing"} already.`); return; } S.inv.push(item); if((P.pages||{})[item]){ S.pages = S.pages || {}; if(!S.pages[item]) S.pages[item] = Date.now(); } sound.take(); save(); award("item:"+item, item==="golden-key"?40:15); const up = upgrade(); toast(up || msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
 function useObject(o, room){
   if(o.more) return setView(S.face, "ahead");
   // the pop-up a device opens carries its model, to turn in the hand, and the things it leads to
-  OVSUBJECT = (o.kind === "device" && !NOMODEL.has(o.action) && o.icon && !o.href) ? {o, room, title:null} : null;
+  OVSUBJECT = (o.kind === "device" && o.action && !NOMODEL.has(o.action) && o.icon && !o.href) ? {o, room, title:null} : null;
+  setTimeout(() => { if(OVSUBJECT && OVSUBJECT.title == null) OVSUBJECT = null; }, 0);
   if(o.kind==="key"){ take(o.item, o.take); return; }
-  if(o.action==="mode") return modeView();
   if(o.action==="letter") return letterView();
   if(o.action==="register") return registerView();
   if(o.action==="return") return returnView();
@@ -1206,7 +1205,7 @@ function hudTick(){
     $("ch-alt").textContent = v.alt == null || v.mirror ? "" : Math.abs(v.alt) < 3 ? "level" : v.alt > 0 ? `looking up ${Math.round(v.alt)}°` : `looking down ${Math.round(-v.alt)}°`; }
   hudRAF = requestAnimationFrame(hudTick);
 }
-function toggleCompass(){ if(!S.inv.includes("compass")) return toast("You haven't a compass. There's one on the porter's desk at the Entry.");
+function toggleCompass(){ if(!S.inv.includes("compass")) return toast("You haven't a compass. There is one in the case of instruments, in the Entry.");
   S.compassOn = !S.compassOn; save(); compassHud(); bag(); toast(S.compassOn ? "You hold the compass up where you can see it. (C puts it away.)" : "You put the compass back in your bag."); }
 /* ---------- the bag's icons: small engraved pictures in brass, parchment, wood, and leather ---------- */
 let BAGU = 0;
@@ -1288,7 +1287,7 @@ const BAGICON = {
     <g transform="rotate(32 32 35)"><rect x="11" y="33.5" width="42" height="3" rx="1" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/><rect x="15" y="31" width="2.5" height="8" fill="url(#br${u})" stroke="${BINK}" stroke-width=".5"/><rect x="46.5" y="31" width="2.5" height="8" fill="url(#br${u})" stroke="${BINK}" stroke-width=".5"/></g>
     <circle cx="32" cy="35" r="2" fill="url(#br${u})" stroke="${BINK}" stroke-width=".7"/>`,
 };
-const BAGMAP = {"map":"map","plan":"plan","finding-aid":"scroll","master-key":"master-key","golden-key":"golden-key","compass":"compass","lantern":"lamp","hourglass":"hourglass","page-left":"page-left","page-right":"page-right","mended-page":"mended-page","primer":"book","musicbox":"musicbox","astrolabe":"astrolabe"};
+const BAGMAP = {"map":"map","plan":"plan","finding-aid":"scroll","master-key":"master-key","golden-key":"golden-key","compass":"compass","lantern":"lamp","hourglass":"hourglass","page-left":"page-left","page-right":"page-right","mended-page":"mended-page","primer":"book","musicbox":"musicbox","astrolabe":"astrolabe","astrolabe-bare":"astrolabe","plan-sheets":"scroll"};
 function bagIcon(item, size){
   const k = BAGMAP[item], f = k && BAGICON[k]; if(!f) return null; const u = "bi" + (++BAGU);
   const w = document.createElement("span"); w.className = "bagicon";
@@ -1313,7 +1312,7 @@ function corners(room){
 }
 // the Primer, kept open below the picture: what it says about this room, what you have noted here, and your pages
 function primerDock(room){ const dock = $("primerdock"), L2 = P.primer || {}, l = L2[String(room.id)], notes = Object.values(S.notes || {}).filter(n => String(n.room) === String(room.id)), pages = Object.keys(S.pages || {}).filter(k => (P.pages||{})[k]);
-  const glintable = (room.objects || []).filter(o => (o.note || o.info) && !o.hidden).length;
+  const glintable = (room.objects || []).filter(o => (o.note || o.info) && !o.hidden && visible(o, room) && !((o.kind === "key" || o.portable) && S.inv.includes(o.item))).length;
   dock.innerHTML = `<div class="pd-h"><b>A Young Person's Illustrated Primer${S.reader ? " · " + esc(S.reader) : ""}</b><button type="button" data-pd="notes">Notes</button><button type="button" data-pd="pages">Pages (${pages.length})</button><button type="button" data-pd="story">The story</button><button type="button" data-pd="close" title="Close the Primer">Close ▴</button></div>
     <div>${l ? `<i>Here, in ${esc(room.name)}:</i> ${l.lesson ? l.lesson : esc(l.teaser)}` : `<i>${esc(room.name)}.</i> The page is waiting for something to write.`}</div>
     ${glintable ? `<ul class="pd-notes"><li class="note">Noted here: ${notes.length} of ${glintable}</li>${notes.slice(-4).map(n => `<li>✦ ${esc(n.title)}</li>`).join("")}</ul>` : ""}`;
@@ -1344,7 +1343,6 @@ function tally(light){
     <button class="chip" id="t-time" type="button" title="${S.inv.includes("hourglass")?"Set the house's clock with the hourglass":"The house keeps your time"}">${icon} ${window.RECKON ? esc(RECKON.calShort(d)) : d.toLocaleDateString([], {month:"short", day:"numeric"})} ${d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}${S.clock?" ⧗":""}</button>
     <span class="chip" title="${wx? (wx.set ? "Weather set by the astrolabe's storm glass" : "Weather in "+placeName()+" now (Open-Meteo)") :"Weather unavailable"}">${wx? `${wxIcon(wx.weather_code, wx.is_day)} ${Math.round(wx.temperature_2m)}°F` : "· · ·"}</span>
     <button class="chip" id="t-code" type="button" title="Save code and warp codes">⌘ ${saveCode().slice(0,9)}…</button>
-    <span class="chip" title="Your way of walking, by what you carry">${esc(walkMode())}</span>
     <button class="chip" id="t-pin" type="button" title="Pin this room to the link board">${(S.pins||[]).includes(String(cur.id)) ? "★" : "☆"}</button>
     <button class="chip" id="t-go" type="button" title="Go to… (press /)">/ go</button>
     ${S.showAll? '<span class="chip warn">curator</span>':""}`;
@@ -1832,7 +1830,7 @@ function clockView(){
 /* ---------- the astrolabe: carry the house to another place, day, or weather ---------- */
 const PLACES = [["Appleton, Wisconsin", 44.26, -88.41], ["Reykjavík", 64.15, -21.94], ["Tromsø, in the midnight sun", 69.65, 18.96], ["Quito, on the equator", -0.18, -78.47], ["Alexandria, after Eratosthenes", 31.2, 29.92], ["Kyoto", 35.01, 135.77], ["Sydney", -33.87, 151.21], ["the South Pole", -89.99, 0]];
 function astrolabeView(){
-  if(!S.inv.includes("astrolabe") && !S.inv.includes("astrolabe-bare") && !S.showAll){ toast("You'd need the astrolabe. It hangs in the Sundial Court."); return; }
+  if(!S.inv.includes("astrolabe") && !S.inv.includes("astrolabe-bare") && !S.showAll){ toast("You'd need the astrolabe: there is one in the Sundial Court, and one in the case of instruments in the Entry."); return; }
   const bare = !S.inv.includes("astrolabe") && !S.showAll;
   const d = now(), pad = n => String(n).padStart(2,"0"), v = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const wxo = [["", "live, from the weather service"], ["clear","clear"], ["cloud","broken cloud"], ["overcast","overcast"], ["fog","fog"], ["rain","rain"], ["snow","snow"], ["storm","a storm"]];
@@ -1870,28 +1868,12 @@ function astrolabeView(){
 }
 setInterval(() => { if(S.clock && S.clock.rate>1 && cur && !$("ov").classList.contains("open")) render(); }, 4000);
 /* ---------- modes ---------- */
-function modeView(){
-  overlay("The porter's desk", `<div class="text"><p>The porter looks up. “How would you like to walk?”</p></div>
-   <div class="modes">
-    <button class="mode" data-m="guided" type="button"><b>Guided</b><span>The master key, the full plan, the finding aid, a compass, a lantern, and the hourglass. Everything opens.</span></button>
-    <button class="mode" data-m="wanderer" type="button"><b>Wanderer</b><span>A map that fills in as you go, a compass, and a lantern. Puzzles open some doors. The finding aid is on the desk if you want it.</span></button>
-    <button class="mode" data-m="hardcore" type="button"><b>Hardcore</b><span>Nothing. No map, no list, no key. Everything must be found or earned.</span></button>
-   </div><p class="note">You can come back to the desk and change your mind. Your walk and experience are kept either way.</p>`);
-  document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
-    const m = b.dataset.m; S.mode = m;
-    const give = {guided:["map","plan","finding-aid","master-key","compass","lantern","hourglass","primer"], wanderer:["map","compass","lantern","primer"], hardcore:[]}[m];
-    if(m!=="guided") S.inv = S.inv.filter(k => !["plan","master-key"].includes(k) || S.awards["earned:"+k]);
-    give.forEach(k => { if(!S.inv.includes(k)) S.inv.push(k); });
-    save(); closeOv(); render(); toast({guided:"The porter hands you a heavy ring of keys.", wanderer:"The porter hands you a folded map and a compass.", hardcore:"The porter nods, and gives you nothing at all."}[m]);
-  });
-}
 function directoryView(){
   const links = P.links || [];
   overlay("The directory", `<p class="note">The plain way through: the rest of the site, without the walking.</p><div class="dir">${links.map(l => `<a class="dirl" href="${esc(l.href)}"><b>${esc(l.title)}</b><span>${esc(l.note||"")}</span></a>`).join("")}</div>`);
 }
 /* ---------- the Entry: the letter, the desk, the boards ---------- */
-function walkMode(){ return S.inv.includes("master-key") ? "guided" : (S.inv.some(k => ["map","plan","compass"].includes(k)) ? "wanderer" : "hardcore"); }
-const DESK_ITEMS = ["master-key","plan","map","compass","finding-aid","lantern","hourglass","musicbox","astrolabe"];
+const DESK_ITEMS = ["master-key","map"];   // the tray takes back what lay on the desk; drawer and case things go back where they came from
 function isoWeek(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1)); return [t.getUTCFullYear(), Math.ceil(((t-y0)/864e5+1)/7)]; }
 function puzzleOfWeek(offset){ const L = P.puzzles||[]; if(!L.length) return null; const [y,w] = isoWeek(new Date(now().getTime() + (offset||0)*7*864e5));
   const pin = L.find(p => p.week === `${y}-W${String(w).padStart(2,"0")}`); if(pin) return pin;   // a problem pinned to this week by the archivist
@@ -2044,7 +2026,7 @@ const SOLVED_ORDER = ["galois","island","mended"];
 function roomOrder(){ return P.rooms.map(r => String(r.id)); }
 function crc8(bytes){ let c=0; bytes.forEach(b => { c ^= b; for(let k=0;k<8;k++) c = (c&0x80) ? ((c<<1)^0x07)&255 : (c<<1)&255; }); return c; }
 function saveCode(){
-  const ro = roomOrder(), bytes = [1, ["wanderer","guided","hardcore"].indexOf(walkMode()) & 3, (S.xp>>8)&255, S.xp&255];
+  const ro = roomOrder(), bytes = [1, 0, (S.xp>>8)&255, S.xp&255];
   const bits = (list, has) => { const out=[]; for(let i=0;i<list.length;i+=8){ let b=0; for(let j=0;j<8 && i+j<list.length;j++) if(has(list[i+j])) b|=1<<j; out.push(b); } return out; };
   bytes.push(...bits(ro, id => !!S.visits[id]));
   bytes.push(...bits(ITEM_ORDER, k => S.inv.includes(k)));
@@ -2063,12 +2045,14 @@ function loadCode(code){
   if(bytes.length<6 || bytes[0]!==1) return false;
   // codes written before the house grew name fewer rooms; try today's count, then the counts of earlier plans
   const nb = l => Math.ceil(l/8), all = roomOrder(); let ro = null, need = 0;
-  for(const nr of [all.length, 36]){ const nd = 4 + nb(nr) + nb(ITEM_ORDER.length) + nb(SOLVED_ORDER.length) + 3; if(bytes.length >= nd+1 && crc8(bytes.slice(0,nd)) === bytes[nd]){ ro = all.slice(0, nr); need = nd; break; } }
+  let items = ITEM_ORDER;
+  outer: for(const nr of [all.length, 36]) for(const ni of [ITEM_ORDER.length, 16, 14]){ const nd = 4 + nb(nr) + nb(ni) + nb(SOLVED_ORDER.length) + 3; if(bytes.length >= nd+1 && crc8(bytes.slice(0,nd)) === bytes[nd]){ ro = all.slice(0, nr); items = ITEM_ORDER.slice(0, ni); need = nd; break outer; } }
   if(!ro) return false;
   let p=4; const rd = (list, f) => { for(let i=0;i<list.length;i++){ if(bytes[p+(i>>3)] & (1<<(i&7))) f(list[i]); } p += nb(list.length); };
-  S.mode = ["wanderer","guided","hardcore"][bytes[1]&3]; S.xp = (bytes[2]<<8)|bytes[3];
+  S.xp = (bytes[2]<<8)|bytes[3];
   const visits = {}; rd(ro, id => visits[id] = Math.max(1, S.visits[id]||0)); S.visits = Object.assign(visits, {});
-  S.inv = []; rd(ITEM_ORDER, k => S.inv.push(k)); rd(SOLVED_ORDER, k => S.solved[k]=1);
+  S.inv = []; rd(items, k => S.inv.push(k)); S.solved = {}; rd(SOLVED_ORDER, k => S.solved[k]=1);
+  S.pages = S.pages || {}; S.inv.forEach(k => { if((P.pages||{})[k] && !S.pages[k]) S.pages[k] = 1; }); upgrade();
   S.sheets.log = bytes[p]-128; S.sheets.sqrt = bytes[p+1]; S.frame = [bytes[p+2]&3, (bytes[p+2]>>2)&1];
   Object.keys(S.visits).forEach(id => S.awards["room:"+id]=1);
   save(); return true;
@@ -2220,12 +2204,12 @@ function riddle(d, room){
 /* ---------- overlays ---------- */
 /* ---------- what a close look at a thing offers: things you read or ring answer at once; instruments and things to carry
    are stepped up to first, walked round, and then used, taken, or left ---------- */
-const DIRECT = new Set(["letter","register","bell","return","codes","notices","links","almanac","officehours","search","directory","mode","link","blackboard","ranks","primer","logbook"]);
+const DIRECT = new Set(["letter","register","bell","return","codes","notices","links","almanac","officehours","search","directory","link","blackboard","ranks","primer","logbook"]);
 function actionsFor(o){ if(!o || o.href || DIRECT.has(o.action) || ["letter","note","ref","paper","talk","unwritten","figure","page"].includes(o.kind)) return null;
   const acts = [], room = effective(cur);
   if(o.kind === "case") acts.push({label: caseLocked(o) ? "Try the lock" : "Open it", fn: () => caseView(o)});
   else if(o.kind === "key"){ if(o.item && !S.inv.includes(o.item)) acts.push({label: "Take it", fn: () => { useObject(o, room); render(); }}); else acts.push({label: "In your bag", fn: () => toast("You have it already.")}); }
-  else { if(o.action) acts.push({label: "Use it", fn: () => useObject(o, room)}); if(o.portable && o.item && !S.inv.includes(o.item)) acts.push({label: "Take it", fn: () => { take(o.item, o.take); render(); }}); }
+  else { if(o.action) acts.push({label: "Use it", fn: () => useObject(o, room)}); if(o.portable && o.item && !S.inv.includes(o.item) && o.action !== "astrolabe") acts.push({label: "Take it", fn: () => { take(o.item, o.take); render(); }}); }
   return acts.length ? acts : null; }
 /* ---------- locked drawers and cases: the things inside, each with its page; take what you want ---------- */
 function caseLocked(o){ return o.lock && !S.inv.includes(o.lock) && !S.showAll; }
@@ -2257,7 +2241,7 @@ function materialsView(state){
   // where it is used: the rooms whose floor or walls are made of it
   const usedIn = Object.values(ROOMS).filter(r => !r.closed && !r.secret && S.visits[r.id]).filter(r => { const m = roomMats(r) || {}; return ML.floorFor(m.floor || r.floor || "planks") === sel.id || m.walls === sel.id; }).map(r => r.name);
   // which room to try it in: chosen from the rooms you have seen (ordinary rooms with floors and walls), first the one you came from
-  const tryable = Object.values(ROOMS).filter(r => S.visits[r.id] && !r.closed && !r.landings && !r.floors && r.ceiling !== "gothic" && !(r.decor||[]).includes("hedges"));
+  const tryable = Object.values(ROOMS).filter(r => S.visits[r.id] && !r.closed && !r.landings && !r.floors && r.ceiling !== "gothic" && r.ceiling !== "open" && !(r.decor||[]).includes("hedges"));
   if(st.room == null || !tryable.some(r => String(r.id) === String(st.room))){ const prev = S.walk.length > 1 ? String(S.walk[S.walk.length-2]) : null; st.room = (tryable.find(r => String(r.id) === prev) || tryable.find(r => String(r.id) === String(cur && cur.id)) || tryable[0] || {}).id; }
   const back = ROOMS[st.room] || null, laid = back && (S.mats || {})[back.id] || {};
   const canFloor = ["wood","stone","brick","tile"].includes(sel.family), canWalls = ["stone","brick","plaster","wood","tile","textile","leather"].includes(sel.family);
@@ -2287,7 +2271,7 @@ function materialsView(state){
   big.onpointermove = e => { const r = big.getBoundingClientRect(), x = (e.clientX - r.left)/r.width*2 - 1, y = -((e.clientY - r.top)/r.height*2 - 1); light = [x*1.4, y*1.4, .35]; if(!raf) raf = requestAnimationFrame(draw); };
 }
 let OVSUBJECT = null;
-const NOMODEL = new Set(["music","materials","blackboard","letter","register","bell","return","codes","notices","links","almanac","officehours","search","directory","mode","link","logbook","catalogue","map","primer","ranks","combine"]);
+const NOMODEL = new Set(["music","materials","blackboard","letter","register","bell","return","codes","notices","links","almanac","officehours","search","directory","link","logbook","catalogue","map","primer","ranks","combine"]);
 function findObject(title){ for(const r of P.rooms){ const o = (r.objects||[]).find(x => x.title === title); if(o) return {o, r}; } return null; }
 function ovModel(sub){ const o = sub.o, ov = $("ovb"); if(!ov || !VIEW3D || S.gfx === "2d") return;
   const see = (o.see || []).map(findObject).filter(Boolean).filter(x => !x.r.closed || S.showAll);
@@ -2300,12 +2284,12 @@ function ovModel(sub){ const o = sub.o, ov = $("ovb"); if(!ov || !VIEW3D || S.gf
   const g = box.querySelector("[data-go]"); if(g) g.onclick = () => { closeOv(); move(String(g.dataset.go), null, effective(cur)); }; }
 function overlay(title, html){ if(typeof sound !== "undefined" && sound.ac) sound.page(); $("ovt").textContent=title; $("ovb").innerHTML=html; $("ov").classList.add("open");
   if(OVSUBJECT){ if(OVSUBJECT.title == null) OVSUBJECT.title = title; if(OVSUBJECT.title === title) ovModel(OVSUBJECT); } }
-function closeOv(){ $("ov").classList.remove("open"); OVSUBJECT = null; }
+function closeOv(){ $("ov").classList.remove("open"); OVSUBJECT = null; const b = $("ovb"); if(b) setTimeout(() => { if(!$("ov").classList.contains("open")) b.innerHTML = ""; }, 400); }   // emptying it stops any turning models
 $("ovx").onclick = closeOv; $("ov").onclick = e => { if(e.target.id==="ov") closeOv(); };
 document.addEventListener("keydown", e => { if(e.key!=="Escape") return; if($("ov").classList.contains("open")) return closeOv(); if(VIEW3D && VIEW3D.focused && VIEW3D.focused()) return VIEW3D.exitFocus(); if(S.close) setView(S.face, null); });
 
 function mapView(force){
-  if(!force && !S.showAll && !S.inv.includes("map") && !S.inv.includes("plan")){ toast("You have no map. The porter at the Entry keeps them."); return; }
+  if(!force && !S.showAll && !S.inv.includes("map") && !S.inv.includes("plan")){ toast("You have no map. There is a folded one on the porter's desk, in the Entry."); return; }
   const all = S.showAll || S.inv.includes("plan");
   const known = new Set(Object.keys(S.visits).filter(k=>ROOMS[k]));
   const fringe = new Set();
@@ -2355,20 +2339,21 @@ function catalogueView(force){
     $("catl").innerHTML = h || "<p class='note'>Nothing matches.</p>";
     document.querySelectorAll("[data-cat]").forEach(a => a.onclick = closeOv);
   };
-  overlay("Catalogue", `<p class="note">Everything on the shelves, without the walking. Room numbers lead into the house.</p><div class="widget row"><input id="catq" placeholder="search" style="width:260px"></div><div id="catl"></div>`);
+  overlay("The finding aid", `<p class="note">Everything in the house, without the walking. Room numbers lead into the house.</p><div class="widget row"><input id="catq" placeholder="search" style="width:260px"></div><div id="catl"></div>`);
   $("catq").oninput = e => draw(e.target.value); draw("");
 }
 function helpView(){
   overlay("How to walk the house", `<div class="text">${P.help || ""}
   <p><b>Standing places.</b> Each room has a middle and a standing place in front of each wall that has something on it. You stand at one place at a time and turn on the spot, as in Myst. Hover over the floor to see where a click will take you, and click to glide there. ↑ or W walks toward what you face: from the middle to the wall ahead, then up to the desk or through the door. ↓ or S goes back to the middle, or turns you round if you are already there.</p>
-  <p><b>Looking closer.</b> Click a desk, a shelf, or a stand to walk up to it, and click it again to look closely. While you look closely, only that thing answers your clicks; click anywhere else, or press Escape, to step back. The sky in the court works the same way.</p>
-  <p><b>The Primer.</b> A small glint of light hangs over things that have something to tell, when you stand near them. Touch it and the Primer writes the note down; the Primer button on the menu bar opens your notes.</p>
+  <p><b>Looking closer.</b> Click a desk, a shelf, or a stand to step up to it: the view zooms in and frames it, and only that thing answers your clicks. Drag to walk round an instrument, scroll to come nearer, and use its buttons (Use it, Take it). Step back, S, or Escape returns you. In the court, “Look at the sky” takes you up into the dome.</p>
+  <p><b>Things to carry.</b> The porter's desk has a folded map, the Primer, and a ring of keys; the keys open the drawer in the desk and the case of instruments. Some things grow: the map takes its missing sheets, and the astrolabe its storm glass. What you carry is in the bag under the picture.</p>
+  <p><b>The Primer.</b> A small glint of light hangs over things that have something to tell, when you stand near them. Touch it and the Primer writes the note down. Each thing you carry comes with its page. Keep the Primer open below the picture, or open it from the menu bar.</p>
   <p><b>Looking around.</b> Drag anywhere in the picture to look around, up, and down; let go past half a quarter turn and you'll face that way. The edges of the picture turn you. Keys: ← → or A D turn, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, F is the full view, C holds up the compass, L steps through the lantern, and / searches the house.</p>
   <p><b>Doors</b> are numbered. Click a door in the picture or in the list. Some doors appear only at certain hours, after certain rooms, or when you are facing a certain way.</p>
   <p><b>Facing.</b> Some corridors turn you, and some flip you as in a mirror. The small F in the top bar shows your frame, an element of the symmetry group of a square. Walk a loop and you may come back turned: that is holonomy. Some things can only be seen in a mirror.</p>
-  <p><b>Time.</b> The house keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. The Light button sets your lantern, the house lamps and the shutters.</p>
-  <p><b>Rank.</b> The more rooms you remember, the higher your librarian's rank. Some stacks are closed to beginners.</p>
-  <p><b>Memory.</b> The map remembers where you have been, in this browser only. The catalogue lists everything plainly.</p></div>
+  <p><b>Time.</b> The house keeps your local time. Light changes through the day, and a few rooms change with the hour or the moon. Settings → Light sets your lantern, the house lamps, and the shutters.</p>
+  <p><b>Rank.</b> Everything you find, read, and work out earns a little experience, and experience raises your librarian's rank. Some stacks are closed to beginners.</p>
+  <p><b>Memory.</b> The map remembers where you have been, in this browser only. The finding aid, once you have it, lists everything plainly.</p></div>
   <div class="row widget"><button class="btn" id="forget" type="button">Forget my walk</button></div>`);
   $("forget").onclick = () => { const c=S.curator; S = blank(); S.curator=c; save(); closeOv(); location.hash = START; route(); toast("The house forgets you, politely."); };
 }
@@ -2644,7 +2629,7 @@ function primerView(tab){
   const tabs = `<p class="row">${[["notes", `Notes (${notes.length})`], ["pages", `Pages (${pages.length})`], ["story", "The story"]].map(([k, n]) => `<button class="btn${k === tab ? " primary" : ""}" type="button" data-ptab="${k}">${n}</button>`).join(" ")}</p>`;
   if(tab === "pages"){ const sel = pages.includes(S.primerPage) ? S.primerPage : pages[0]; S.primerPage = sel;
     const pg = sel ? P.pages[sel] : null, it = sel ? ITEMS[sel] : null;
-    overlay(`A Young Person's Illustrated Primer · ${name}'s pages`, `${tabs}${pages.length ? `<div class="casev"><div class="caselist">${pages.map(k => `<button class="casei ${k===sel?"on":""}" data-pg="${k}" type="button"><span class="ci-icon"></span><span>${esc(P.pages[k].title)}</span><small>${S.inv.includes(k) ? "in your bag" : "put back"}</small></button>`).join("")}</div>
+    overlay(`A Young Person's Illustrated Primer · ${name}'s pages`, `${tabs}${pages.length ? `<div class="casev"><div class="caselist">${pages.map(k => `<button class="casei ${k===sel?"on":""}" data-pg="${k}" type="button"><span class="ci-icon"></span><span>${esc(P.pages[k].title)}</span><small>${S.inv.includes(k) ? "in your bag" : (UPGRADES.find(u => (u.from === k || u.with === k) && S.inv.includes(u.gives)) ? "grown into " + esc(((P.pages||{})[UPGRADES.find(u => (u.from === k || u.with === k) && S.inv.includes(u.gives)).gives]||{}).title || "something larger").replace(/^The /, "the ") : "put back")}</small></button>`).join("")}</div>
       <div class="casemain"><div id="obi" class="obi"></div><h4>${esc(pg.title)}</h4><p>${esc(pg.text)}</p>${it && S.inv.includes(sel) && it.use && sel !== "primer" ? `<p class="row"><button class="btn" id="pg-use" type="button">Use it</button></p>` : ""}</div></div>`
       : `<div class="text"><p>No pages yet. A page comes with each thing you carry: take something from the porter's desk, or from a case, and its page is written in here.</p></div>`}`);
     document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab));
@@ -2653,14 +2638,14 @@ function primerView(tab){
     if($("pg-use")) $("pg-use").onclick = () => { closeOv(); it.use(); };
     return; }
   if(tab === "notes"){ const byRoom = {}; notes.forEach(n => (byRoom[n.room] = byRoom[n.room] || []).push(n));
-    const total = P.rooms.filter(r => !r.closed && !r.secret).reduce((a, r) => a + (r.objects||[]).filter(o => o.note || o.info).length, 0);
+    const total = P.rooms.filter(r => !r.closed && !r.secret).reduce((a, r) => a + (r.objects||[]).filter(o => (o.note || o.info) && !o.hidden && cond(o.when, r)).length, 0);
     overlay(`A Young Person's Illustrated Primer · ${name}'s notes`, `${tabs}<div class="text" style="max-width:680px">${notes.length ? Object.keys(byRoom).map(rid => `<h4 class="cal-h">${esc((ROOMS[rid]||{}).name || rid)}</h4>${byRoom[rid].sort((a, b) => a.t - b.t).map(n => `<p><b>${esc(n.title)}.</b> ${n.note}</p>`).join("")}`).join("")
       : `<p>The notes pages are empty. Wherever a thing in the house has something to tell, a small glint of light hangs over it when you stand near; touch the glint and the Primer writes it down.</p>`}
       <p class="note">${notes.length} of about ${total} things noted in the open rooms.</p></div>`);
     document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab)); return; }
   const L2 = P.primer || {}, order = P.rooms.filter(r=>!r.secret&&!r.closed).map(r=>String(r.id));
   const unseen = order.filter(id => !S.visits[id]);
-  const secret = P.rooms.filter(r=>r.secret && !S.visits[r.id]).map(r=>String(r.id));
+  const secret = P.rooms.filter(r=>r.secret && !r.closed && !S.visits[r.id]).map(r=>String(r.id));
   let pick = unseen.find(id => L2[id]) || unseen[0] || secret[0];
   const here = String(cur.id), lessonHere = L2[here];
   const n = Object.keys(S.visits).length;
@@ -2873,7 +2858,7 @@ WIDGETS.rank = (el) => {
 };
 
 /* ---------- controls ---------- */
-$("b-map").onclick = mapView;
+$("b-map").onclick = () => mapView();
 $("b-primer").onclick = () => S.inv.includes("primer") ? primerView() : toast("You haven't the Primer yet. It is on the desk in the Entry.");
 /* ---------- settings: the ways of seeing, light, sound, reading, and walking, gathered in one place ---------- */
 function settingsView(){
@@ -2887,24 +2872,22 @@ function settingsView(){
     ${row("Ink", S.ink==="1bit" ? "black only" : "two colours", "ink", "Change")}
     ${row("Corner map", S.noMini ? "hidden" : "shown, top right, once you carry a map", "mini", S.noMini ? "Show" : "Hide")}
     ${has3d ? row("Eyes", S.fixedEyes ? "fixed exposure" : "adjust to the light at each place", "eyes", S.fixedEyes ? "Adjust" : "Fix") : ""}
-    ${has3d ? row("Full view", "the picture fills the screen (F)", "full", "Go") : ""}
     <h4 class="set-sec">Light</h4>${row("Light", "your lantern, the house lamps, the shutters", "lamp", "Open")}
-    <h4 class="set-sec">Sound</h4>${row("Sound", S.snd && S.snd.on ? "on" : "off", "snd", "Levels")}${S.inv.includes("musicbox") ? row("Music", "the music box, in your bag", "mbox", "Open") : ""}
+    <h4 class="set-sec">Sound</h4>${row("Sound", S.snd && S.snd.on ? "on" : "off", "snd", "Levels")}
     <h4 class="set-sec">Reading</h4>${row("Annotations", S.annot ? "shown beside each room" : "hidden", "ann", S.annot ? "Hide" : "Show")}${row("Primer", !S.inv.includes("primer") ? "not yet found (it is on the porter's desk)" : S.primerDock ? "kept open below the picture" : "closed; its line shows in the corner", "pdock", S.primerDock ? "Close" : "Keep open")}
     <h4 class="set-sec">Walking</h4>${row("How to walk", "keys, clicks, and the standing places", "help", "Read")}
-    <p class="note">The map and the finding aid stay on the menu bar; everything else is here.</p></div>`);
+    <p class="note">The menu bar keeps the map, the Primer, the finding aid (once you carry them), and the full view. Things you carry are in the bag under the picture.</p></div>`);
   const click = id => { const b = $("b-" + id); if(b) b.onclick(); };
   document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const id = b.dataset.set;
     if(id === "lamp"){ closeOv(); return lightView(); } if(id === "help"){ return helpView(); } if(id === "full"){ closeOv(); return fullView(); }
     if(id === "snd"){ return musicView({levels:true}); } if(id === "mbox"){ closeOv(); return window.MUSICBOX ? MUSICBOX.open() : musicView({levels:true}); }
-    if(id === "primer"){ return S.inv.includes("primer") ? primerView() : toast("The Primer is on the desk in the Entry."); }
     if(id === "pdock"){ if(!S.inv.includes("primer")) return toast("The Primer is on the porter's desk, in the Entry."); S.primerDock = !S.primerDock; save(); render(); return settingsView(); }
     if(id === "mini"){ S.noMini = !S.noMini; save(); render(); return settingsView(); }
     if(id === "eyes"){ S.fixedEyes = !S.fixedEyes; save(); render(); return settingsView(); }
     click(id); setTimeout(settingsView, 50); });
 }
 $("b-set").onclick = settingsView;
-$("b-cat").onclick = catalogueView;
+$("b-cat").onclick = () => catalogueView();
 $("b-help").onclick = helpView;
 $("b-ann").onclick = () => { S.annot = !S.annot; save(); annotations(effective(cur)); if(S.annot) $("annwin").scrollIntoView({behavior:"smooth",block:"nearest"}); };
 $("ann-x").onclick = () => { S.annot = false; save(); annotations(effective(cur)); };

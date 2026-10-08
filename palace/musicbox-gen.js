@@ -89,7 +89,9 @@ function createEngine(ac, dest, onNote){
     bell: (f, t, d, v, p) => { const P = pan(p), g = gain(0, P), m = ac.createOscillator(), mg = ac.createGain(); m.frequency.value = f*3.5; mg.gain.setValueAtTime(f*2.2, t); mg.gain.setTargetAtTime(0, t, 1.2); m.connect(mg); const c = osc("sine", f, t, t + 5, g); mg.connect(c.frequency); m.start(t); m.stop(t + 5); env(g, t, .002, v*.3, 3.5, 0); },
     pluck: (f, t, d, v, p) => { // Karplus–Strong: a burst of noise in a tuned, damped loop
       const P = pan(p), src = ac.createBufferSource(); src.buffer = noiseBuf; const burst = ac.createGain(); burst.gain.setValueAtTime(v*.5, t); burst.gain.setValueAtTime(0, t + 1/f*1.2);
-      const dl = ac.createDelay(1); dl.delayTime.value = 1/f; const fb = ac.createGain(); fb.gain.value = .985; const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = fq(Math.min(9000, f*9));
+      const dl = ac.createDelay(1); dl.delayTime.value = 1/f; const fb = ac.createGain(); fb.gain.value = .975; const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = fq(Math.min(9000, f*9));
+      lp.Q.value = -6;   // no resonant peak: a lowpass with any gain above 1 inside the loop rings up into howling feedback
+      fb.gain.setValueAtTime(.975, t); fb.gain.setTargetAtTime(0, t + Math.max(.6, d) + .3, .3);   // and the loop itself dies away, not just its output
       const o = gain(1, P); src.connect(burst); burst.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(o); o.gain.setTargetAtTime(0, t + Math.max(.6, d), .4); src.start(t); src.stop(t + .05);
       setTimeout(() => { try { fb.disconnect(); o.disconnect(); } catch(e){} }, (t - ac.currentTime + Math.max(.6, d) + 2.5)*1000); },
     koto: (f, t, d, v, p) => INST.pluck(f, t, d*1.5, v*1.1, p),

@@ -34,7 +34,7 @@ function libMat(id, opts={}){ const t = libTex(id); if(!t) return null; const e 
   m.userData.tile = e.tile || 1; m.userData.grain = e.family === "wood"; m.userData.lib = id; m.userData.libShared = true; return m; }
 /* every textured surface gets texture coordinates in real metres (box projection in the mesh's own frame, scaled by its size in the world),
    so grain, bricks, and weave come out the right size wherever they are; wood runs its grain along the piece's longest side */
-const _sv = new THREE.Vector3(), _bb = new THREE.Box3();
+const _sv = new THREE.Vector3();
 function realUV(root){
   root.updateMatrixWorld(true);
   root.traverse(o => { if(!o.isMesh || !o.geometry || o.userData.keepUV || o.isInstancedMesh) return; const m = Array.isArray(o.material) ? null : o.material; if(!m || !m.userData || !m.userData.tile || !m.map) return;
@@ -304,10 +304,13 @@ export function create(container, hooks){
   function focusKind(){ if(skyOn) return "sky"; if(peeking) return "peek"; if(plan && plan.close) return "close"; return null; }
   function allowedHit(h){ const f = focusKind(); if(!f) return true; if(f === "sky") return h.distance > 20;
     const c = f === "peek" ? focusPt : (stations[plan.ahead] && stations[plan.ahead].top); return !c || h.point.distanceTo(c) < 2.4; }
-  function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ peeking = false; focusPt = null; orbit = null; setActions(null); if(seated){ const s = seated; seated = null; s.leave(); } window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); } else if(f === "close") hooks.stepBack(); }
+  // every way out of a close look ends it the same way: the orbit, the buttons, the seat, and the things that opened for it
+  function endPeek(){ const was = peeking || !!seated || !!orbit; peeking = false; focusPt = null; orbit = null; setActions(null); look.yaw = 0; look.pitch = 0;
+    if(seated){ const s = seated; seated = null; s.leave(); } if(was) window.dispatchEvent(new CustomEvent("wending-unpeek")); }
+  function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ endPeek(); show(plan); } else if(f === "close") hooks.stepBack(); }
   function zoneAt(x, y){
     if(skyOn && y > H*.88) return {kind:"down", label:"Come back down", onClick:()=>{ skyMode(false); hooks.skyClosed && hooks.skyClosed(); }};
-    if(peeking && y > H*.84) return {kind:"back", label: seated ? "Stand up" : "Step back", onClick: exitFocus};
+    if(peeking) return y > H*.84 ? {kind:"back", label: seated ? "Stand up" : "Step back", onClick: exitFocus} : null;
     // edges of the picture turn you, the top looks up, the bottom looks down or steps back
     if(plan && plan.close){ if(y > H*.86) return {kind:"back", label:"Step back", onClick:()=>hooks.stepBack()}; }
     else {
@@ -326,7 +329,8 @@ export function create(container, hooks){
     ray.setFromCamera(mouse, camera);
     const hits = ray.intersectObjects(picks, true);
     // things in the picture win over the turning edges, except for walking, which the edges win
-    for(const h of hits){ let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; if(z && o.userData.hit.kind === "walk") return z; lastHit = h.point.clone(); return o.userData.hit; } }
+    const shown = ob => { for(let q = ob; q; q = q.parent) if(q.visible === false) return false; return true; };
+    for(const h of hits){ if(!shown(h.object)) continue; let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; if(z && o.userData.hit.kind === "walk") return z; lastHit = h.point.clone(); return o.userData.hit; } }
     if(z) return z;
     const f = focusKind(); if(f) return {kind:"back", label: f === "sky" ? "Come back down" : "Step back", onClick: exitFocus};
     return null;
@@ -338,6 +342,7 @@ export function create(container, hooks){
   const endDrag = e => { if(!drag) return; const was = drag; drag = null; if(!was.moved) return;
     swallowClick = true; setTimeout(() => swallowClick = false, 60); canvas.dataset.cursor = "none";
     if(orbit && peeking) return;
+    if(focusKind()){ return; }
     const q = Math.round(look.yaw / (Math.PI/2));   // quarter turns past the halfway point become real turns
     if(q){ look.yaw -= q*Math.PI/2; keepLook = performance.now(); for(let i=0;i<Math.abs(q);i++) hooks.turn(q > 0 ? -1 : 1); } };
   canvas.addEventListener("pointerup", endDrag); canvas.addEventListener("pointercancel", endDrag);
@@ -361,19 +366,19 @@ export function create(container, hooks){
 
   // going up into the sky: stand where you are, tip your head back, and drag to look around
   let skyOn = false;
-  function skyMode(on){ skyOn = !!on; if(on){ peeking = false; orbit = null; setActions(null); goal.pitch = 1.2; look.pitch = 0; dirty = 3; } else { look.pitch = 0; if(plan) show(plan); } }
+  function skyMode(on){ skyOn = !!on; if(on){ endPeek(); goal.pitch = 1.2; look.pitch = 0; dirty = 3; } else { look.pitch = 0; if(plan) show(plan); } }
   // in a court you can walk: to where you click on the paving, or a few steps forward and back
   function walkTo(pt){ if(!plan || !plan.room.walk || !pt) return; const lx = (plan.halfX || plan.half || 5.5) - 1.1, lz = (plan.halfZ || plan.half || 5.5) - 1.1;
     if(plan.HG){ if(!walking) hallGo(pt); return; }
     walkPos = new THREE.Vector3(Math.max(-lx, Math.min(lx, pt.x)), EYE, Math.max(-lz, Math.min(lz, pt.z)));
     if((plan.decor||[]).includes("sundial") && walkPos.length() < 1.9) walkPos.setLength(1.9);   // not into the dial
-    peeking = false; focusPt = null; if(!walking) walkRoute([walkPos.clone()]); else goal.pos.copy(walkPos); dirty = 3; }
+    endPeek(); if(!walking) walkRoute([walkPos.clone()]); else goal.pos.copy(walkPos); dirty = 3; }
   let aimRing = null;
   function showAim(pt){ if(!aimRing){ aimRing = new THREE.Mesh(new THREE.RingGeometry(.22, .3, 32), new THREE.MeshBasicMaterial({color:"#fff3c4", transparent:true, opacity:.75, depthWrite:false})); aimRing.rotation.x = -Math.PI/2; }
     if(aimRing.parent !== scene) scene.add(aimRing); if(pt){ aimRing.visible = true; aimRing.position.set(pt.x, (pt.y || 0) + .02, pt.z); } else aimRing.visible = false; dirty = 2; }
   function step(dir){ if(focusKind()){ exitFocus(); return; } if(plan && plan.HG){ if(!walking) hallStep(dir); return; } const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); walkTo(goal.pos.clone().addScaledVector(f, 2.4*dir)); }
   // step up to something without leaving where you are: the shelves, a picture; any other move steps back
-  function peek(eye, aim, opt){ peeking = true; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3;
+  function peek(eye, aim, opt){ if(seated || orbit) endPeek(); peeking = true; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3;
     orbit = null; setActions(opt && opt.actions); stage.title = (opt && opt.title) || "";
     if(opt && opt.orbit){ const d = eye.clone().sub(aim), r = d.length(); orbit = {c: aim.clone(), r, r0: r, az: Math.atan2(d.x, d.z), az0: Math.atan2(d.x, d.z), el: Math.asin(Math.max(-.99, Math.min(.99, d.y/r))), span: opt.span == null ? 1.2 : opt.span, rmin: opt.rmin || r*.45, rmax: opt.rmax || r*1.8, key: opt.key || null}; orbitApply(); } }
   /* ---- orbiting: in a close look at a thing, dragging walks you round it and the wheel brings you nearer ---- */
@@ -394,7 +399,7 @@ export function create(container, hooks){
       veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .5s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
   const flash = document.createElement("div"); flash.className = "flash3d"; container.appendChild(flash);
   const backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "back3d"; backBtn.textContent = "↩ Step back"; container.appendChild(backBtn); container.appendChild(actBar); container.appendChild(stageTitle);
-  canvas.addEventListener("wheel", e => { if(!(orbit && peeking)) return; e.preventDefault(); orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*Math.exp(e.deltaY*.0012))); orbitApply(); }, {passive:false});
+  canvas.addEventListener("wheel", e => { if(!focusKind()) return; e.preventDefault(); if(!(orbit && peeking)) return; orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*Math.exp(e.deltaY*.0012))); orbitApply(); }, {passive:false});
   backBtn.addEventListener("click", e => { e.stopPropagation(); exitFocus(); });
   window.addEventListener("wending-lightning", () => { if(!plan || !((plan.room.ceiling||"") === "open" || plan.decor.includes("window"))) return;
     flash.style.transition = "none"; flash.style.opacity = ".75"; setTimeout(() => { flash.style.transition = "opacity .5s"; flash.style.opacity = "0"; }, 70); setTimeout(() => { flash.style.transition = "none"; flash.style.opacity = ".5"; setTimeout(() => { flash.style.transition = "opacity .9s"; flash.style.opacity = "0"; }, 60); }, 240); });
@@ -430,8 +435,8 @@ export function create(container, hooks){
     const fp = fk === "peek" ? focusPt : fk === "close" && plan && stations[plan.ahead] ? stations[plan.ahead].top : null;
     if(fp){ stage.z = -fp.clone().applyMatrix4(camera.matrixWorldInverse).z; stage.r = fk === "close" ? .9 : orbit ? Math.max(.35, orbit.r*.55) : .8; }
     [post, photo].forEach(m => { m.uniforms.stageK.value = stage.k; m.uniforms.focusZ.value = stage.z; m.uniforms.focusR.value = stage.r; });
-    container.classList.toggle("staged", stage.k > .5); stageTitle.textContent = staged ? (fk === "peek" ? stage.title : (stations[plan.ahead] && stations[plan.ahead].title) || "") : ""; stageTitle.classList.toggle("on", staged && !!stageTitle.textContent);
-    backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back";
+    const tt = staged ? (fk === "peek" ? stage.title : (plan && stations[plan.ahead] && stations[plan.ahead].title) || "") : "", uiKey = [fk, stage.k > .5, tt, seated ? 1 : 0, actList.length].join("|");
+    if(uiKey !== stage.ui){ stage.ui = uiKey; container.classList.toggle("staged", stage.k > .5); stageTitle.textContent = tt; stageTitle.classList.toggle("on", !!tt); backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back"; }
     if(moving || anims.length || dirty>0){
       dirty = Math.max(0, dirty-1);
       if(RAW){ camera.layers.enableAll(); renderer.setRenderTarget(null); renderer.render(scene, camera); requestAnimationFrame(frame); return; }
@@ -439,8 +444,8 @@ export function create(container, hooks){
       renderer.setRenderTarget(rt); renderer.render(scene, camera);
       post.uniforms.tColor.value = rt.texture; post.uniforms.tDepth.value = rt.depthTexture;
       post.uniforms.projInv.value.copy(camera.projectionMatrixInverse); post.uniforms.proj.value.copy(camera.projectionMatrix); post.uniforms.time.value = t/1000;
-      if(hooks.autoExposure ? hooks.autoExposure() : true){ if(meter.reset || ++meter.n % 6 === 0){ meterRead(); if(meter.reset){ meter.ev = meter.target; meter.reset = false; } }
-        const before = meter.ev; meter.ev += (meter.target - meter.ev)*(1 - Math.exp(-dt*2.2)); if(Math.abs(meter.target - meter.ev) > .004) dirty = Math.max(dirty, 1); }
+      if(hooks.autoExposure ? hooks.autoExposure() : true){ if(meter.reset || ++meter.n % (moving ? 20 : 60) === 0){ meterRead(); if(meter.reset){ meter.ev = meter.target; meter.reset = false; } }
+        meter.ev += (meter.target - meter.ev)*(1 - Math.exp(-dt*2.2)); if(Math.abs(meter.target - meter.ev) > .004) dirty = Math.max(dirty, 1); }
       else meter.ev = 1;
       post.uniforms.exposure.value = meter.ev; photo.uniforms.exposure.value = meter.ev;
       if(isPhoto()){ postMesh.material = photo; photo.uniforms.tColor.value = rt.texture; photo.uniforms.tDepth.value = rt.depthTexture; photo.uniforms.projInv.value.copy(camera.projectionMatrixInverse); photo.uniforms.proj.value.copy(camera.projectionMatrix); photo.uniforms.time.value = (t/1000) % 100; }
@@ -460,7 +465,7 @@ export function create(container, hooks){
   function show(p){
     const prevPlan = plan, navK = JSON.stringify([p.room.id, p.ahead, p.close, p.pitch, p.frame, p.node]);
     // a redraw that changes nothing about where you stand (the clock, the weather) keeps a close look, or a seat, as it is
-    const keepPeek = peeking && navK === lastNavK; lastNavK = navK; plan = p; if(!keepPeek){ peeking = false; orbit = null; setActions(null); if(seated){ const s = seated; seated = null; s.leave(); } }
+    const keepPeek = peeking && navK === lastNavK; lastNavK = navK; plan = p; if(!keepPeek) endPeek();
     if(prevPlan && prevPlan.room && p.room && prevPlan.room.id === p.room.id) ['HG','half','halfX','halfZ','hallFog','envK','doorSpots'].forEach(k => { if(p[k] === undefined && prevPlan[k] !== undefined) p[k] = prevPlan[k]; });
     const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.lanternColor, p.shade, p.light, p.mats || null, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
     if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); realUV(scene); meter.reset = true; }
@@ -487,7 +492,7 @@ export function create(container, hooks){
           else if(back && p.doorSpots[back.id]){ at = p.doorSpots[back.id].clone(); const sl2 = slots[back.wall]; if(sl2) out = Math.atan2(sl2.dir.x, sl2.dir.z); }
           const k = nearestNode(G, lv, at || pos); if(k >= 0){ walkPos = G.nodes[lv][k].clone(); if(out != null) setTimeout(() => faceYaw(out), 30); } } }
       pos = walkPos.clone(); } else if(walkRoom !== p.room.id) walkPos = null; walkRoom = p.room.id;   // in rooms you can walk, a turn turns you where you stand
-    if(keepPeek){ post.uniforms.night.value = p.band==="night" ? 1 : 0; dirty = 3; return; }
+    if(keepPeek){ glints.forEach(gl => { gl.mesh.visible = String(gl.slot) === String(p.close ? p.ahead : p.node); }); nodeMarks.forEach(m => { m.visible = false; }); post.uniforms.night.value = p.band==="night" ? 1 : 0; dirty = 3; return; }
     if(skyOn && !(p.room.ceiling === "open")) skyOn = false;
     // the info spots of a wall glint only when you stand at it, or look closely at it
     glints.forEach(gl => { gl.mesh.visible = !p.close ? (p.node != null && String(gl.slot) === String(p.node)) : String(gl.slot) === String(p.ahead); });
@@ -799,7 +804,7 @@ export function create(container, hooks){
   function hallGo(pt){ const G = plan.HG, lv = G.level, here = nearestNode(G, lv, goal.pos), to = nearestNode(G, lv, pt, 7); if(to < 0 || here < 0 || to === here) return; const path = nodePath(G, lv, here, to); if(!path || !path.length) return; walkPos = path[path.length-1].clone(); peeking = false; walkRoute(path); }
   function hallStep(dir){ const G = plan.HG, lv = G.level, here = nearestNode(G, lv, goal.pos); if(here < 0) return; const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)).multiplyScalar(dir);
     let best = -1, bs = Math.cos(40*DEG); G.adj[lv][here].forEach(j => { const d = G.nodes[lv][j].clone().sub(G.nodes[lv][here]).setY(0), L = d.length(); const c = d.dot(f)/L - L*.004; if(c > bs){ bs = c; best = j; } });
-    if(best < 0){ hooks.toast && hooks.toast(dir > 0 ? "No way on that way." : "No way back that way."); return; } walkPos = G.nodes[lv][best].clone(); peeking = false; walkRoute([walkPos.clone()]); }
+    if(best < 0){ hooks.toast && hooks.toast(dir > 0 ? "No way on that way." : "No way back that way."); return; } walkPos = G.nodes[lv][best].clone(); endPeek(); walkRoute([walkPos.clone()]); }
   function walkRoute(path){ walking = true; let i = 0, stepT = 0;
     const fn = (t, dt) => { const target = path[i], d = goal.pos.distanceTo(target), sp = 5*(dt || .016);
       if(d <= sp){ goal.pos.copy(target); i++; if(i >= path.length){ const k = anims.indexOf(fn); if(k >= 0) anims.splice(k, 1); walkPos = target.clone(); walking = false; return; } }
@@ -1487,6 +1492,7 @@ export function create(container, hooks){
     const ph = Math.random()*6; anims.push(t => { if(s.visible){ s.scale.setScalar(.09 + .025*Math.sin(t*2.2 + ph)); } }); glints.push({mesh: s, slot}); }
   function itemClick(og, o){ const key = "item:" + o.title;
     return () => { const acts = hooks.actionsFor ? hooks.actionsFor(o) : null;
+      if(!(plan && plan.close) && hooks.closer && og.userData.slot != null && acts){ hooks.closer(og.userData.slot); return; }
       if(!acts || (orbit && orbit.key === key) || !(plan && plan.close)) return hooks.useObject(o);
       const c = og.getWorldPosition(new THREE.Vector3()); c.y += .1; const d = cam.pos.clone().sub(c).setY(0); if(d.lengthSq() < 1e-4) d.set(0,0,1); d.setLength(.62);
       peek(c.clone().add(d).setY(c.y + .34), c, {orbit:true, span:1.4, rmin:.3, rmax:1.2, key, actions:acts, title:o.title}); }; }
@@ -1512,14 +1518,14 @@ export function create(container, hooks){
       const tg = model("tray", spot, R); tg.scale.setScalar(1.35); tg.position.set(w/2 - .55, topY+.035, .12); tg.traverse(m => { if(m.isMesh) m.receiveShadow = true; });
       tg.userData.hit = {kind:"use", label: trayO.title + (onTray.length ? "" : " (empty: everything is in your bag)"), onClick:()=>hooks.useObject(trayO)}; g.add(tg); picks.push(tg);
       onTray.forEach((o, k) => { const og = model(o.icon, spot, R); og.scale.multiplyScalar(1.15); og.position.set(w/2 - .55 - .26 + (k%2)*.28, topY+.055, .12 - .1 + Math.floor(k/2)*.17); og.rotation.y = (R()-.5)*.6;
-        og.traverse(m => { if(m.isMesh) m.castShadow = true; }); og.userData.hit = {kind:"take", label: o.title, onClick:itemClick(og, o)}; g.add(og); picks.push(og);
+        og.traverse(m => { if(m.isMesh) m.castShadow = true; }); og.userData.slot = slot; og.userData.hit = {kind:"take", label: o.title, onClick:itemClick(og, o)}; g.add(og); picks.push(og);
         glint(g, new THREE.Vector3(w/2 - .55 - .26 + (k%2)*.28 + .08, topY + .26, .12 - .1 + Math.floor(k/2)*.17), o, slot); });
     }
     const spacing = (w-.4 - (trayO ? 1.1 : 0))/Math.max(1, shown.length-1 || 1);
     shown.forEach((o, i) => {
       const og = model(o.icon, spot, R); og.scale.multiplyScalar(1.35); const x = shown.length===1 ? (trayO ? -w/2 + .5 : 0) : -w/2+.2 + i*spacing;
       og.position.set(x, topY+.035, .05 + (i%2)*.12); og.rotation.y = (R()-.5)*.5; og.traverse(m => { if(m.isMesh){ m.castShadow = true; } });
-      og.userData.hit = {kind: o.kind==="key" ? "take" : o.href ? "open" : o.action ? "use" : "look", label: o.title + (o.by ? " · " + o.by : ""), onClick:itemClick(og, o)};
+      og.userData.hit = {kind: o.kind==="key" ? "take" : o.href ? "open" : o.action ? "use" : "look", label: o.title + (o.by ? " · " + o.by : ""), onClick:itemClick(og, o)}; og.userData.slot = slot;
       g.add(og); picks.push(og); glint(g, new THREE.Vector3(x + .12, topY + .32, .05 + (i%2)*.12), o, slot);
     });
     scene.add(g);
@@ -1721,6 +1727,7 @@ export function create(container, hooks){
     const book = model(o.icon, spot, R0); book.position.y = .02; book.scale.multiplyScalar(centre ? 2.2 : 1.6); desk.add(book);
     const pEye = at.clone().add(toward.clone().normalize().multiplyScalar(1.05)).setY(1.5), pAim = at.clone().setY(1.0), pKey = "ped:" + o.title;
     const hit = {kind:"use", get label(){ return orbit && orbit.key === pKey ? o.title + ": use it" : o.title + ": step up to it"; }, onClick:()=>{ const acts = hooks.actionsFor ? hooks.actionsFor(o) : null;
+      if(nodeRoom(plan) && !peeking && String(plan.node) !== String(sl.face.slot) && hooks.goNode){ hooks.goNode(sl.face.slot); return; }
       if(orbit && orbit.key === pKey || !acts) return hooks.useObject(o); peek(pEye, pAim, {orbit:true, span:1.3, rmin:.55, rmax:2, key:pKey, actions:acts, title:o.title}); }};
     g.userData.hit = hit; picks.push(g); glint(g, new THREE.Vector3(.22, 1.25, .1), o, sl.face.slot);
     if(o.icon === "linkbook"){ // the panel glows faintly, and moves
@@ -2198,7 +2205,7 @@ export function create(container, hooks){
       rk.hit.userData.hit = {kind:"look", label:"The balance rocker: sit in it", onClick:() => { if(seated){ const on = seated.lean(); rk.hit.userData.hit.label = on ? "Sit up" : "Lean back"; } else { sit(); rk.hit.userData.hit.label = "Lean back"; } }}; picks.push(rk.hit);
       const Lw = wallAt(faces, 0); if(Lw){ const sc = staircaseCabinet(), t = +(window.__cabT || .76)*Lw.len; if(Lw.free(t, 2)){ const at = Lw.at(t, .24); sc.group.position.set(at.x, 0, at.z); sc.group.rotation.y = Lw.yaw; scene.add(sc.group);
         const toward = Lw.n.clone(), eye = new THREE.Vector3(at.x, 1.45, at.z).addScaledVector(toward, 1.9), aim = new THREE.Vector3(at.x, .85, at.z);
-        sc.hit.userData.hit = {kind:"closer", label:"The staircase cabinet: look closer", onClick:() => { peek(eye, aim); const keep = sc.hit.userData.hit; sc.hit.userData.hit = null; const off = () => { sc.hit.userData.hit = keep; window.removeEventListener("wending-unpeek", off); }; window.addEventListener("wending-unpeek", off); if(!sc.seen){ sc.seen = true; hooks.furniture && hooks.furniture("cabinet"); } }}; picks.push(sc.hit);
+        sc.hit.userData.hit = {kind:"closer", label:"The staircase cabinet: look closer", onClick:() => { peek(eye, aim); const keep = sc.hit.userData.hit; sc.hit.userData.hit = null; onWin("wending-unpeek", () => { sc.hit.userData.hit = keep; }); if(!sc.seen){ sc.seen = true; hooks.furniture && hooks.furniture("cabinet"); } }}; picks.push(sc.hit);
         sc.fronts.forEach(f => { f.mesh.userData.hit = {kind:"use", label: f.label, onClick:() => { f.open = !f.open; f.mesh.userData.hit.label = f.open ? f.label.replace("open it", "close it").replace("roll it up", "let it down") : f.label; }}; picks.push(f.mesh); anims.push(() => f.step()); }); } }
       const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.4), mat("#ffffff",{map: canvasTex(512, 360, (g,w,h) => { g.fillStyle = "#4f3a5a"; g.fillRect(0,0,w,h); g.strokeStyle = "#cdb88a"; g.lineWidth = 10; g.strokeRect(14,14,w-28,h-28); g.lineWidth = 3; for(let i=0;i<7;i++){ g.beginPath(); g.ellipse(w/2,h/2,40+i*26,24+i*17,0,0,TAU); g.stroke(); } })}));
       rug.rotation.x = -Math.PI/2; rug.position.set(1.4,.008,-.9); rug.receiveShadow = true; scene.add(rug);
@@ -2372,7 +2379,7 @@ export function create(container, hooks){
     const up = () => { held = null; cv.style.cursor = "grab"; idle = performance.now(); }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
     cv.addEventListener("wheel", e => { e.preventDefault(); dist = Math.max(.45, Math.min(1.8, dist*Math.exp(e.deltaY*.0012))); }, {passive:false});
     let lastT = 0;
-    const loop = (t) => { if(!alive || !cv.isConnected){ r2.dispose(); t2.dispose(); return; } const dtt = lastT ? Math.min(.05, (t - lastT)/1000) : 0; lastT = t;
+    const loop = (t) => { if(!alive || !cv.isConnected){ t2.dispose(); pm.dispose(); sc.traverse(x => { if(x.geometry) x.geometry.dispose(); }); r2.dispose(); try { r2.forceContextLoss(); } catch(e){} return; } const dtt = lastT ? Math.min(.05, (t - lastT)/1000) : 0; lastT = t;
       if(!held && performance.now() - idle > 2500) spin += dtt*.42; turn.rotation.y = spin;
       c2.position.set(0, .2 + Math.sin(.42 + tilt)*1.05*dist, Math.cos(.42 + tilt)*1.05*dist); c2.lookAt(0,.2,0); r2.setRenderTarget(t2); r2.render(sc, c2); pm.uniforms.tColor.value = t2.texture; pm.uniforms.tDepth.value = t2.depthTexture; pm.uniforms.projInv.value.copy(c2.projectionMatrixInverse); r2.setRenderTarget(null); r2.render(ps, postCam); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);

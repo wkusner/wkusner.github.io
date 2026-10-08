@@ -29,7 +29,7 @@ wings:
 ranks:   # earned by experience (xp): rooms, close looks, puzzles, items, sheets
   - {name: "Visitor",                     xp: 0,   color: "#D9D2C0"}
   - {name: "Reader",                      xp: 60,  color: "#7A9E7E", gift: "The reading room's lamps burn a little brighter for you."}
-  - {name: "Third Assistant Librarian",   xp: 160, color: "#B8322A", gift: "You may borrow keys from the porter."}
+  - {name: "Third Assistant Librarian",   xp: 160, color: "#B8322A", gift: "The closed stacks will know your name."}
   - {name: "Second Assistant Librarian",  xp: 320, color: "#E0B42F", gift: "The closed stacks under the spiral are open to you."}
   - {name: "Keeper of the Stacks",        xp: 600, color: "#2F4E8C", gift: "Every lamp is yours."}
 
@@ -57,13 +57,6 @@ links:    # the directory at the Entry: the plain way through the site
   - {title: "Code", href: "/code/"}
   - {title: "Puzzles & Devices", href: "/puzzles/", note: "every device, as a plain list"}
   - {title: "Contact", href: "/contact/"}
-
-items:
-  golden-key: "a golden key, stamped φ"
-  hourglass: "an hourglass"
-  primer: "A Young Person's Illustrated Primer"
-  astrolabe: "an astrolabe with a storm glass"
-  musicbox: "a music box"
 
 catalog:   # the Archive's log book; the archivist writes to it from /palace/catalog/
   url: /catalog/index.json
@@ -654,7 +647,7 @@ rooms:
     - {to: 16, wall: front}
     - {to: [18, 19, 21, 23], wall: back, label: "⟳", oneway: true, title: "the door on the clock's hand"}
   objects:
-    - {kind: key, item: hourglass, icon: hourglass, title: "An hourglass", take: "You take the hourglass. Turn it (from your bag, or the clock in the tally bar) to set the house's time."}
+    - {kind: key, item: hourglass, icon: hourglass, title: "An hourglass", when: "not:has:hourglass", take: "You take the hourglass. Turn it (from your bag, or the clock in the tally bar) to set the house's time."}
     - {kind: unwritten, icon: clock, title: "The Number Systems Museum", note: "Tallies, Roman, Babylonian, Egyptian, Maya, Kaktovik, bases, the French counting words, dozen and gross, and Archimedes's Sand Reckoner."}
     - {kind: unwritten, icon: scroll, title: "Continued fractions and nested radicals", note: "Euclid's algorithm, written down differently."}
 
@@ -982,7 +975,7 @@ rooms:
   doors:
     - {to: 20, wall: left}
   objects:
-    - {kind: primer, icon: book, title: "A Young Person's Illustrated Primer", action: primer, item: primer, note: "Open it here, or anywhere once it's in your pocket."}
+    - {kind: primer, icon: book, title: "A Young Person's Illustrated Primer", action: primer, item: primer, when: "not:has:primer", note: "Open it here, or anywhere once it's in your pocket."}
     - {kind: ref, icon: book, title: "The Diamond Age", by: "Neal Stephenson"}
 
 - id: 29
@@ -1051,7 +1044,7 @@ rooms:
   text: >-
     A high, empty hall. Someone has just left: there is a letter on the desk, a lamp still lit, and the things they meant you to have laid out beside it. A compass rose in the floor points to true north. The thermometer and the window show the real weather outside.
 
-    On the left wall hangs the notice board with this week's problem. On the right are the link board, which goes everywhere directly, and the almanac. Ahead are two doors: the reading room, and the tall arch into the Great Hall. The office is behind you.
+    On the left wall hangs the notice board with this week's problem, and the door out to the Sundial Court. On the right are the link board, which goes everywhere directly, the almanac, and a glass case of instruments. Ahead, the reading room and the tall arch into the Great Hall are boarded up for now. The office is behind you.
   again: The hall is as you left it. The letter is still on the desk.
   doors:
     - {to: 1, wall: back, title: "the reading room"}
@@ -1066,7 +1059,7 @@ rooms:
     - {wall: back, kind: case, icon: drawer, title: "The porter's drawer", lock: master-key, holds: [plan, finding-aid], note: "A shallow drawer in the desk, locked. Inside: the full plan of the house and the finding aid.", info: "The porter keeps the full plan and the finding aid locked in the desk. The ring of keys on the desk opens it."}
     - {wall: back, kind: device, icon: book, title: "The guest book", action: register, note: "Sign it, and the Primer will know your name."}
     - {wall: back, kind: device, icon: bell, title: "A brass bell", action: bell, info: "A porter's bell. Ring it and someone, somewhere in the house, may hear."}
-    - {wall: back, kind: device, icon: tray, title: "A tray for putting things back", action: return, note: "Return what you took from the desk."}
+    - {wall: back, kind: device, icon: tray, title: "A tray for putting things back", action: return, note: "Put back the keys or the map you took from the desk. Things from the drawer and the case go back where they came from."}
     - {kind: device, mount: board, wall: left, icon: note, title: "The notice board", action: notices, note: "The problem of the week, the calendar, news, and a wanted card."}
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
@@ -1826,7 +1819,7 @@ pages:    # one Primer page per thing you can carry; the page is written in when
     text: "A map that fills itself in as you walk: a room appears once you have stood in it, with its doors. Open it from the menu bar (Map) or the bag. The corner map, top right, shows the rooms next to you; Settings can hide it."
   plan:
     title: "The full plan"
-    text: "The whole house drawn out, every room and door, including the ones still closed. It is the folded map, finished: carrying it, the map shows everything."
+    text: "The whole house drawn out, every open room and door, whether or not you have been there yet. It is the folded map, finished: carrying it, the map shows everything."
   finding-aid:
     title: "The finding aid"
     text: "The house's catalogue as a plain list: every room and every thing in it, with links. For when you would rather look something up than walk to it. The menu bar's Finding aid opens it once you carry it."

@@ -461,6 +461,15 @@ Clicking any of them opens drawings. The full build specification is in the proj
 - **Eyes that adjust.** Each standing place meters its own light (a centre-weighted average, read from a 16 × 9 shrink of the picture) and the exposure eases toward it, so a dim corner opens up and a sunny window closes down. Settings → Seeing → Eyes turns it off. A room can bias it with `exposure: 1.2`.
 - **Fittings.** Ordinary rooms have a moulded cornice (fillet, cove, bed moulding, fascia), a picture rail in tall rooms, a skirting with a bead, brass sconces on long clear walls (they glow when the lamps are lit or at night), and a plaster rose where a pendant lamp hangs.
 
+### Clean-up (October 9)
+
+- The old play styles (guided, wanderer, hardcore) are gone: no mode chooser, no mode chip, no `mode:` conditions. Save codes keep a zero in that byte, rebuild Primer pages, and still read codes written when the item list was shorter.
+- Every way out of a close look ends it the same way (`endPeek` in `palace3d.js`): the orbit, the buttons, the seat, and anything that opened for it. In a close look the picture's edges no longer turn you, a drag only looks, and the wheel never scrolls the page. Hidden glints and floor rings no longer answer clicks.
+- One grammar for things: from across the room, a click walks you to the wall; at the wall, a click steps up to the thing (or opens the desk); then you use it. S, Escape, and Step back all step back one level.
+- The tray takes back only the keys and the folded map; drawer and case things go back where they came from. Things you already carry say so. Pages that grew into something larger say so in the Primer.
+- Device pop-ups lose their turning model when closed (the 3D context is freed), and the exposure meter reads far less often.
+- Text brought up to date: the help, the Entry's description, the toasts that say where things are, the finding aid's title, a rank gift, the plan's page. Settings no longer repeats the menu bar or the bag.
+
 ### Close looks as their own pictures, devices that grow, and doorways (v4 part 4b)
 
 - **Close looks are staged.** Looking closely at a desk, a pedestal device, a desk instrument, or the dial narrows the lens (a zoom), frames the picture, sinks everything away from the thing into shadow, and puts its name at the top. Stepping back zooms out again.
