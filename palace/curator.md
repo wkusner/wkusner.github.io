@@ -461,6 +461,17 @@ Clicking any of them opens drawings. The full build specification is in the proj
 - **Eyes that adjust.** Each standing place meters its own light (a centre-weighted average, read from a 16 × 9 shrink of the picture) and the exposure eases toward it, so a dim corner opens up and a sunny window closes down. Settings → Seeing → Eyes turns it off. A room can bias it with `exposure: 1.2`.
 - **Fittings.** Ordinary rooms have a moulded cornice (fillet, cove, bed moulding, fascia), a picture rail in tall rooms, a skirting with a bead, brass sconces on long clear walls (they glow when the lamps are lit or at night), and a plaster rose where a pendant lamp hangs.
 
+### Finding things, close looks, and one of each (v4 part 4, October 2026)
+
+- **Everyone starts empty-handed.** The porter's desk has the letter, a folded map, the Primer, and the ring of keys (the master key). Take what you like. Modes are no longer chosen; the tally's mode word just describes what you carry.
+- **Locked drawers and cases.** An object with `kind: case`, a `lock:` (an item, usually `master-key`), and `holds: [items]` is a container. Locked, it says so; open, it shows each thing inside with a model you can drag round and scroll nearer, its page, and Take or Put back. The Entry has two: the porter's drawer (the full plan and the finding aid) and the case of instruments on the right (compass, lantern, music box, hourglass, astrolabe). The originals of the hourglass and astrolabe still live in their own rooms.
+- **Primer pages.** `pages:` in the data gives a page (title, text) per item. Taking the item writes its page in; the Primer has a Pages tab with the model and a Use button. To separate pages from things later (puzzles), give a page its own object.
+- **The Primer below the picture.** Click the Primer's line in the corner, or Settings → Primer, to keep it open under the picture: the room's lesson, what you have noted here, and buttons for Notes, Pages, and the story. Close ▴ folds it back into the corner.
+- **One of each.** Removed: the reading room's blank map and card catalogue, the hardcore copies of the plan, compass, and finding aid, the lantern hook and loose music box in the Entry (both in the case now), and the Office's calendar card (the Entry's notice board is the calendar). The menu bar shows Map, Primer, and Finding aid only once you carry them; the bag shows the plan instead of the map once you have both.
+- **Close looks you can walk round.** A pedestal device (the numerary, the calendar cabinet, the case of timekeepers, the materials library) is stepped up to first: drag to walk round it, scroll to come nearer, and use its buttons (Use it, Take it). In a desk's close view, clicking an instrument or a thing to carry does the same. The dial (and the noon gun) in the court can be walked all the way round. Things you read or ring (letters, the guest book, the bell, boards) still answer at once.
+- **The sky.** In the court, "Look at the sky" (the top edge, or the sky itself) takes you straight up into the dome. Drag to look around it; "Come back down" returns you.
+- **Debug helpers** (with `?debug`): `__use(title)`, `__acts(title)`, and `__view3d._hit(labelPart)`.
+
 ### Moving and looking
 
 Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. You arrive facing away from the door you came through, so it is behind you.

@@ -298,7 +298,7 @@ export function create(container, hooks){
   function focusKind(){ if(skyOn) return "sky"; if(peeking) return "peek"; if(plan && plan.close) return "close"; return null; }
   function allowedHit(h){ const f = focusKind(); if(!f) return true; if(f === "sky") return h.distance > 20;
     const c = f === "peek" ? focusPt : (stations[plan.ahead] && stations[plan.ahead].top); return !c || h.point.distanceTo(c) < 2.4; }
-  function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ peeking = false; focusPt = null; if(seated){ const s = seated; seated = null; s.leave(); } window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); } else if(f === "close") hooks.stepBack(); }
+  function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ peeking = false; focusPt = null; orbit = null; setActions(null); if(seated){ const s = seated; seated = null; s.leave(); } window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); } else if(f === "close") hooks.stepBack(); }
   function zoneAt(x, y){
     if(skyOn && y > H*.88) return {kind:"down", label:"Come back down", onClick:()=>{ skyMode(false); hooks.skyClosed && hooks.skyClosed(); }};
     if(peeking && y > H*.84) return {kind:"back", label: seated ? "Stand up" : "Step back", onClick: exitFocus};
@@ -307,7 +307,7 @@ export function create(container, hooks){
     else {
       if(x < W*.14) return {kind:"turnL", label:"Turn left (or drag to look)", onClick:()=>hooks.turn(-1)};
       if(x > W*.86) return {kind:"turnR", label:"Turn right (or drag to look)", onClick:()=>hooks.turn(1)};
-      if(y < H*.09 && plan && plan.pitch<=0) return {kind:"up", label: plan.pitch<0 ? "Look ahead" : "Look up", onClick:()=>hooks.look(plan.pitch<0?0:1)};
+      if(y < H*.09 && plan && plan.pitch<=0) return plan.pitch === 0 && (plan.room.ceiling||"") === "open" ? {kind:"up", label:"Look at the sky", onClick:()=>skyMode(true)} : {kind:"up", label: plan.pitch<0 ? "Look ahead" : "Look up", onClick:()=>hooks.look(plan.pitch<0?0:1)};
       if(y > H*.91 && plan && plan.pitch>=0) return {kind:"down", label: plan.pitch>0 ? "Look ahead" : "Look down", onClick:()=>hooks.look(plan.pitch>0?0:-1)};
     }
     return null;
@@ -331,6 +331,7 @@ export function create(container, hooks){
   canvas.addEventListener("pointerdown", e => { if(e.button && e.button !== 0) return; drag = {x:e.clientX, y:e.clientY, moved:false, id:e.pointerId}; });
   const endDrag = e => { if(!drag) return; const was = drag; drag = null; if(!was.moved) return;
     swallowClick = true; setTimeout(() => swallowClick = false, 60); canvas.dataset.cursor = "none";
+    if(orbit && peeking) return;
     const q = Math.round(look.yaw / (Math.PI/2));   // quarter turns past the halfway point become real turns
     if(q){ look.yaw -= q*Math.PI/2; keepLook = performance.now(); for(let i=0;i<Math.abs(q);i++) hooks.turn(q > 0 ? -1 : 1); } };
   canvas.addEventListener("pointerup", endDrag); canvas.addEventListener("pointercancel", endDrag);
@@ -340,6 +341,7 @@ export function create(container, hooks){
       if(!drag.moved && Math.hypot(dx, dy) < 6) return;
       if(!drag.moved){ drag.moved = true; try { canvas.setPointerCapture(drag.id); } catch(err){} tip.classList.remove("on"); canvas.dataset.cursor = "drag"; }
       const per = camera.fov*DEG / Math.max(1, canvas.getBoundingClientRect().height);
+      if(orbit && peeking){ orbit.az -= dx*.008; if(orbit.span < Math.PI) orbit.az = Math.max(orbit.az0 - orbit.span, Math.min(orbit.az0 + orbit.span, orbit.az)); orbit.el = Math.max(-.05, Math.min(1.25, orbit.el + dy*.006)); orbitApply(); drag.x = e.clientX; drag.y = e.clientY; return; }
       look.yaw += dx*per; look.pitch += dy*per;
       const base = goal.pitch; look.pitch = Math.max(-1.35 - base, Math.min(1.52 - base, look.pitch));
       drag.x = e.clientX; drag.y = e.clientY; dirty = 3; return; }
@@ -353,7 +355,7 @@ export function create(container, hooks){
 
   // going up into the sky: stand where you are, tip your head back, and drag to look around
   let skyOn = false;
-  function skyMode(on){ skyOn = !!on; if(on){ peeking = false; goal.pitch = 1.2; look.pitch = 0; dirty = 3; } else { look.pitch = 0; if(plan) show(plan); } }
+  function skyMode(on){ skyOn = !!on; if(on){ peeking = false; orbit = null; setActions(null); goal.pitch = 1.2; look.pitch = 0; dirty = 3; } else { look.pitch = 0; if(plan) show(plan); } }
   // in a court you can walk: to where you click on the paving, or a few steps forward and back
   function walkTo(pt){ if(!plan || !plan.room.walk || !pt) return; const lx = (plan.halfX || plan.half || 5.5) - 1.1, lz = (plan.halfZ || plan.half || 5.5) - 1.1;
     if(plan.HG){ if(!walking) hallGo(pt); return; }
@@ -365,7 +367,16 @@ export function create(container, hooks){
     if(aimRing.parent !== scene) scene.add(aimRing); if(pt){ aimRing.visible = true; aimRing.position.set(pt.x, (pt.y || 0) + .02, pt.z); } else aimRing.visible = false; dirty = 2; }
   function step(dir){ if(focusKind()){ exitFocus(); return; } if(plan && plan.HG){ if(!walking) hallStep(dir); return; } const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); walkTo(goal.pos.clone().addScaledVector(f, 2.4*dir)); }
   // step up to something without leaving where you are: the shelves, a picture; any other move steps back
-  function peek(eye, aim){ peeking = true; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3; }
+  function peek(eye, aim, opt){ peeking = true; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3;
+    orbit = null; setActions(opt && opt.actions);
+    if(opt && opt.orbit){ const d = eye.clone().sub(aim), r = d.length(); orbit = {c: aim.clone(), r, r0: r, az: Math.atan2(d.x, d.z), az0: Math.atan2(d.x, d.z), el: Math.asin(Math.max(-.99, Math.min(.99, d.y/r))), span: opt.span == null ? 1.2 : opt.span, rmin: opt.rmin || r*.45, rmax: opt.rmax || r*1.8, key: opt.key || null}; orbitApply(); } }
+  /* ---- orbiting: in a close look at a thing, dragging walks you round it and the wheel brings you nearer ---- */
+  let orbit = null;
+  function orbitApply(){ const o = orbit; if(!o) return; const ce = Math.cos(o.el), p = new THREE.Vector3(o.c.x + o.r*Math.sin(o.az)*ce, o.c.y + o.r*Math.sin(o.el), o.c.z + o.r*Math.cos(o.az)*ce);
+    goal.pos.copy(p); goal.yaw = Math.atan2(-(o.c.x - p.x), -(o.c.z - p.z)); goal.pitch = Math.atan2(o.c.y - p.y, Math.hypot(o.c.x - p.x, o.c.z - p.z)); look.yaw = 0; look.pitch = 0; dirty = 3; }
+  // the buttons that go with a close look at a thing: use it, take it, open it
+  const actBar = document.createElement("div"); actBar.className = "act3d"; let actList = [];
+  function setActions(list){ actList = list || []; actBar.innerHTML = ""; actList.forEach(a => { const b = document.createElement("button"); b.type = "button"; b.textContent = a.label; b.addEventListener("click", e => { e.stopPropagation(); a.fn(); }); actBar.appendChild(b); }); }
   /* ---- moving: a few steps toward a door before the next room, and a dissolve between rooms ---- */
   let walking = false;
   function approach(to, then){ if(walking) return; walking = true; const dest = cam.pos.clone().lerp(new THREE.Vector3(to.x, (to.y||0) + EYE, to.z), .5); goal.pos.copy(dest); look.yaw = 0; look.pitch = 0;
@@ -375,7 +386,8 @@ export function create(container, hooks){
   function dissolve(){ try { veil.width = Math.max(1, Math.round(canvas.width/2)); veil.height = Math.max(1, Math.round(canvas.height/2)); veil.getContext("2d").drawImage(canvas, 0, 0, veil.width, veil.height);
       veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .5s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
   const flash = document.createElement("div"); flash.className = "flash3d"; container.appendChild(flash);
-  const backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "back3d"; backBtn.textContent = "↩ Step back"; container.appendChild(backBtn);
+  const backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "back3d"; backBtn.textContent = "↩ Step back"; container.appendChild(backBtn); container.appendChild(actBar);
+  canvas.addEventListener("wheel", e => { if(!(orbit && peeking)) return; e.preventDefault(); orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*Math.exp(e.deltaY*.0012))); orbitApply(); }, {passive:false});
   backBtn.addEventListener("click", e => { e.stopPropagation(); exitFocus(); });
   window.addEventListener("wending-lightning", () => { if(!plan || !((plan.room.ceiling||"") === "open" || plan.decor.includes("window"))) return;
     flash.style.transition = "none"; flash.style.opacity = ".75"; setTimeout(() => { flash.style.transition = "opacity .5s"; flash.style.opacity = "0"; }, 70); setTimeout(() => { flash.style.transition = "none"; flash.style.opacity = ".5"; setTimeout(() => { flash.style.transition = "opacity .9s"; flash.style.opacity = "0"; }, 60); }, 240); });
@@ -405,7 +417,7 @@ export function create(container, hooks){
     cam.yaw += dy*k; cam.pitch += (gp-cam.pitch)*k; cam.pos.lerp(goal.pos, k);
     camera.position.copy(cam.pos); camera.rotation.set(cam.pitch, cam.yaw, 0);
     anims.forEach(a => a(t/1000, dt));
-    const fk = focusKind(); backBtn.classList.toggle("on", !!fk); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back";
+    const fk = focusKind(); backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back";
     if(moving || anims.length || dirty>0){
       dirty = Math.max(0, dirty-1);
       if(RAW){ camera.layers.enableAll(); renderer.setRenderTarget(null); renderer.render(scene, camera); requestAnimationFrame(frame); return; }
@@ -434,7 +446,7 @@ export function create(container, hooks){
   function show(p){
     const prevPlan = plan, navK = JSON.stringify([p.room.id, p.ahead, p.close, p.pitch, p.frame, p.node]);
     // a redraw that changes nothing about where you stand (the clock, the weather) keeps a close look, or a seat, as it is
-    const keepPeek = peeking && navK === lastNavK; lastNavK = navK; plan = p; if(!keepPeek){ peeking = false; if(seated){ const s = seated; seated = null; s.leave(); } }
+    const keepPeek = peeking && navK === lastNavK; lastNavK = navK; plan = p; if(!keepPeek){ peeking = false; orbit = null; setActions(null); if(seated){ const s = seated; seated = null; s.leave(); } }
     if(prevPlan && prevPlan.room && p.room && prevPlan.room.id === p.room.id) ['HG','half','halfX','halfZ','hallFog','envK','doorSpots'].forEach(k => { if(p[k] === undefined && prevPlan[k] !== undefined) p[k] = prevPlan[k]; });
     const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.lanternColor, p.shade, p.light, p.mats || null, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
     if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); realUV(scene); meter.reset = true; }
@@ -1201,7 +1213,7 @@ export function create(container, hooks){
       c.lerp(grey, cc*.88); col.push(c.r, c.g, c.b); }
     geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
     const domeM = on1(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({vertexColors:true, side:THREE.BackSide, fog:false, depthWrite:false})));
-    domeM.userData.hit = {kind:"look", get label(){ return skyOn ? "The sky: open its notes" : (plan && plan.pitch <= 0 && cam.pitch < .5) ? "Look up at the sky" : "The sky: go up into it"; }, onClick:()=>{ if(!skyOn && plan && plan.pitch <= 0 && cam.pitch < .5){ hooks.look(1); return; } if(!skyOn) skyMode(true); hooks.sky && hooks.sky(); }}; picks.push(domeM);
+    domeM.userData.hit = {kind:"look", get label(){ return skyOn ? "The sky: open its notes" : "Look at the sky"; }, onClick:()=>{ if(!skyOn){ skyMode(true); return; } hooks.sky && hooks.sky(); }}; picks.push(domeM);
     // the guides an observer would draw in: the alt-azimuth grid, the celestial equator, the ecliptic, the pole and the zenith
     const O = p.skyOpts || {}, guide = (pts, color, op, closed) => { if(pts.length < 2) return; const g2 = new THREE.BufferGeometry().setFromPoints(pts); on1(new (closed ? THREE.LineLoop : THREE.Line)(g2, new THREE.LineBasicMaterial({color, transparent:true, opacity:op, fog:false, depthWrite:false}))); };
     const ring = (alt) => Array.from({length:121}, (_, k) => dir(alt, k*3).multiplyScalar(RS-.8));
@@ -1447,6 +1459,11 @@ export function create(container, hooks){
     const seen = hooks.noted && hooks.noted(o.raw); s.material.opacity = seen ? .45 : 1;
     s.userData.hit = {kind:"info", label: (seen ? "In your Primer: " : "What is it? ") + o.title, onClick:() => { hooks.info && hooks.info(o.raw); s.material.opacity = .45; dirty = 2; }}; picks.push(s);
     const ph = Math.random()*6; anims.push(t => { if(s.visible){ s.scale.setScalar(.09 + .025*Math.sin(t*2.2 + ph)); } }); glints.push({mesh: s, slot}); }
+  function itemClick(og, o){ const key = "item:" + o.title;
+    return () => { const acts = hooks.actionsFor ? hooks.actionsFor(o) : null;
+      if(!acts || (orbit && orbit.key === key) || !(plan && plan.close)) return hooks.useObject(o);
+      const c = og.getWorldPosition(new THREE.Vector3()); c.y += .1; const d = cam.pos.clone().sub(c).setY(0); if(d.lengthSq() < 1e-4) d.set(0,0,1); d.setLength(.62);
+      peek(c.clone().add(d).setY(c.y + .34), c, {orbit:true, span:1.4, rmin:.3, rmax:1.2, key, actions:acts}); }; }
   function buildStation(slot, sl, objs, p, R, spot){
     const f = sl.face, u = f.b.clone().sub(f.a).normalize(), n = f.n, yaw = Math.atan2(-u.z, u.x);
     const len = f.a.distanceTo(f.b), free = [len*.5, len*.3, len*.7].find(at => !f.holes.some(h => Math.abs(h.at-at) < h.w/2 + 1.1)) ?? len*.5;
@@ -1469,14 +1486,14 @@ export function create(container, hooks){
       const tg = model("tray", spot, R); tg.scale.setScalar(1.35); tg.position.set(w/2 - .55, topY+.035, .12); tg.traverse(m => { if(m.isMesh) m.receiveShadow = true; });
       tg.userData.hit = {kind:"use", label: trayO.title + (onTray.length ? "" : " (empty: everything is in your bag)"), onClick:()=>hooks.useObject(trayO)}; g.add(tg); picks.push(tg);
       onTray.forEach((o, k) => { const og = model(o.icon, spot, R); og.scale.multiplyScalar(1.15); og.position.set(w/2 - .55 - .26 + (k%2)*.28, topY+.055, .12 - .1 + Math.floor(k/2)*.17); og.rotation.y = (R()-.5)*.6;
-        og.traverse(m => { if(m.isMesh) m.castShadow = true; }); og.userData.hit = {kind:"take", label: o.title, onClick:()=>hooks.useObject(o)}; g.add(og); picks.push(og);
+        og.traverse(m => { if(m.isMesh) m.castShadow = true; }); og.userData.hit = {kind:"take", label: o.title, onClick:itemClick(og, o)}; g.add(og); picks.push(og);
         glint(g, new THREE.Vector3(w/2 - .55 - .26 + (k%2)*.28 + .08, topY + .26, .12 - .1 + Math.floor(k/2)*.17), o, slot); });
     }
     const spacing = (w-.4 - (trayO ? 1.1 : 0))/Math.max(1, shown.length-1 || 1);
     shown.forEach((o, i) => {
       const og = model(o.icon, spot, R); og.scale.multiplyScalar(1.35); const x = shown.length===1 ? (trayO ? -w/2 + .5 : 0) : -w/2+.2 + i*spacing;
       og.position.set(x, topY+.035, .05 + (i%2)*.12); og.rotation.y = (R()-.5)*.5; og.traverse(m => { if(m.isMesh){ m.castShadow = true; } });
-      og.userData.hit = {kind: o.kind==="key" ? "take" : o.href ? "open" : o.action ? "use" : "look", label: o.title + (o.by ? " · " + o.by : ""), onClick:()=>hooks.useObject(o)};
+      og.userData.hit = {kind: o.kind==="key" ? "take" : o.href ? "open" : o.action ? "use" : "look", label: o.title + (o.by ? " · " + o.by : ""), onClick:itemClick(og, o)};
       g.add(og); picks.push(og); glint(g, new THREE.Vector3(x + .12, topY + .32, .05 + (i%2)*.12), o, slot);
     });
     scene.add(g);
@@ -1644,8 +1661,8 @@ export function create(container, hooks){
   let winL = []; function onWin(type, fn){ window.addEventListener(type, fn); winL.push([type, fn]); }
   // step up to the dial in the middle of the court and look down at its face (or, for the glass sphere, at the paving)
   function lookAtDial(near){ const from = cam.pos.clone().setY(0); if(from.lengthSq() < .01) from.set(0,0,1); from.normalize();
-    if(near) peek(from.clone().multiplyScalar(1.15).setY(2.05), new THREE.Vector3(0, .92, 0));
-    else peek(from.clone().multiplyScalar(3.2).setY(2.6), new THREE.Vector3(0, 0, 0)); }
+    if(near) peek(from.clone().multiplyScalar(1.6).setY(1.9), new THREE.Vector3(0, .92, 0), {orbit:true, span:Math.PI, rmin:.9, rmax:3.2});
+    else peek(from.clone().multiplyScalar(3.2).setY(2.6), new THREE.Vector3(0, 0, 0), {orbit:true, span:Math.PI, rmin:1.6, rmax:5}); }
   function stoneM2(){ return mat("#c4bba6"); }
   function miniDial(k, brass, stone, spot){
     const g = new THREE.Group(), add = (geo, m, x=0, y=0, z=0, rx=0, ry=0, rz=0) => { const me = new THREE.Mesh(geo, m); me.position.set(x,y,z); me.rotation.set(rx,ry,rz); me.castShadow = true; g.add(me); return me; };
@@ -1676,7 +1693,10 @@ export function create(container, hooks){
     const slab = new THREE.Mesh(new THREE.BoxGeometry(centre ? .78 : .52, .04, centre ? .58 : .4), wood); slab.castShadow = true; desk.add(slab);
     const lip = new THREE.Mesh(new THREE.BoxGeometry(centre ? .78 : .52, .05, .02), wood); lip.position.set(0, .04, (centre ? .29 : .2)); desk.add(lip);
     const book = model(o.icon, spot, R0); book.position.y = .02; book.scale.multiplyScalar(centre ? 2.2 : 1.6); desk.add(book);
-    const hit = {kind:"use", label: o.title, onClick:()=>hooks.useObject(o)}; g.userData.hit = hit; picks.push(g); glint(g, new THREE.Vector3(.22, 1.25, .1), o, sl.face.slot);
+    const pEye = at.clone().add(toward.clone().normalize().multiplyScalar(1.05)).setY(1.5), pAim = at.clone().setY(1.0), pKey = "ped:" + o.title;
+    const hit = {kind:"use", get label(){ return orbit && orbit.key === pKey ? o.title + ": use it" : o.title + ": step up to it"; }, onClick:()=>{ const acts = hooks.actionsFor ? hooks.actionsFor(o) : null;
+      if(orbit && orbit.key === pKey || !acts) return hooks.useObject(o); peek(pEye, pAim, {orbit:true, span:1.3, rmin:.55, rmax:2, key:pKey, actions:acts}); }};
+    g.userData.hit = hit; picks.push(g); glint(g, new THREE.Vector3(.22, 1.25, .1), o, sl.face.slot);
     if(o.icon === "linkbook"){ // the panel glows faintly, and moves
       const glow = new THREE.PointLight("#cfe0ff", .8, 1.6, 2); glow.position.set(0, 1.15, .15); g.add(glow);
       anims.push(t => { glow.intensity = .6 + .25*Math.sin(t*1.7); }); }
@@ -1845,6 +1865,16 @@ export function create(container, hooks){
         const sandM = mat("#c9a86a"); add(new THREE.ConeGeometry(.02,.04,16), sandM, -.08,.05+.02,0); add(new THREE.ConeGeometry(.02,.04,16), sandM, -.08,.05+.06,0, Math.PI,0,0);
         add(new THREE.CylinderGeometry(.008,.008,.07,10), mat("#f1e8d2"), .0,.17,0); add(new THREE.CylinderGeometry(.03,.025,.06,20), mat("#d9d0bb"), .08,.165,0);
         add(new THREE.CylinderGeometry(.035,.035,.012,32), brass, -.06,.33,0, Math.PI/2,0,0); add(new THREE.BoxGeometry(.06,.06,.06), brass, .07,.32,0); add(new THREE.BoxGeometry(.05,.012,.05), mat("#3a1e18"), 0,.04,.02);
+        break; }
+      case "drawer": { // a shallow locked drawer box, with a brass escutcheon
+        add(new THREE.BoxGeometry(.3,.07,.2), wood, 0,.035); add(new THREE.BoxGeometry(.27,.05,.004), mat("#7d6450"), 0,.035,.102); add(new THREE.CylinderGeometry(.012,.012,.004,20), brass, 0,.04,.105, Math.PI/2,0,0); add(new THREE.BoxGeometry(.004,.012,.004), mat("#1a1410"), 0,.033,.107);
+        break; }
+      case "devcase": { // a glass-fronted case: compass, lantern, music box, hourglass, astrolabe on two shelves
+        const glass = mat("#e8eceb",{transparent:true, opacity:.2, roughness:.05});
+        add(new THREE.BoxGeometry(.4,.5,.2), wood, 0,.25,-.012); add(new THREE.BoxGeometry(.36,.46,.002), glass, 0,.25,.09); add(new THREE.BoxGeometry(.36,.008,.17), wood, 0,.25,0);
+        add(new THREE.CylinderGeometry(.03,.03,.012,24), brass, -.11,.035,.01); add(new THREE.BoxGeometry(.05,.04,.035), mat("#6b4a3a"), .0,.03,.01); add(new THREE.BoxGeometry(.035,.05,.035), brass, .11,.035,.01);
+        add(new THREE.ConeGeometry(.018,.035,14), mat("#c9a86a"), -.08,.276,0); add(new THREE.ConeGeometry(.018,.035,14), mat("#c9a86a"), -.08,.31,0, Math.PI,0,0); add(new THREE.CylinderGeometry(.045,.045,.008,32), brass, .07,.3,0, Math.PI/2,0,0);
+        add(new THREE.CylinderGeometry(.008,.008,.012,12), brass, .17,.25,.095, Math.PI/2,0,0);
         break; }
       case "matcab": { // a plan chest of shallow drawers, one pulled out with its samples showing; more samples laid on top
         add(new THREE.BoxGeometry(.36,.2,.24), wood, 0,.1); for(let k=0;k<4;k++){ add(new THREE.BoxGeometry(.34,.036,.004), mat("#7d6450"), 0,.03+k*.046,.121); add(new THREE.BoxGeometry(.05,.008,.006), brass, 0,.03+k*.046,.125); }
@@ -2300,13 +2330,22 @@ export function create(container, hooks){
     const t2 = new THREE.WebGLRenderTarget(520, 360, {depthTexture:new THREE.DepthTexture(520,360)});
     const pm = post.clone(); pm.uniforms = THREE.UniformsUtils.clone(post.uniforms); pm.uniforms.res.value.set(520,360); pm.uniforms.dpr.value = 1; pm.uniforms.spacing.value = 3.2; pm.uniforms.night.value = 0;
     const ps = new THREE.Scene(); ps.add(new THREE.Mesh(tri, pm));
-    let alive = true;
-    const loop = (t) => { if(!alive || !cv.isConnected){ r2.dispose(); t2.dispose(); return; } m.rotation.y = t/2400; r2.setRenderTarget(t2); r2.render(sc, c2); pm.uniforms.tColor.value = t2.texture; pm.uniforms.tDepth.value = t2.depthTexture; pm.uniforms.projInv.value.copy(c2.projectionMatrixInverse); r2.setRenderTarget(null); r2.render(ps, postCam); requestAnimationFrame(loop); };
+    pm.uniforms.aoK.value = 0; pm.uniforms.exposure.value = 1;
+    let alive = true, spin = 0, tilt = 0, held = null, idle = 0, dist = 1;
+    cv.style.touchAction = "none"; cv.style.cursor = "grab";
+    cv.addEventListener("pointerdown", e => { held = {x:e.clientX, y:e.clientY}; try { cv.setPointerCapture(e.pointerId); } catch(err){} cv.style.cursor = "grabbing"; });
+    cv.addEventListener("pointermove", e => { if(!held) return; spin += (e.clientX - held.x)*.012; tilt = Math.max(-.5, Math.min(.9, tilt + (e.clientY - held.y)*.008)); held = {x:e.clientX, y:e.clientY}; idle = performance.now(); });
+    const up = () => { held = null; cv.style.cursor = "grab"; idle = performance.now(); }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+    cv.addEventListener("wheel", e => { e.preventDefault(); dist = Math.max(.45, Math.min(1.8, dist*Math.exp(e.deltaY*.0012))); }, {passive:false});
+    let lastT = 0;
+    const loop = (t) => { if(!alive || !cv.isConnected){ r2.dispose(); t2.dispose(); return; } const dtt = lastT ? Math.min(.05, (t - lastT)/1000) : 0; lastT = t;
+      if(!held && performance.now() - idle > 2500) spin += dtt*.42; m.rotation.y = spin; m.rotation.x = 0;
+      c2.position.set(0, .12 + Math.sin(.42 + tilt)*.9*dist, Math.cos(.42 + tilt)*.9*dist); c2.lookAt(0,.12,0); r2.setRenderTarget(t2); r2.render(sc, c2); pm.uniforms.tColor.value = t2.texture; pm.uniforms.tDepth.value = t2.depthTexture; pm.uniforms.projInv.value.copy(c2.projectionMatrixInverse); r2.setRenderTarget(null); r2.render(ps, postCam); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
     return () => { alive = false; };
   }
 
   // a small picture of the room as it is now, for the linking books' panels
   function thumb(){ const c = document.createElement("canvas"); c.width = 480; c.height = 270; c.getContext("2d").drawImage(canvas, 0, 0, 480, 270); return c.toDataURL("image/jpeg", .82); }
-  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), hasStation: k => !!stations[k], _pickables: () => picks.map(o => { const h = o.userData.hit; if(!h) return null; const v = o.getWorldPosition(new THREE.Vector3()).project(camera); return [h.kind, h.label, +((v.x+1)/2).toFixed(3), +((1-v.y)/2).toFixed(3), v.z < 1]; }).filter(Boolean), _focus: () => focusKind(), _hg: () => plan && plan.HG ? plan.HG.nodes[plan.HG.level].length : 0, _glints: () => glints.filter(gl => gl.mesh.visible).map(gl => { const v = gl.mesh.getWorldPosition(new THREE.Vector3()).project(camera); return [(v.x + 1)/2, (1 - v.y)/2, gl.mesh.userData.hit.label]; }), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
+  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), hasStation: k => !!stations[k], _pickables: () => picks.map(o => { const h = o.userData.hit; if(!h) return null; const v = o.getWorldPosition(new THREE.Vector3()).project(camera); return [h.kind, h.label, +((v.x+1)/2).toFixed(3), +((1-v.y)/2).toFixed(3), v.z < 1]; }).filter(Boolean), _focus: () => focusKind(), _hit: s => { const o = picks.find(q => q.userData.hit && String(q.userData.hit.label).includes(s)); if(o){ o.userData.hit.onClick(); return true; } return false; }, _hg: () => plan && plan.HG ? plan.HG.nodes[plan.HG.level].length : 0, _glints: () => glints.filter(gl => gl.mesh.visible).map(gl => { const v = gl.mesh.getWorldPosition(new THREE.Vector3()).project(camera); return [(v.x + 1)/2, (1 - v.y)/2, gl.mesh.userData.hit.label]; }), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
 }

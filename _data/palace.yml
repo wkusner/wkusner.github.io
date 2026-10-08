@@ -138,7 +138,7 @@ letter: |
 
   The rooms keep real time. The sun comes in where the sun actually is, and the weather in the windows is the weather in Appleton. Some doors keep hours. Some loops don't bring you back where you started.
 
-  On the desk: a ring of keys and the full plan, if you'd like every door open; a folded map and a compass, if you'd rather find your way; or leave everything where it is and walk in with nothing. You can always come back and change your mind.
+  On the desk: a folded map, the Primer, and the porter's ring of keys. Take what you like. The keys open the drawer in the desk, where the full plan and the finding aid are kept, and the glass case on the right, which holds a compass, a lantern, a music box, an hourglass, and an astrolabe for you to borrow. Each comes with its page for the Primer. Leave the keys, and you will find your own way in. Whatever you take can go back on the tray.
 
   Most of the house is closed while I rebuild it. The office is open, and there is a linking book in it that will take you to the archive.
 
@@ -219,8 +219,6 @@ rooms:
     - {to: 0, wall: front, title: "out to the Entry"}
   objects:
     - {kind: unwritten, icon: lectern, title: "Lie Groups You Can Hold", note: "The book plan: slide rules as exponential maps, turned and pressed into SO(3), G₂, and their cousins. Drafts are in the Workshop."}
-    - {kind: device, icon: books, title: "The card catalogue", action: catalogue, note: "Everything here, listed plainly."}
-    - {kind: device, icon: map, title: "A map, mostly blank", action: map, note: "It fills in as you walk."}
 
 # ─────────────────────────── INSTRUMENTS ───────────────────────────
 - id: 2
@@ -245,7 +243,6 @@ rooms:
     - {to: 3, wall: back}
     - {to: 4, wall: right, title: "a narrow stair up"}
   objects:
-    - {kind: key, item: plan, icon: map, title: "A folded plan of the house", when: "mode:hardcore"}
     - {kind: device, icon: rule, title: "Slide Rule Cabinet", href: "/slide-rules/", note: "Straight, circular, complex, finite-field, and relativistic rules to drag and read."}
     - {kind: unwritten, icon: rule, title: "The Instruments Cabinet", note: "Sectors, Napier's bones and their descendants, log and trig tables, Gunter's scale, ruler constructions, scraping and flattening, inclinometers, and sextants."}
     - {kind: unwritten, icon: rule, title: "Elliptic slide rule", note: "A rule built on the ℘ function, using transparencies."}
@@ -400,7 +397,6 @@ rooms:
     - {to: 7, wall: back, turn: s, look: mirror, title: "a door of silvered glass", say: "Through the glass again."}
     - {to: 9, wall: left}
   objects:
-    - {kind: key, item: compass, icon: compass, title: "A compass", when: "mode:hardcore", info: "A brass pocket compass. Held up (C), it shows true north in the room, which is how you notice a corridor that turned you."}
     - {kind: device, icon: turns, title: "Hamilton's Turns", href: "/turns/", note: "Compose rotations by laying arcs head to tail on a sphere."}
     - {kind: device, icon: net, title: "The SO(3) slide rule", href: "/stereonet/", hide: true, note: "Also in the Observatory."}
 
@@ -811,7 +807,6 @@ rooms:
   objects:
     - {kind: device, icon: logbook, mount: center, title: "The log book", action: logbook, note: "The catalogue of everything in the house: search it, read the entries, and, if you're the archivist, add to it."}
     - {kind: device, icon: linkbook, mount: pedestal, wall: front, title: "A linking book: the Office", action: link, to: 35, note: "Its panel shows the office, moving faintly. Touch it to go there."}
-    - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:hardcore", info: "The house's catalogue in a ledger: everything in every room, listed plainly, for when you would rather look it up than walk."}
     - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/", info: "The curator's research papers, filed here as they are written."}
     - {hidden: true, kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
     - {kind: ref, icon: books, title: "The shelf of expositions", action: logbook, search: expositions, note: "Mathematicians writing about mathematics: Hardy, Thurston, Mumford, Lockhart, Poincaré, the Gelfand booklets, and more. Many can be read free online.", info: "A shelf of essays and short books on what mathematics is, how it is done, and how it should be taught. Each entry in the log book says whether a free copy is online."}
@@ -1066,9 +1061,8 @@ rooms:
   objects:
     - {wall: back, kind: letter, icon: note, title: "A letter, left on the desk", action: letter, info: "A letter from the curator to whoever walks in first: what the house is, and how to get about in it. Read it again any time."}
     - {wall: back, kind: key, item: master-key, icon: key, title: "A ring of keys", take: "You take the ring of keys. Every ordinary lock will open for you now.", info: "The master key. It opens every door that has a lock, though not the ones that open only for a reason."}
-    - {wall: back, kind: key, item: plan, icon: map, title: "The full plan", take: "You take the full plan of the house.", info: "The whole house drawn out, every room and door, including the ones still closed for renovation."}
     - {wall: back, kind: key, item: map, icon: map, title: "A folded map", take: "You take the folded map. It fills in as you walk.", info: "A map that fills itself in as you walk: rooms appear on it once you have stood in them."}
-    - {wall: back, kind: key, item: compass, icon: compass, title: "A compass", take: "You take the compass. It will always tell you which way is true.", info: "A brass pocket compass. Held up (C), it shows true north in the room, which is how you notice a corridor that turned you."}
+    - {wall: back, kind: case, icon: drawer, title: "The porter's drawer", lock: master-key, holds: [plan, finding-aid], note: "A shallow drawer in the desk, locked. Inside: the full plan of the house and the finding aid.", info: "The porter keeps the full plan and the finding aid locked in the desk. The ring of keys on the desk opens it."}
     - {wall: back, kind: device, icon: book, title: "The guest book", action: register, note: "Sign it, and the Primer will know your name."}
     - {wall: back, kind: device, icon: bell, title: "A brass bell", action: bell, info: "A porter's bell. Ring it and someone, somewhere in the house, may hear."}
     - {wall: back, kind: device, icon: tray, title: "A tray for putting things back", action: return, note: "Return what you took from the desk."}
@@ -1076,11 +1070,9 @@ rooms:
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
-    - {kind: device, icon: musicbox, wall: right, item: musicbox, portable: true, action: music, title: "A music box", note: "Take it with you. Opened, it is a workshop: music made as it plays in many scales and tunings, rooms to play it in (made, measured, or loaded), a lab for convolving sounds, the radio, and a little sonar."}
     - {kind: key, item: primer, icon: book, wall: back, title: "A Young Person's Illustrated Primer", when: "not:has:primer", note: "The house's field guide. Touch any glint of light over a thing and the Primer writes down what it is; open it to read your notes, and for the house's lessons."}
+    - {kind: case, icon: devcase, wall: right, title: "The case of instruments", lock: master-key, holds: [compass, lantern, musicbox, hourglass, astrolabe], note: "A glass-fronted case, locked: a compass, a lantern, a music box, an hourglass, and an astrolabe, each with its page for the Primer.", info: "Copies of the house's instruments, for visitors to borrow. Each comes with its page; the Primer keeps the page once you take the instrument."}
     - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
-    - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook", info: "A lantern for the dark rooms. Its flame can be coloured with salts: strontium red, copper blue, sodium yellow."}
-    - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly.", info: "The house's catalogue in a ledger: everything in every room, listed plainly, for when you would rather look it up than walk."}
   marginalia:
     - "This is the front door, and a launch page: the link board is one click away from here, and pressing / anywhere in the house lets you type to go."
   sources:
@@ -1202,7 +1194,6 @@ rooms:
     - {kind: device, icon: linkbook, mount: pedestal, wall: left, title: "A linking book: the Archive", action: link, to: 22, note: "A small book on a stand. Its panel shows the archive, moving faintly. Touch it to go there."}
     - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours, info: "When the office is open, and where. The plate on the door outside says the same."}
     - {kind: unwritten, icon: lectern, wall: left, title: "The real office, measured", note: "A model of the actual office: the desk, the shelves, the whiteboard, the window."}
-    - {kind: device, icon: note, wall: left, title: "The calendar", action: notices, info: "The month on a card: events, the problem of the week, and the news of the house."}
     - {kind: device, icon: numerary, mount: pedestal, wall: right, title: "The numerary", action: numerals, note: "A number in every way it has been written: cuneiform, khipu, Kaktovik, Cistercian, counting rods, and the rest."}
 
 - id: 36
@@ -1826,6 +1817,38 @@ rooms:
     A room off the third-floor walkway of the Great Hall, on the right. Empty for now: it is waiting for its fittings.
   doors:
     - {to: 64, wall: front, title: "out to the walkway"}
+
+pages:    # one Primer page per thing you can carry; the page is written in when you take the thing
+  map:
+    title: "The folded map"
+    text: "A map that fills itself in as you walk: a room appears once you have stood in it, with its doors. Open it from the menu bar (Map) or the bag. The corner map, top right, shows the rooms next to you; Settings can hide it."
+  plan:
+    title: "The full plan"
+    text: "The whole house drawn out, every room and door, including the ones still closed. It is the folded map, finished: carrying it, the map shows everything."
+  finding-aid:
+    title: "The finding aid"
+    text: "The house's catalogue as a plain list: every room and every thing in it, with links. For when you would rather look something up than walk to it. The menu bar's Finding aid opens it once you carry it."
+  master-key:
+    title: "The ring of keys"
+    text: "The porter's master key opens every ordinary lock: the drawer in the desk, the case of instruments, and doors marked with a lock. A few doors want a reason, not a key."
+  compass:
+    title: "The compass"
+    text: "A brass pocket compass. Held up (C, or from the bag), it shows true north across the top of the view. Corridors in this house can turn you round without your noticing; the compass is how you notice."
+  lantern:
+    title: "The lantern"
+    text: "A lantern for the dark rooms. Shade it, turn it low, steady, or bright, and colour its flame with a pinch of salt: sodium yellow, strontium red, copper blue, boric green. The flame test, as in a chemistry lab."
+  musicbox:
+    title: "The music box"
+    text: "Music made as it plays, in many styles, scales, and tunings; ambiences and coloured noise; and a small laboratory for rooms and their echoes. Opened from the bag, it is a workshop with a manual."
+  hourglass:
+    title: "The hourglass"
+    text: "Turned, it sets the house's clock to a time of your choosing, so you can visit a room at night by day, or see the court's dial at noon. Turn it back to return to the real time."
+  astrolabe:
+    title: "The astrolabe and storm glass"
+    text: "Sets where the house stands and when: any place on Earth, any date. The storm glass in its throne sets the weather. The sky, the sun in the windows, and the court's dials all follow."
+  primer:
+    title: "A Young Person's Illustrated Primer"
+    text: "The house's field guide. Wherever a thing has something to tell, a glint of light hangs over it when you stand near; touch it and the Primer writes it down. Pages like this one come with the things you carry. Keep it open below the picture, or closed."
 
 primer:
   "2":  {teaser: "every rule is an exponential map you can hold", lesson: "A slide rule adds lengths, and the scale is logarithmic, so adding lengths multiplies numbers.", q: "Why can't a slide rule add 2 + 3?", a: "Its scale turns addition of lengths into multiplication of numbers. To add you'd need a plain ruler, whose scale is the identity."}

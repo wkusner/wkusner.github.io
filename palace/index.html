@@ -330,6 +330,18 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
 .chalkpage{background:#26302c;color:#e9ece4;padding:16px 18px;border-radius:3px;font-family:"Kalam","Segoe Print","Bradley Hand","Comic Sans MS",cursive}
 .chalk{border-collapse:collapse;width:100%;font-size:17px;line-height:1.45} .chalk th,.chalk td{border-bottom:2px solid rgba(233,236,228,.45);padding:8px 10px;vertical-align:top;text-align:left} .chalk th{font-weight:700} .chalk td+td,.chalk th+th{border-left:2px solid rgba(233,236,228,.35)}
 .chalknote{opacity:.85;margin:4px 0 10px;font-size:16px}
+.primerdock{border-top:1px solid rgba(0,0,0,.25);padding:8px 14px 10px;font-size:15px;line-height:1.45;background:var(--paper2)}
+html.skin-myst .primerdock{background:linear-gradient(#efe3c6,#e6d7b4);color:#2b2118;border-top:1px solid #3d2f20}
+.primerdock .pd-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px} .primerdock .pd-h b{font-style:italic;margin-right:auto}
+.primerdock .pd-h button{font:inherit;font-size:13px;background:none;border:1px solid currentColor;border-radius:3px;padding:1px 8px;cursor:pointer;color:inherit;opacity:.85}
+.primerdock .pd-notes{margin:4px 0 0;padding:0;list-style:none;font-size:14px;opacity:.9} .primerdock .pd-notes li{display:inline;margin-right:14px}
+.casev{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap} .caselist{display:flex;flex-direction:column;gap:4px;min-width:200px}
+.casei{display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;background:none;border:1.5px solid transparent;padding:4px 6px;cursor:pointer;color:var(--ink);font:inherit}
+.casei .ci-icon{grid-row:1/3} .casei small{opacity:.7;font-size:12px} .casei.on{border-color:var(--ink)} .casei.have small{font-style:italic}
+.casemain{flex:1;min-width:260px} .casemain .obi canvas{max-width:100%;height:auto;cursor:grab}
+.act3d{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);display:none;gap:8px;z-index:5}
+.act3d.on{display:flex} .act3d button{font:400 15px var(--fellsc,serif);letter-spacing:.04em;padding:5px 14px;border-radius:3px;border:1px solid #3d2f20;background:rgba(239,227,198,.94);color:#2b2118;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.act3d button:hover{background:#2b2118;color:#efe3c6}
 /* the materials library */
 .matlib .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
 .matlib button.chip{cursor:pointer;font:400 13px var(--chrome,serif);color:var(--ink)} .matlib button.chip.on{background:var(--ink);color:var(--paper)}
@@ -369,6 +381,7 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
       <button class="corner bl" id="primerc" type="button" aria-label="Open the Primer"></button>
     </div>
     <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint">drag to look · ← → or A D turn · ↑ W go through · ↓ S step back · ⇧↑ ⇧↓ look up, down · F full view · C compass</span></div>
+    <div class="primerdock" id="primerdock" style="display:none"></div>
   </div>
   <div class="win" id="annwin" style="display:none;margin-top:20px"><div class="tb"><button class="box" type="button" id="ann-x" aria-label="Close annotations"></button><span class="t">Annotations</span></div>
     <div class="wb"><div class="tabs" role="tablist"><button type="button" class="tab" data-tab="marginalia">Marginalia</button><button type="button" class="tab" data-tab="sources">Sources</button><button type="button" class="tab" data-tab="bib">Bibliography</button></div><div id="annb" class="ann"></div></div></div>
@@ -384,17 +397,17 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
 <div class="overlay" id="ov"><div class="sheet win"><div class="tb"><button class="box" type="button" id="ovx" aria-label="Close"></button><span class="t" id="ovt"></span></div><div class="wb" id="ovb"></div></div></div>
 <div class="toast" id="toast"></div>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap">
-<script src="data.js?v=20261008c"></script>
-<script src="sky.js?v=20261008c"></script>
-<script src="systems.js?v=20261008c"></script>
-<script src="numerals.js?v=20261008c"></script>
-<script src="reckoning.js?v=20261008c"></script>
-<script src="musicbox-dsp.js?v=20261008c"></script>
-<script src="musicbox-gen.js?v=20261008c"></script>
-<script src="musicbox-manual.js?v=20261008c"></script>
-<script src="musicbox.js?v=20261008c"></script>
-<script src="materials.js?v=20261008c"></script>
-<script src="furniture.js?v=20261008c"></script>
-<script src="palace.js?v=20261008c"></script>
+<script src="data.js?v=20261008d"></script>
+<script src="sky.js?v=20261008d"></script>
+<script src="systems.js?v=20261008d"></script>
+<script src="numerals.js?v=20261008d"></script>
+<script src="reckoning.js?v=20261008d"></script>
+<script src="musicbox-dsp.js?v=20261008d"></script>
+<script src="musicbox-gen.js?v=20261008d"></script>
+<script src="musicbox-manual.js?v=20261008d"></script>
+<script src="musicbox.js?v=20261008d"></script>
+<script src="materials.js?v=20261008d"></script>
+<script src="furniture.js?v=20261008d"></script>
+<script src="palace.js?v=20261008d"></script>
 </body>
 </html>
