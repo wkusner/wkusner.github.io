@@ -61,7 +61,7 @@ links:    # the directory at the Entry: the plain way through the site
 items:
   golden-key: "a golden key, stamped φ"
   hourglass: "an hourglass"
-  primer: "A Young Lady's Illustrated Primer"
+  primer: "A Young Person's Illustrated Primer"
   astrolabe: "an astrolabe with a storm glass"
   musicbox: "a music box"
 
@@ -814,6 +814,8 @@ rooms:
     - {kind: key, item: finding-aid, icon: scroll, title: "The finding aid", when: "mode:hardcore", info: "The house's catalogue in a ledger: everything in every room, listed plainly, for when you would rather look it up than walk."}
     - {hidden: true, kind: paper, icon: scroll, title: "My papers", href: "/research/", info: "The curator's research papers, filed here as they are written."}
     - {hidden: true, kind: paper, icon: scroll, title: "Die Presse, April 2017", href: "/assets/DiePresse2017422.pdf"}
+    - {kind: ref, icon: books, title: "The shelf of expositions", action: logbook, search: expositions, note: "Mathematicians writing about mathematics: Hardy, Thurston, Mumford, Lockhart, Poincaré, the Gelfand booklets, and more. Many can be read free online.", info: "A shelf of essays and short books on what mathematics is, how it is done, and how it should be taught. Each entry in the log book says whether a free copy is online."}
+    - {kind: device, icon: matcab, mount: pedestal, wall: back, title: "The materials library", action: materials, note: "A plan chest of samples: woods, stones, bricks, cloths, leathers, metals, plasters, and tiles. The house is built from them; try one in a room.", info: "Every sample here is also the recipe for a surface in the house. Pick one, rake the lamp over it, and lay it on the floor or walls of a room you know."}
     - {kind: device, icon: calcab, mount: pedestal, wall: left, title: "The calendar cabinet", action: calendars, note: "Today in sixteen calendars, and the one the house keeps."}
     - {kind: device, icon: tkcase, mount: pedestal, wall: right, title: "The case of timekeepers", action: timekeepers, note: "Hourglass, water clock, candle clock, incense seal, wadokei, decimal clock, and Italian hours: choose one for the Entry desk."}
 
@@ -976,6 +978,7 @@ rooms:
     This one is humbler. It knows where you have been in the house and where you haven't. Pick it up and it will travel with you.
   marginalia:
     - "The Primer's lessons are stored at the bottom of the data file, one per room."
+    - "In the novel the book is made for a young lady. This copy is for any young person who picks it up."
   sources:
     - "The interactive book of Neal Stephenson's novel, which raises the girl who reads it."
   bib:
@@ -983,7 +986,7 @@ rooms:
   doors:
     - {to: 20, wall: left}
   objects:
-    - {kind: primer, icon: book, title: "A Young Lady's Illustrated Primer", action: primer, item: primer, note: "Open it here, or anywhere once it's in your pocket."}
+    - {kind: primer, icon: book, title: "A Young Person's Illustrated Primer", action: primer, item: primer, note: "Open it here, or anywhere once it's in your pocket."}
     - {kind: ref, icon: book, title: "The Diamond Age", by: "Neal Stephenson"}
 
 - id: 29
@@ -1074,7 +1077,7 @@ rooms:
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
     - {kind: device, icon: musicbox, wall: right, item: musicbox, portable: true, action: music, title: "A music box", note: "Take it with you. Opened, it is a workshop: music made as it plays in many scales and tunings, rooms to play it in (made, measured, or loaded), a lab for convolving sounds, the radio, and a little sonar."}
-    - {kind: key, item: primer, icon: book, wall: back, title: "A Young Lady's Illustrated Primer", when: "not:has:primer", note: "The house's field guide. Touch any glint of light over a thing and the Primer writes down what it is; open it to read your notes, and for the house's lessons."}
+    - {kind: key, item: primer, icon: book, wall: back, title: "A Young Person's Illustrated Primer", when: "not:has:primer", note: "The house's field guide. Touch any glint of light over a thing and the Primer writes down what it is; open it to read your notes, and for the house's lessons."}
     - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
     - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook", info: "A lantern for the dark rooms. Its flame can be coloured with salts: strontium red, copper blue, sodium yellow."}
     - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly.", info: "The house's catalogue in a ledger: everything in every room, listed plainly, for when you would rather look it up than walk."}

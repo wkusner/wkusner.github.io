@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Wending House</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Pixelify+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Pixelify+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <script>try{var _s=JSON.parse(localStorage.getItem("palace-v1")||"{}");document.documentElement.classList.add((_s.skin||"myst")==="myst"?"skin-myst":"skin-hypercard");}catch(e){document.documentElement.classList.add("skin-myst");}</script>
 <style>
 :root{
@@ -327,6 +327,20 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
 
 .back3d{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;display:none;font:400 14px var(--fellsc,serif);letter-spacing:.08em;padding:6px 16px;border:1px solid rgba(255,240,210,.55);border-radius:3px;background:rgba(20,16,12,.55);color:#f3e8cf;cursor:pointer}
 .back3d.on{display:block} .back3d:hover{background:rgba(20,16,12,.8)}
+.chalkpage{background:#26302c;color:#e9ece4;padding:16px 18px;border-radius:3px;font-family:"Kalam","Segoe Print","Bradley Hand","Comic Sans MS",cursive}
+.chalk{border-collapse:collapse;width:100%;font-size:17px;line-height:1.45} .chalk th,.chalk td{border-bottom:2px solid rgba(233,236,228,.45);padding:8px 10px;vertical-align:top;text-align:left} .chalk th{font-weight:700} .chalk td+td,.chalk th+th{border-left:2px solid rgba(233,236,228,.35)}
+.chalknote{opacity:.85;margin:4px 0 10px;font-size:16px}
+/* the materials library */
+.matlib .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.matlib button.chip{cursor:pointer;font:400 13px var(--chrome,serif);color:var(--ink)} .matlib button.chip.on{background:var(--ink);color:var(--paper)}
+.matgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-bottom:12px}
+.matcell{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:1.5px solid transparent;padding:4px;cursor:pointer;color:var(--ink);font:400 12px/1.2 var(--chrome,serif);text-align:center}
+.matcell canvas{width:96px;height:96px;box-shadow:0 1px 3px rgba(0,0,0,.4)} .matcell.on{border-color:var(--ink)}
+.matdetail{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.matdetail #matbig{width:300px;max-width:100%;height:auto;cursor:crosshair;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.mattext{flex:1;min-width:240px} .mattext h4{margin:0 0 4px} .mattext ul{margin:6px 0 6px 18px;padding:0}
+.matlib .draft{display:inline-block;border:1px solid var(--ink);margin:2px 0 8px} .matlib .draft div{display:flex} .matlib .draft i{width:12px;height:12px;background:var(--paper2,#eee);border:.5px solid rgba(0,0,0,.25)} .matlib .draft i.w{background:var(--ink)}
+.matlib select{font:inherit}
 </style>
 </head>
 <body>
@@ -370,16 +384,17 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
 <div class="overlay" id="ov"><div class="sheet win"><div class="tb"><button class="box" type="button" id="ovx" aria-label="Close"></button><span class="t" id="ovt"></span></div><div class="wb" id="ovb"></div></div></div>
 <div class="toast" id="toast"></div>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap">
-<script src="data.js"></script>
-<script src="sky.js"></script>
-<script src="systems.js"></script>
-<script src="numerals.js"></script>
-<script src="reckoning.js"></script>
-<script src="musicbox-dsp.js"></script>
-<script src="musicbox-gen.js"></script>
-<script src="musicbox-manual.js"></script>
-<script src="musicbox.js"></script>
-<script src="furniture.js"></script>
-<script src="palace.js"></script>
+<script src="data.js?v=20261008c"></script>
+<script src="sky.js?v=20261008c"></script>
+<script src="systems.js?v=20261008c"></script>
+<script src="numerals.js?v=20261008c"></script>
+<script src="reckoning.js?v=20261008c"></script>
+<script src="musicbox-dsp.js?v=20261008c"></script>
+<script src="musicbox-gen.js?v=20261008c"></script>
+<script src="musicbox-manual.js?v=20261008c"></script>
+<script src="musicbox.js?v=20261008c"></script>
+<script src="materials.js?v=20261008c"></script>
+<script src="furniture.js?v=20261008c"></script>
+<script src="palace.js?v=20261008c"></script>
 </body>
 </html>

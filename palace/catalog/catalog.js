@@ -578,6 +578,7 @@ function route(){
     return; }
   if(view === "house"){ renderSearch(); renderHouse(); $("n-house").classList.add("on"); return; }
   if(view === "curator"){ renderSearch(); renderCurator(); $("n-cur").classList.add("on"); return; }
+  if(view === "search" && arg){ query = arg; selected = null; }   // #search/<words>: open with a search already typed (the Archive's shelves use it)
   renderSearch(); $("n-search").classList.add("on");
   if(!selected) $("right").innerHTML = `<h2>The log book</h2><p>Every book, record, paper, object, picture, and scrap in the house is entered here. Search on the left, or scan a barcode: a scanner works anywhere on this page.</p>
     <p class="note">${canWrite ? "You're signed in as the archivist: choose “Write an entry” above, or just scan." : "Only the archivist can write in it."}</p>

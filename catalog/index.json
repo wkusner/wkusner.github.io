@@ -1,7 +1,7 @@
 {
  "version": 1,
- "updated": "2026-10-02T16:23:27.540Z",
- "count": 24,
+ "updated": "2026-10-08T12:00:00.000Z",
+ "count": 60,
  "items": [
   {
    "id": "linear-algebra-69v7r",
@@ -586,6 +586,1020 @@
    "updated": "2026-10-03T12:00:00Z",
    "source": "the Archive's first shelf",
    "room": 22
+  },
+  {
+   "id": "the-dawning-of-the-age-of-stochasticity-sc2pj",
+   "type": "paper",
+   "title": "The Dawning of the Age of Stochasticity",
+   "creators": [
+    {
+     "name": "David Mumford",
+     "role": "author"
+    }
+   ],
+   "container": "Mathematics: Frontiers and Perspectives (AMS, 2000)",
+   "date": "2000",
+   "format": "chapter",
+   "ids": {
+    "url": "https://www.dam.brown.edu/people/mumford/beyond/papers/2000b--DawningAgeStoch-NC.pdf"
+   },
+   "tags": [
+    "expositions",
+    "probability",
+    "philosophy"
+   ],
+   "description": "Mumford argues that probability and statistics should move to the foundations of mathematics, and that thinking stochastically will reshape analysis, geometry, and the study of thought itself.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: the PDF on Mumford's own site.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "numbers-and-the-world-rfntn",
+   "type": "book",
+   "title": "Numbers and the World",
+   "subtitle": "Essays on Math and Beyond",
+   "creators": [
+    {
+     "name": "David Mumford",
+     "role": "author"
+    }
+   ],
+   "publisher": "American Mathematical Society",
+   "date": "2023",
+   "ids": {
+    "isbn": "9781470470517"
+   },
+   "tags": [
+    "expositions",
+    "essays"
+   ],
+   "description": "Essays on mathematics and beyond, many grown from Mumford's blog: on probability, pattern theory, physics, the brain, and what mathematics is.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online. Some of the blog posts it grew from are on Mumford's site (dam.brown.edu/people/mumford/blog).",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "on-proof-and-progress-in-mathematics-0h3bz",
+   "type": "paper",
+   "title": "On Proof and Progress in Mathematics",
+   "creators": [
+    {
+     "name": "William P. Thurston",
+     "role": "author"
+    }
+   ],
+   "container": "Bulletin of the American Mathematical Society 30 (1994), 161–177",
+   "date": "1994",
+   "format": "journal article",
+   "ids": {
+    "doi": "10.1090/S0273-0979-1994-00502-6",
+    "url": "https://arxiv.org/abs/math/9404236"
+   },
+   "tags": [
+    "expositions",
+    "philosophy",
+    "practice"
+   ],
+   "description": "Thurston's answer to the question of what mathematicians actually produce: not just theorems, but human understanding, passed between people by many more channels than formal proof.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: arXiv math/9404236.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-skeleton-key-of-mathematics-xops2",
+   "type": "book",
+   "title": "The Skeleton Key of Mathematics",
+   "subtitle": "A Simple Account of Complex Algebraic Theories",
+   "creators": [
+    {
+     "name": "D. E. Littlewood",
+     "role": "author"
+    }
+   ],
+   "publisher": "Hutchinson's University Library (Dover reprint, 2002)",
+   "date": "1949",
+   "ids": {},
+   "tags": [
+    "expositions",
+    "reference",
+    "algebra"
+   ],
+   "description": "A short reference account of the algebraic ideas that unlock the rest: number systems, groups, fields, matrices, invariants, and quaternions, written for the general reader. (Dudley Ernest Littlewood, not his Cambridge namesake J. E.)",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "a-mathematician-s-apology-dmf9s",
+   "type": "book",
+   "title": "A Mathematician's Apology",
+   "creators": [
+    {
+     "name": "G. H. Hardy",
+     "role": "author"
+    }
+   ],
+   "publisher": "Cambridge University Press",
+   "date": "1940",
+   "ids": {
+    "url": "https://archive.org/details/hardy_annotated"
+   },
+   "tags": [
+    "expositions",
+    "memoir",
+    "philosophy"
+   ],
+   "description": "Hardy's defence of pure mathematics as an art, written near the end of his career: beauty, seriousness, permanence, and his famous claim that real mathematics has no use.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: the University of Alberta's annotated electronic edition on the Internet Archive (public domain in Canada).",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "a-mathematician-s-lament-z533d",
+   "type": "paper",
+   "title": "A Mathematician's Lament",
+   "creators": [
+    {
+     "name": "Paul Lockhart",
+     "role": "author"
+    }
+   ],
+   "container": "Circulated as an essay; published by Keith Devlin in Devlin's Angle (MAA), March 2008; expanded as a book (Bellevue Literary Press, 2009)",
+   "date": "2002",
+   "format": "other",
+   "ids": {
+    "url": "https://profkeithdevlin.org/wp-content/uploads/2023/09/lockhartslament.pdf"
+   },
+   "tags": [
+    "expositions",
+    "education"
+   ],
+   "description": "Lockhart imagines music taught only as notation drills, then shows that this is how school teaches mathematics. A case for mathematics as an art of play, wonder, and argument.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: the essay, on Keith Devlin's site. The 2009 book is a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-method-of-coordinates-awe5e",
+   "type": "book",
+   "title": "The Method of Coordinates",
+   "creators": [
+    {
+     "name": "I. M. Gelfand",
+     "role": "author"
+    },
+    {
+     "name": "E. G. Glagoleva",
+     "role": "author"
+    },
+    {
+     "name": "A. A. Kirillov",
+     "role": "author"
+    }
+   ],
+   "publisher": "MIT Press (1967); Birkhäuser (1990)",
+   "date": "1967",
+   "ids": {},
+   "tags": [
+    "expositions",
+    "Gelfand Correspondence Program"
+   ],
+   "description": "Coordinates on a line, the plane, and space, then into four dimensions: how to see a 4-cube by its coordinates.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Part of the Gelfand Correspondence Program in Mathematics, whose booklets were mailed to students across the Soviet Union and later the United States. No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "functions-and-graphs-v7eui",
+   "type": "book",
+   "title": "Functions and Graphs",
+   "creators": [
+    {
+     "name": "I. M. Gelfand",
+     "role": "author"
+    },
+    {
+     "name": "E. G. Glagoleva",
+     "role": "author"
+    },
+    {
+     "name": "E. E. Shnol",
+     "role": "author"
+    }
+   ],
+   "publisher": "MIT Press (1969); Birkhäuser (1990)",
+   "date": "1969",
+   "ids": {},
+   "tags": [
+    "expositions",
+    "Gelfand Correspondence Program"
+   ],
+   "description": "Drawing graphs by thought rather than by plotting points: linear, quadratic, and fractional-linear functions, and how graphs move.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Part of the Gelfand Correspondence Program in Mathematics, whose booklets were mailed to students across the Soviet Union and later the United States. No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "sequences-combinations-limits-wdfhs",
+   "type": "book",
+   "title": "Sequences, Combinations, Limits",
+   "creators": [
+    {
+     "name": "S. I. Gelfand",
+     "role": "author"
+    },
+    {
+     "name": "M. L. Gerver",
+     "role": "author"
+    },
+    {
+     "name": "A. A. Kirillov",
+     "role": "author"
+    },
+    {
+     "name": "N. N. Konstantinov",
+     "role": "author"
+    },
+    {
+     "name": "A. G. Kushnirenko",
+     "role": "author"
+    }
+   ],
+   "publisher": "MIT Press (1969); Dover (2002)",
+   "date": "1969",
+   "ids": {},
+   "tags": [
+    "expositions",
+    "Gelfand Correspondence Program"
+   ],
+   "description": "Problems on induction, finite differences, combinatorics, and limits, written for the correspondence school's students.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Part of the Gelfand Correspondence Program in Mathematics, whose booklets were mailed to students across the Soviet Union and later the United States. No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "algebra-mqkfr",
+   "type": "book",
+   "title": "Algebra",
+   "creators": [
+    {
+     "name": "I. M. Gelfand",
+     "role": "author"
+    },
+    {
+     "name": "A. Shen",
+     "role": "author"
+    }
+   ],
+   "publisher": "Birkhäuser",
+   "date": "1993",
+   "ids": {},
+   "tags": [
+    "expositions",
+    "Gelfand Correspondence Program"
+   ],
+   "description": "School algebra as a mathematician sees it, from the arithmetic of polynomials to inequalities, built from problems.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Part of the Gelfand Correspondence Program in Mathematics, whose booklets were mailed to students across the Soviet Union and later the United States. No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "trigonometry-amgb7",
+   "type": "book",
+   "title": "Trigonometry",
+   "creators": [
+    {
+     "name": "I. M. Gelfand",
+     "role": "author"
+    },
+    {
+     "name": "M. Saul",
+     "role": "author"
+    }
+   ],
+   "publisher": "Birkhäuser",
+   "date": "2001",
+   "ids": {
+    "isbn": "0817639144"
+   },
+   "tags": [
+    "expositions",
+    "Gelfand Correspondence Program"
+   ],
+   "description": "Trigonometry from its geometric roots, with the problems that make the identities inevitable rather than memorized.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Part of the Gelfand Correspondence Program in Mathematics, whose booklets were mailed to students across the Soviet Union and later the United States. No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "geometry-1be7f",
+   "type": "book",
+   "title": "Geometry",
+   "creators": [
+    {
+     "name": "I. M. Gelfand",
+     "role": "author"
+    },
+    {
+     "name": "T. Alekseyevskaya",
+     "role": "author"
+    }
+   ],
+   "publisher": "Birkhäuser",
+   "date": "2020",
+   "ids": {
+    "isbn": "9781071602973"
+   },
+   "tags": [
+    "expositions",
+    "Gelfand Correspondence Program"
+   ],
+   "description": "The last book of the program: geometry through transformations, coordinates, and problems.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Part of the Gelfand Correspondence Program in Mathematics, whose booklets were mailed to students across the Soviet Union and later the United States. No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-unreasonable-effectiveness-of-mathem-1gc1j",
+   "type": "paper",
+   "title": "The Unreasonable Effectiveness of Mathematics in the Natural Sciences",
+   "creators": [
+    {
+     "name": "Eugene P. Wigner",
+     "role": "author"
+    }
+   ],
+   "container": "Communications on Pure and Applied Mathematics 13 (1960)",
+   "date": "1960",
+   "format": "journal article",
+   "ids": {
+    "doi": "10.1002/cpa.3160130102",
+    "url": "https://math.dartmouth.edu/~matc/MathDrama/reading/Wigner.html"
+   },
+   "tags": [
+    "expositions",
+    "philosophy",
+    "physics"
+   ],
+   "description": "Why should mathematics invented for its own sake describe the physical world so well? Wigner calls it a gift we neither understand nor deserve.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-unreasonable-effectiveness-of-mathem-lu1et",
+   "type": "paper",
+   "title": "The Unreasonable Effectiveness of Mathematics",
+   "creators": [
+    {
+     "name": "R. W. Hamming",
+     "role": "author"
+    }
+   ],
+   "container": "The American Mathematical Monthly 87 (1980)",
+   "date": "1980",
+   "format": "journal article",
+   "ids": {
+    "url": "https://ned.ipac.caltech.edu/level5/March02/Hamming/Hamming.html"
+   },
+   "tags": [
+    "expositions",
+    "philosophy"
+   ],
+   "description": "Hamming's engineer's reply to Wigner: some of the effectiveness comes from what we choose to see, how we select our mathematics, and the questions we ask.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "mathematical-problems-swhxc",
+   "type": "paper",
+   "title": "Mathematical Problems",
+   "creators": [
+    {
+     "name": "David Hilbert",
+     "role": "author"
+    }
+   ],
+   "container": "Bulletin of the AMS 8 (1902), trans. Mary Winston Newson; reprinted in Bull. AMS 37 (2000)",
+   "date": "1900",
+   "format": "journal article",
+   "ids": {
+    "url": "https://www.ams.org/bull/2000-37-04/S0273-0979-00-00881-8/"
+   },
+   "tags": [
+    "expositions",
+    "history",
+    "problems"
+   ],
+   "description": "The Paris lecture that set out twenty-three problems for the new century, and why problems are the life of a subject.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "science-and-hypothesis-pm3tr",
+   "type": "book",
+   "title": "Science and Hypothesis",
+   "creators": [
+    {
+     "name": "Henri Poincaré",
+     "role": "author"
+    }
+   ],
+   "publisher": "Walter Scott (English translation, 1905)",
+   "date": "1902",
+   "ids": {
+    "url": "https://www.gutenberg.org/ebooks/37157"
+   },
+   "tags": [
+    "expositions",
+    "philosophy"
+   ],
+   "description": "Poincaré on what is convention, what is experiment, and what is intuition, in number, magnitude, space, and force.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: Project Gutenberg. His Science and Method, with the essay on mathematical creation, is in The Foundations of Science (Gutenberg 39713).",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "ten-lessons-i-wish-i-had-been-taught-ibp9g",
+   "type": "paper",
+   "title": "Ten Lessons I Wish I Had Been Taught",
+   "creators": [
+    {
+     "name": "Gian-Carlo Rota",
+     "role": "author"
+    }
+   ],
+   "container": "Notices of the AMS 44 (1997)",
+   "date": "1997",
+   "format": "journal article",
+   "ids": {
+    "url": "https://www.ams.org/notices/199701/comm-rota.pdf"
+   },
+   "tags": [
+    "expositions",
+    "practice"
+   ],
+   "description": "Rota's advice from a career: on lecturing, on writing expository papers, on being remembered for one's expositions, and on the Feynman method.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-two-cultures-of-mathematics-ra3q6",
+   "type": "paper",
+   "title": "The Two Cultures of Mathematics",
+   "creators": [
+    {
+     "name": "W. T. Gowers",
+     "role": "author"
+    }
+   ],
+   "container": "Mathematics: Frontiers and Perspectives (AMS, 2000)",
+   "date": "2000",
+   "format": "chapter",
+   "ids": {
+    "url": "https://www.dpmms.cam.ac.uk/~wtg10/2cultures.pdf"
+   },
+   "tags": [
+    "expositions",
+    "practice"
+   ],
+   "description": "Theory builders and problem solvers: Gowers defends combinatorics by showing that its general principles are organized differently, not absent.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "what-is-good-mathematics-ovh8s",
+   "type": "paper",
+   "title": "What Is Good Mathematics?",
+   "creators": [
+    {
+     "name": "Terence Tao",
+     "role": "author"
+    }
+   ],
+   "container": "Bulletin of the AMS 44 (2007)",
+   "date": "2007",
+   "format": "journal article",
+   "ids": {
+    "url": "https://arxiv.org/abs/math/0702396"
+   },
+   "tags": [
+    "expositions",
+    "practice"
+   ],
+   "description": "Tao lists the many kinds of mathematical quality, from rigour to beauty to usefulness, and follows Szemerédi's theorem to show how they reinforce each other.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "mathematical-education-tcsd6",
+   "type": "paper",
+   "title": "Mathematical Education",
+   "creators": [
+    {
+     "name": "William P. Thurston",
+     "role": "author"
+    }
+   ],
+   "container": "Notices of the AMS 37 (1990)",
+   "date": "1990",
+   "format": "journal article",
+   "ids": {
+    "url": "https://arxiv.org/abs/math/0503081"
+   },
+   "tags": [
+    "expositions",
+    "education"
+   ],
+   "description": "Thurston on teaching: mathematics is not a ladder of skills but a tree with many ways up, and understanding grows by compression.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "on-teaching-mathematics-ecwga",
+   "type": "paper",
+   "title": "On Teaching Mathematics",
+   "creators": [
+    {
+     "name": "V. I. Arnold",
+     "role": "author"
+    }
+   ],
+   "container": "Address in Paris, 1997; trans. A. V. Goryunov",
+   "date": "1997",
+   "format": "other",
+   "ids": {
+    "url": "https://karlin.mff.cuni.cz/~spurny/doc/articles/arnold.htm"
+   },
+   "tags": [
+    "expositions",
+    "education"
+   ],
+   "description": "Arnold's polemic, from the Palais de la Découverte: mathematics is the part of physics where experiments are cheap, and axiomatic teaching kills it.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "flatland-2e04n",
+   "type": "book",
+   "title": "Flatland",
+   "subtitle": "A Romance of Many Dimensions",
+   "creators": [
+    {
+     "name": "Edwin A. Abbott",
+     "role": "author"
+    }
+   ],
+   "publisher": "Seeley & Co.",
+   "date": "1884",
+   "ids": {
+    "url": "https://www.gutenberg.org/ebooks/201"
+   },
+   "tags": [
+    "expositions",
+    "dimension",
+    "fiction"
+   ],
+   "description": "A square in a world of two dimensions meets a sphere, and learns to imagine a dimension he cannot see. The house's 4D experiments start here.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "essays-on-the-theory-of-numbers-xjqnj",
+   "type": "book",
+   "title": "Essays on the Theory of Numbers",
+   "creators": [
+    {
+     "name": "Richard Dedekind",
+     "role": "author"
+    }
+   ],
+   "publisher": "Open Court (trans. W. W. Beman)",
+   "date": "1901",
+   "ids": {
+    "url": "https://www.gutenberg.org/ebooks/21016"
+   },
+   "tags": [
+    "expositions",
+    "foundations"
+   ],
+   "description": "Continuity and Irrational Numbers (the cuts), and The Nature and Meaning of Numbers: what numbers are, built from nothing but sets and maps.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "introduction-to-mathematical-philosophy-00jnt",
+   "type": "book",
+   "title": "Introduction to Mathematical Philosophy",
+   "creators": [
+    {
+     "name": "Bertrand Russell",
+     "role": "author"
+    }
+   ],
+   "publisher": "George Allen & Unwin",
+   "date": "1919",
+   "ids": {
+    "url": "https://www.gutenberg.org/ebooks/41654"
+   },
+   "tags": [
+    "expositions",
+    "foundations",
+    "philosophy"
+   ],
+   "description": "Russell's own plain account of the logic in Principia: number, order, infinity, descriptions, and classes, written in prison.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "Free to read online: follow the link.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "how-to-solve-it-6dimi",
+   "type": "book",
+   "title": "How to Solve It",
+   "subtitle": "A New Aspect of Mathematical Method",
+   "creators": [
+    {
+     "name": "George Pólya",
+     "role": "author"
+    }
+   ],
+   "publisher": "Princeton University Press",
+   "date": "1945",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "A method for problems: understand, plan, carry out, look back, with a dictionary of heuristics.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "what-is-mathematics-3xpti",
+   "type": "book",
+   "title": "What Is Mathematics?",
+   "subtitle": "An Elementary Approach to Ideas and Methods",
+   "creators": [
+    {
+     "name": "Richard Courant",
+     "role": "author"
+    },
+    {
+     "name": "Herbert Robbins",
+     "role": "author"
+    }
+   ],
+   "publisher": "Oxford University Press",
+   "date": "1941",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "A grand tour of ideas and methods, from number theory to topology and the calculus of variations, with soap films.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "geometry-and-the-imagination-crsld",
+   "type": "book",
+   "title": "Geometry and the Imagination",
+   "creators": [
+    {
+     "name": "David Hilbert",
+     "role": "author"
+    },
+    {
+     "name": "S. Cohn-Vossen",
+     "role": "author"
+    }
+   ],
+   "publisher": "Chelsea (English 1952)",
+   "date": "1932",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "Anschauliche Geometrie: geometry seen rather than proved, from lattices to configurations to the topology of surfaces.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-enjoyment-of-mathematics-e82ap",
+   "type": "book",
+   "title": "The Enjoyment of Mathematics",
+   "subtitle": "Selections from Mathematics for the Amateur",
+   "creators": [
+    {
+     "name": "Hans Rademacher",
+     "role": "author"
+    },
+    {
+     "name": "Otto Toeplitz",
+     "role": "author"
+    }
+   ],
+   "publisher": "Princeton University Press (English 1957)",
+   "date": "1930",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "Twenty-eight short pieces of mathematics chosen for pleasure, each complete in itself.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "a-mathematician-s-miscellany-lr33e",
+   "type": "book",
+   "title": "A Mathematician's Miscellany",
+   "creators": [
+    {
+     "name": "J. E. Littlewood",
+     "role": "author"
+    }
+   ],
+   "publisher": "Methuen (expanded by Bollobás, 1986)",
+   "date": "1953",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "Littlewood's own collection of problems, jokes, cautionary tales, and reminiscences of Hardy and Ramanujan.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-psychology-of-invention-in-the-mathe-mpkp3",
+   "type": "book",
+   "title": "The Psychology of Invention in the Mathematical Field",
+   "creators": [
+    {
+     "name": "Jacques Hadamard",
+     "role": "author"
+    }
+   ],
+   "publisher": "Princeton University Press",
+   "date": "1945",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "How mathematicians discover: Poincaré's omnibus, the unconscious, and a survey of how working mathematicians think (Einstein's answer included).",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "proofs-and-refutations-uyrb4",
+   "type": "book",
+   "title": "Proofs and Refutations",
+   "subtitle": "The Logic of Mathematical Discovery",
+   "creators": [
+    {
+     "name": "Imre Lakatos",
+     "role": "author"
+    }
+   ],
+   "publisher": "Cambridge University Press",
+   "date": "1976",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "A classroom dialogue on Euler's formula V − E + F = 2, its counterexamples, and how proofs and definitions evolve together.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "the-mathematical-experience-3c04m",
+   "type": "book",
+   "title": "The Mathematical Experience",
+   "creators": [
+    {
+     "name": "Philip J. Davis",
+     "role": "author"
+    },
+    {
+     "name": "Reuben Hersh",
+     "role": "author"
+    }
+   ],
+   "publisher": "Birkhäuser",
+   "date": "1981",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "What mathematics is like from the inside, from the ideal mathematician to the philosophy of the working mathematician.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "mathematics-for-human-flourishing-53nvq",
+   "type": "book",
+   "title": "Mathematics for Human Flourishing",
+   "creators": [
+    {
+     "name": "Francis Su",
+     "role": "author"
+    }
+   ],
+   "publisher": "Yale University Press",
+   "date": "2020",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "Mathematics as a human practice that meets basic desires: play, beauty, truth, justice, love, with letters from a prisoner learning mathematics.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "measurement-jpikz",
+   "type": "book",
+   "title": "Measurement",
+   "creators": [
+    {
+     "name": "Paul Lockhart",
+     "role": "author"
+    }
+   ],
+   "publisher": "Harvard University Press",
+   "date": "2012",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "Lockhart's own answer to his lament: a book of mathematics as art, on shape and motion, written as an invitation to work things out.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "mathematics-a-very-short-introduction-vtifs",
+   "type": "book",
+   "title": "Mathematics: A Very Short Introduction",
+   "creators": [
+    {
+     "name": "Timothy Gowers",
+     "role": "author"
+    }
+   ],
+   "publisher": "Oxford University Press",
+   "date": "2002",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "Abstraction, proof, limits, dimension, and estimates, in a little over a hundred pages.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
+  },
+  {
+   "id": "symmetry-3fnqm",
+   "type": "book",
+   "title": "Symmetry",
+   "creators": [
+    {
+     "name": "Hermann Weyl",
+     "role": "author"
+    }
+   ],
+   "publisher": "Princeton University Press",
+   "date": "1952",
+   "ids": {},
+   "tags": [
+    "expositions"
+   ],
+   "description": "Weyl's last book: bilateral, translational, rotational, and ornamental symmetry, and the groups behind them.",
+   "location": "The Archive: the shelf of expositions",
+   "notes": "No free copy online; a library entry only.",
+   "private": false,
+   "source": "curator",
+   "added": "2026-10-08T12:00:00.000Z",
+   "updated": "2026-10-08T12:00:00.000Z"
   }
  ]
 }

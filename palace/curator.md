@@ -451,6 +451,16 @@ Clicking any of them opens drawings. The full build specification is in the proj
 - **The Primer is the field guide.** Things with a `note` or an `info` field show a pulsing glint when you stand at their wall. Touching it writes the note into the Primer (`S.notes`), and the Primer's Notes tab lists them by room. Everyone except hardcore players starts with the Primer; hardcore players find it on the Entry's return tray. Use `info:` on any object for a field-guide line separate from its `note`.
 - **Settings.** The menu bar now holds Map, Primer, Finding aid, Full view, and Settings. View, quality, skin, ink, light, sound levels, the music box, annotations, and How to walk are in Settings.
 
+### Materials and light (v4 part 3, October 2026)
+
+- **The materials library** (`materials.js`) is a list of entries: woods, stones, bricks, cloths, leathers, metals, plasters, and tiles. Each entry is both a card (name, origin, a paragraph, a few facts) and a recipe the engine bakes into three seamless textures: colour, bump, and roughness. Nothing is downloaded. An entry's `tile` is the size in metres one texture covers. Recipes: `wood` (rings, arches, pores, ray fleck when `cut: quarter`), `boards`, `parquet` (herringbone of L-by-1 blocks), `stone` (`kind`: marble, granite, slate, travertine, sandstone, oolite), `flags`, `checker`, `brick` (`bond`: stretcher, english, flemish, herringbone, basket), `weave` (a `draft` matrix, with colour orders as in houndstooth), `felt`, `leather`, `metal`, `iron`, `plaster`, and `tile` (plain, `truchet: diagonal`, or `truchet: arcs`). To add a material, add an entry; it appears in the cabinet and can be used by any room.
+- **Rooms use it.** A room's old `floor:` words now mean library entries (`planks` → oak floorboards, `stone` → limestone flags, `slate` → green slate, `checker` → black and white marble). A room can also name any entry: `materials: {floor: oak-parquet, walls: brick-flemish}`.
+- **The cabinet.** In the Archive, on the back wall, the plan chest opens the library: samples by family, a large sample you can rake the lamp across, the facts, the weave draft for cloths, and the rooms where it is used. Visitors can lay a sample on the floor or walls of a room they have seen, and put the room back afterwards. That is kept in their browser (`S.mats`), not in the data.
+- **Real sizes.** Every textured surface gets texture coordinates in metres, measured on the piece, so grain, bricks, and weave come out the same size everywhere. Wood grain runs along each piece's longest side.
+- **Contact shadows in the engraving.** The engraved view now darkens, and so hatches, the corners, the undersides of tables, and the gaps between books, as the photographic view already did. On at normal quality and above.
+- **Eyes that adjust.** Each standing place meters its own light (a centre-weighted average, read from a 16 × 9 shrink of the picture) and the exposure eases toward it, so a dim corner opens up and a sunny window closes down. Settings → Seeing → Eyes turns it off. A room can bias it with `exposure: 1.2`.
+- **Fittings.** Ordinary rooms have a moulded cornice (fillet, cove, bed moulding, fascia), a picture rail in tall rooms, a skirting with a bead, brass sconces on long clear walls (they glow when the lamps are lit or at night), and a plaster rose where a pendant lamp hangs.
+
 ### Moving and looking
 
 Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. You arrive facing away from the door you came through, so it is behind you.
@@ -651,6 +661,8 @@ Visits, the walk, the frame in each room, pockets, solved riddles, Funes names, 
 - **Post office hours or an event.** Edit `office_hours:` or `events:` in `_data/palace.yml` and push. The office door plate and the notice board update themselves.
 - **A door that only opens on a full moon:** `needs: "moon:full"` with a hint.
 - **Retire an unwritten book once it exists.** Change `kind: unwritten` to `kind: device` and add its `href`.
+- **A shelf that opens the log book at a search.** `{kind: ref, icon: books, title: "…", action: logbook, search: expositions}` opens the catalogue with that search typed (the Archive's shelf of expositions works this way; its entries are tagged `expositions` in `catalog/index.json`). The catalogue also takes `#search/<words>` in its address.
+- **After changing any script, bump the version.** The script tags in `index.html` (and the `import("./palace3d.js?v=…")` line in `palace.js`) carry `?v=`; change it everywhere so browsers fetch the new files instead of mixing a new page with old cached scripts.
 - **Ask Claude.** "Add a room for X to the house" is enough. The data file and this guide are in the QRC project notes too.
 
 ### Sources of the idea

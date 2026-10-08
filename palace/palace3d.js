@@ -12,7 +12,7 @@ function hashStr(s){ let h=2166136261; for(const ch of String(s)){ h ^= ch.charC
 const muted = (hex, k=0.55) => { const c = new THREE.Color(hex); const g = c.r*.3+c.g*.59+c.b*.11; return new THREE.Color(g+(c.r-g)*k, g+(c.g-g)*k, g+(c.b-g)*k); };
 function mat(color, opts={}){ const m = new THREE.MeshStandardMaterial(Object.assign({color:new THREE.Color(color), roughness:.85, metalness:0}, opts));
   const k = typeof color === "string" && SURFACES_ON ? surfaceFor(color, opts) : null;
-  if(k){ const sf = surface(k); m.map = sf.map; m.normalMap = sf.normalMap; m.roughnessMap = sf.roughnessMap; m.normalScale = new THREE.Vector2(k === "brass" ? .4 : .8, k === "brass" ? .4 : .8); if(k === "brass"){ m.metalness = Math.max(.75, m.metalness); m.roughness = .55; } else m.roughness = 1; }
+  if(k){ const sf = surface(k); m.map = sf.map; m.normalMap = sf.normalMap; m.roughnessMap = sf.roughnessMap; m.userData.tile = SURF_TILE[k] || .6; m.userData.grain = k === "wood"; m.normalScale = new THREE.Vector2(k === "brass" ? .4 : .8, k === "brass" ? .4 : .8); if(k === "brass"){ m.metalness = Math.max(.75, m.metalness); m.roughness = .55; } else m.roughness = 1; }
   return m; }
 // a pointed arch (a two-centred arch, drawn as a stretched equilateral one) or a round one: points from the right springing over to the left, x about the centre
 function archPts(w, h, pointed, n){ const out = [], a = pointed ? w*.62 : w/2, y1 = h - a, ptd = u => Math.sqrt(4 - (2-u)*(2-u))/Math.sqrt(3);
@@ -20,6 +20,40 @@ function archPts(w, h, pointed, n){ const out = [], a = pointed ? w*.62 : w/2, y
   for(let i=n-1;i>=0;i--){ const [x,y] = out[i]; out.push([-x, y]); } return out; }
 const archPts2 = (w, h, pointed, n) => [[w/2, 0], ...archPts(w, h, pointed, n), [-w/2, 0]];
 let SURFACES_ON = true;
+const SURF_TILE = {wood:.6, leather:.3, brass:.3, stone:1.2, plaster:2, cloth:.2};   // metres one texture covers
+/* ---------- the materials library (materials.js): its recipes baked into textures, once per visit ---------- */
+const LIBT = {};
+function libTex(id){ const ML = window.MATERIALS; if(!ML || !ML.by[id]) return null; if(LIBT[id]) return LIBT[id];
+  const N = TEXK >= 2 ? 1024 : 512, b = ML.bake(id, N);
+  const tex = (data, srgb) => { const t = new THREE.DataTexture(data, N, N, THREE.RGBAFormat); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; t.anisotropy = 8; if(srgb) t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true; return t; };
+  return (LIBT[id] = {map: tex(b.col, true), normalMap: tex(b.nrm), roughnessMap: tex(b.rough), entry: b.entry}); }
+// a material from the library: its colour is in the texture, so the material's own colour only tints (white leaves it alone)
+function libMat(id, opts={}){ const t = libTex(id); if(!t) return null; const e = t.entry;
+  const m = new THREE.MeshStandardMaterial(Object.assign({color:"#ffffff", map:t.map, normalMap:t.normalMap, roughnessMap:t.roughnessMap, roughness:1, metalness: e.metal ? .9 : 0}, opts));
+  const ns = e.family === "brick" || e.family === "tile" ? 1.1 : e.family === "metal" ? .5 : .9; m.normalScale = new THREE.Vector2(ns, ns);
+  m.userData.tile = e.tile || 1; m.userData.grain = e.family === "wood"; m.userData.lib = id; m.userData.libShared = true; return m; }
+/* every textured surface gets texture coordinates in real metres (box projection in the mesh's own frame, scaled by its size in the world),
+   so grain, bricks, and weave come out the right size wherever they are; wood runs its grain along the piece's longest side */
+const _sv = new THREE.Vector3(), _bb = new THREE.Box3();
+function realUV(root){
+  root.updateMatrixWorld(true);
+  root.traverse(o => { if(!o.isMesh || !o.geometry || o.userData.keepUV || o.isInstancedMesh) return; const m = Array.isArray(o.material) ? null : o.material; if(!m || !m.userData || !m.userData.tile || !m.map) return;
+    const g = o.geometry, P = g.attributes.position, N = g.attributes.normal; if(!P || !N || !g.attributes.uv) return;
+    o.matrixWorld.decompose(_sv.set(0,0,0), new THREE.Quaternion(), _sv); const sc = [Math.abs(_sv.x), Math.abs(_sv.y), Math.abs(_sv.z)], tile = m.userData.tile;
+    const type = g.type;
+    if(type === "CylinderGeometry" || type === "SphereGeometry"){ const pr = g.parameters, r = pr.radius || Math.max(pr.radiusTop || 0, pr.radiusBottom || 0), circ = TAU*r*Math.max(sc[0], sc[2]), hh = (pr.height || Math.PI*r)*sc[1];
+      const ng = g.clone(), uv = ng.attributes.uv; for(let i=0;i<uv.count;i++) uv.setXY(i, uv.getX(i)*circ/tile, uv.getY(i)*hh/tile); o.geometry = ng; return; }
+    if(!(type === "BoxGeometry" || type === "PlaneGeometry" || type === "ShapeGeometry" || type === "ExtrudeGeometry" || type === "BufferGeometry")) return;
+    if(!g.boundingBox) g.computeBoundingBox(); const sz = g.boundingBox.getSize(new THREE.Vector3()); const S = [sz.x*sc[0], sz.y*sc[1], sz.z*sc[2]];
+    const long = S[0] >= S[1] && S[0] >= S[2] ? 0 : S[1] >= S[2] ? 1 : 2;
+    const ng = g.clone(), uv = ng.attributes.uv, PP = ng.attributes.position, NN = ng.attributes.normal;
+    for(let i=0;i<uv.count;i++){ const p = [PP.getX(i)*sc[0], PP.getY(i)*sc[1], PP.getZ(i)*sc[2]], ax = Math.abs(NN.getX(i)), ay = Math.abs(NN.getY(i)), az = Math.abs(NN.getZ(i));
+      const a = ay >= ax && ay >= az ? 1 : ax >= az ? 0 : 2, pl = [0,1,2].filter(k => k !== a);
+      // the grain (u) runs along the longest side the face has
+      let ua = pl[0], va = pl[1]; if(m.userData.grain){ if(pl.includes(long)){ ua = long; va = pl.find(k => k !== long); } else if(S[pl[1]] > S[pl[0]]){ ua = pl[1]; va = pl[0]; } }
+      uv.setXY(i, p[ua]/tile, p[va]/tile); }
+    o.geometry = ng; });
+}
 let TEXK = 1;
 /* ---------- surfaces: procedural wood, leather, brass, stone, plaster, and cloth, each with a colour map, a bump (normal) map and a roughness map.
    Neutral in tone, so a material's own colour tints them. Made once per visit, at the quality's texture size. ---------- */
@@ -63,6 +97,38 @@ function surfaceFor(hex, opts){ if(opts.map || opts.transparent || opts.side ===
   if(hsl.h > .04 && hsl.h < .12 && hsl.s > .15 && hsl.l < .5) return "wood"; if(hsl.s < .2 && hsl.l > .55) return "plaster"; return null; }
 
 function canvasTex(w, h, paint){ const c = document.createElement("canvas"); c.width=Math.round(w*TEXK); c.height=Math.round(h*TEXK); const g = c.getContext("2d"); g.scale(TEXK, TEXK); paint(g, w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+/* ---------- the Office blackboard: a worked note in chalk. The 1D Poisson problem −u'' = C on [−1, 1], anchored at 0 at both ends,
+   four ways: free-space convolution plus a boundary corrector, what the corrector must do, the Green's function, and the closed form. ---------- */
+const CHALK = '"Kalam", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive';
+const CHALK_ROWS = [
+  ["Form / Perspective", ["On [−1, 1]:  −∂ₓ² u = C,  anchored at 0"], "Description & Conditions", true],
+  ["1. Separated Convolution Form", ["u(x) = (E ∗ C)(x) + ∫₋₁¹ h(x,s) C ds"], "Separates the true free-space convolution from the separate boundary correction term."],
+  ["2. Corrector Requirements", ["−∂ₓ² h(x,s) = 0   (inside [−1, 1])", "h(±1, s) = −E(±1 − s) = ½ |±1 − s|"], "The space-variant homogeneous function designed strictly to cancel out E at the zero-anchored boundaries."],
+  ["3. Direct Green's Function Form", ["u(x) = ∫₋₁¹ G(x,s) C ds,  where", "G(x,s) = { ½(1+x)(1−s),  x ≤ s", "              { ½(1−x)(1+s),  x > s"], "Combines the free-space fundamental solution and the corrector into a single unified kernel (G = E + h)."],
+  ["4. Closed-Form Solution", ["u(x) = (C/2)(1 − x²)"], "The explicit analytical solution satisfying −∂ₓ² u = C with zero-anchored boundaries u(±1) = 0."]];
+function chalkNote(g, w, h){
+  const R = rng(7);
+  g.fillStyle = "#26302c"; g.fillRect(0,0,w,h);
+  for(let i=0;i<220;i++){ g.fillStyle = `rgba(215,222,212,${.012 + R()*.03})`; g.save(); g.translate(R()*w, R()*h); g.rotate((R()-.5)*.6); g.fillRect(-160, -18, 320 + R()*200, 36 + R()*30); g.restore(); }   // old erasures
+  const col = [40, 560, 1330, w - 40], top = 40, rowH = [92, 150, 176, 246, 150];
+  const wrap = (txt, x, y, maxW, lh) => { const words = txt.split(" "); let line = "", yy = y; words.forEach(wd => { const t = line ? line + " " + wd : wd; if(g.measureText(t).width > maxW && line){ g.fillText(line, x, yy); line = wd; yy += lh; } else line = t; }); if(line) g.fillText(line, x, yy); };
+  g.textBaseline = "alphabetic"; let y = top;
+  CHALK_ROWS.forEach((r, i) => { const hh = rowH[i], head = r[3];
+    g.save(); g.translate(0, (R()-.5)*4); g.rotate((R()-.5)*.006);
+    g.fillStyle = head ? "#f1ecd2" : "#e9ece4";
+    g.font = `${head ? 700 : 400} ${head ? 42 : 38}px ${CHALK}`; wrap(r[0], col[0] + 10, y + 50, col[1] - col[0] - 30, 46);
+    g.font = `${head ? 700 : 400} ${head ? 40 : 42}px ${CHALK}`; r[1].forEach((ln, k) => g.fillText(ln, col[1] + 14, y + 54 + k*54));
+    g.font = `${head ? 700 : 400} ${head ? 42 : 33}px ${CHALK}`; wrap(r[2], col[2] + 14, y + 48, col[3] - col[2] - 30, 39);
+    g.restore();
+    y += hh;
+    // a ruled line under each row, drawn by hand
+    g.strokeStyle = "rgba(233,236,228,.55)"; g.lineWidth = head ? 5 : 3; g.beginPath(); g.moveTo(col[0], y - 12 + (R()-.5)*3); for(let x = col[0]; x <= col[3]; x += 120) g.lineTo(x, y - 12 + (R()-.5)*4); g.stroke(); });
+  g.strokeStyle = "rgba(233,236,228,.45)"; g.lineWidth = 3; [col[1], col[2]].forEach(x => { g.beginPath(); g.moveTo(x + (R()-.5)*3, top - 10); g.lineTo(x + (R()-.5)*5, y - 12); g.stroke(); });
+  // chalk is broken up by the slate's grain: knock small holes out of every stroke
+  g.save(); g.globalCompositeOperation = "destination-out"; for(let i=0;i<9000;i++){ g.fillStyle = `rgba(0,0,0,${.25 + R()*.5})`; g.fillRect(R()*w, R()*h, 1 + R()*2.5, 1 + R()*2); } g.restore();
+  g.save(); g.globalCompositeOperation = "destination-over"; g.fillStyle = "#26302c"; g.fillRect(0,0,w,h); g.restore();
+  g.fillStyle = "rgba(233,236,228,.55)"; g.font = `26px ${CHALK}`; g.fillText("office hours: see the board by the door", w - 520, h - 14);
+}
 const FELL = '"IM Fell English", Georgia, serif', FELLSC = '"IM Fell English SC", "IM Fell English", Georgia, serif';
 
 /* ---------- the engraving pass ---------- */
@@ -70,8 +136,8 @@ const POST_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(pos
 const POST_FS = `
 precision highp float;
 uniform sampler2D tColor; uniform sampler2D tDepth;
-uniform vec2 res; uniform float dpr, night, time, cnear, cfar, spacing;
-uniform mat4 projInv; uniform vec3 paper, ink, paperN, inkN;
+uniform vec2 res; uniform float dpr, night, time, cnear, cfar, spacing, aoK, exposure;
+uniform mat4 projInv; uniform mat4 proj; uniform vec3 paper, ink, paperN, inkN;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(hash(i),hash(i+vec2(1,0)),f.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x), f.y); }
@@ -85,10 +151,21 @@ float lineSet(vec2 px, vec2 dir, float s, float w, float wob){
 }
 void main(){
   vec2 px = vUv*res;
-  vec3 col = pow(max(texture2D(tColor, vUv).rgb, 0.), vec3(1./2.2));
   float dep = texture2D(tDepth, vUv).x;
   vec3 P = viewPos(vUv);
   vec3 N = normalize(cross(dFdx(P), dFdy(P)));
+  // contact shadow: how much of the hemisphere over this point the nearby geometry hides (corners, under tables, behind books),
+  // so the engraver darkens, and hatches, where a real room is dim
+  float ao = 1.;
+  if(aoK > 0. && dep < .9999){
+    float rad = .34, occ = 0., ang = hash(floor(px/2.))*6.2831;
+    for(int i=0;i<12;i++){ float fi = float(i), r = (fi+.5)/12., a = ang + fi*2.39996;
+      vec2 off = vec2(cos(a), sin(a)) * r * rad * proj[0][0] / max(-P.z, .1) * .5;
+      vec3 Q = viewPos(vUv + off*vec2(1., res.x/res.y)), v = Q - P; float d = length(v);
+      occ += max(dot(N, v/max(d,1e-4)) - .1, 0.) * (1. - smoothstep(rad*.6, rad*2., d)); }
+    ao = clamp(1. - aoK*occ/12.*2.2, .35, 1.);
+  }
+  vec3 col = pow(max(texture2D(tColor, vUv).rgb*exposure*ao, 0.), vec3(1./2.2));
   float lum0 = dot(col, vec3(.299,.587,.114));
   float lum = smoothstep(.04, .80, lum0);
   if(night > .5) lum = 1. - lum;
@@ -175,6 +252,7 @@ export function create(container, hooks){
   const post = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:POST_FS, uniforms:{
     tColor:{value:null}, tDepth:{value:null}, res:{value:new THREE.Vector2()}, dpr:{value:dpr}, night:{value:0}, time:{value:0},
     cnear:{value:camera.near}, cfar:{value:camera.far}, spacing:{value:Q.hatch}, projInv:{value:new THREE.Matrix4()},
+    aoK:{value: Q.ss > 1 ? .85 : 0}, exposure:{value:1}, proj:{value:new THREE.Matrix4()},
     paper:{value:new THREE.Color("#EEE4CF")}, ink:{value:new THREE.Color("#2a1f17")}, paperN:{value:new THREE.Color("#14110d")}, inkN:{value:new THREE.Color("#e9ddc4")} }});
   post.extensions = {derivatives:true};
   const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
@@ -301,6 +379,21 @@ export function create(container, hooks){
   backBtn.addEventListener("click", e => { e.stopPropagation(); exitFocus(); });
   window.addEventListener("wending-lightning", () => { if(!plan || !((plan.room.ceiling||"") === "open" || plan.decor.includes("window"))) return;
     flash.style.transition = "none"; flash.style.opacity = ".75"; setTimeout(() => { flash.style.transition = "opacity .5s"; flash.style.opacity = "0"; }, 70); setTimeout(() => { flash.style.transition = "none"; flash.style.opacity = ".5"; setTimeout(() => { flash.style.transition = "opacity .9s"; flash.style.opacity = "0"; }, 60); }, 240); });
+  /* ---- exposure: like an eye, or a photographer's meter. Every few frames the room's picture is shrunk to 16 × 9,
+     its average brightness (the geometric mean, as a meter reads it) is read back, and the exposure eases toward the value
+     that puts that average at mid-grey. Each standing place finds its own; a dark corner opens up, a sunlit window closes down. ---- */
+  const METER_FS = `precision highp float; uniform sampler2D tColor; varying vec2 vUv;
+    void main(){ float s = 0.; for(int j=0;j<4;j++) for(int i=0;i<4;i++){ vec2 o = (vec2(float(i), float(j)) - 1.5)/vec2(64., 36.);
+      vec3 c = texture2D(tColor, vUv + o).rgb; s += log2(max(dot(c, vec3(.2126,.7152,.0722)), 1e-4)); }
+      gl_FragColor = vec4(clamp((s/16. + 14.)/18., 0., 1.), 0., 0., 1.); }`;
+  const meterRT = new THREE.WebGLRenderTarget(16, 9, {type:THREE.UnsignedByteType, depthBuffer:false}), meterMat = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:METER_FS, uniforms:{tColor:{value:null}}});
+  const meterScene = new THREE.Scene(); meterScene.add(new THREE.Mesh(tri, meterMat)); const meterBuf = new Uint8Array(16*9*4);
+  const meter = {n:0, ev:1, target:1, reset:true};
+  function meterRead(){ meterMat.uniforms.tColor.value = rt.texture; renderer.setRenderTarget(meterRT); renderer.render(meterScene, postCam); renderer.readRenderTargetPixels(meterRT, 0, 0, 16, 9, meterBuf);
+    let s = 0, w = 0; for(let i=0;i<16*9;i++){ const x = i % 16, y = Math.floor(i/16), wt = 1.6 - Math.hypot((x - 7.5)/8, (y - 4)/4.5)*.8; s += (meterBuf[i*4]/255*18 - 14)*wt; w += wt; }   // centre-weighted
+    const L = Math.pow(2, s/w), photoV = isPhoto(), night = plan && plan.band === "night", bias = plan && plan.room && plan.room.exposure || 1;
+    const key = photoV ? .12 : .24, lo = photoV ? .45 : night ? .85 : .75, hi = photoV ? 2 : night ? 1.25 : 1.8;
+    meter.target = Math.min(hi, Math.max(lo, key/Math.max(L, 1e-4)))*bias; }
   /* ---- the frame loop ---- */
   let last = performance.now(), dirty = 3;
   function frame(t){
@@ -319,7 +412,11 @@ export function create(container, hooks){
       camera.layers.set(0);
       renderer.setRenderTarget(rt); renderer.render(scene, camera);
       post.uniforms.tColor.value = rt.texture; post.uniforms.tDepth.value = rt.depthTexture;
-      post.uniforms.projInv.value.copy(camera.projectionMatrixInverse); post.uniforms.time.value = t/1000;
+      post.uniforms.projInv.value.copy(camera.projectionMatrixInverse); post.uniforms.proj.value.copy(camera.projectionMatrix); post.uniforms.time.value = t/1000;
+      if(hooks.autoExposure ? hooks.autoExposure() : true){ if(meter.reset || ++meter.n % 6 === 0){ meterRead(); if(meter.reset){ meter.ev = meter.target; meter.reset = false; } }
+        const before = meter.ev; meter.ev += (meter.target - meter.ev)*(1 - Math.exp(-dt*2.2)); if(Math.abs(meter.target - meter.ev) > .004) dirty = Math.max(dirty, 1); }
+      else meter.ev = 1;
+      post.uniforms.exposure.value = meter.ev; photo.uniforms.exposure.value = meter.ev;
       if(isPhoto()){ postMesh.material = photo; photo.uniforms.tColor.value = rt.texture; photo.uniforms.tDepth.value = rt.depthTexture; photo.uniforms.projInv.value.copy(camera.projectionMatrixInverse); photo.uniforms.proj.value.copy(camera.projectionMatrix); photo.uniforms.time.value = (t/1000) % 100; }
       else postMesh.material = post;
       renderer.setRenderTarget(null); renderer.render(postScene, postCam);
@@ -339,8 +436,8 @@ export function create(container, hooks){
     // a redraw that changes nothing about where you stand (the clock, the weather) keeps a close look, or a seat, as it is
     const keepPeek = peeking && navK === lastNavK; lastNavK = navK; plan = p; if(!keepPeek){ peeking = false; if(seated){ const s = seated; seated = null; s.leave(); } }
     if(prevPlan && prevPlan.room && p.room && prevPlan.room.id === p.room.id) ['HG','half','halfX','halfZ','hallFog','envK','doorSpots'].forEach(k => { if(p[k] === undefined && prevPlan[k] !== undefined) p[k] = prevPlan[k]; });
-    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.lanternColor, p.shade, p.light, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
-    if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); }
+    const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.lanternColor, p.shade, p.light, p.mats || null, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
+    if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); realUV(scene); meter.reset = true; }
     // where to stand and where to look
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5), stand:new THREE.Vector3(0,EYE,0)};
     let pos, yaw = Math.atan2(-sl.dir.x, -sl.dir.z), pitch = p.pitch*((p.room.ceiling||"")==="open" && p.pitch>0 ? 1.32 : 0.95);
@@ -377,7 +474,7 @@ export function create(container, hooks){
   }
 
   function build(p){
-    scene.traverse(o => { if(o.geometry) o.geometry.dispose(); if(o.material){ [].concat(o.material).forEach(m => { if(m.map) m.map.dispose(); m.dispose(); }); } });
+    scene.traverse(o => { if(o.geometry) o.geometry.dispose(); if(o.material){ [].concat(o.material).forEach(m => { if(m.map && !(m.userData && m.userData.libShared) && !Object.values(LIBT).some(t => t.map === m.map) && !Object.values(SURF).some(t => t.map === m.map)) m.map.dispose(); m.dispose(); }); } });
     winL.forEach(([ty, fn]) => window.removeEventListener(ty, fn)); winL = [];
     scene = new THREE.Scene(); picks = []; anims = []; glints = []; nodeMarks = [];
     if(isPhoto()){ scene.environment = roomEnvironment(); scene.environmentIntensity = p.band === "night" ? .15 : .45; } stations = {}; slots = {}; labelDim = p.band==="night" ? .72 : p.band==="dusk" ? .9 : 1;
@@ -423,8 +520,12 @@ export function create(container, hooks){
       const geo = new THREE.ExtrudeGeometry(shapeW, {depth:.3, bevelEnabled:false, curveSegments:18});
       // UVs for the stone texture: world-ish meters
       const uv = geo.attributes.uv; for(let i=0;i<uv.count;i++) uv.setXY(i, uv.getX(i)/2.2, uv.getY(i)/2.2);
-      const m = wallMat.clone(); if(hedged){ m.color.set("#ffffff"); m.map = hedgeTex; } else if(!(p.room.decor||[]).includes("glacier")) { m.map = stoneTex; }
-      const mesh = new THREE.Mesh(geo, m); mesh.castShadow = true; mesh.receiveShadow = true;
+      const wallLib = p.mats && p.mats.walls && libTex(p.mats.walls);
+      let m;
+      if(wallLib && !hedged){ m = libMat(p.mats.walls); const uv2 = geo.attributes.uv, k = 2.2/wallLib.entry.tile; for(let i=0;i<uv2.count;i++) uv2.setXY(i, uv2.getX(i)*k, uv2.getY(i)*k); }
+      else { m = wallMat.clone(); if(hedged){ m.color.set("#ffffff"); m.map = hedgeTex; } else if(!(p.room.decor||[]).includes("glacier")) { m.map = stoneTex; const lp = libTex("lime-plaster"); if(lp){ m.normalMap = lp.normalMap; m.roughnessMap = lp.roughnessMap; m.roughness = 1; m.normalScale = new THREE.Vector2(.7,.7); } } }
+      m.userData.tile = 0;
+      const mesh = new THREE.Mesh(geo, m); mesh.userData.keepUV = true; mesh.castShadow = true; mesh.receiveShadow = true;
       // place: local x along the wall, local z outward
       const basis = new THREE.Matrix4().makeBasis(u, new THREE.Vector3(0,1,0), n.clone().negate());
       mesh.applyMatrix4(basis); mesh.position.set(f.a.x, 0, f.a.z);
@@ -433,9 +534,20 @@ export function create(container, hooks){
       if(hedged){ // a clipped top, a little ragged
         for(let x=.3; x<len; x+=.55){ if(holes.some(hh => Math.abs(hh.at - x) < hh.w/2 + .2)) continue; const tuft = new THREE.Mesh(new THREE.SphereGeometry(.32+R()*.1, 8, 6), mat("#ffffff",{map:hedgeTex})); tuft.scale.y = .5; tuft.position.copy(f.a).add(u.clone().multiplyScalar(x)).add(n.clone().multiplyScalar(-.15)); tuft.position.y = WALL_H; tuft.castShadow = true; scene.add(tuft); }
       } else {
-      const cor = new THREE.Mesh(new THREE.BoxGeometry(len, .18, .22), mat("#c8bea9")); cor.position.copy(mid(f)).add(n.clone().multiplyScalar(.1)); cor.position.y = WALL_H - .09; cor.rotation.y = Math.atan2(-u.z, u.x); cor.castShadow = true; scene.add(cor);
-      const base = new THREE.Mesh(new THREE.BoxGeometry(len, .22, .08), mat("#8f8573")); base.position.copy(mid(f)).add(n.clone().multiplyScalar(.04)); base.position.y = .11; base.rotation.y = cor.rotation.y; scene.add(base);
+      // a cornice with a real profile (fillet, cove, bed moulding, fascia), a picture rail, and a skirting with a bead on top
+      const ry = Math.atan2(-u.z, u.x), corM = mat("#c8bea9"), along = (geo, y, out, m) => { const me = new THREE.Mesh(geo, m); me.position.copy(mid(f)).add(n.clone().multiplyScalar(out)); me.position.y = y; me.rotation.y = ry; scene.add(me); return me; };
+      along(new THREE.BoxGeometry(len, .06, .26), WALL_H - .03, .13, corM).castShadow = true;                    // the top fillet
+      const cove = along(new THREE.CylinderGeometry(.16, .16, len, 10, 1, true, 0, Math.PI/2), WALL_H - .22, 0, corM); cove.rotation.set(0, ry, Math.PI/2); cove.rotateX(Math.PI); cove.material.side = THREE.DoubleSide;  // the cove, a quarter-circle
+      along(new THREE.BoxGeometry(len, .035, .07), WALL_H - .24, .035, corM);                                        // bed moulding
+      along(new THREE.BoxGeometry(len, .12, .03), WALL_H - .32, .015, corM);                                         // fascia
+      if(WALL_H > 3.6 && !gothic) along(new THREE.BoxGeometry(len, .045, .03), WALL_H - .78, .015, mat("#8a6f50"));   // the picture rail
+      along(new THREE.BoxGeometry(len, .22, .05), .11, .025, mat("#8f8573"));
+      const bead = along(new THREE.CylinderGeometry(.018, .018, len, 8), .225, .03, mat("#8f8573")); bead.rotation.set(0, ry, Math.PI/2);
       }
+      if(!hedged && !gothic && f.slot >= 0 && len > 5 && (p.room.ceiling || "") !== "open" && !p.decor.includes("shelves")){
+        const busy = f.slot >= 0 ? (objsBySlot[f.slot] || []).filter(o => o.mount === "board").length : 0;
+        [len*.18, len*.82].forEach(t => { if(holes.some(hh => Math.abs(hh.at - t) < hh.w/2 + .5) || (busy && Math.abs(t - len/2) < 2.2)) return;
+          sconce(f.a.clone().add(u.clone().multiplyScalar(t)).add(n.clone().multiplyScalar(.02)), n, p.lampLit || p.band === "night"); }); }
       holes.forEach(hh => {
         const c = f.a.clone().add(u.clone().multiplyScalar(hh.at));
         if(hh.kind==="door") buildDoor(hh, c, u, n, p, f);
@@ -454,10 +566,13 @@ export function create(container, hooks){
     const poly = faces.map(f => f.a);
     const floorShape = new THREE.Shape(poly.map(v => new THREE.Vector2(v.x, -v.z)));
     const fg = new THREE.ShapeGeometry(floorShape); fg.rotateX(-Math.PI/2);
-    const fuv = fg.attributes.uv; for(let i=0;i<fuv.count;i++) fuv.setXY(i, fuv.getX(i)/2, fuv.getY(i)/2);
-    const floorTex = floorTexture(p.room.floor || "planks", R); floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+    const floorWord = (p.mats && p.mats.floor) || p.room.floor || "planks", floorLib = window.MATERIALS && window.MATERIALS.floorFor(floorWord), libF = floorLib && libTex(floorLib), fTile = libF ? libF.entry.tile : 2;
+    const fuv = fg.attributes.uv; for(let i=0;i<fuv.count;i++) fuv.setXY(i, fuv.getX(i)/fTile, fuv.getY(i)/fTile);
     const roofless = (p.room.ceiling||"") === "open", wet = roofless && ["rain","storm"].includes(p.wxKind), snowy = roofless && p.wxKind === "snow" && (p.temp == null || p.temp < 35);
-    const floor = new THREE.Mesh(fg, mat(wet ? "#b9b2a4" : snowy ? "#ffffff" : "#ffffff", {map:floorTex, roughness: wet ? .28 : .8, metalness: wet ? .15 : 0})); floor.receiveShadow = true; scene.add(floor);
+    let floorM;
+    if(libF){ floorM = libMat(floorLib, {color: wet ? "#b9b2a4" : "#ffffff"}); if(wet){ floorM.roughnessMap = null; floorM.roughness = .28; floorM.metalness = .15; } }
+    else { const floorTex = floorTexture(floorWord, R); floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorM = mat("#ffffff", {map:floorTex, roughness: wet ? .28 : .8, metalness: wet ? .15 : 0}); }
+    const floor = new THREE.Mesh(fg, floorM); floor.userData.keepUV = true; floor.receiveShadow = true; scene.add(floor);
     if(p.room.walk && !(gothic && (p.room.level||0) > 0)){ floor.userData.hit = {kind:"walk", label:"Walk here", onClick:()=>walkTo(lastHit)}; picks.push(floor); }
     if(snowy){ const cover = new THREE.Mesh(fg.clone(), new THREE.MeshStandardMaterial({color:"#f4f6f6", roughness:.95, transparent:true, opacity:.72})); cover.position.y = .004; cover.receiveShadow = true; scene.add(cover); }
     const ceilKind = p.room.ceiling || "beams";
@@ -1279,8 +1394,18 @@ export function create(container, hooks){
     for(let k=0;k<3;k++){ const rule = new THREE.Mesh(new THREE.BoxGeometry(w*.8, .03, .08), mat(k===1? "#"+spot.getHexString() : "#d8cdb2")); rule.position.set(0, .93, .14 + k*.15); rule.rotation.x = -.1; g.add(rule); }
     g.position.copy(c).add(n.clone().multiplyScalar(.02)); g.rotation.y = yaw; scene.add(g);
   }
+  // a wall light: backplate, a swan-neck arm, and a frosted glass shade; it glows when the room's lamps are lit
+  function sconce(at, n, lit){ const g = new THREE.Group(); g.position.copy(at); g.position.y = 2.25; g.rotation.y = Math.atan2(n.x, n.z); scene.add(g);
+    const brass = mat("#b39a62", {metalness:.7, roughness:.35});
+    const plate = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, .02, 24), brass); plate.rotation.x = Math.PI/2; plate.position.z = .01; g.add(plate);
+    const arm = new THREE.Mesh(new THREE.TorusGeometry(.09, .011, 8, 16, Math.PI/2), brass); arm.rotation.set(0, Math.PI/2, 0); arm.position.set(0, .09, .02); g.add(arm);
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(.03, .022, .03, 16), brass); cup.position.set(0, .2, .11); g.add(cup);
+    const shade = new THREE.Mesh(new THREE.CylinderGeometry(.05, .085, .13, 20, 1, true), new THREE.MeshStandardMaterial({color:"#f3ead6", emissive: lit ? "#ffcf86" : "#000000", emissiveIntensity: lit ? .9 : 0, side:THREE.DoubleSide, roughness:.6, transparent:true, opacity:.92}));
+    shade.position.set(0, .28, .11); g.add(shade); }
   function pendant(spot, lit){
     const group = new THREE.Group();
+    // a plaster ceiling rose where the chain comes down
+    const rose = lathe([[0,0],[.34,0],[.33,-.03],[.26,-.05],[.22,-.09],[.12,-.1],[.06,-.14],[0,-.14]], mat("#d9d0bc"), 32); rose.position.y = WALL_H; group.add(rose);
     const chain = new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,1,6), mat("#2a2520")); chain.position.y = WALL_H-.5; group.add(chain);
     const shade = new THREE.Mesh(new THREE.ConeGeometry(.42,.34,24,1,true), mat("#"+spot.getHexString(), {side:THREE.DoubleSide, roughness:.6})); shade.position.y = WALL_H-1.05; group.add(shade);
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(.09,12,8), new THREE.MeshBasicMaterial({color: lit ? "#fff1c8" : "#d9d2c0"})); bulb.position.y = WALL_H-1.18; group.add(bulb);
@@ -1721,6 +1846,12 @@ export function create(container, hooks){
         add(new THREE.CylinderGeometry(.008,.008,.07,10), mat("#f1e8d2"), .0,.17,0); add(new THREE.CylinderGeometry(.03,.025,.06,20), mat("#d9d0bb"), .08,.165,0);
         add(new THREE.CylinderGeometry(.035,.035,.012,32), brass, -.06,.33,0, Math.PI/2,0,0); add(new THREE.BoxGeometry(.06,.06,.06), brass, .07,.32,0); add(new THREE.BoxGeometry(.05,.012,.05), mat("#3a1e18"), 0,.04,.02);
         break; }
+      case "matcab": { // a plan chest of shallow drawers, one pulled out with its samples showing; more samples laid on top
+        add(new THREE.BoxGeometry(.36,.2,.24), wood, 0,.1); for(let k=0;k<4;k++){ add(new THREE.BoxGeometry(.34,.036,.004), mat("#7d6450"), 0,.03+k*.046,.121); add(new THREE.BoxGeometry(.05,.008,.006), brass, 0,.03+k*.046,.125); }
+        const ids = ["walnut","carrara","brick-flemish","houndstooth","saddle-leather","copper-verdigris","truchet-arcs","slate"];
+        ids.forEach((id, k) => { const t = libTex(id); if(!t) return; const sw = new THREE.Mesh(new THREE.BoxGeometry(.075,.01,.075), new THREE.MeshStandardMaterial({map:t.map, normalMap:t.normalMap, roughnessMap:t.roughnessMap, roughness:1, metalness:t.entry.metal ? .8 : 0}));
+          sw.position.set(-.13 + (k%4)*.087, .205 + Math.floor(k/4)*.0, -.06 + Math.floor(k/4)*.09); sw.rotation.y = (k*.37 % .3) - .15; sw.userData.keepUV = true; g.add(sw); });
+        break; }
       case "calcab": { // a cabinet of shallow drawers, with a brass drum on top that turns to the house's calendar
         add(new THREE.BoxGeometry(.3,.3,.2), wood, 0,.15); for(let k=0;k<5;k++){ add(new THREE.BoxGeometry(.27,.045,.004), mat("#7d6450"), 0,.035+k*.056,.101); add(new THREE.SphereGeometry(.007,10,8), brass, 0,.035+k*.056,.106); }
         const drum = add(new THREE.CylinderGeometry(.05,.05,.24,40), brass, 0,.36,0, 0,0,Math.PI/2); add(new THREE.CylinderGeometry(.051,.051,.14,40,1,true), paper, 0,.36,0, 0,0,Math.PI/2);
@@ -1988,12 +2119,16 @@ export function create(container, hooks){
       for(let k=0;k<4;k++){ const dr = new THREE.Mesh(new THREE.BoxGeometry(.44,.28,.012), mat("#8a7a63")); dr.position.set(0,.2+k*.31,.315); cab.add(dr); const hd = new THREE.Mesh(new THREE.BoxGeometry(.12,.02,.02), mat("#b39a62",{metalness:.6})); hd.position.set(0,.27+k*.31,.33); cab.add(hd); const lab = new THREE.Mesh(new THREE.BoxGeometry(.07,.04,.004), mat("#ece6d6")); lab.position.set(0,.31+k*.31,.323); cab.add(lab); }
       place(cab, -4.85, -5.05, 0);
       const Fw = wallAt(faces, 3); if(Fw){ const at = Fw.at(Fw.len*.5, .04), bb = new THREE.Group();
-        const fr = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.5, .05), mat("#5a4634")); bb.add(fr);
-        const slate = new THREE.Mesh(new THREE.PlaneGeometry(3.04, 1.34), mat("#ffffff", {map: canvasTex(1024, 450, (g,w,h) => { g.fillStyle = "#2c3330"; g.fillRect(0,0,w,h); for(let i=0;i<60;i++){ g.fillStyle = "rgba(220,225,215,.04)"; g.fillRect(Math.random()*w, Math.random()*h, 140, 30); }
-          g.fillStyle = "#e6e8e0"; g.font = `italic 40px ${FELL}`; g.fillText("e", 60, 90); g.font = `italic 26px ${FELL}`; g.fillText("iπ", 82, 66); g.font = `italic 40px ${FELL}`; g.fillText("+ 1 = 0", 116, 90); g.fillText("∮ ω = 2πi · Res", 60, 170); g.font = `34px ${FELL}`; g.fillText("office hours: see the board by the door", 60, 270);
-          g.strokeStyle = "#e6e8e0"; g.lineWidth = 3; g.beginPath(); g.arc(800, 200, 110, 0, TAU); g.stroke(); g.beginPath(); g.moveTo(690, 200); g.lineTo(910, 200); g.moveTo(800, 90); g.lineTo(800, 310); g.stroke(); g.beginPath(); g.moveTo(800,200); g.lineTo(800+110*Math.cos(-.6), 200+110*Math.sin(-.6)); g.stroke(); })}));
-        slate.position.z = .03; label(slate); bb.add(slate); const tray = new THREE.Mesh(new THREE.BoxGeometry(3.1,.04,.1), mat("#5a4634")); tray.position.set(0,-.78,.05); bb.add(tray);
-        bb.position.set(at.x, 1.75, at.z); bb.rotation.y = Fw.yaw; scene.add(bb); }
+        const BW = Math.min(4.4, Fw.len*.5), BH = 2.0;
+        const fr = new THREE.Mesh(new THREE.BoxGeometry(BW + .16, BH + .16, .05), mat("#5a4634")); bb.add(fr);
+        const bc = document.createElement("canvas"); bc.width = 2048; bc.height = Math.round(2048*BH/BW); chalkNote(bc.getContext("2d"), bc.width, bc.height);
+        const bt = new THREE.CanvasTexture(bc); bt.colorSpace = THREE.SRGBColorSpace; bt.anisotropy = 8;
+        if(document.fonts && document.fonts.load) document.fonts.load('40px "Kalam"').then(() => { chalkNote(bc.getContext("2d"), bc.width, bc.height); bt.needsUpdate = true; dirty = 3; }).catch(() => {});
+        const slate = new THREE.Mesh(new THREE.PlaneGeometry(BW, BH), mat("#ffffff", {map: bt}));
+        slate.position.z = .03; label(slate); bb.add(slate); const tray = new THREE.Mesh(new THREE.BoxGeometry(BW - .1,.04,.1), mat("#5a4634")); tray.position.set(0,-BH/2 - .06,.05); bb.add(tray);
+        [[-.4,"#efeee6"],[-.25,"#e9e2b8"],[.1,"#efeee6"]].forEach(([x,c]) => { const ch = new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.08,8), mat(c)); ch.rotation.z = Math.PI/2; ch.position.set(x, -BH/2 - .025, .07); bb.add(ch); });
+        const bo = {raw:{title:"The blackboard", action:"blackboard"}}; slate.userData.hit = {kind:"look", label:"The blackboard: read it", onClick:() => hooks.useObject(bo)}; picks.push(slate);
+        bb.position.set(at.x, 1.9, at.z); bb.rotation.y = Fw.yaw; scene.add(bb); }
       // the balance rocker and its nesting footstool, by the window corner; the staircase cabinet along the left wall
       const rk = balanceRocker(), rkAt = new THREE.Vector3(-3.3, 0, 3.0); rk.group.position.copy(rkAt); rk.group.rotation.y = Math.PI*.8; scene.add(rk.group);
       const fs = nestingStool(); const fsOff = new THREE.Vector3(0, 0, .78).applyAxisAngle(new THREE.Vector3(0,1,0), Math.PI*.8); place(fs, rkAt.x + fsOff.x, rkAt.z + fsOff.z, Math.PI*.8);

@@ -7,7 +7,7 @@
 const C = {}, D = window.MBDSP, G = window.MBGEN;
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
 const st = () => { const S = C.S; S.mbox = S.mbox || {}; const d = ({tab:"compose", genre:"ambient", bpm:60, scale:"dorian", tuning:"12tet", root:146.83, density:.6, swing:0, perc:true, roles:null, amb:"none", ambLevel:.5, ambRoom:false,
-  ir:"office", mode:"causal", wet:.35, radio:[], sonar:{band:"audible", interval:.5, maxR:8, temp:20, f0:18000, self:.1}}); for(const k in d) if(S.mbox[k] === undefined) S.mbox[k] = d[k]; return S.mbox; };   // filled in place, so every caller holds the same object
+  ir:"office", mode:"causal", wet:.35, tape:false, noise:{colour:"off", level:.3, breathe:0, rate:8, width:1, cutoff:20000}, radio:[], sonar:{band:"audible", interval:.5, maxR:8, temp:20, f0:18000, self:.1}}); for(const k in d) if(S.mbox[k] === undefined) S.mbox[k] = d[k]; return S.mbox; };   // filled in place, so every caller holds the same object
 const save = () => C.save && C.save();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const NOTE = ["C","C♯","D","E♭","E","F","F♯","G","A♭","A","B♭","B"], hzOf = m => 440*Math.pow(2, (m - 69)/12);
@@ -22,7 +22,8 @@ function ensure(){
   ch = {input, dryDelay, dry, conv, wet, post, an};
   eng = G.createEngine(ac, input, n => { notes.push(n); if(notes.length > 400) notes.splice(0, notes.length - 400); });
   const s = st(); if(s.roles) eng.set({roles: s.roles}); else s.roles = Object.assign({}, eng.useGenreDefaults(s.genre).roles);
-  eng.set({genre: s.genre, bpm: s.bpm, scale: s.scale, tuning: s.tuning, root: s.root, density: s.density, swing: s.swing, perc: s.perc, roles: s.roles});
+  eng.set({genre: s.genre, bpm: s.bpm, scale: s.scale, tuning: s.tuning, root: s.root, density: s.density, swing: s.swing, perc: s.perc, roles: s.roles, tape: s.tape});
+  if(s.noise && s.noise.colour !== "off") eng.noise(s.noise);
   setRoom(s.ir, s.mode, s.wet); eng.ambience(s.amb, s.ambRoom ? ch.input : ch.post); eng.setAmbLevel(s.ambLevel);
   return true;
 }
@@ -172,13 +173,38 @@ const range = (id, min, max, step, v, label, unit = "") => `<label class="mbx-r"
 const grouped = (list, fam) => { const fams = [...new Set(list.map(fam))]; return fams.map(f => ({group: f, items: list.filter(x => fam(x) === f)})); };
 
 const VIEWS = {}, WIRE = {};
+/* moods: one click sets the music, its players, the room, the ambience, and the noise */
+const MOODS = [
+  ["ambient", "Ambient", {genre:"ambient", amb:"none", ir:"hall"}],
+  ["lofi", "Lo-fi beats", {genre:"lofi", amb:"vinyl", ir:"office", wet:.2}],
+  ["lofiup", "Upbeat lo-fi", {genre:"lofiup", amb:"vinyl", ir:"office", wet:.15}],
+  ["cafe", "Café jazz", {genre:"cafejazz", amb:"cafe", ir:"entry", wet:.25}],
+  ["rainy", "Rainy day", {genre:"rainyday", amb:"window", ir:"office", wet:.3}],
+  ["drone", "Drone", {genre:"drone", amb:"none", ir:"cathedral", wet:.5}],
+  ["wind", "Wind", {genre:"ambient", amb:"wind", ir:"canyon", wet:.3, density:.3, noise:{colour:"pink", level:.12, breathe:.8, rate:11}}],
+  ["water", "Water", {genre:"water", amb:"stream", ir:"cave", wet:.3}],
+  ["bells", "Bells", {genre:"windchimes", amb:"none", ir:"cathedral", wet:.45}],
+  ["changes", "Change ringing", {genre:"bells", amb:"none", ir:"hall", wet:.4}],
+  ["storm", "Storm", {genre:"drone", amb:"storm", ir:"hall", wet:.3, density:.3}],
+  ["sleep", "Sleep (brown noise)", {stopMusic:true, amb:"none", noise:{colour:"brown", level:.35, breathe:.25, rate:10}}],
+  ["focus", "Focus (pink noise)", {stopMusic:true, amb:"none", noise:{colour:"pink", level:.28, breathe:0}}],
+];
+function applyMood(k){ if(!ensure()) return; const m = (MOODS.find(x => x[0] === k) || MOODS[0])[2], s = st();
+  if(m.genre){ const r = eng.useGenreDefaults(m.genre); Object.assign(s, {genre: r.genre, bpm: r.bpm, roles: Object.assign({}, r.roles), scale: r.scale, tuning: r.tuning, swing: r.swing, tape: r.tape}); }
+  if(m.density != null){ s.density = m.density; eng.set({density: m.density}); }
+  s.amb = m.amb || (eng.st.ambience) || "none"; eng.ambience(s.amb, s.ambRoom ? ch.input : ch.post);
+  s.noise = Object.assign({colour:"off", level:.3, breathe:0, rate:8, width:1, cutoff:20000}, m.noise || {}); eng.noise(s.noise);
+  if(m.ir) setRoom(m.ir, "causal", m.wet != null ? m.wet : s.wet);
+  s.mood = k; save(); if(m.stopMusic){ if(eng.running) eng.stop(); } else if(!eng.running){ C.S.snd.mode = "studio"; eng.start(); } draw(); }
 /* Compose */
 VIEWS.compose = () => { const s = st(), g = eng ? eng.GENRES : {}, sc = G.scaleOf(s.scale), roots = []; for(let m = 36; m <= 60; m++) roots.push([hzOf(m).toFixed(2), `${NOTE[m % 12]}${Math.floor(m/12) - 1} (${hzOf(m).toFixed(1)} Hz)`]);
   const insts = (eng ? eng.INSTRUMENTS : []).map(k => [k, k]);
-  return `<div class="mbx-grid"><section><h4>Music</h4>
+  return `<div class="mbx-moods">${MOODS.map(([k, n]) => `<button type="button" class="btn${s.mood === k ? " primary" : ""}" data-mood="${k}">${n}</button>`).join(" ")}</div>
+    <div class="mbx-grid"><section><h4>Music</h4>
       <label>Kind ${sel("mc-genre", Object.keys(g).map(k => [k, g[k].name]), s.genre)}</label>
       ${range("mc-bpm", 20, 200, 1, s.bpm, "Tempo", " bpm")}${range("mc-den", 0, 1, .05, s.density, "Density")}${range("mc-swing", 0, 1, .05, s.swing, "Swing")}
       <label><input type="checkbox" id="mc-perc" ${s.perc ? "checked" : ""}> percussion where the music has it</label>
+      <label><input type="checkbox" id="mc-tape" ${s.tape ? "checked" : ""}> through tape (wow, flutter, a darker tone, a little saturation)</label>
       <h4>Pitch</h4><label>Root ${sel("mc-root", roots, (+s.root).toFixed(2))}</label>
       <label>Scale ${sel("mc-scale", grouped(G.SCALES, x => x[2]).map(gr => ({group: gr.group, items: gr.items.map(x => [x[0], x[1]])})), s.scale)}</label>
       <label>Tuning ${sel("mc-tuning", Object.entries(G.TUNINGS).map(([k, t]) => [k, t.name]), s.tuning, sc.def.semis ? "" : "disabled title='This scale carries its own tuning'")}</label>
@@ -186,12 +212,20 @@ VIEWS.compose = () => { const s = st(), g = eng ? eng.GENRES : {}, sc = G.scaleO
     <section><h4>Players</h4>${["lead","harmony","bass"].map(r => `<label>${r} ${sel("mc-r-" + r, insts, (s.roles||{})[r])} <button class="btn" type="button" data-try="${r}">try</button></label>`).join("")}
       <h4>Around it</h4><label>Ambience ${sel("mc-amb", G.AMBIENCES, s.amb)}</label>${range("mc-ambl", 0, 1, .05, s.ambLevel, "Ambience level")}
       <label><input type="checkbox" id="mc-ambroom" ${s.ambRoom ? "checked" : ""}> put the ambience in the room too</label>
+      <h4>Noise</h4><label>Colour ${sel("mc-nc", eng ? eng.NOISES : [["off","Off"]], s.noise.colour)}</label>
+      ${range("mc-nl", 0, 1, .02, s.noise.level, "Level")}${range("mc-nb", 0, 1, .05, s.noise.breathe, "Breathing")}${range("mc-nr", 3, 30, 1, s.noise.rate, "Breath length", " s")}${range("mc-nw", 0, 1, .05, s.noise.width, "Stereo width")}${range("mc-nf", 200, 20000, 100, s.noise.cutoff, "Muffle above", " Hz")}
+      <p class="note">Noise plays on its own, with or without the music. Each colour is made by shaping the spectrum of white noise, so it loops without a seam.</p>
       <p class="note">The room (its reverberation) is set in the Room drawer: now <b>${esc((lib[s.ir] || {name: (PRESETS.find(p => p[0] === s.ir) || [0, s.ir])[1]}).name)}</b>, ${s.mode}.</p>
       <canvas id="mbx-cyl" width="560" height="150" class="mbx-cv"></canvas></section></div>`; };
 WIRE.compose = () => { const s = st(), up = o => { Object.assign(s, o); save(); if(ensure()) eng.set(o); };
-  $("mc-genre").onchange = e => { if(!ensure()) return; const r = eng.useGenreDefaults(e.target.value); Object.assign(s, {genre: r.genre, bpm: r.bpm, roles: Object.assign({}, r.roles), scale: r.scale, tuning: r.tuning}); save(); draw(); };
+  $("mc-genre").onchange = e => { if(!ensure()) return; const r = eng.useGenreDefaults(e.target.value); Object.assign(s, {genre: r.genre, bpm: r.bpm, roles: Object.assign({}, r.roles), scale: r.scale, tuning: r.tuning, swing: r.swing, tape: r.tape, mood: null});
+    if(r.ambience){ s.amb = r.ambience; eng.ambience(s.amb, s.ambRoom ? ch.input : ch.post); } save(); draw(); };
   [["mc-bpm","bpm"],["mc-den","density"],["mc-swing","swing"]].forEach(([id, k]) => $(id).oninput = e => { $(id + "-v").textContent = e.target.value + (k === "bpm" ? " bpm" : ""); up({[k]: +e.target.value}); });
-  $("mc-perc").onchange = e => up({perc: e.target.checked}); $("mc-root").onchange = e => up({root: +e.target.value});
+  $("mc-perc").onchange = e => up({perc: e.target.checked}); $("mc-tape").onchange = e => up({tape: e.target.checked});
+  document.querySelectorAll("[data-mood]").forEach(b => b.onclick = () => applyMood(b.dataset.mood));
+  const nz = () => { if(ensure()) eng.noise(s.noise); save(); };
+  $("mc-nc").onchange = e => { s.noise.colour = e.target.value; nz(); };
+  [["mc-nl","level",""],["mc-nb","breathe",""],["mc-nr","rate"," s"],["mc-nw","width",""],["mc-nf","cutoff"," Hz"]].forEach(([id, k, u]) => { $(id).oninput = e => { $(id + "-v").textContent = e.target.value + u; s.noise[k] = +e.target.value; }; $(id).onchange = nz; }); $("mc-root").onchange = e => up({root: +e.target.value});
   $("mc-scale").onchange = e => { up({scale: e.target.value}); draw(); }; $("mc-tuning").onchange = e => { up({tuning: e.target.value}); $("mc-ruler").innerHTML = scaleRuler(); };
   ["lead","harmony","bass"].forEach(r => { $("mc-r-" + r).onchange = e => { s.roles = Object.assign({}, s.roles, {[r]: e.target.value}); up({roles: s.roles}); }; });
   document.querySelectorAll("[data-try]").forEach(b => b.onclick = () => { if(ensure()) eng.preview(s.roles[b.dataset.try], eng.freq(b.dataset.try === "bass" ? 0 : 4, b.dataset.try === "bass" ? -1 : 0)); });

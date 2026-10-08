@@ -638,6 +638,8 @@ const ICON = {
   crystal:(g)=>{ for(let j=-2;j<=2;j++) for(let i=-3;i<=3;i++){ const x=i*8+(j&1)*4, y=j*7; if(x*x+y*y<480) E("circle",{cx:x,cy:y,r:2.6,fill:(i===1&&j===0)?"var(--accent)":"var(--ink)"},g);} },
   tree:(g)=>{ const br=(x,y,dx,n)=>{ if(!n) return; [-1,1].forEach(s=>{ E("line",{x1:x,y1:y,x2:x+s*dx,y2:y-10,stroke:"var(--ink)"},g); br(x+s*dx,y-10,dx/2,n-1); }); }; E("line",{x1:0,y1:18,x2:0,y2:10,stroke:"var(--ink)"},g); br(0,10,16,3); },
   book:(g)=>{ E("rect",{x:-14,y:-18,width:28,height:36,rx:2,fill:"url(#s-dark)",stroke:"var(--ink)"},g); E("line",{x1:-9,y1:-18,x2:-9,y2:18,stroke:"var(--ink)",opacity:.5},g); E("rect",{x:-4,y:-9,width:14,height:5,fill:"url(#h-mid)"},g); },
+  matcab:(g)=>{ E("rect",{x:-22,y:-6,width:44,height:30,fill:"url(#h-light)",stroke:"var(--ink)","stroke-width":1.6},g); for(let i=0;i<4;i++) E("line",{x1:-22,y1:1+i*6,x2:22,y2:1+i*6,stroke:"var(--ink)"},g);
+    [["#8a5a34",-17],["#c8bea9",-6],["#8e3e2c",5],["#2f3a52",16]].forEach(([c,x]) => E("rect",{x:x-4,y:-14,width:8,height:8,fill:c,stroke:"var(--ink)","stroke-width":.8},g)); },
   books:(g)=>{ ["var(--ink)","url(#h-mid)","url(#x-light)","url(#s-dark)"].forEach((c,i)=>E("rect",{x:-22,y:10-i*8,width:44-i*4,height:8,rx:1,fill:c,stroke:"var(--ink)","stroke-width":.6},g)); },
   unwritten:(g)=>{ E("rect",{x:-14,y:-18,width:28,height:36,rx:2,fill:"var(--paper)",stroke:"var(--ink)","stroke-dasharray":"3 3"},g); T("?",{x:0,y:7,"text-anchor":"middle","font-size":20,fill:"var(--muted)","font-family":"IM Fell English, serif"},g); },
   scroll:(g)=>{ E("rect",{x:-18,y:-14,width:36,height:28,fill:"var(--paper)",stroke:"var(--ink)"},g); E("circle",{cx:-18,cy:0,r:4,fill:"url(#h-mid)"},g); E("circle",{cx:18,cy:0,r:4,fill:"url(#h-mid)"},g); for(let i=0;i<4;i++) E("line",{x1:-12,y1:-8+i*5,x2:12,y2:-8+i*5,stroke:"var(--muted)"},g); },
@@ -794,7 +796,7 @@ function plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors){
     sunOff: skyOff("sun"), moonOff: skyOff("moon"),
     wxKind: wk, wxLabel: wx ? `Outside: ${Math.round(wx.temperature_2m)}°F, ${({clear:"clear",cloud:"clouds",fog:"fog",rain:"rain",snow:"snow",storm:"a storm"})[wk]}, wind ${Math.round(wx.wind_speed_10m)} mph.` : "",
     temp: wx ? wx.temperature_2m : null, wxRaw: wx || null, lat: LAT, lon: LON,
-    lantern: lanternLvl(), lanternColor: saltOf().color, shade: SHADE[S.shutters||0], gloom: (room.decor||[]).includes("gloom"),
+    mats: roomMats(room), lantern: lanternLvl(), lanternColor: saltOf().color, shade: SHADE[S.shutters||0], gloom: (room.decor||[]).includes("gloom"),
     sheetKey: JSON.stringify(S.sheets) + ":" + (CATALOG ? CATALOG.length : -1) + ":" + (S.dial||""), minuteKey: Math.floor(now().getTime()/60000),
     snap: !VIEW3D.snapped || VIEW3D.lastRoom !== String(room.id) ? (VIEW3D.snapped = true, VIEW3D.lastRoom = String(room.id), true) : false,
     skyCanvas: (room.decor||[]).includes("sky") ? skyCanvasFor : null,
@@ -902,9 +904,9 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js").then(m => {
+  import("./palace3d.js?v=20261008c").then(m => {
     VIEW3D = m.create($("stage"), {
-      turn, toast, now, quality: defaultQuality, style: () => S.gfx === "photo" ? "photo" : "engraved",
+      turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
       closer: slot => { const f = (slot + 3) % 4; if(String(S.node) === String(slot) && f === S.face) setView(S.face, "ahead"); else { S.node = slot; setView(f, null); } },
       goNode: k => goNode(k), info: o => primerNote(o), noted: o => !!(S.notes && S.notes[noteKey(o)]),
@@ -920,7 +922,7 @@ function start3d(){
       openCatalog: h => catalogView(h || ""),
       dial: () => { const w = $("widget"); if(w && w.firstChild){ w.scrollIntoView({behavior:"smooth", block:"center"}); w.classList.add("flash"); setTimeout(() => w.classList.remove("flash"), 1400); } },
       pendulumPlane: () => { const rate = 360*Math.sin(LAT*DEG)/23.9345; return -((now().getTime()/36e5*rate) % 180)*DEG; },
-    }); if(/[?&]debug/.test(location.search)) Object.assign(window, {__view3d: VIEW3D, __carGo: k => carGo(effective(cur), k), __scope: () => telescopeView(), __map: () => mapRoomView(), __wx: () => weatherStationView()});
+    }); if(/[?&]debug/.test(location.search)) Object.assign(window, {__view3d: VIEW3D, __carGo: k => carGo(effective(cur), k), __scope: () => telescopeView(), __map: () => mapRoomView(), __wx: () => weatherStationView(), __mats: st => materialsView(st)});
     if(cur) render();
   }).catch(e => { console.warn("3D view unavailable", e); });
 }
@@ -1095,7 +1097,7 @@ const ITEMS = {
   "page-left":   {icon:"note",      name:"The left half of a torn page", use:()=>toast("Half a page. The words stop in the middle.")},
   "page-right":  {icon:"note",      name:"The right half of a torn page", use:()=>toast("Half a page. The words start in the middle.")},
   "mended-page": {icon:"scroll",    name:"A mended page", use:()=>overlay("The mended page", `<div class="text"><p>Once mended, the page is a short poem about square roots: every number has two, and you cannot choose one consistently all the way around zero. Walk around the pillar once and you have changed your mind about which root you meant.</p><p>At the bottom, in a different hand, a warp word: <b class="mono">SHEET</b>.</p></div>`)},
-  "primer":      {icon:"book",      name:"A Young Lady's Illustrated Primer", use:()=>primerView()},
+  "primer":      {icon:"book",      name:"A Young Person's Illustrated Primer", use:()=>primerView()},
   "musicbox":    {icon:"musicbox",  name:"A music box: music, rooms, a sound lab, and sonar", use:()=>musicView()},
   "astrolabe":   {icon:"astrolabe", name:"An astrolabe with a storm glass: sets the place, the date, and the weather", use:()=>astrolabeView()},
 };
@@ -1115,10 +1117,17 @@ function useObject(o, room){
   if(o.action==="search") return searchView();
   if(o.action==="planets") return planetsView();
   if(o.action==="telescope") return telescopeView();
-  if(o.action==="logbook") return catalogView("");
+  if(o.action==="logbook") return catalogView(o.search ? "search/" + o.search : "");
   if(o.action==="link") return linkView(o, room);
   if(o.action==="music") return musicView(o);
   if(o.action==="clock") return window.RECKON ? RECKON.timekeeperView() : clockView();
+  if(o.action==="materials") return materialsView();
+  if(o.action==="blackboard") return overlay("The blackboard", `<div class="chalkpage"><p class="chalknote">−∂ₓ² u = C on [−1, 1], anchored at 0 at both ends: four ways to write the same solution.</p><table class="chalk"><tr><th>Form / Perspective</th><th>On [−1, 1] (−∂ₓ² u = C, anchored at 0)</th><th>Description &amp; Conditions</th></tr>
+    <tr><td>1. Separated Convolution Form</td><td>u(x) = (E ∗ C)(x) + ∫<sub>−1</sub><sup>1</sup> h(x,s) C ds</td><td>Separates the true free-space convolution from the separate boundary correction term.</td></tr>
+    <tr><td>2. Corrector Requirements</td><td>−∂ₓ² h(x,s) = 0 &nbsp;(inside [−1, 1])<br>h(±1, s) = −E(±1 − s) = ½ |±1 − s|</td><td>The space-variant homogeneous function designed strictly to cancel out E at the zero-anchored boundaries.</td></tr>
+    <tr><td>3. Direct Green's Function Form</td><td>u(x) = ∫<sub>−1</sub><sup>1</sup> G(x,s) C ds, &nbsp;where<br>G(x,s) = ½(1+x)(1−s) &nbsp;for x ≤ s,<br>G(x,s) = ½(1−x)(1+s) &nbsp;for x &gt; s</td><td>Combines the free-space fundamental solution and the corrector into a single unified kernel (G = E + h).</td></tr>
+    <tr><td>4. Closed-Form Solution</td><td>u(x) = (C/2)(1 − x²)</td><td>The explicit analytical solution satisfying −∂ₓ² u = C with zero-anchored boundaries u(±1) = 0.</td></tr></table>
+    <p class="chalknote">Here E(x) = −½|x| is the free-space fundamental solution of −∂ₓ².</p></div>`);
   if(o.action==="calendars") return RECKON.calendarsView();
   if(o.action==="timekeepers") return RECKON.caseView();
   if(o.action==="numerals") return RECKON.numeralsView();
@@ -1272,7 +1281,7 @@ function bag(){
 }
 function corners(room){
   const m = $("mini"), pr = $("primerc");
-  if(S.inv.includes("map")||S.inv.includes("plan")||S.showAll){ m.style.display=""; m.innerHTML = miniMapSVG(); m.onclick = () => mapView(); } else m.style.display="none";
+  if((S.inv.includes("map")||S.inv.includes("plan")||S.showAll) && !S.noMini){ m.style.display=""; m.innerHTML = miniMapSVG(); m.onclick = () => mapView(); } else m.style.display="none";
   if(S.inv.includes("primer")){ const L2 = P.primer||{}, l = L2[String(room.id)]; pr.style.display=""; pr.innerHTML = `<b>Primer:</b> ${l ? esc(l.teaser) : "turn the page for somewhere new"}`; pr.onclick = primerView; } else pr.style.display="none";
 }
 function miniMapSVG(){
@@ -2143,6 +2152,8 @@ document.addEventListener("keydown", e => {
   // look up and down: shift with the arrows, or page up and page down
   if((e.shiftKey && k==="ArrowUp") || k==="PageUp"){ e.preventDefault(); setView(S.face, S.close==="down" ? null : "up"); return; }
   if((e.shiftKey && k==="ArrowDown") || k==="PageDown"){ e.preventDefault(); setView(S.face, S.close==="up" ? null : "down"); return; }
+  // S, or ↓, steps out of a close look (the sky, a peek, sitting) before anything else
+  if((k==="ArrowDown" || k==="s") && !e.shiftKey && VIEW3D && VIEW3D.focused && VIEW3D.focused() && !S.close){ e.preventDefault(); VIEW3D.exitFocus(); return; }
   if(k==="f"){ e.preventDefault(); fullView(); return; }
   if(k==="c"){ e.preventDefault(); toggleCompass(); return; }
   if(k==="l"){ e.preventDefault(); if(!S.inv.includes("lantern")) return toast("You have no lantern."); S.lanternLvl = ((S.lanternLvl||0) + 1) % 4; S.lantern = S.lanternLvl > 0; save(); render(); drawLightPanel(); toast(S.lanternLvl ? "The lantern: " + LANTERN[S.lanternLvl] + "." : "You shade the lantern."); return; }
@@ -2172,6 +2183,46 @@ function riddle(d, room){
 }
 
 /* ---------- overlays ---------- */
+/* ---------- the materials library: a plan chest of samples in the Archive. The same entries are what the house is built of,
+   and a sample can be laid down in the room you came from, to see it at full size (you can put the old one back). ---------- */
+function roomMats(room){ const m = Object.assign({}, room.materials || {}, (S.mats || {})[room.id] || {}); return Object.keys(m).length ? m : null; }
+function materialsView(state){
+  const ML = window.MATERIALS; if(!ML){ toast("The plan chest is locked."); return; }
+  const st = S.matsView = Object.assign({fam:"wood", id:null}, S.matsView || {}, state || {});
+  const fams = ML.families.map(f => `<button class="chip ${st.fam===f.id?"on":""}" data-mfam="${f.id}">${esc(f.name)}</button>`).join("");
+  const list = ML.list.filter(e => e.family === st.fam), sel = ML.by[st.id] && ML.by[st.id].family === st.fam ? ML.by[st.id] : list[0]; st.id = sel.id;
+  // where it is used: the rooms whose floor or walls are made of it
+  const usedIn = Object.values(ROOMS).filter(r => !r.closed && !r.secret && S.visits[r.id]).filter(r => { const m = roomMats(r) || {}; return ML.floorFor(m.floor || r.floor || "planks") === sel.id || m.walls === sel.id; }).map(r => r.name);
+  // which room to try it in: chosen from the rooms you have seen (ordinary rooms with floors and walls), first the one you came from
+  const tryable = Object.values(ROOMS).filter(r => S.visits[r.id] && !r.closed && !r.landings && !r.floors && r.ceiling !== "gothic" && !(r.decor||[]).includes("hedges"));
+  if(st.room == null || !tryable.some(r => String(r.id) === String(st.room))){ const prev = S.walk.length > 1 ? String(S.walk[S.walk.length-2]) : null; st.room = (tryable.find(r => String(r.id) === prev) || tryable.find(r => String(r.id) === String(cur && cur.id)) || tryable[0] || {}).id; }
+  const back = ROOMS[st.room] || null, laid = back && (S.mats || {})[back.id] || {};
+  const canFloor = ["wood","stone","brick","tile"].includes(sel.family), canWalls = ["stone","brick","plaster","wood","tile","textile","leather"].includes(sel.family);
+  overlay("The materials library", `<div class="matlib">
+    <p class="note">A plan chest of shallow drawers, each lined with samples: woods, stones, bricks, cloths, leathers, metals, plasters, and tiles. Every sample is also a recipe the house is built from. Move the lamp across a sample to rake the light over it.</p>
+    <div class="chips">${fams}</div>
+    <div class="matgrid">${list.map(e => `<button class="matcell ${e.id===sel.id?"on":""}" data-mid="${e.id}" title="${esc(e.name)}"><canvas width="96" height="96" data-sw="${e.id}"></canvas><span>${esc(e.name)}</span></button>`).join("")}</div>
+    <div class="matdetail">
+      <canvas id="matbig" width="300" height="300" aria-label="${esc(sel.name)}, lit by a movable lamp"></canvas>
+      <div class="mattext"><h4>${esc(sel.name)}</h4>${sel.latin ? `<p class="note"><i>${esc(sel.latin)}</i></p>` : ""}${sel.origin ? `<p class="note">${esc(sel.origin)}</p>` : ""}
+        <p>${esc(sel.text)}</p>${(sel.facts||[]).length ? `<ul>${sel.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
+        ${sel.draft ? `<p class="note">The weave draft (dark: the warp on top):</p><div class="draft">${ML.drafts[sel.draft].map(r => `<div>${r.map(x => `<i class="${x?"w":""}"></i>`).join("")}</div>`).join("")}</div>` : ""}
+        <p class="note">${usedIn.length ? "In the house: " + usedIn.map(esc).join(", ") + "." : "Not yet used in any room you have seen."} One sample covers ${sel.tile >= 1 ? sel.tile + " m" : Math.round(sel.tile*100) + " cm"} square.</p>
+        ${back && (canFloor || canWalls) ? `<p class="row"><label class="note">Try it in <select id="matroom">${tryable.map(r => `<option value="${r.id}" ${String(r.id)===String(back.id)?"selected":""}>${esc(r.name)}</option>`).join("")}</select></label></p><p class="row">${canFloor ? `<button class="btn" data-lay="floor">Lay it on the floor of ${esc(back.name)}</button>` : ""}${canWalls ? `<button class="btn" data-lay="walls">Use it on the walls of ${esc(back.name)}</button>` : ""}${laid.floor || laid.walls ? `<button class="btn" data-lay="undo">Put ${esc(back.name)} back as it was</button>` : ""}</p>` : ""}
+      </div></div></div>`);
+  const ov = $("ovb");
+  ov.querySelectorAll("[data-mfam]").forEach(b => b.onclick = () => materialsView({fam:b.dataset.mfam, id:null}));
+  ov.querySelectorAll("[data-mid]").forEach(b => b.onclick = () => materialsView({id:b.dataset.mid}));
+  if($("matroom")) $("matroom").onchange = e => materialsView({room:e.target.value});
+  ov.querySelectorAll("[data-lay]").forEach(b => b.onclick = () => { const k = b.dataset.lay; S.mats = S.mats || {};
+    if(k === "undo") delete S.mats[back.id]; else S.mats[back.id] = Object.assign({}, S.mats[back.id] || {}, {[k]: sel.id});
+    save(); toast(k === "undo" ? `${back.name} is as it was.` : `${sel.name}: laid in ${back.name}. Go and look.`); render(); materialsView(); });
+  // draw the small swatches a few at a time, so the drawer opens at once
+  const cells = [...ov.querySelectorAll("canvas[data-sw]")]; let i = 0; (function next(){ const c = cells[i++]; if(!c || !c.isConnected) return; ML.swatch(c, c.dataset.sw, [-.5,.55,.75], {N:256}); setTimeout(next, 0); })();
+  const big = $("matbig"); let light = [-.5, .55, .75], raf = 0;
+  const draw = () => { raf = 0; ML.swatch(big, sel.id, light, {N:256}); }; draw();
+  big.onpointermove = e => { const r = big.getBoundingClientRect(), x = (e.clientX - r.left)/r.width*2 - 1, y = -((e.clientY - r.top)/r.height*2 - 1); light = [x*1.4, y*1.4, .35]; if(!raf) raf = requestAnimationFrame(draw); };
+}
 function overlay(title, html){ if(typeof sound !== "undefined" && sound.ac) sound.page(); $("ovt").textContent=title; $("ovb").innerHTML=html; $("ov").classList.add("open"); }
 function closeOv(){ $("ov").classList.remove("open"); }
 $("ovx").onclick = closeOv; $("ov").onclick = e => { if(e.target.id==="ov") closeOv(); };
@@ -2507,7 +2558,7 @@ WIDGETS.knights = (el, spec) => {
 function primerView(tab){
   const name = S.reader;
   if(!name){
-    overlay("A Young Lady's Illustrated Primer", `<div class="text"><p>The book is heavier than it looks. The first page is blank, and then it isn't: <i>Who is reading?</i></p></div><div class="row widget"><input id="pr-n" style="width:220px" placeholder="your name"><button class="btn primary" id="pr-b" type="button">Answer the book</button></div>`);
+    overlay("A Young Person's Illustrated Primer", `<div class="text"><p>The book is heavier than it looks. The first page is blank, and then it isn't: <i>Who is reading?</i></p></div><div class="row widget"><input id="pr-n" style="width:220px" placeholder="your name"><button class="btn primary" id="pr-b" type="button">Answer the book</button></div>`);
     const go = () => { const v=$("pr-n").value.trim(); if(!v) return; S.reader=v; save(); primerView(); };
     $("pr-b").onclick = go; $("pr-n").onkeydown = e => { if(e.key==="Enter") go(); }; return;
   }
@@ -2516,7 +2567,7 @@ function primerView(tab){
   const tabs = `<p class="row">${[["notes", `Notes (${notes.length})`], ["story", "The story"]].map(([k, n]) => `<button class="btn${k === tab ? " primary" : ""}" type="button" data-ptab="${k}">${n}</button>`).join(" ")}</p>`;
   if(tab === "notes"){ const byRoom = {}; notes.forEach(n => (byRoom[n.room] = byRoom[n.room] || []).push(n));
     const total = P.rooms.filter(r => !r.closed && !r.secret).reduce((a, r) => a + (r.objects||[]).filter(o => o.note || o.info).length, 0);
-    overlay(`A Young Lady's Illustrated Primer · ${name}'s notes`, `${tabs}<div class="text" style="max-width:680px">${notes.length ? Object.keys(byRoom).map(rid => `<h4 class="cal-h">${esc((ROOMS[rid]||{}).name || rid)}</h4>${byRoom[rid].sort((a, b) => a.t - b.t).map(n => `<p><b>${esc(n.title)}.</b> ${n.note}</p>`).join("")}`).join("")
+    overlay(`A Young Person's Illustrated Primer · ${name}'s notes`, `${tabs}<div class="text" style="max-width:680px">${notes.length ? Object.keys(byRoom).map(rid => `<h4 class="cal-h">${esc((ROOMS[rid]||{}).name || rid)}</h4>${byRoom[rid].sort((a, b) => a.t - b.t).map(n => `<p><b>${esc(n.title)}.</b> ${n.note}</p>`).join("")}`).join("")
       : `<p>The notes pages are empty. Wherever a thing in the house has something to tell, a small glint of light hangs over it when you stand near; touch the glint and the Primer writes it down.</p>`}
       <p class="note">${notes.length} of about ${total} things noted in the open rooms.</p></div>`);
     document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab)); return; }
@@ -2534,7 +2585,7 @@ function primerView(tab){
     <div class="row"><button class="btn primary" id="pr-go" type="button">Touch the picture</button></div>`;
   } else html += `<p>${esc(name)} had seen every room, even the hidden ones. The last page is still blank, which is the book's way of asking for a new room.</p>`;
   html += `<p class="note">The book rewrites itself for whoever holds it. Close it and open it again somewhere else.</p></div>`;
-  overlay(`A Young Lady's Illustrated Primer · for ${name}`, tabs + html); document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab));
+  overlay(`A Young Person's Illustrated Primer · for ${name}`, tabs + html); document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab));
   const b = $("pr-go"); if(b) b.onclick = () => { closeOv(); toast("The picture swallows you, gently."); move(pick, "e", null); };
 }
 
@@ -2747,6 +2798,8 @@ function settingsView(){
     ${has3d ? row("Quality", defaultQuality(), "q", "Change") : ""}
     ${row("Skin", (S.skin||"myst")==="myst" ? "Myst (journals)" : "HyperCard (stacks)", "skin", "Change")}
     ${row("Ink", S.ink==="1bit" ? "black only" : "two colours", "ink", "Change")}
+    ${row("Corner map", S.noMini ? "hidden" : "shown, top right, once you carry a map", "mini", S.noMini ? "Show" : "Hide")}
+    ${has3d ? row("Eyes", S.fixedEyes ? "fixed exposure" : "adjust to the light at each place", "eyes", S.fixedEyes ? "Adjust" : "Fix") : ""}
     ${has3d ? row("Full view", "the picture fills the screen (F)", "full", "Go") : ""}
     <h4 class="set-sec">Light</h4>${row("Light", "your lantern, the house lamps, the shutters", "lamp", "Open")}
     <h4 class="set-sec">Sound</h4>${row("Sound", S.snd && S.snd.on ? "on" : "off", "snd", "Levels")}${row("Music", "the music box in the Entry, or in your bag", "mbox", "Open")}
@@ -2758,6 +2811,8 @@ function settingsView(){
     if(id === "lamp"){ closeOv(); return lightView(); } if(id === "help"){ return helpView(); } if(id === "full"){ closeOv(); return fullView(); }
     if(id === "snd"){ return musicView({levels:true}); } if(id === "mbox"){ closeOv(); return window.MUSICBOX ? MUSICBOX.open() : musicView({levels:true}); }
     if(id === "primer"){ return S.inv.includes("primer") ? primerView() : toast("The Primer is on the desk in the Entry."); }
+    if(id === "mini"){ S.noMini = !S.noMini; save(); render(); return settingsView(); }
+    if(id === "eyes"){ S.fixedEyes = !S.fixedEyes; save(); render(); return settingsView(); }
     click(id); setTimeout(settingsView, 50); });
 }
 $("b-set").onclick = settingsView;
