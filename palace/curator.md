@@ -418,6 +418,16 @@ The **Light** button (and using the lantern from the bag) opens a small panel:
 - **The lantern's salts** (Light panel): sodium, strontium, lithium, calcium, copper, boric acid, barium, potassium, or caesium colour the flame.
 - Code: `systems.js` (calendars), `numerals.js` (numerals), and `reckoning.js` (the views and timekeepers). The lists "for later" sit at the bottom of each view.
 
+### The music box's workshop
+
+Clicking the music box (in the Entry, or in the bag) opens a full-screen workshop with six drawers. Its own manual is the sixth drawer; this is the short version.
+- **Compose:** twelve kinds of generated music (ambient, waltz, phasing, rāga, gamelan, koto and shakuhachi, taqsīm, chorale, change ringing, overtone drone, lounge, near-silence), with tempo, density, swing, root, about sixty scales (Western modes, Japanese, Chinese, ragas, maqamat, gamelan, Ethiopian, EDOs, Bohlen–Pierce, the harmonic series), six tunings for the Western ones, fifteen synthesized instruments in three roles, and eleven ambiences. While it plays, the house's own music steps aside (`snd.mode: studio`).
+- **Room:** impulse responses: thirteen presets (several are image-source rooms), rooms made by mirror images or as tails, WAV files, and rooms **measured** with a microphone and speaker using ten probes (exponential and linear sweeps, click, MLS, Golay pairs, noise, chirp, Costas hops, an anti-harmonic multitone). Four senses of convolution: causal, anti-causal, symmetric, zero-phase. Saved rooms live in the visitor's browser (IndexedDB), not on the site.
+- **Lab:** convolve, deconvolve, correlate, autocorrelate, and reverse any two signals (clips recorded from the box or the microphone, files, rooms, probes, test signals).
+- **Sources:** sound files, the live microphone, internet radio (through the room when the station allows CORS), and embedded players from YouTube, SoundCloud, Spotify, Vimeo, and Bandcamp.
+- **Sonar:** echo ranging with an A-scope and waterfall, Doppler motion sensing (with a theremin), and two-device ranging (BeepBeep).
+- Code: `musicbox-dsp.js` (signal processing, testable in Node), `musicbox-gen.js` (scales, instruments, generators), `musicbox.js` (the screen), `musicbox-manual.js`.
+
 ### Moving and looking
 
 Doors: you take a few steps toward a door before going through, and rooms dissolve into one another. You arrive facing away from the door you came through, so it is behind you.

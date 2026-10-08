@@ -305,6 +305,18 @@ table.num-t td{vertical-align:top;padding:6px 8px 6px 0;border-top:1px solid var
 table.num-t td.note{font-size:12.5px;width:40%} table.num-t td.egy{font-family:"Noto Sans Egyptian Hieroglyphs",serif;font-size:26px}
 .chip-play{padding:0 8px;font-size:14px;vertical-align:middle}
 @media (max-width:700px){ table.num-t, table.num-t tbody, table.num-t tr, table.num-t th, table.num-t td{display:block;width:auto!important} table.num-t th{padding-top:10px} }
+
+/* the music box's workshop */
+html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:3vh 3vw;z-index:60;display:none;flex-direction:column;background:var(--paper,#efe3c6);color:var(--ink,#2e2216);border:2px solid var(--ink,#2e2216);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.mbx.open{display:flex} .mbx .tb{flex:none} .mbx-tabs{display:flex;gap:4px;align-items:center;padding:6px 12px;border-bottom:1px solid var(--line,#999);flex-wrap:wrap}
+.mbx-tab{font:400 14px var(--fellsc,serif);letter-spacing:.08em;background:transparent;border:1px solid transparent;border-radius:3px;padding:4px 12px;cursor:pointer;color:inherit} .mbx-tab.on{border-color:var(--ink,#2e2216);background:rgba(0,0,0,.06)}
+.mbx-tr{margin-left:auto;display:flex;gap:10px;align-items:center} .mbx-vu{width:90px;height:8px;border:1px solid var(--ink,#2e2216);display:inline-block;position:relative} .mbx-vu i{position:absolute;left:0;top:0;bottom:0;background:var(--spot,#8a2a1c);width:0}
+.mbx-body{flex:1;overflow:auto;padding:12px 18px 24px} .mbx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:22px}
+.mbx-body h4{font:400 13px var(--fellsc,serif);letter-spacing:.14em;text-transform:uppercase;margin:14px 0 6px} .mbx-body label{display:block;margin:5px 0;font-size:14px} .mbx-body .row label{display:inline-block;margin-right:10px}
+.mbx-body select,.mbx-body input[type=number],.mbx-body input:not([type]){font:inherit;font-size:14px;max-width:100%} .mbx-r{display:flex!important;align-items:center;gap:10px} .mbx-r span{width:110px} .mbx-r input{flex:1} .mbx-r b{width:70px;font-weight:400;font-size:13px}
+.mbx-cv{width:100%;max-width:560px;display:block;margin:6px 0;border:1px solid var(--line,#bbb);background:rgba(255,255,255,.25)} .mbx-modes label{margin:3px 0} .mbx-ops .btn{margin:2px}
+.mbx-manual{max-width:760px;font-size:15px;line-height:1.55} .mbx-manual h4{margin-top:22px} .mbx-manual li{font-size:15px;line-height:1.5;margin:3px 0} .mbx-manual .mono{font-family:ui-monospace,monospace;font-size:13.5px;background:rgba(0,0,0,.05);padding:4px 8px;display:inline-block}
+@media (max-width:700px){ .mbx{inset:0} .mbx-r span{width:80px} }
 </style>
 </head>
 <body>
@@ -351,6 +363,10 @@ table.num-t td.note{font-size:12.5px;width:40%} table.num-t td.egy{font-family:"
 <script src="systems.js"></script>
 <script src="numerals.js"></script>
 <script src="reckoning.js"></script>
+<script src="musicbox-dsp.js"></script>
+<script src="musicbox-gen.js"></script>
+<script src="musicbox-manual.js"></script>
+<script src="musicbox.js"></script>
 <script src="palace.js"></script>
 </body>
 </html>

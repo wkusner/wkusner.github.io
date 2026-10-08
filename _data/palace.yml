@@ -1073,7 +1073,7 @@ rooms:
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
-    - {kind: device, icon: musicbox, wall: right, item: musicbox, portable: true, action: music, title: "A music box", note: "Take it with you: it plays the house's music, and its dials set how loud the rain, the wind, the clock, and your footsteps are."}
+    - {kind: device, icon: musicbox, wall: right, item: musicbox, portable: true, action: music, title: "A music box", note: "Take it with you. Opened, it is a workshop: music made as it plays in many scales and tunings, rooms to play it in (made, measured, or loaded), a lab for convolving sounds, the radio, and a little sonar."}
     - {kind: device, icon: carriage, wall: right, title: "A carriage clock", action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}
     - {kind: key, item: lantern, icon: lamp, wall: front, title: "A lantern on a hook"}
     - {kind: key, item: finding-aid, icon: scroll, wall: front, title: "The finding aid", take: "You take the finding aid: every room and thing, listed plainly."}

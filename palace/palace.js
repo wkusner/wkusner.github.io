@@ -661,6 +661,7 @@ const ICON = {
 };
 if(window.RECKON) Object.assign(ICON, RECKON.icons);
 // the reckoning devices (reckoning.js) reach the house through these
+if(window.MUSICBOX) MUSICBOX.bind({ get levels(){ return () => musicView({levels:true}); }, get S(){ return S; }, get save(){ return save; }, get sound(){ return sound; }, get audio(){ return audio; }, get toast(){ return toast; }, get award(){ return award; } });
 if(window.RECKON) RECKON.bind({ get S(){ return S; }, get cur(){ return cur; }, get now(){ return now; }, get overlay(){ return overlay; }, get save(){ return save; }, get render(){ return render; },
   get toast(){ return toast; }, get award(){ return award; }, get sunTimes(){ return sunTimes; }, get audio(){ return audio; }, get sound(){ return sound; }, get ICON(){ return ICON; }, get E(){ return E; }, get clockView(){ return clockView; } });
 const KIND_ICON = {device:"box", book:"book", paper:"scroll", ref:"book", unwritten:"unwritten", key:"key", note:"note", link:"book", page:"note"};
@@ -1091,7 +1092,7 @@ const ITEMS = {
   "page-right":  {icon:"note",      name:"The right half of a torn page", use:()=>toast("Half a page. The words start in the middle.")},
   "mended-page": {icon:"scroll",    name:"A mended page", use:()=>overlay("The mended page", `<div class="text"><p>Once mended, the page is a short poem about square roots: every number has two, and you cannot choose one consistently all the way around zero. Walk around the pillar once and you have changed your mind about which root you meant.</p><p>At the bottom, in a different hand, a warp word: <b class="mono">SHEET</b>.</p></div>`)},
   "primer":      {icon:"book",      name:"A Young Lady's Illustrated Primer", use:()=>primerView()},
-  "musicbox":    {icon:"musicbox",  name:"A music box: the house's music, and how loud everything is", use:()=>musicView()},
+  "musicbox":    {icon:"musicbox",  name:"A music box: music, rooms, a sound lab, and sonar", use:()=>musicView()},
   "astrolabe":   {icon:"astrolabe", name:"An astrolabe with a storm glass: sets the place, the date, and the weather", use:()=>astrolabeView()},
 };
 function take(item, msg){ if(S.inv.includes(item)) return; S.inv.push(item); sound.take(); save(); award("item:"+item, item==="golden-key"?40:15); toast(msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
@@ -1661,7 +1662,7 @@ const sound = (() => {
   function startMusic(){
     clearTimeout(musicT); if(!ac) return;
     const step = () => { musicT = setTimeout(step, 7000 + Math.random()*5000);
-      if(!S.snd.on || S.snd.mode === "quiet" || ac.state !== "running") return;
+      if(!S.snd.on || S.snd.mode === "quiet" || S.snd.mode === "studio" || ac.state !== "running") return;
       const wing = scene.wing && MODES[scene.wing] ? scene.wing : "default", mode = MODES[wing], root = ROOTS[wing], t = ac.currentTime + .1;
       const deg = Math.floor(Math.random()*mode.length), chord = [0,2,4].map(k => root + mode[(deg+k) % mode.length] + 12*Math.floor((deg+k)/mode.length));
       if(S.snd.mode === "house"){ // a pad: two detuned saws through a slow low-pass, per note
@@ -1698,7 +1699,7 @@ const sound = (() => {
       [62, 69, 74, 78, 81].forEach((m, k) => tone("sfx", t + .5 + k*.08, midiHz(m), {a:.4, d:1.8, v:.04, detune: (k%2 ? 8 : -8)})); },
   };
   function levels(){ if(!ac) return; const t = ac.currentTime; master.gain.setTargetAtTime(S.snd.on ? S.snd.master : 0, t, .1); buses.amb.gain.setTargetAtTime(S.snd.amb, t, .1); buses.music.gain.setTargetAtTime(S.snd.mode === "quiet" ? 0 : S.snd.music, t, .3); buses.sfx.gain.setTargetAtTime(S.snd.sfx, t, .1); }
-  return Object.assign({init, setScene, levels, gong, pluck, get ac(){ return ac; }}, fx);
+  return Object.assign({init, setScene, levels, gong, pluck, get ac(){ return ac; }, get buses(){ return buses; }, get master(){ return master; }}, fx);
 })();
 const audio = () => sound.init();
 document.addEventListener("pointerdown", () => { if(S.snd.on) sound.init(); }, {once:true});
@@ -1716,10 +1717,11 @@ function gong(ac, f, t, vol, long){ sound.gong(f, t, vol*2.2, long); }
 function musicView(o){
   if(o && o.item && !S.inv.includes(o.item)) take(o.item, "You lift the music box. It fits in the bag, and it hums a little.");
   sound.init();
+  if(window.MUSICBOX && !(o && o.levels)) return MUSICBOX.open();
   const sl = (id, label, v) => `<label class="note" style="display:flex;align-items:center;gap:10px;margin:6px 0"><span style="width:120px">${label}</span><input id="${id}" type="range" min="0" max="1" step=".05" value="${v}" style="flex:1"></label>`;
   overlay("The music box", `<div class="text"><p>A walnut box with a brass cylinder and a steel comb. Open, it plays the house's music; turned over, its little dials set how loud everything is: the rain, the wind, the birds in the court, your own footsteps, the clock.</p></div>
     <div class="row widget"><label class="note"><input type="checkbox" id="mb-on" ${S.snd.on?"checked":""}> sound in the house</label>
-      <select id="mb-mode"><option value="house" ${S.snd.mode==="house"?"selected":""}>the house's own music</option><option value="box" ${S.snd.mode==="box"?"selected":""}>the music box</option><option value="quiet" ${S.snd.mode==="quiet"?"selected":""}>no music, only the house</option></select></div>
+      <select id="mb-mode"><option value="house" ${S.snd.mode==="house"?"selected":""}>the house's own music</option><option value="box" ${S.snd.mode==="box"?"selected":""}>the music box</option><option value="quiet" ${S.snd.mode==="quiet"?"selected":""}>no music, only the house</option><option value="studio" ${S.snd.mode==="studio"?"selected":""}>the workshop's composer</option></select></div>
     ${sl("mb-master","everything",S.snd.master)}${sl("mb-amb","weather and rooms",S.snd.amb)}${sl("mb-music","music",S.snd.music)}${sl("mb-sfx","footsteps, doors, pages",S.snd.sfx)}
     <div class="row"><button class="btn" id="mb-clock" type="button">The clock's chimes…</button></div>
     <p class="note">The music is made as it plays, slow chords in a mode for each part of the house: Dorian in the foyer, Lydian in the court, Aeolian in the archive.</p>`);
