@@ -215,15 +215,15 @@ export function create(container, hooks){
   const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); ray.layers.enableAll();
   const tip = document.createElement("div"); tip.className = "tip3d"; container.appendChild(tip);
   let hover = null;
-  let peeking = false, focusPt = null;
+  let peeking = false, focusPt = null, seated = null, lastNavK = null;
   // a close look (the sky, a peek at the dial or the cabinet, a desk) answers only to clicks on what is in it; a click anywhere else steps back
   function focusKind(){ if(skyOn) return "sky"; if(peeking) return "peek"; if(plan && plan.close) return "close"; return null; }
   function allowedHit(h){ const f = focusKind(); if(!f) return true; if(f === "sky") return h.distance > 20;
     const c = f === "peek" ? focusPt : (stations[plan.ahead] && stations[plan.ahead].top); return !c || h.point.distanceTo(c) < 2.4; }
-  function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ peeking = false; focusPt = null; window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); } else if(f === "close") hooks.stepBack(); }
+  function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ peeking = false; focusPt = null; if(seated){ const s = seated; seated = null; s.leave(); } window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); } else if(f === "close") hooks.stepBack(); }
   function zoneAt(x, y){
     if(skyOn && y > H*.88) return {kind:"down", label:"Come back down", onClick:()=>{ skyMode(false); hooks.skyClosed && hooks.skyClosed(); }};
-    if(peeking && y > H*.84) return {kind:"back", label:"Step back", onClick:()=>{ peeking = false; window.dispatchEvent(new CustomEvent("wending-unpeek")); show(plan); }};
+    if(peeking && y > H*.84) return {kind:"back", label: seated ? "Stand up" : "Step back", onClick: exitFocus};
     // edges of the picture turn you, the top looks up, the bottom looks down or steps back
     if(plan && plan.close){ if(y > H*.86) return {kind:"back", label:"Step back", onClick:()=>hooks.stepBack()}; }
     else {
@@ -297,6 +297,8 @@ export function create(container, hooks){
   function dissolve(){ try { veil.width = Math.max(1, Math.round(canvas.width/2)); veil.height = Math.max(1, Math.round(canvas.height/2)); veil.getContext("2d").drawImage(canvas, 0, 0, veil.width, veil.height);
       veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .5s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
   const flash = document.createElement("div"); flash.className = "flash3d"; container.appendChild(flash);
+  const backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "back3d"; backBtn.textContent = "↩ Step back"; container.appendChild(backBtn);
+  backBtn.addEventListener("click", e => { e.stopPropagation(); exitFocus(); });
   window.addEventListener("wending-lightning", () => { if(!plan || !((plan.room.ceiling||"") === "open" || plan.decor.includes("window"))) return;
     flash.style.transition = "none"; flash.style.opacity = ".75"; setTimeout(() => { flash.style.transition = "opacity .5s"; flash.style.opacity = "0"; }, 70); setTimeout(() => { flash.style.transition = "none"; flash.style.opacity = ".5"; setTimeout(() => { flash.style.transition = "opacity .9s"; flash.style.opacity = "0"; }, 60); }, 240); });
   /* ---- the frame loop ---- */
@@ -310,6 +312,7 @@ export function create(container, hooks){
     cam.yaw += dy*k; cam.pitch += (gp-cam.pitch)*k; cam.pos.lerp(goal.pos, k);
     camera.position.copy(cam.pos); camera.rotation.set(cam.pitch, cam.yaw, 0);
     anims.forEach(a => a(t/1000, dt));
+    const fk = focusKind(); backBtn.classList.toggle("on", !!fk); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back";
     if(moving || anims.length || dirty>0){
       dirty = Math.max(0, dirty-1);
       if(RAW){ camera.layers.enableAll(); renderer.setRenderTarget(null); renderer.render(scene, camera); requestAnimationFrame(frame); return; }
@@ -332,7 +335,9 @@ export function create(container, hooks){
   /* ---- building a room ---- */
   let prevRoom = null, plan0 = null, R0 = Math.random, stairAt = null, stairRoom = null;
   function show(p){
-    const prevPlan = plan; plan = p; peeking = false;
+    const prevPlan = plan, navK = JSON.stringify([p.room.id, p.ahead, p.close, p.pitch, p.frame, p.node]);
+    // a redraw that changes nothing about where you stand (the clock, the weather) keeps a close look, or a seat, as it is
+    const keepPeek = peeking && navK === lastNavK; lastNavK = navK; plan = p; if(!keepPeek){ peeking = false; if(seated){ const s = seated; seated = null; s.leave(); } }
     if(prevPlan && prevPlan.room && p.room && prevPlan.room.id === p.room.id) ['HG','half','halfX','halfZ','hallFog','envK','doorSpots'].forEach(k => { if(p[k] === undefined && prevPlan[k] !== undefined) p[k] = prevPlan[k]; });
     const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.lanternColor, p.shade, p.light, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
     if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); }
@@ -359,6 +364,7 @@ export function create(container, hooks){
           else if(back && p.doorSpots[back.id]){ at = p.doorSpots[back.id].clone(); const sl2 = slots[back.wall]; if(sl2) out = Math.atan2(sl2.dir.x, sl2.dir.z); }
           const k = nearestNode(G, lv, at || pos); if(k >= 0){ walkPos = G.nodes[lv][k].clone(); if(out != null) setTimeout(() => faceYaw(out), 30); } } }
       pos = walkPos.clone(); } else if(walkRoom !== p.room.id) walkPos = null; walkRoom = p.room.id;   // in rooms you can walk, a turn turns you where you stand
+    if(keepPeek){ post.uniforms.night.value = p.band==="night" ? 1 : 0; dirty = 3; return; }
     if(skyOn && !(p.room.ceiling === "open")) skyOn = false;
     // the info spots of a wall glint only when you stand at it, or look closely at it
     glints.forEach(gl => { gl.mesh.visible = !p.close ? (p.node != null && String(gl.slot) === String(p.node)) : String(gl.slot) === String(p.ahead); });
@@ -383,7 +389,7 @@ export function create(container, hooks){
     if(p.room.landings){ buildStair(p, R); return; }
     if(p.room.floors){ buildCar(p); return; }
     const faces = shell(shape, p.room.size, p.room.length); p.halfX = (p.room.size || 11)/2; p.halfZ = (p.room.length || p.room.size || 11)/2; p.half = Math.max(p.halfX, p.halfZ);
-    const gothic = p.room.ceiling === "gothic", HG = gothic ? hallGrid(p) : null; p.HG = HG;
+    const gothic = p.room.ceiling === "gothic", HG = gothic ? hallGrid(p) : p.room.walk ? walkGrid(p) : null; p.HG = HG;
     const wallMat = mat(p.room.decor && p.room.decor.includes("glacier") ? "#dfe7ea" : "#d6cdbb", {roughness:.95});
     const stoneTex = canvasTex(512, 512, (g,w,h) => { g.fillStyle="#cfc6b3"; g.fillRect(0,0,w,h); g.strokeStyle="#9c927f"; g.lineWidth=3;
       for(let y=0,row=0;y<h;y+=64,row++){ g.beginPath(); g.moveTo(0,y); g.lineTo(w,y); g.stroke(); for(let x=(row%2)*64;x<w;x+=128){ g.beginPath(); g.moveTo(x,y); g.lineTo(x,y+64); g.stroke(); } }
@@ -613,6 +619,19 @@ export function create(container, hooks){
     [0, 1].forEach(lv => { const N = G.nodes[lv]; N.forEach((a, i) => { G.adj[lv][i] = []; N.forEach((b, j) => { if(i !== j && a.distanceTo(b) < 6.2 && hallClear(G, a, b, lv)) G.adj[lv][i].push(j); }); }); });
     return G;
   }
+  // an open court's standing places: round the sundial, out in the court, and along the cloister walk under the colonnade
+  function walkGrid(p){ const HX = p.halfX, HZ = p.halfZ, G = {level:0, fixtures:{}, nodes:[[]], adj:[[]], court:true}, N = G.nodes[0], kind = [];
+    const add = (x, z, k) => { if(Math.hypot(x, z) < 2.6 || Math.abs(x) > HX - .8 || Math.abs(z) > HZ - .8) return; if(N.some(q => Math.hypot(q.x - x, q.z - z) < 1.5)) return; N.push(new THREE.Vector3(x, EYE, z)); kind.push(k); };
+    for(let i = 0; i < 8; i++){ const a = i*Math.PI/4; add(3.3*Math.sin(a), 3.3*Math.cos(a), "ring"); }
+    const r2 = Math.min(HX, HZ) - 3.7; if(r2 > 5) for(let i = 0; i < 8; i++){ const a = i*Math.PI/4 + Math.PI/8; add(r2*Math.sin(a), r2*Math.cos(a), "court"); }
+    const cx = HX - 1.0, cz = HZ - 1.0; [-1, -.5, 0, .5, 1].forEach(t => { add(t*cx, -cz, t ? "walk" : "gate"); add(t*cx, cz, t ? "walk" : "gate"); add(-cx, t*cz, t ? "walk" : "gate"); add(cx, t*cz, t ? "walk" : "gate"); });
+    const near = (a, b) => { const n = 24; for(let i = 1; i < n; i++){ const t = i/n, x = a.x + (b.x - a.x)*t, z = a.z + (b.z - a.z)*t; if(Math.hypot(x, z) < 2.3) return false; } return true; };
+    N.forEach((a, i) => { G.adj[0][i] = []; N.forEach((b, j) => { if(i === j) return; const d = a.distanceTo(b), ki = kind[i], kj = kind[j];
+      const cloister = k => k === "walk" || k === "gate", cross = cloister(ki) !== cloister(kj);
+      if(cross && !(ki === "gate" || kj === "gate")) return;   // the colonnade is crossed only where a gate opens between columns
+      if(cloister(ki) && cloister(kj) && Math.abs(a.x - b.x) > .1 && Math.abs(a.z - b.z) > .1) return;   // the cloister walk runs straight along each side
+      if(d < (cross ? 6.5 : 5.2) && near(a, b)) G.adj[0][i].push(j); }); });
+    return G; }
   function hallClear(G, a, b, up){ const n = Math.ceil(a.distanceTo(b)/.3); for(let i=1;i<n;i++){ const t = i/n; if(!hallOK(G, a.x + (b.x - a.x)*t, a.z + (b.z - a.z)*t, up)) return false; } return true; }
   function hallOK(G, x, z, up){
     if(!up){ if(Math.abs(x) > G.HX - 1.2 || Math.abs(z) > G.HZ - 1.2) return false; if(Math.abs(x) < G.cx + 1.1 && Math.abs(z) < G.cz + 1.1) return false;
@@ -1740,9 +1759,17 @@ export function create(container, hooks){
     const lip = new THREE.Mesh(new THREE.BoxGeometry(w-.03, .03, d-.03), dark); lip.position.y = h - .06; g.add(lip);
     if(opts.leather){ const lt = new THREE.Mesh(new THREE.BoxGeometry(w-.24, .004, d-.24), mat(opts.leather)); lt.position.y = h + .002; lt.receiveShadow = true; g.add(lt); }
     const ap = new THREE.Mesh(new THREE.BoxGeometry(w-.12, .13, d-.12), wood); ap.position.y = h - .14; g.add(ap);
-    const nd = Math.max(1, Math.round(w/.7)); for(let i=0;i<nd;i++){ const x = -w/2 + .06 + (i+.5)*(w-.12)/nd;
-      const df = new THREE.Mesh(new THREE.BoxGeometry((w-.12)/nd - .05, .09, .015), mat(opts.wood || "#86694d")); df.position.set(x, h-.14, d/2-.055); g.add(df);
-      const k = knob(brass); k.position.set(x, h-.14, d/2-.04); g.add(k); }
+    const nd = Math.max(1, Math.round(w/.7)); for(let i=0;i<nd;i++){ const x = -w/2 + .06 + (i+.5)*(w-.12)/nd, dw = (w-.12)/nd - .05;
+      const dr = new THREE.Group(); dr.position.set(x, h-.14, 0); g.add(dr);
+      const df = new THREE.Mesh(new THREE.BoxGeometry(dw, .09, .015), mat(opts.wood || "#86694d")); df.position.set(0, 0, d/2-.055); dr.add(df);
+      const k = knob(brass); k.position.set(0, 0, d/2-.04); dr.add(k);
+      // the drawer box behind the front, and a few things kept in it
+      const inner = mat("#b49a78"), D2 = d*.55; [[0, -.04, d/2 - .06 - D2/2, dw - .02, .008, D2], [-dw/2 + .01, -.005, d/2 - .06 - D2/2, .008, .07, D2], [dw/2 - .01, -.005, d/2 - .06 - D2/2, .008, .07, D2], [0, -.005, d/2 - .065 - D2, dw - .02, .07, .008]].forEach(([bx, by, bz, bw, bh, bd]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), inner); b.position.set(bx, by, bz); dr.add(b); });
+      const Rr = rng(hashStr("drawer" + i + w)); for(let j = 0; j < 3; j++){ const kind = Math.floor(Rr()*4), m2 = [mat("#ece6d6"), mat("#2a251e"), mat("#6b2f26"), brass][kind];
+        const it = kind === 1 ? new THREE.Mesh(new THREE.CylinderGeometry(.004, .004, .15, 6), m2) : kind === 3 ? new THREE.Mesh(new THREE.TorusGeometry(.018, .004, 6, 16), m2) : new THREE.Mesh(new THREE.BoxGeometry(.09 + Rr()*.06, .006, .12), m2);
+        if(kind === 1) it.rotation.z = Math.PI/2; if(kind === 3) it.rotation.x = Math.PI/2; it.position.set((Rr() - .5)*(dw - .08), -.03, d/2 - .1 - Rr()*(D2 - .08)); it.rotation.y = (Rr() - .5); dr.add(it); }
+      let open = 0, target = 0; df.userData.hit = {kind:"use", label:"A drawer: open it", onClick:() => { if(!focusKind()){ let o = df.parent; while(o && !(o.userData.hit && o.userData.hit.kind === "closer")) o = o.parent; if(o) return o.userData.hit.onClick(); } target = target ? 0 : D2*.85; df.userData.hit.label = target ? "The drawer: close it" : "A drawer: open it"; hooks.drawer && hooks.drawer(target > 0); }}; picks.push(df);
+      anims.push(() => { if(Math.abs(target - open) > .0005){ open += (target - open)*.18; dr.position.z = open; dirty = 2; } }); }
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => { const L = turnedLeg(h-.2, .035, dark); L.position.set(sx*(w/2-.07), 0, sz*(d/2-.07)); g.add(L);
       const blk = new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.075), dark); blk.position.set(sx*(w/2-.07), h-.14, sz*(d/2-.07)); g.add(blk); });
     const st = new THREE.Mesh(new THREE.BoxGeometry(w-.14, .03, .03), dark); st.position.y = .16; g.add(st);
@@ -1798,8 +1825,8 @@ export function create(container, hooks){
     const pose = () => { body.matrix.copy(new THREE.Matrix4().makeTranslation(0, R, R*th).multiply(new THREE.Matrix4().makeRotationX(th)).multiply(new THREE.Matrix4().makeTranslation(0, -R, 0))); body.matrixWorldNeedsUpdate = true; };
     pose();
     anims.push(() => { if(Math.abs(target - th) > .0005){ th += (target - th)*.06; pose(); } });
-    const hit = new THREE.Mesh(new THREE.BoxGeometry(.8, 1.0, 1.0), new THREE.MeshBasicMaterial({visible:false})); hit.position.set(0, .5, 0); group.add(hit);
-    return {group, hit, toggle(){ target = target ? 0 : -.26; }}; }
+    const hit = new THREE.Mesh(new THREE.BoxGeometry(.8, 1.0, 1.0), new THREE.MeshBasicMaterial({visible:false, side:THREE.DoubleSide})); hit.position.set(0, .5, 0); group.add(hit);
+    return {group, hit, toggle(){ target = target ? 0 : -.26; return target !== 0; }, set(v){ target = v; }}; }
   // the rocking footstool: its runners are arcs of a 0.9 m circle, so as the rocker leans back the stool tips a little to meet the legs; felt pads at the ends stop it
   function nestingStool(){ const g = new THREE.Group(), wal = WALNUT(), lea = LEATHER(), Ro = .9;
     const run = arcPts(0, Ro, Ro, -.24, .24, 16), side = [[-.24, .2], [-.235, .1], ...run, [.235, .1], [.24, .2]].concat([[.2, .33], [0, .35], [-.2, .32], [-.24, .2]]);
@@ -1821,15 +1848,27 @@ export function create(container, hooks){
     box(W + T, .5, .01, ply, W/2, base + .25, -D/2);   // a back panel low down; above it the cells are open behind, like a room divider
     // fronts
     const plan = [["drawers","door:red","open","open"],["tambour","tambour","door:yellow","open"],["drawers","open","door:blue"],["door:red","open"],["drawers"]];
+    const fronts = [], ease = f => () => { const t = f.open ? 1 : 0; if(Math.abs(t - f.k) > .002){ f.k += (t - f.k)*.14; f.apply(f.k); dirty = 2; } };
     plan.forEach((col, i) => col.forEach((kind, r) => { const cx = i*C + C/2, cy = base + r*C + C/2, z = D/2 - .01, iw = C - T - .006, ih = C - T - .006;
       if(kind === "open"){ for(let k = 0; k < 6; k++){ const bh = .2 + ((i*7 + r*3 + k*5) % 7)*.016, bw = .022 + ((k*3 + i) % 4)*.006; box(bw, bh, .2, mat(["#6b4a3a","#3e4a58","#55583e","#8a6a3a","#5a3a3a"][(i + r + k) % 5]), i*C + .04 + k*.045, base + r*C + T/2 + bh/2, .02); } return; }
-      if(kind.startsWith("door")){ const m = LINO[kind.split(":")[1]]; box(iw, ih, .016, m, cx, cy, z); box(iw + .006, .006, .018, wal, cx, cy + ih/2, z); box(iw + .006, .006, .018, wal, cx, cy - ih/2, z);
-        const hole = new THREE.Mesh(new THREE.CylinderGeometry(.014, .014, .02, 20), mat("#1e1a16")); hole.rotation.x = Math.PI/2; hole.position.set(cx + iw/2 - .04, cy, z + .002); g.add(hole); return; }
-      if(kind === "drawers"){ [.25, -.25].forEach(f => { box(iw, ih/2 - .004, .018, wal, cx, cy + f*ih, z); const sc = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, .02, 20, 1, false, 0, Math.PI), mat("#2c1d12")); sc.rotation.set(Math.PI/2, 0, 0); sc.position.set(cx, cy + f*ih + ih/4 - .006, z + .003); g.add(sc); }); return; }
-      if(kind === "tambour"){ const n = 13; for(let k = 0; k < n; k++) box(iw/n - .002, ih, .014, wal, cx - iw/2 + (k + .5)*iw/n, cy, z); const pull = new THREE.Mesh(new THREE.CylinderGeometry(.005, .005, .08, 10), br); pull.position.set(cx + iw/2 - .03, cy, z + .012); g.add(pull); } }));
+      // behind every front, a little of what the cabinet keeps
+      const keep = mat(["#ece6d6", "#6b2f26", "#3e4a58", "#b39a62"][(i + r) % 4]); box(iw*.5, ih*.35, .2, keep, cx - iw*.15, base + r*C + T/2 + ih*.175, -.02);
+      if(kind.startsWith("door")){ const m = LINO[kind.split(":")[1]], hinge = new THREE.Group(); hinge.position.set(cx - iw/2, cy, z); g.add(hinge);
+        const add2 = (geo, mm, x, y, zz) => { const me = new THREE.Mesh(geo, mm); me.position.set(x, y, zz); hinge.add(me); return me; };
+        add2(new THREE.BoxGeometry(iw, ih, .016), m, iw/2, 0, 0); add2(new THREE.BoxGeometry(iw + .006, .006, .018), wal, iw/2, ih/2, 0); add2(new THREE.BoxGeometry(iw + .006, .006, .018), wal, iw/2, -ih/2, 0);
+        const hole = add2(new THREE.CylinderGeometry(.014, .014, .02, 20), mat("#1e1a16"), iw - .04, 0, .002); hole.rotation.x = Math.PI/2;
+        const f = {mesh: hinge, label: "A door: open it", open: false, k: 0, apply: k => { hinge.rotation.y = -1.85*k; }}; f.step = ease(f); fronts.push(f); return; }
+      if(kind === "drawers"){ [.25, -.25].forEach(fy => { const dg = new THREE.Group(); dg.position.set(cx, cy + fy*ih, z); g.add(dg);
+          const fr = new THREE.Mesh(new THREE.BoxGeometry(iw, ih/2 - .004, .018), wal); dg.add(fr); const sc2 = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, .02, 20, 1, false, 0, Math.PI), mat("#2c1d12")); sc2.rotation.set(Math.PI/2, 0, 0); sc2.position.set(0, ih/4 - .006, .003); dg.add(sc2);
+          const tray = new THREE.Mesh(new THREE.BoxGeometry(iw - .02, .006, .3), mat("#b49a78")); tray.position.set(0, -ih/4 + .02, -.16); dg.add(tray);
+          const f = {mesh: dg, label: "A drawer: open it", open: false, k: 0, apply: k => { dg.position.z = z + .26*k; }}; f.step = ease(f); fronts.push(f); }); return; }
+      if(kind === "tambour"){ const roll = new THREE.Group(); roll.position.set(cx, cy + ih/2, z); g.add(roll); const n = 13;
+        for(let k = 0; k < n; k++){ const reed = new THREE.Mesh(new THREE.BoxGeometry(iw/n - .002, ih, .014), wal); reed.position.set(-iw/2 + (k + .5)*iw/n, -ih/2, 0); roll.add(reed); }
+        const pull = new THREE.Mesh(new THREE.CylinderGeometry(.005, .005, .08, 10), br); pull.rotation.z = Math.PI/2; pull.position.set(0, -ih + .03, .012); roll.add(pull);
+        const f = {mesh: roll, label: "The tambour: roll it up", open: false, k: 0, apply: k => { roll.scale.y = 1 - .88*k; }}; f.step = ease(f); fronts.push(f); } }));
     g.children.forEach(m => { m.castShadow = true; m.receiveShadow = true; }); g.position.x = -W/2;
     const outer = new THREE.Group(); outer.add(g); const hit = new THREE.Mesh(new THREE.BoxGeometry(W, 4*C + base, D + .1), new THREE.MeshBasicMaterial({visible:false})); hit.position.set(0, (4*C + base)/2, 0); outer.add(hit);
-    return {group: outer, hit}; }
+    return {group: outer, hit, fronts}; }
   function chair(m){ // a Windsor-ish chair: turned legs, saddle seat, spindle back
     const g = new THREE.Group(), wood = mat(m || "#5e4a37");
     const seat = new THREE.Mesh(new THREE.CylinderGeometry(.24,.22,.05,20), wood); seat.position.y = .45; seat.scale.z = .9; seat.castShadow = true; g.add(seat);
@@ -1958,9 +1997,13 @@ export function create(container, hooks){
       // the balance rocker and its nesting footstool, by the window corner; the staircase cabinet along the left wall
       const rk = balanceRocker(), rkAt = new THREE.Vector3(-3.3, 0, 3.0); rk.group.position.copy(rkAt); rk.group.rotation.y = Math.PI*.8; scene.add(rk.group);
       const fs = nestingStool(); const fsOff = new THREE.Vector3(0, 0, .78).applyAxisAngle(new THREE.Vector3(0,1,0), Math.PI*.8); place(fs, rkAt.x + fsOff.x, rkAt.z + fsOff.z, Math.PI*.8);
-      rk.hit.userData.hit = {kind:"look", label:"The balance rocker: lean back", onClick:() => { rk.toggle(); hooks.furniture && hooks.furniture("rocker"); }}; picks.push(rk.hit);
+      const sit = () => { const yaw = Math.PI*.8, fwd = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), eye = rkAt.clone().addScaledVector(fwd, -.12).setY(1.08), aim = rkAt.clone().addScaledVector(fwd, 1.6).setY(.55);
+        peek(eye, aim); seated = {leave(){ rk.set(0); rk.hit.userData.hit.label = "The balance rocker: sit in it"; }, lean(){ const on = rk.toggle(); goal.pitch = on ? .12 : Math.atan2(aim.y - eye.y, 1.72); goal.pos.y = on ? 1.0 : 1.08; dirty = 3; return on; }}; hooks.furniture && hooks.furniture("rocker"); };
+      rk.hit.userData.hit = {kind:"look", label:"The balance rocker: sit in it", onClick:() => { if(seated){ const on = seated.lean(); rk.hit.userData.hit.label = on ? "Sit up" : "Lean back"; } else { sit(); rk.hit.userData.hit.label = "Lean back"; } }}; picks.push(rk.hit);
       const Lw = wallAt(faces, 0); if(Lw){ const sc = staircaseCabinet(), t = +(window.__cabT || .76)*Lw.len; if(Lw.free(t, 2)){ const at = Lw.at(t, .24); sc.group.position.set(at.x, 0, at.z); sc.group.rotation.y = Lw.yaw; scene.add(sc.group);
-        sc.hit.userData.hit = {kind:"look", label:"The staircase cabinet", onClick:() => hooks.furniture && hooks.furniture("cabinet")}; picks.push(sc.hit); } }
+        const toward = Lw.n.clone(), eye = new THREE.Vector3(at.x, 1.45, at.z).addScaledVector(toward, 1.9), aim = new THREE.Vector3(at.x, .85, at.z);
+        sc.hit.userData.hit = {kind:"closer", label:"The staircase cabinet: look closer", onClick:() => { peek(eye, aim); const keep = sc.hit.userData.hit; sc.hit.userData.hit = null; const off = () => { sc.hit.userData.hit = keep; window.removeEventListener("wending-unpeek", off); }; window.addEventListener("wending-unpeek", off); if(!sc.seen){ sc.seen = true; hooks.furniture && hooks.furniture("cabinet"); } }}; picks.push(sc.hit);
+        sc.fronts.forEach(f => { f.mesh.userData.hit = {kind:"use", label: f.label, onClick:() => { f.open = !f.open; f.mesh.userData.hit.label = f.open ? f.label.replace("open it", "close it").replace("roll it up", "let it down") : f.label; }}; picks.push(f.mesh); anims.push(() => f.step()); }); } }
       const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.4), mat("#ffffff",{map: canvasTex(512, 360, (g,w,h) => { g.fillStyle = "#4f3a5a"; g.fillRect(0,0,w,h); g.strokeStyle = "#cdb88a"; g.lineWidth = 10; g.strokeRect(14,14,w-28,h-28); g.lineWidth = 3; for(let i=0;i<7;i++){ g.beginPath(); g.ellipse(w/2,h/2,40+i*26,24+i*17,0,0,TAU); g.stroke(); } })}));
       rug.rotation.x = -Math.PI/2; rug.position.set(1.4,.008,-.9); rug.receiveShadow = true; scene.add(rug);
     }
@@ -2130,5 +2173,5 @@ export function create(container, hooks){
 
   // a small picture of the room as it is now, for the linking books' panels
   function thumb(){ const c = document.createElement("canvas"); c.width = 480; c.height = 270; c.getContext("2d").drawImage(canvas, 0, 0, 480, 270); return c.toDataURL("image/jpeg", .82); }
-  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), hasStation: k => !!stations[k], _glints: () => glints.filter(gl => gl.mesh.visible).map(gl => { const v = gl.mesh.getWorldPosition(new THREE.Vector3()).project(camera); return [(v.x + 1)/2, (1 - v.y)/2, gl.mesh.userData.hit.label]; }), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
+  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), hasStation: k => !!stations[k], _pickables: () => picks.map(o => { const h = o.userData.hit; if(!h) return null; const v = o.getWorldPosition(new THREE.Vector3()).project(camera); return [h.kind, h.label, +((v.x+1)/2).toFixed(3), +((1-v.y)/2).toFixed(3), v.z < 1]; }).filter(Boolean), _focus: () => focusKind(), _hg: () => plan && plan.HG ? plan.HG.nodes[plan.HG.level].length : 0, _glints: () => glints.filter(gl => gl.mesh.visible).map(gl => { const v = gl.mesh.getWorldPosition(new THREE.Vector3()).project(camera); return [(v.x + 1)/2, (1 - v.y)/2, gl.mesh.userData.hit.label]; }), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
 }
