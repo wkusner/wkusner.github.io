@@ -213,6 +213,7 @@ function cond(c, room){
     case "visits": return (S.visits[room && room.id]||0) >= +val;
     case "rank": return rankIndex() >= +val;
     case "has": return S.inv.includes(val);
+    case "link": return !!(S.links && S.links[val]);
     case "solved": return !!S.solved[val];
     case "seen": return seen() >= +val;
     case "landing": return landingOf(room) === +val;
@@ -652,6 +653,8 @@ const ICON = {
   key:(g)=>{ E("circle",{cx:-14,r:8,fill:"none",stroke:"var(--ink)","stroke-width":4},g); E("line",{x1:-6,y1:0,x2:22,y2:0,stroke:"var(--ink)","stroke-width":4},g); E("line",{x1:16,y1:0,x2:16,y2:8,stroke:"var(--ink)","stroke-width":4},g); E("line",{x1:10,y1:0,x2:10,y2:6,stroke:"var(--ink)","stroke-width":4},g); },
   pond:(g)=>{ E("ellipse",{rx:26,ry:12,fill:"url(#hz-fine)",stroke:"var(--ink)"},g); [[-12,0],[0,-4],[11,1],[-2,5]].forEach(p=>E("circle",{cx:p[0],cy:p[1],r:5.5,fill:"var(--paper)",stroke:"var(--ink)"},g)); },
   fraction:(g)=>{ E("rect",{x:-15,y:-20,width:30,height:40,rx:4,fill:"var(--paper)",stroke:"var(--ink)"},g); T("3",{x:0,y:-4,"text-anchor":"middle","font-size":14,fill:"var(--ink)","font-family":"IM Fell English, serif"},g); E("line",{x1:-7,y1:0,x2:7,y2:0,stroke:"var(--ink)"},g); T("4",{x:0,y:14,"text-anchor":"middle","font-size":14,fill:"var(--ink)","font-family":"IM Fell English, serif"},g); },
+  linkbook:(g)=>{ E("rect",{x:-24,y:-14,width:48,height:30,rx:2,fill:"url(#s-dark)",stroke:"var(--ink)"},g); E("rect",{x:-21,y:-12,width:20,height:26,fill:"var(--paper)",stroke:"var(--ink)"},g); E("rect",{x:1,y:-12,width:20,height:26,fill:"var(--paper)",stroke:"var(--ink)"},g); E("rect",{x:4,y:-8,width:14,height:11,fill:"#9fb6c8",stroke:"var(--ink)"},g); for(let i=0;i<3;i++) E("line",{x1:-18,y1:-6+i*6,x2:-4,y2:-6+i*6,stroke:"var(--muted)"},g); },
+  linkpage:(g)=>{ E("path",{d:"M-14,-18 h22 l6,6 v30 h-28 Z",fill:"var(--paper)",stroke:"var(--ink)"},g); E("rect",{x:-9,y:-11,width:18,height:14,fill:"#9fb6c8",stroke:"var(--ink)"},g); for(let i=0;i<2;i++) E("line",{x1:-9,y1:8+i*5,x2:9,y2:8+i*5,stroke:"var(--muted)"},g); },
   note:(g)=>{ E("path",{d:"M-14,-18 h22 l6,6 v30 h-28 Z",fill:"var(--paper)",stroke:"var(--ink)"},g); for(let i=0;i<4;i++) E("line",{x1:-9,y1:-8+i*6,x2:9,y2:-8+i*6,stroke:"var(--muted)"},g); },
   map:(g)=>{ E("path",{d:"M-24,-14 l16,-4 l16,4 l16,-4 v28 l-16,4 l-16,-4 l-16,4 Z",fill:"var(--paper)",stroke:"var(--ink)"},g); E("path",{d:"M-18,6 q8,-14 16,-4 t16,-6",fill:"none",stroke:"var(--ink)","stroke-dasharray":"2 2"},g); },
   pendulum:(g)=>{ E("line",{x1:0,y1:-22,x2:6,y2:12,stroke:"var(--ink)"},g); E("circle",{cx:6,cy:14,r:6,fill:"url(#h-mid)",stroke:"var(--ink)"},g); },
@@ -672,7 +675,7 @@ if(window.FURNITURE) FURNITURE.bind({ get overlay(){ return overlay; } });
 if(window.MUSICBOX) MUSICBOX.bind({ get levels(){ return () => musicView({levels:true}); }, get S(){ return S; }, get save(){ return save; }, get sound(){ return sound; }, get audio(){ return audio; }, get toast(){ return toast; }, get award(){ return award; } });
 if(window.RECKON) RECKON.bind({ get S(){ return S; }, get cur(){ return cur; }, get now(){ return now; }, get overlay(){ return overlay; }, get save(){ return save; }, get render(){ return render; },
   get toast(){ return toast; }, get award(){ return award; }, get sunTimes(){ return sunTimes; }, get audio(){ return audio; }, get sound(){ return sound; }, get ICON(){ return ICON; }, get E(){ return E; }, get clockView(){ return clockView; } });
-const KIND_ICON = {device:"box", book:"book", paper:"scroll", ref:"book", unwritten:"unwritten", key:"key", note:"note", link:"book", page:"note"};
+const KIND_ICON = {device:"box", book:"book", paper:"scroll", ref:"book", unwritten:"unwritten", key:"key", note:"note", link:"book", page:"note", linkpage:"linkpage"};
 
 function hot(el, label, fn){
   el.setAttribute("class","hot"); el.setAttribute("tabindex","0"); el.setAttribute("role","button"); el.setAttribute("aria-label",label);
@@ -723,12 +726,12 @@ function render(){
   const use3d = VIEW3D && S.gfx!=="2d";
   stage.classList.toggle("is3d", !!use3d);
   const svg = use3d ? document.createElementNS(NS,"svg") : E("svg",{viewBox:`0 0 ${W} ${H}`, role:"img", class:"view", "aria-label":`Room ${id}, ${room.name||""}, facing ${FACENAME[S.face]}`}, stage);
-  let allDoors = (room.doors||[]).filter(d => visible(d, room)), ghostDoors = [];
+  let allDoors = BOOKS && !room.landings && !room.floors ? [] : (room.doors||[]).filter(d => visible(d, room)), ghostDoors = [];
   if(room.landings){ const L = landingOf(room); ghostDoors = allDoors.filter(d => (d.stop||0) !== L); allDoors = allDoors.filter(d => (d.stop||0) === L); }
   if(room.floors){ const L = carOf(room); allDoors = allDoors.filter(d => (d.stop||0) === L); }
   if(room.see && ROOMS[String(room.see)]){ const o = ROOMS[String(room.see)]; ghostDoors = ghostDoors.concat((o.doors||[]).filter(d => !d.fixture && visible(d, o)).map(d => Object.assign({}, d, {ghostOf:o}))); }
   const doorWall = (d,i) => d.wall!=null ? WALLS[d.wall] : [1,0,2][i%3];
-  const objs = (room.objects||[]).filter(o => visible(o, room) && !((o.kind==="key" || o.portable) && S.inv.includes(o.item))).map(deskTimekeeper);
+  const objs = (room.objects||[]).filter(o => visible(o, room) && !((o.kind==="key" || o.portable) && S.inv.includes(o.item)) && !(o.kind==="page" && (S.pages||{})[o.page])).map(deskTimekeeper);
   const byObjWall = [[],[],[],[]]; objs.forEach((o,i) => byObjWall[act(S.frame, objWall(o,i,objs.length))].push(o));
   const ahead = [0,1,2,3].find(w => (w - S.face + 4) % 4 === 1);
   if(use3d){ VIEW3D.show(plan3d(room, allDoors, doorWall, objs, light, mirror, ghostDoors)); VIEW3D.snap = false; }
@@ -755,7 +758,13 @@ function render(){
   $("rtext").innerHTML = html;
   // doors, for keyboards and screen readers
   const dl = $("doors"); dl.innerHTML = "";
-  if(!allDoors.length) dl.innerHTML = `<li class="note">No doors you can see. Try the map.</li>`;
+  const dlt = dl.closest(".win") && dl.closest(".win").querySelector(".tb .t"); if(dlt) dlt.textContent = BOOKS ? "Linking pages" : "Doors";
+  if(BOOKS){ const ids = linkRooms();
+    if(!S.inv.includes("primer")) dl.innerHTML = `<li class="note">The house is crossed by linking pages, kept in a Primer. There is one on the porter's desk.</li>`;
+    else if(!ids.length) dl.innerHTML = `<li class="note">No linking pages yet. Look for them in the rooms.</li>`;
+    ids.forEach(id => { const li = document.createElement("li"), b = document.createElement("button"), here = String(id) === String(room.id); b.type = "button"; b.className = "doorbtn"; b.disabled = here;
+      b.innerHTML = `${esc(ROOMS[id].label || id)} · ${esc(ROOMS[id].name)} <span class="note">${here ? "you are here" : "touch to link"}</span>`; b.onclick = () => linkTo(id); li.appendChild(b); dl.appendChild(li); }); }
+  else if(!allDoors.length) dl.innerHTML = `<li class="note">No doors you can see. Try the map.</li>`;
   allDoors.forEach((d,i) => {
     const p = pos(doorWall(d,i)), li = document.createElement("li"), b = document.createElement("button");
     b.type="button"; b.className="doorbtn";
@@ -908,9 +917,9 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js?v=20261009d").then(m => {
+  import("./palace3d.js?v=20261010c").then(m => {
     VIEW3D = m.create($("stage"), {
-      turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, style: () => S.gfx === "photo" ? "photo" : "engraved",
+      turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, calm: () => S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
       closer: slot => { const f = (slot + 3) % 4; if(String(S.node) === String(slot) && f === S.face) setView(S.face, "ahead"); else { S.node = slot; setView(f, null); } },
       goNode: k => goNode(k), info: o => primerNote(o), noted: o => !!(S.notes && S.notes[noteKey(o)]),
@@ -1116,14 +1125,21 @@ function upgrade(){ let did = null; UPGRADES.forEach(u => {
     if(S.inv.includes(u.gives)){ if(S.inv.some(k => k === u.from || k === u.with)){ S.inv = S.inv.filter(k => k !== u.from && k !== u.with); did = did || ""; } return; }
     if(S.inv.includes(u.from) && S.inv.includes(u.with)){ S.inv = S.inv.filter(k => k !== u.from && k !== u.with); S.inv.push(u.gives); S.pages = S.pages || {}; if((P.pages||{})[u.gives] && !S.pages[u.gives]) S.pages[u.gives] = Date.now(); award("upgrade:" + u.gives, 25); did = u.say; } });
   if(did !== null){ save(); } return did; }
-function take(item, msg){ if(S.inv.includes(item)){ toast("It is in your bag already."); return; }
-  const sup = UPGRADES.find(u => (u.from === item || u.with === item) && S.inv.includes(u.gives)); if(sup){ toast(`You have ${(ITEMS[sup.gives]||{}).name ? ITEMS[sup.gives].name.toLowerCase() : "the whole thing"} already.`); return; } S.inv.push(item); if((P.pages||{})[item]){ S.pages = S.pages || {}; if(!S.pages[item]) S.pages[item] = Date.now(); } sound.take(); save(); award("item:"+item, item==="golden-key"?40:15); const up = upgrade(); toast(up || msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
+function take(item, msg){ if(item === "primer" && BOOKS){ addLink(START, true); if(cur) addLink(cur.id, true); }
+  if(S.inv.includes(item)){ toast("It is in your bag already."); return; }
+  const sup = UPGRADES.find(u => (u.from === item || u.with === item) && S.inv.includes(u.gives)); if(sup){ toast(`You have ${(ITEMS[sup.gives]||{}).name ? ITEMS[sup.gives].name.toLowerCase() : "the whole thing"} already.`); return; } S.inv.push(item); if((P.pages||{})[item] && !P.pages[item].apart){ S.pages = S.pages || {}; if(!S.pages[item]) S.pages[item] = Date.now(); } sound.take(); save(); award("item:"+item, item==="golden-key"?40:15); const up = upgrade(); toast(up || msg || `You take ${(ITEMS[item]||{}).name || item}.`); render(); }
 function useObject(o, room){
   if(o.more) return setView(S.face, "ahead");
   // the pop-up a device opens carries its model, to turn in the hand, and the things it leads to
   OVSUBJECT = (o.kind === "device" && o.action && !NOMODEL.has(o.action) && o.icon && !o.href) ? {o, room, title:null} : null;
   setTimeout(() => { if(OVSUBJECT && OVSUBJECT.title == null) OVSUBJECT = null; }, 0);
   if(o.kind==="key"){ take(o.item, o.take); return; }
+  if(o.kind==="linkpage" && o.to != null){ const t = String(o.to), dest = ROOMS[t]; if(!dest) return;
+    if(!S.inv.includes("primer")) return toast(`A linking page: ${dest.name}. It would bind into a Primer; without one, it is only a picture.`);
+    const fresh = addLink(t); render(); toast(fresh ? `A linking page, ${dest.name}: it binds into your Primer, and onto your map.` : `You have this page already.`); S.primerTab = "links"; S.primerLink = t; return primerView("links"); }
+  // a loose page of the Primer, found apart from its instrument
+  if(o.kind==="page" && o.page){ const pg = (P.pages||{})[o.page]; if(!pg) return; S.pages = S.pages || {}; if(!S.pages[o.page]){ S.pages[o.page] = Date.now(); award("page:" + o.page, 15); save(); render(); }
+    if(!S.inv.includes("primer")) return toast(`A loose page: “${pg.title}”. It would go in the Primer, if you had it.`); toast(`A loose page, “${pg.title}”: it slips into your Primer.`); S.primerPage = o.page; return primerView("pages"); }
   if(o.action==="letter") return letterView();
   if(o.action==="register") return registerView();
   if(o.action==="return") return returnView();
@@ -1136,7 +1152,7 @@ function useObject(o, room){
   if(o.action==="planets") return planetsView();
   if(o.action==="telescope") return telescopeView();
   if(o.action==="logbook") return catalogView(o.search ? "search/" + o.search : "");
-  if(o.action==="link") return linkView(o, room);
+  if(o.action==="link"){ if(S.inv.includes("primer")) addLink(o.to, true); return linkView(o, room); }
   if(o.action==="music") return musicView(o);
   if(o.action==="clock") return window.RECKON ? RECKON.timekeeperView() : clockView();
   if(o.kind==="case") return caseView(o);
@@ -1301,29 +1317,29 @@ function bag(){
 }
 function corners(room){
   const m = $("mini"), pr = $("primerc");
-  if((S.inv.includes("map")||S.inv.includes("plan")||S.showAll) && !S.noMini){ m.style.display=""; m.innerHTML = miniMapSVG(); m.onclick = () => mapView(); } else m.style.display="none";
+  if((S.inv.includes("map")||S.inv.includes("plan")||S.showAll||(BOOKS && S.inv.includes("primer"))) && !S.noMini){ m.style.display=""; m.innerHTML = miniMapSVG(); m.onclick = () => mapView(); } else m.style.display="none";
   const dock = $("primerdock"), hasP = S.inv.includes("primer");
   if(hasP && !S.primerDock){ const L2 = P.primer||{}, l = L2[String(room.id)]; pr.style.display=""; pr.innerHTML = `<b>Primer:</b> ${l ? esc(l.teaser) : "turn the page for somewhere new"} <span class="note">▾</span>`; pr.title = "Open the Primer below the picture"; pr.onclick = () => { S.primerDock = true; save(); corners(effective(cur)); }; } else pr.style.display="none";
   if(dock){ if(hasP && S.primerDock){ dock.style.display = ""; primerDock(room); } else dock.style.display = "none"; }
   // the menu bar shows only what you carry
-  $("b-map").style.display = (S.inv.includes("map") || S.inv.includes("plan") || S.showAll) ? "" : "none";
+  $("b-map").style.display = (S.inv.includes("map") || S.inv.includes("plan") || S.showAll || (BOOKS && S.inv.includes("primer"))) ? "" : "none";
   $("b-cat").style.display = (S.inv.includes("finding-aid") || S.showAll) ? "" : "none";
   $("b-primer").style.display = hasP ? "" : "none";
 }
 // the Primer, kept open below the picture: what it says about this room, what you have noted here, and your pages
 function primerDock(room){ const dock = $("primerdock"), L2 = P.primer || {}, l = L2[String(room.id)], notes = Object.values(S.notes || {}).filter(n => String(n.room) === String(room.id)), pages = Object.keys(S.pages || {}).filter(k => (P.pages||{})[k]);
   const glintable = (room.objects || []).filter(o => (o.note || o.info) && !o.hidden && visible(o, room) && !((o.kind === "key" || o.portable) && S.inv.includes(o.item))).length;
-  dock.innerHTML = `<div class="pd-h"><b>A Young Person's Illustrated Primer${S.reader ? " · " + esc(S.reader) : ""}</b><button type="button" data-pd="notes">Notes</button><button type="button" data-pd="pages">Pages (${pages.length})</button><button type="button" data-pd="story">The story</button><button type="button" data-pd="close" title="Close the Primer">Close ▴</button></div>
+  dock.innerHTML = `<div class="pd-h"><b>A Young Person's Illustrated Primer${S.reader ? " · " + esc(S.reader) : ""}</b><button type="button" data-pd="notes">Notes</button><button type="button" data-pd="pages">Pages (${pages.length})</button>${BOOKS ? `<button type="button" data-pd="links">Linking pages (${linkRooms().length})</button>` : ""}<button type="button" data-pd="story">The story</button><button type="button" data-pd="close" title="Close the Primer">Close ▴</button></div>
     <div>${l ? `<i>Here, in ${esc(room.name)}:</i> ${l.lesson ? l.lesson : esc(l.teaser)}` : `<i>${esc(room.name)}.</i> The page is waiting for something to write.`}</div>
     ${glintable ? `<ul class="pd-notes"><li class="note">Noted here: ${notes.length} of ${glintable}</li>${notes.slice(-4).map(n => `<li>✦ ${esc(n.title)}</li>`).join("")}</ul>` : ""}`;
   dock.querySelectorAll("[data-pd]").forEach(b => b.onclick = () => { const k = b.dataset.pd; if(k === "close"){ S.primerDock = false; save(); corners(effective(cur)); return; } primerView(k); }); }
 function miniMapSVG(){
   const c = cur; if(!c || !c.at) return "";
-  const near = new Set([String(c.id)]); (c.doors||[]).forEach(d => allTargets(d).forEach(t => near.add(t)));
+  const near = new Set([String(c.id)]); if(BOOKS) linkRooms().forEach(t => near.add(t)); else (c.doors||[]).forEach(d => allTargets(d).forEach(t => near.add(t)));
   const ids = [...near].filter(i => ROOMS[i] && ROOMS[i].at && !ROOMS[i].closed && (S.visits[i] || S.inv.includes("plan") || i===String(c.id) || true));
   const u=26, cx=c.at[0], cy=c.at[1];
   let s = `<svg viewBox="-80 -60 160 120" width="160" height="120" aria-label="Nearby rooms">`;
-  ids.forEach(i => { if(i===String(c.id)) return; const r=ROOMS[i]; s += `<line x1="0" y1="0" x2="${(r.at[0]-cx)*u}" y2="${(r.at[1]-cy)*u}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="${S.visits[i]?"0":"2 2"}"/>`; });
+  if(!BOOKS) ids.forEach(i => { if(i===String(c.id)) return; const r=ROOMS[i]; s += `<line x1="0" y1="0" x2="${(r.at[0]-cx)*u}" y2="${(r.at[1]-cy)*u}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="${S.visits[i]?"0":"2 2"}"/>`; });
   ids.forEach(i => { const r=ROOMS[i], x=(r.at[0]-cx)*u, y=(r.at[1]-cy)*u, k=S.visits[i]||S.inv.includes("plan"), me=i===String(c.id);
     s += `<rect x="${x-9}" y="${y-8}" width="18" height="16" fill="${me?"var(--spot)":k?"var(--ink)":"var(--paper2)"}" stroke="var(--ink)" stroke-width="1.2"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="9" fill="${me||k?"var(--paper2)":"var(--ink)"}" font-family="IM Fell English SC, serif">${(r.secret&&!S.visits[i])?"?":esc(r.label||r.id)}</text>`; });
   const a = (facing()/90 + S.face)*90 + 180; // arrow shows which way you face on the map (north up)
@@ -2135,6 +2151,7 @@ function move(t, turnG, from){
 function arrive(id){
   if(!ROOMS[id]) id = START;
   cur = ROOMS[id];
+  if(BOOKS && S.inv.includes("primer")) addLink(id, true);
   // come in facing into the room, with the door you came through behind you
   const prev = S.walk[S.walk.length-1];
   if(prev && String(prev) !== String(id)){ const ds = (effective(cur).doors||[]), i = ds.findIndex(d => String(d.to) === String(prev));
@@ -2168,11 +2185,15 @@ document.addEventListener("keydown", e => {
   if($("ov").classList.contains("open")) return;
   if(e.metaKey || e.ctrlKey || e.altKey) return;
   const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  // walking round a thing you have stepped up to: ← → (or A D) go round it, Shift ↑ ↓ rise and fall, + and − come nearer and go back
+  if(VIEW3D && VIEW3D.orbiting && VIEW3D.orbiting()){
+    const o = {ArrowLeft:[.18,0,1], a:[.18,0,1], ArrowRight:[-.18,0,1], d:[-.18,0,1], "+":[0,0,.85], "=":[0,0,.85], "-":[0,0,1.18]}[k] || (e.shiftKey && k === "ArrowUp" ? [0,.12,1] : e.shiftKey && k === "ArrowDown" ? [0,-.12,1] : null);
+    if(o){ e.preventDefault(); VIEW3D.orbitBy(o[0], o[1], o[2]); return; } }
   // look up and down: shift with the arrows, or page up and page down
   if((e.shiftKey && k==="ArrowUp") || k==="PageUp"){ e.preventDefault(); setView(S.face, S.close==="down" ? null : "up"); return; }
   if((e.shiftKey && k==="ArrowDown") || k==="PageDown"){ e.preventDefault(); setView(S.face, S.close==="up" ? null : "down"); return; }
   // S, or ↓, steps out of a close look (the sky, a peek, sitting) before anything else
-  if((k==="ArrowDown" || k==="s") && !e.shiftKey && VIEW3D && VIEW3D.focused && VIEW3D.focused() && !S.close){ e.preventDefault(); VIEW3D.exitFocus(); return; }
+  if((k==="ArrowDown" || k==="s") && !e.shiftKey && VIEW3D && VIEW3D.focused && VIEW3D.focused()){ e.preventDefault(); VIEW3D.exitFocus(); return; }
   if(k==="f"){ e.preventDefault(); fullView(); return; }
   if(k==="c"){ e.preventDefault(); toggleCompass(); return; }
   if(k==="l"){ e.preventDefault(); if(!S.inv.includes("lantern")) return toast("You have no lantern."); S.lanternLvl = ((S.lanternLvl||0) + 1) % 4; S.lantern = S.lanternLvl > 0; save(); render(); drawLightPanel(); toast(S.lanternLvl ? "The lantern: " + LANTERN[S.lanternLvl] + "." : "You shade the lantern."); return; }
@@ -2270,6 +2291,19 @@ function materialsView(state){
   const draw = () => { raf = 0; ML.swatch(big, sel.id, light, {N:256}); }; draw();
   big.onpointermove = e => { const r = big.getBoundingClientRect(), x = (e.clientX - r.left)/r.width*2 - 1, y = -((e.clientY - r.top)/r.height*2 - 1); light = [x*1.4, y*1.4, .35]; if(!raf) raf = requestAnimationFrame(draw); };
 }
+/* ---------- linking pages. With travel: books in the data, the doors are put away: you go from room to room by the linking pages kept
+   in your Primer. A room's page is written in when you find it (a loose linking page, or a linking book used) and when you arrive;
+   the map shows the rooms whose pages you hold, and from it, or from the Primer, you can link to any of them. ---------- */
+const BOOKS = P.travel === "books";
+const hasLink = id => !!(S.links && S.links[String(id)]);
+function addLink(id, quiet){ id = String(id); if(!ROOMS[id] || ROOMS[id].closed) return false; S.links = S.links || {}; if(S.links[id]) return false; S.links[id] = Date.now(); save(); if(!quiet) award("linkpage:" + id, 10); return true; }
+const linkRooms = () => Object.keys(S.links || {}).filter(id => ROOMS[id] && (!ROOMS[id].closed || S.showAll)).sort((a, b) => S.links[a] - S.links[b]);
+function linkTo(t){ if(cur && String(cur.id) === String(t)) return toast("You are here."); const veil = document.createElement("div"); veil.className = "linkveil"; document.body.appendChild(veil); sound.link && sound.link();
+  requestAnimationFrame(() => veil.classList.add("on")); const from = effective(cur);
+  setTimeout(() => { closeOv(); S.frame = [0,0]; move(String(t), null, from); award("link:" + t, 10); }, 1300);
+  setTimeout(() => { veil.classList.remove("on"); setTimeout(() => veil.remove(), 1400); }, 1900); }
+function linkPageCard(id){ const dest = ROOMS[id], shot = SHOTS[id]; return `<div class="linkbook"><div class="lpage"><h3>${esc(dest.name)}</h3><p>${esc(((dest.text||"").split(/\n|\. /)[0]||"").slice(0,180))}.</p><p class="note">${String(cur && cur.id) === String(id) ? "You are here." : "The picture moves, very slightly. Touch it to go."}</p></div>
+  <div class="rpage"><button type="button" class="panel" data-link="${id}" aria-label="Touch the panel to link to ${esc(dest.name)}">${shot ? `<img src="${shot}" alt="">` : `<span class="dark">${esc(dest.name)}</span>`}</button></div></div>`; }
 let OVSUBJECT = null;
 const NOMODEL = new Set(["music","materials","blackboard","letter","register","bell","return","codes","notices","links","almanac","officehours","search","directory","link","logbook","catalogue","map","primer","ranks","combine"]);
 function findObject(title){ for(const r of P.rooms){ const o = (r.objects||[]).find(x => x.title === title); if(o) return {o, r}; } return null; }
@@ -2289,19 +2323,19 @@ $("ovx").onclick = closeOv; $("ov").onclick = e => { if(e.target.id==="ov") clos
 document.addEventListener("keydown", e => { if(e.key!=="Escape") return; if($("ov").classList.contains("open")) return closeOv(); if(VIEW3D && VIEW3D.focused && VIEW3D.focused()) return VIEW3D.exitFocus(); if(S.close) setView(S.face, null); });
 
 function mapView(force){
-  if(!force && !S.showAll && !S.inv.includes("map") && !S.inv.includes("plan")){ toast("You have no map. There is a folded one on the porter's desk, in the Entry."); return; }
-  const all = S.showAll || S.inv.includes("plan");
-  const known = new Set(Object.keys(S.visits).filter(k=>ROOMS[k]));
+  if(!force && !S.showAll && !S.inv.includes("map") && !S.inv.includes("plan") && !(BOOKS && S.inv.includes("primer"))){ toast("You have no map. There is a folded one on the porter's desk, in the Entry."); return; }
+  const all = S.showAll || (S.inv.includes("plan") && !BOOKS);
+  const known = new Set(BOOKS ? linkRooms() : Object.keys(S.visits).filter(k=>ROOMS[k]));
   const fringe = new Set();
-  known.forEach(k => (ROOMS[k].doors||[]).forEach(d => allTargets(d).forEach(t => { if(ROOMS[t] && !known.has(t)) fringe.add(t); })));
-  const pts = P.rooms.filter(r=>r.at);
+  if(!BOOKS) known.forEach(k => (ROOMS[k].doors||[]).forEach(d => allTargets(d).forEach(t => { if(ROOMS[t] && !known.has(t)) fringe.add(t); })));
+  const pts = P.rooms.filter(r => r.at && (!BOOKS || all || known.has(String(r.id))));
   if(!pts.length){ overlay("Map","<p class='note'>No room has map coordinates yet.</p>"); return; }
   const xs = pts.map(r=>r.at[0]), ys = pts.map(r=>r.at[1]);
-  const u=64, x0=Math.min(...xs)-1, y0=Math.min(...ys)-1, w=(Math.max(...xs)-x0+1)*u, h=(Math.max(...ys)-y0+1)*u;
+  const u=64, pad=BOOKS&&!all?2:1, x0=Math.min(...xs)-pad, y0=Math.min(...ys)-pad, w=(Math.max(...xs)-x0+pad)*u, h=(Math.max(...ys)-y0+pad)*u;
   const px = r => [(r.at[0]-x0)*u, (r.at[1]-y0)*u];
   let s = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;max-height:70vh" role="img" aria-label="Map of the rooms you remember">`;
   const drawn = new Set();
-  P.rooms.forEach(r => (r.doors||[]).forEach(d => allTargets(d).forEach(t => {
+  if(!BOOKS) P.rooms.forEach(r => (r.doors||[]).forEach(d => allTargets(d).forEach(t => {
     const T2 = ROOMS[t]; if(!r.at || !T2 || !T2.at) return; if(!S.showAll && [r,T2].some(x => x.closed || (x.secret && !S.visits[x.id]))) return;
     const k=[r.id,t].sort().join("~"); if(drawn.has(k)) return;
     const walked = S.edges[r.id+">"+t] || S.edges[t+">"+r.id];
@@ -2318,9 +2352,10 @@ function mapView(force){
       <text x="${x}" y="${y+5}" text-anchor="middle" font-family="IM Fell English SC, serif" font-size="17" fill="${k||all?"var(--paper2)":"var(--muted)"}">${k||all?esc(r.label||id):"?"}</text>
       ${k||all?`<text x="${x}" y="${y+31}" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="10" fill="var(--ink)">${esc((r.name||"").replace(/^The /,"").slice(0,16))}</text>`:""}</g>`;
   });
-  s += `</svg><p class="note">Heavy lines are corridors you have walked. Dotted boxes are doors you have seen but not opened. Click a remembered room to return to it the way you first remember it, facing as you did then.</p>`;
+  s += BOOKS ? `</svg><p class="note">Each room on the map is a linking page bound into your Primer. Click one to go there. Find more pages in the rooms, or simply stand in a room with the Primer in hand, and it writes the page itself.</p>`
+    : `</svg><p class="note">Heavy lines are corridors you have walked. Dotted boxes are doors you have seen but not opened. Click a remembered room to return to it the way you first remember it, facing as you did then.</p>`;
   overlay("The map, as far as you remember it", s);
-  document.querySelectorAll(".mapgo").forEach(el => el.addEventListener("click", () => { closeOv(); location.hash = el.dataset.id; }));
+  document.querySelectorAll(".mapgo").forEach(el => el.addEventListener("click", () => { closeOv(); if(BOOKS && hasLink(el.dataset.id)) return linkTo(el.dataset.id); location.hash = el.dataset.id; }));
 }
 function catalogueView(force){
   if(!force && !S.showAll && !S.inv.includes("finding-aid")){ toast("The finding aid is locked in the porter\u2019s drawer, in the Entry."); return; }
@@ -2620,16 +2655,22 @@ function primerView(tab){
   const name = S.reader;
   if(!name){
     overlay("A Young Person's Illustrated Primer", `<div class="text"><p>The book is heavier than it looks. The first page is blank, and then it isn't: <i>Who is reading?</i></p></div><div class="row widget"><input id="pr-n" style="width:220px" placeholder="your name"><button class="btn primary" id="pr-b" type="button">Answer the book</button></div>`);
-    const go = () => { const v=$("pr-n").value.trim(); if(!v) return; S.reader=v; save(); primerView(); };
+    const go = () => { const v=$("pr-n").value.trim(); if(!v) return; S.reader=v; save(); primerView(tab); };
     $("pr-b").onclick = go; $("pr-n").onkeydown = e => { if(e.key==="Enter") go(); }; return;
   }
   const notes = Object.values(S.notes || {});
   tab = tab || S.primerTab || (notes.length ? "notes" : "story"); S.primerTab = tab;
   const pages = Object.keys(S.pages || {}).filter(k => (P.pages||{})[k]).sort((a, b) => S.pages[a] - S.pages[b]);
-  const tabs = `<p class="row">${[["notes", `Notes (${notes.length})`], ["pages", `Pages (${pages.length})`], ["story", "The story"]].map(([k, n]) => `<button class="btn${k === tab ? " primary" : ""}" type="button" data-ptab="${k}">${n}</button>`).join(" ")}</p>`;
+  const tabs = `<p class="row">${[["notes", `Notes (${notes.length})`], ["pages", `Pages (${pages.length})`]].concat(BOOKS ? [["links", `Linking pages (${linkRooms().length})`]] : []).concat([["story", "The story"]]).map(([k, n]) => `<button class="btn${k === tab ? " primary" : ""}" type="button" data-ptab="${k}">${n}</button>`).join(" ")}</p>`;
+  if(tab === "links"){ const ids = linkRooms(), sel = ids.includes(String(S.primerLink)) ? String(S.primerLink) : ids[ids.length - 1]; S.primerLink = sel;
+    overlay(`A Young Person's Illustrated Primer · ${name}'s linking pages`, `${tabs}${ids.length ? `<div class="casev"><div class="caselist">${ids.map(id => `<button class="casei ${id===sel?"on":""}" data-lk="${id}" type="button"><span class="ci-icon"></span><span>${esc(ROOMS[id].name)}</span><small>${String(cur.id) === id ? "you are here" : "room " + esc(ROOMS[id].label || id)}</small></button>`).join("")}</div>
+      <div class="casemain">${linkPageCard(sel)}<p class="row"><button class="btn" id="pl-map" type="button">See them on the map</button></p></div></div>` : `<div class="text"><p>No linking pages yet. A page binds in when you find it, or when you arrive somewhere.</p></div>`}`);
+    document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab));
+    document.querySelectorAll("[data-lk]").forEach(b => { b.querySelector(".ci-icon").appendChild(iconSVG("linkbook", 30)); b.onclick = () => { S.primerLink = b.dataset.lk; primerView("links"); }; });
+    document.querySelectorAll("[data-link]").forEach(b => b.onclick = () => linkTo(b.dataset.link)); if($("pl-map")) $("pl-map").onclick = () => mapView(true); return; }
   if(tab === "pages"){ const sel = pages.includes(S.primerPage) ? S.primerPage : pages[0]; S.primerPage = sel;
     const pg = sel ? P.pages[sel] : null, it = sel ? ITEMS[sel] : null;
-    overlay(`A Young Person's Illustrated Primer · ${name}'s pages`, `${tabs}${pages.length ? `<div class="casev"><div class="caselist">${pages.map(k => `<button class="casei ${k===sel?"on":""}" data-pg="${k}" type="button"><span class="ci-icon"></span><span>${esc(P.pages[k].title)}</span><small>${S.inv.includes(k) ? "in your bag" : (UPGRADES.find(u => (u.from === k || u.with === k) && S.inv.includes(u.gives)) ? "grown into " + esc(((P.pages||{})[UPGRADES.find(u => (u.from === k || u.with === k) && S.inv.includes(u.gives)).gives]||{}).title || "something larger").replace(/^The /, "the ") : "put back")}</small></button>`).join("")}</div>
+    overlay(`A Young Person's Illustrated Primer · ${name}'s pages`, `${tabs}${pages.length ? `<div class="casev"><div class="caselist">${pages.map(k => `<button class="casei ${k===sel?"on":""}" data-pg="${k}" type="button"><span class="ci-icon"></span><span>${esc(P.pages[k].title)}</span><small>${S.inv.includes(k) ? "in your bag" : P.pages[k].apart && !S.inv.includes(k) ? "a loose page" : (UPGRADES.find(u => (u.from === k || u.with === k) && S.inv.includes(u.gives)) ? "grown into " + esc(((P.pages||{})[UPGRADES.find(u => (u.from === k || u.with === k) && S.inv.includes(u.gives)).gives]||{}).title || "something larger").replace(/^The /, "the ") : "put back")}</small></button>`).join("")}</div>
       <div class="casemain"><div id="obi" class="obi"></div><h4>${esc(pg.title)}</h4><p>${esc(pg.text)}</p>${it && S.inv.includes(sel) && it.use && sel !== "primer" ? `<p class="row"><button class="btn" id="pg-use" type="button">Use it</button></p>` : ""}</div></div>`
       : `<div class="text"><p>No pages yet. A page comes with each thing you carry: take something from the porter's desk, or from a case, and its page is written in here.</p></div>`}`);
     document.querySelectorAll("[data-ptab]").forEach(b => b.onclick = () => primerView(b.dataset.ptab));
@@ -2871,6 +2912,7 @@ function settingsView(){
     ${row("Skin", (S.skin||"myst")==="myst" ? "Myst (journals)" : "HyperCard (stacks)", "skin", "Change")}
     ${row("Ink", S.ink==="1bit" ? "black only" : "two colours", "ink", "Change")}
     ${row("Corner map", S.noMini ? "hidden" : "shown, top right, once you carry a map", "mini", S.noMini ? "Show" : "Hide")}
+    ${has3d ? row("Motion", (S.calm != null ? S.calm : window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "calm: close looks don't zoom" : "close looks zoom in and out", "calm", "Change") : ""}
     ${has3d ? row("Eyes", S.fixedEyes ? "fixed exposure" : "adjust to the light at each place", "eyes", S.fixedEyes ? "Adjust" : "Fix") : ""}
     <h4 class="set-sec">Light</h4>${row("Light", "your lantern, the house lamps, the shutters", "lamp", "Open")}
     <h4 class="set-sec">Sound</h4>${row("Sound", S.snd && S.snd.on ? "on" : "off", "snd", "Levels")}
@@ -2882,6 +2924,7 @@ function settingsView(){
     if(id === "lamp"){ closeOv(); return lightView(); } if(id === "help"){ return helpView(); } if(id === "full"){ closeOv(); return fullView(); }
     if(id === "snd"){ return musicView({levels:true}); } if(id === "mbox"){ closeOv(); return window.MUSICBOX ? MUSICBOX.open() : musicView({levels:true}); }
     if(id === "pdock"){ if(!S.inv.includes("primer")) return toast("The Primer is on the porter's desk, in the Entry."); S.primerDock = !S.primerDock; save(); render(); return settingsView(); }
+    if(id === "calm"){ const now = S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); S.calm = !now; save(); return settingsView(); }
     if(id === "mini"){ S.noMini = !S.noMini; save(); render(); return settingsView(); }
     if(id === "eyes"){ S.fixedEyes = !S.fixedEyes; save(); render(); return settingsView(); }
     click(id); setTimeout(settingsView, 50); });

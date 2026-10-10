@@ -461,6 +461,15 @@ Clicking any of them opens drawings. The full build specification is in the proj
 - **Eyes that adjust.** Each standing place meters its own light (a centre-weighted average, read from a 16 × 9 shrink of the picture) and the exposure eases toward it, so a dim corner opens up and a sunny window closes down. Settings → Seeing → Eyes turns it off. A room can bias it with `exposure: 1.2`.
 - **Fittings.** Ordinary rooms have a moulded cornice (fillet, cove, bed moulding, fascia), a picture rail in tall rooms, a skirting with a bead, brass sconces on long clear walls (they glow when the lamps are lit or at night), and a plaster rose where a pendant lamp hangs.
 
+### Next steps taken (October 10)
+
+- **Primer lessons for the open rooms:** the Entry (true north and the compass rose), the Office (the blackboard's Green's function), the Archive (why there is a five-end satin but no six), and the Sundial Court (the equation of time). The docked Primer shows them.
+- **Loose pages.** A page in `pages:` marked `apart: true` doesn't come with its thing; it lies somewhere as an object `{kind: page, page: <item>}`. The hourglass's page is loose in the Office now. Found, it slips into the Primer, even before you carry the hourglass.
+- **Close looks survive the clock.** While you look closely, sit, or are up in the sky, the ten-minute rebuild waits until you step back.
+- **Walking round by keys and touch.** Stepped up to a thing: ← → (or A D) go round it, Shift ↑ ↓ rise and fall, + and − come nearer and go back; on a touch screen, pinch. S steps back from every close look, a desk's included.
+- **Motion.** Settings → Motion: calm close looks don't zoom. It follows the system's reduced-motion setting until you choose.
+- **Lighter drawing.** A still room with only flickers and glints in it redraws about twenty times a second instead of sixty.
+
 ### Clean-up (October 9)
 
 - The old play styles (guided, wanderer, hardcore) are gone: no mode chooser, no mode chip, no `mode:` conditions. Save codes keep a zero in that byte, rebuild Primer pages, and still read codes written when the item list was shorter.
@@ -654,6 +663,18 @@ primer:
 ```
 
 `teaser` finishes the sentence "had not yet seen *Room*, where …". `q` and `a` are a question and a hidden answer. Rooms without a lesson are still offered; they just get less of a story.
+
+### Linking pages instead of doors (Oct 10)
+
+For now the house is travelled by linking pages, not doors. The switch is one line at the top of `palace.yml`: `travel: books`. Delete it and the doors come back exactly as they were.
+
+- **Doors are gone** from every room, both in the 3D view and in the doors list, which becomes "Linking pages". Stairs, landings, and lifts still work.
+- **The Primer holds the pages.** Take it from the porter's desk; from then on every room you stand in writes its own page. The Primer has a "Linking pages" tab: pick a page and touch its moving picture to go. The dock has the same button.
+- **Loose pages** are objects with `kind: linkpage` and `to: <room id>`. Touching one binds it into the Primer and puts that room on the map. Hide it once held with `when: "not:link:<id>"`. Without the Primer, a loose page is only a picture.
+  `- {kind: linkpage, to: 35, icon: linkpage, wall: back, title: "A linking page: the Office", when: "not:link:35", info: "…"}`
+- **The map** shows only rooms whose pages you hold, with no corridors, and clicking one links there. With the Primer, the map button and the corner map appear even without the folded map.
+- **Linking books** (`action: link`) still work, and now also bind their destination page into the Primer.
+- Two loose pages sit on the porter's desk to begin with: the Office and the Sundial Court. The Office's linking book leads on to the Archive.
 
 ### Wings and ranks
 

@@ -5,6 +5,7 @@ title: The Wending House
 start: 0
 latitude: 44.26        # Appleton: the pendulum, the sky, the sun through the windows
 longitude: -88.41
+travel: books           # rooms are reached by linking pages in the Primer, not by doors; delete this line to bring the doors back
 facing: 180            # a visitor in frame e faces south, so the windows catch the sun
 
 help: >-
@@ -129,13 +130,15 @@ letter: |
 
   You have come in by the front door, which is the only one that is always open. This house is mostly a library: of instruments and games, of books that exist and books that don't yet, and of a few rooms that only make sense at night.
 
-  The rooms keep real time. The sun comes in where the sun actually is, and the weather in the windows is the weather in Appleton. Some doors keep hours. Some loops don't bring you back where you started.
+  The rooms keep real time. The sun comes in where the sun actually is, and the weather in the windows is the weather in Appleton.
+
+  There are no doors to speak of just now. Rooms are reached by linking pages: take the Primer from the desk, and every room you stand in writes its own page into it. Loose pages lie about the house, too; each one you find binds into the Primer and puts its room on your map. Open a page, touch the picture, and you are there.
 
   On the desk: a folded map, the Primer, and the porter's ring of keys. Take what you like. The keys open the drawer in the desk, where the full plan and the finding aid are kept, and the glass case on the right, which holds a compass, a lantern, a music box, an hourglass, and an astrolabe for you to borrow. Each comes with its page for the Primer. Leave the keys, and you will find your own way in. Whatever you take can go back on the tray.
 
-  Most of the house is closed while I rebuild it. The office is open, and there is a linking book in it that will take you to the archive.
+  Most of the house is closed while I rebuild it. Two loose pages are on the desk: one for the office, one for the court with the sundial and the open sky. The office has a linking book that will take you to the archive.
 
-  The board on the right goes everywhere directly. The board on the left has this week's problem. Out the left-hand door is a court with a sundial and the open sky; there is an astrolabe hanging there, if you want the sky over somewhere else.
+  The board on the right goes everywhere directly. The board on the left has this week's problem. There is an astrolabe hanging in the court, if you want the sky over somewhere else.
 
   W. K.
 
@@ -1044,7 +1047,7 @@ rooms:
   text: >-
     A high, empty hall. Someone has just left: there is a letter on the desk, a lamp still lit, and the things they meant you to have laid out beside it. A compass rose in the floor points to true north. The thermometer and the window show the real weather outside.
 
-    On the left wall hangs the notice board with this week's problem, and the door out to the Sundial Court. On the right are the link board, which goes everywhere directly, the almanac, and a glass case of instruments. Ahead, the reading room and the tall arch into the Great Hall are boarded up for now. The office is behind you.
+    On the left wall hangs the notice board with this week's problem. On the right are the link board, which goes everywhere directly, the almanac, and a glass case of instruments. On the desk, beside the Primer, two loose linking pages: the office, and the Sundial Court.
   again: The hall is as you left it. The letter is still on the desk.
   doors:
     - {to: 1, wall: back, title: "the reading room"}
@@ -1064,6 +1067,8 @@ rooms:
     - {kind: device, icon: note, wall: left, title: "The codes ledger", action: codes, note: "Your save code, and a place to type warp words."}
     - {kind: device, mount: board, wall: right, icon: map, title: "The link board", action: links, note: "Every page of the site, and your own tiles."}
     - {kind: device, mount: board, wall: right, icon: clock, title: "The almanac", see: ["An astrolabe, its throne empty", "A carriage clock", "The calendar cabinet"], action: almanac, note: "The weather now and for the next few days, sunrise and sunset, and the moon and planets tonight."}
+    - {kind: linkpage, to: 35, icon: linkpage, wall: back, title: "A linking page: the Office", when: "not:link:35", info: "A loose page with a small moving picture of a study: a blackboard, a desk, a window. It binds into the Primer, and the office appears on your map."}
+    - {kind: linkpage, to: 34, icon: linkpage, wall: back, title: "A linking page: the Sundial Court", when: "not:link:34", info: "A loose page whose picture is mostly sky. It binds into the Primer, and the court appears on your map."}
     - {kind: key, item: primer, icon: book, wall: back, title: "A Young Person's Illustrated Primer", when: "not:has:primer", note: "The house's field guide. Touch any glint of light over a thing and the Primer writes down what it is; open it to read your notes, and for the house's lessons."}
     - {kind: case, icon: devcase, wall: right, title: "The case of instruments", lock: master-key, holds: [compass, lantern, musicbox, hourglass, astrolabe], note: "A glass-fronted case, locked: a compass, a lantern, a music box, an hourglass, and an astrolabe, each with its page for the Primer.", info: "Copies of the house's instruments, for visitors to borrow. Each comes with its page; the Primer keeps the page once you take the instrument."}
     - {kind: device, icon: carriage, wall: right, title: "A carriage clock", see: ["The case of timekeepers", "The calendar cabinet", "The almanac"], action: clock, note: "It keeps house time and chimes the quarters: Westminster, Whittington, St. Michael's, ting-tang, or ship's bells."}

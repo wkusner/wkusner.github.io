@@ -338,7 +338,12 @@ export function create(container, hooks){
   /* ---- drag to look around: the view follows the hand; let go past half a quarter turn and you face that way ---- */
   let drag = null, swallowClick = false, keepLook = 0;
   canvas.style.touchAction = "none";
-  canvas.addEventListener("pointerdown", e => { if(e.button && e.button !== 0) return; drag = {x:e.clientX, y:e.clientY, moved:false, id:e.pointerId}; });
+  const touches = new Map(); let pinch0 = 0;
+  canvas.addEventListener("pointerdown", e => { if(e.pointerType === "touch"){ touches.set(e.pointerId, [e.clientX, e.clientY]); if(touches.size === 2){ const [p1, p2] = [...touches.values()]; pinch0 = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]); drag = null; return; } }
+    if(e.button && e.button !== 0) return; drag = {x:e.clientX, y:e.clientY, moved:false, id:e.pointerId}; });
+  canvas.addEventListener("pointermove", e => { if(!touches.has(e.pointerId)) return; touches.set(e.pointerId, [e.clientX, e.clientY]);
+    if(touches.size === 2 && pinch0 && orbit && peeking){ const [p1, p2] = [...touches.values()], d = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]); orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*pinch0/Math.max(20, d))); pinch0 = d; orbitApply(); swallowClick = true; setTimeout(() => swallowClick = false, 80); } });
+  const untouch = e => { touches.delete(e.pointerId); if(touches.size < 2) pinch0 = 0; }; canvas.addEventListener("pointerup", untouch); canvas.addEventListener("pointercancel", untouch);
   const endDrag = e => { if(!drag) return; const was = drag; drag = null; if(!was.moved) return;
     swallowClick = true; setTimeout(() => swallowClick = false, 60); canvas.dataset.cursor = "none";
     if(orbit && peeking) return;
@@ -419,7 +424,7 @@ export function create(container, hooks){
     const key = photoV ? .12 : .24, lo = photoV ? .45 : night ? .85 : .75, hi = photoV ? 2 : night ? 1.25 : 1.8;
     meter.target = Math.min(hi, Math.max(lo, key/Math.max(L, 1e-4)))*bias; }
   /* ---- the frame loop ---- */
-  let last = performance.now(), dirty = 3;
+  let last = performance.now(), dirty = 3, lastAnimDraw = 0;
   function frame(t){
     const dt = Math.min(.05, (t-last)/1000); last = t;
     // ease the camera toward its goal: a turn takes about half a second
@@ -431,13 +436,15 @@ export function create(container, hooks){
     anims.forEach(a => a(t/1000, dt));
     const fk = focusKind(), staged = fk === "close" || fk === "peek";
     stage.k += ((staged ? 1 : 0) - stage.k)*(1 - Math.exp(-dt*5)); if(Math.abs((staged ? 1 : 0) - stage.k) < .002) stage.k = staged ? 1 : 0; else dirty = Math.max(dirty, 1);
-    const fov = 62 - 16*stage.k; if(Math.abs(camera.fov - fov) > .01){ camera.fov = fov; camera.updateProjectionMatrix(); }
+    const fov = 62 - (hooks.calm && hooks.calm() ? 0 : 16)*stage.k; if(Math.abs(camera.fov - fov) > .01){ camera.fov = fov; camera.updateProjectionMatrix(); }
     const fp = fk === "peek" ? focusPt : fk === "close" && plan && stations[plan.ahead] ? stations[plan.ahead].top : null;
     if(fp){ stage.z = -fp.clone().applyMatrix4(camera.matrixWorldInverse).z; stage.r = fk === "close" ? .9 : orbit ? Math.max(.35, orbit.r*.55) : .8; }
     [post, photo].forEach(m => { m.uniforms.stageK.value = stage.k; m.uniforms.focusZ.value = stage.z; m.uniforms.focusR.value = stage.r; });
     const tt = staged ? (fk === "peek" ? stage.title : (plan && stations[plan.ahead] && stations[plan.ahead].title) || "") : "", uiKey = [fk, stage.k > .5, tt, seated ? 1 : 0, actList.length].join("|");
     if(uiKey !== stage.ui){ stage.ui = uiKey; container.classList.toggle("staged", stage.k > .5); stageTitle.textContent = tt; stageTitle.classList.toggle("on", !!tt); backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back"; }
-    if(moving || anims.length || dirty>0){
+    // a still room with only flickers and glints in it is drawn about 20 times a second, not 60; moving or changing, every frame
+    const animDue = anims.length && t - lastAnimDraw > 48;
+    if(moving || animDue || dirty>0){ lastAnimDraw = t;
       dirty = Math.max(0, dirty-1);
       if(RAW){ camera.layers.enableAll(); renderer.setRenderTarget(null); renderer.render(scene, camera); requestAnimationFrame(frame); return; }
       camera.layers.set(0);
@@ -468,7 +475,10 @@ export function create(container, hooks){
     const keepPeek = peeking && navK === lastNavK; lastNavK = navK; plan = p; if(!keepPeek) endPeek();
     if(prevPlan && prevPlan.room && p.room && prevPlan.room.id === p.room.id) ['HG','half','halfX','halfZ','hallFog','envK','doorSpots'].forEach(k => { if(p[k] === undefined && prevPlan[k] !== undefined) p[k] = prevPlan[k]; });
     const k = (isPhoto() ? "photo:" : "") + JSON.stringify(p.skyOpts || {}) + JSON.stringify([p.room.id, p.frame, p.mirror, p.band, p.doors.map(d=>[d.id,d.wall,d.open,d.label,d.name]), p.objects.map(o=>[o.title,o.wall]), p.decor, p.sheetKey, p.lantern, p.lanternColor, p.shade, p.light, p.mats || null, p.wxKind, !!p.sunOff, !!p.moonOff, Math.floor(p.minuteKey/10)]);
-    if(k !== key){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); realUV(scene); meter.reset = true; }
+    // while you look closely at something (or are seated, or up in the sky), the clock's ten-minute ticks don't rebuild the room under you;
+    // the rebuild waits until you step back
+    const timeOnly = key && plan0 && plan0.room.id === p.room.id && k.replace(/,-?\d+\]$/, "]") === key.replace(/,-?\d+\]$/, "]");
+    if(k !== key && !(timeOnly && (peeking || skyOn || seated))){ if(plan0 && plan0.room.id !== p.room.id) dissolve(); key = k; build(p); realUV(scene); meter.reset = true; }
     // where to stand and where to look
     const sl = slots[p.ahead] || {dir:new THREE.Vector3(0,0,-1), center:new THREE.Vector3(0,0,-5), stand:new THREE.Vector3(0,EYE,0)};
     let pos, yaw = Math.atan2(-sl.dir.x, -sl.dir.z), pitch = p.pitch*((p.room.ceiling||"")==="open" && p.pitch>0 ? 1.32 : 0.95);
@@ -1804,6 +1814,11 @@ export function create(container, hooks){
         const pages = add(new THREE.BoxGeometry(.29,.02,.2), mat("#ffffff",{map:pageTex}), 0,.032); 
         add(new THREE.CylinderGeometry(.012,.012,.2,24), mat("#efe6cf"), -.072,.044,0, Math.PI/2,0,0); add(new THREE.CylinderGeometry(.012,.012,.2,24), mat("#efe6cf"), .072,.044,0, Math.PI/2,0,0);
         add(new THREE.BoxGeometry(.008,.002,.14), mat("#9a2a22"), .01,.045,.06); break; }
+      case "linkpage": { // a single loose leaf, its picture moving faintly
+        add(new THREE.BoxGeometry(.15,.003,.2), paper, 0,.002,0,0,.15,0);
+        const lp = add(new THREE.PlaneGeometry(.1,.08), new THREE.MeshBasicMaterial({color:"#9fb6c8"}), 0,.0045,-.025, -Math.PI/2,0,.15); label(lp);
+        anims.push(t => { lp.material.color.setHSL(.58 + .02*Math.sin(t*.6+1), .25, .6 + .06*Math.sin(t*1.3)); });
+        for(let k=0;k<2;k++) add(new THREE.BoxGeometry(.09,.004,.004), ink, 0,.004,.04+k*.025,0,.15,0); break; }
       case "linkbook": { // a small book open on its stand, a moving picture on the right-hand page
         add(new THREE.BoxGeometry(.2,.018,.14), mat("#3c2c1e"), 0,.009);
         add(new THREE.BoxGeometry(.09,.012,.13), paper, -.048,.024); add(new THREE.BoxGeometry(.09,.012,.13), paper, .048,.024);
@@ -2388,5 +2403,5 @@ export function create(container, hooks){
 
   // a small picture of the room as it is now, for the linking books' panels
   function thumb(){ const c = document.createElement("canvas"); c.width = 480; c.height = 270; c.getContext("2d").drawImage(canvas, 0, 0, 480, 270); return c.toDataURL("image/jpeg", .82); }
-  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), hasStation: k => !!stations[k], _pickables: () => picks.map(o => { const h = o.userData.hit; if(!h) return null; const v = o.getWorldPosition(new THREE.Vector3()).project(camera); return [h.kind, h.label, +((v.x+1)/2).toFixed(3), +((1-v.y)/2).toFixed(3), v.z < 1]; }).filter(Boolean), _focus: () => focusKind(), _hit: s => { const o = picks.find(q => q.userData.hit && String(q.userData.hit.label).includes(s)); if(o){ o.userData.hit.onClick(); return true; } return false; }, _hg: () => plan && plan.HG ? plan.HG.nodes[plan.HG.level].length : 0, _glints: () => glints.filter(gl => gl.mesh.visible).map(gl => { const v = gl.mesh.getWorldPosition(new THREE.Vector3()).project(camera); return [(v.x + 1)/2, (1 - v.y)/2, gl.mesh.userData.hit.label]; }), exitFocus:()=>exitFocus(), _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
+  return {show, inspect, canvas, thumb, step, canWalk:()=>!!(plan && plan.room.walk), skyMode, isSky:()=>skyOn, focused:()=>!!focusKind(), hasStation: k => !!stations[k], _pickables: () => picks.map(o => { const h = o.userData.hit; if(!h) return null; const v = o.getWorldPosition(new THREE.Vector3()).project(camera); return [h.kind, h.label, +((v.x+1)/2).toFixed(3), +((1-v.y)/2).toFixed(3), v.z < 1]; }).filter(Boolean), _focus: () => focusKind(), _hit: s => { const o = picks.find(q => q.userData.hit && String(q.userData.hit.label).includes(s)); if(o){ o.userData.hit.onClick(); return true; } return false; }, _hg: () => plan && plan.HG ? plan.HG.nodes[plan.HG.level].length : 0, _glints: () => glints.filter(gl => gl.mesh.visible).map(gl => { const v = gl.mesh.getWorldPosition(new THREE.Vector3()).project(camera); return [(v.x + 1)/2, (1 - v.y)/2, gl.mesh.userData.hit.label]; }), exitFocus:()=>exitFocus(), orbiting:()=>!!(orbit && peeking), orbitBy:(da, de, k)=>{ if(!(orbit && peeking)) return; orbit.az += da; if(orbit.span < Math.PI) orbit.az = Math.max(orbit.az0 - orbit.span, Math.min(orbit.az0 + orbit.span, orbit.az)); orbit.el = Math.max(-.05, Math.min(1.25, orbit.el + de)); orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*(k || 1))); orbitApply(); }, _place:(x,y,z,yaw)=>{ walkPos = new THREE.Vector3(x,y,z); goal.pos.copy(walkPos); cam.pos.copy(walkPos); if(yaw != null){ look.yaw = yaw - goal.yaw; } dirty = 3; }, where:()=>({pos:cam.pos.toArray().map(v=>+v.toFixed(2)), goal:goal.pos.toArray().map(v=>+v.toFixed(2)), yaw:+cam.yaw.toFixed(2), walkPos: walkPos ? walkPos.toArray().map(v=>+v.toFixed(2)) : null}), view:()=>({yaw:cam.yaw, pitch:cam.pitch, F: plan ? plan.F : 0, mirror: !!(plan && plan.mirror)}), snapshot:()=>canvas.toDataURL("image/png")};
 }
