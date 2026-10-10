@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Slide Rule</title>
+<meta name="description" content="A folio of the Wending House: a plain Mannheim slide rule, its scales, and Gunter's line of numbers with the dividers it grew from.">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ECDFC0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="/folio/folio.css?v=2">
+<script src="/folio/folio.js?v=2"></script>
+<script src="/ga.js" async></script>
+<style>
+/* page-only additions; colours come from the kit's variables */
+.reckon{overflow-wrap:anywhere}
+.reckon .big{font-size:27px}
+.reckon table.worked{margin:2px 0 4px}
+.reckon table.worked td{padding:1px 5px;font-size:15px}
+.reckon table.worked td.k{font:400 14px var(--fellsc);color:var(--ink2);letter-spacing:.04em}
+.reckon table.worked td.w{color:var(--faded);font-size:14px}
+.reckon .warn{color:var(--rubric)}
+</style>
+</head>
+<body>
+<main class="leaf">
+  <div class="runhead" data-folio="slide-rule"></div>
+  <h1>The Slide <span class="rub">Rule</span></h1>
+  <p class="subtitle">Logarithms you can slide: a plain Mannheim rule, and the line it grew from.</p>
+  <p class="incipit">A slide rule is a table of logarithms cut into wood. The distance from 1 to any number on its scales is the logarithm of that number, so laying one length after another adds logarithms, and adding logarithms multiplies numbers. Set the slide, move the hairline, and read three figures of the answer without a pencil.</p>
+
+  <nav class="platetabs" role="tablist" aria-label="Plates">
+    <button type="button" role="tab" data-plate="multiply"><span class="no">I.</span>Multiplying and Dividing</button>
+    <button type="button" role="tab" data-plate="scales"><span class="no">II.</span>Squares, Roots, and the Other Scales</button>
+    <button type="button" role="tab" data-plate="gunter"><span class="no">III.</span>Gunter's Line and the Dividers</button>
+  </nav>
+
+  <!-- PLATE I -->
+  <section class="plate" id="multiply" role="tabpanel">
+    <div class="drawing">
+      <svg id="svMul" class="fig" viewBox="0 0 760 404" aria-label="A slide rule with the C scale on the slide and the D scale on the stock, a glass cursor, and a reading glass below"></svg>
+      <p class="caption"><b>Plate I.</b> The C and D scales, the cursor, and the reading glass. The brackets above are the lengths being added.</p>
+      <div class="row"><button type="button" class="q" id="mSwap">Use the other index</button><button type="button" class="q" id="mHair">Hairline to the index</button><button type="button" class="q" id="mReset">Begin again</button></div>
+      <p class="keyhint">Drag the slide or the cursor. Or focus either with Tab and use the arrow keys: each press goes to the next graduation of D, and Shift goes to the next figured one.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdMul" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="m23">Multiply 2 × 3. Set the left index of C over 2 on D, move the hairline to 3 on C, and read 6 on D.</li>
+        <li data-try="m2435">Multiply 2.4 × 3.5. Between 2 and 4 the marks go by 0.02, and every fifth one is longer, so 2.4 is the fourth longer mark past 2.</li>
+        <li data-try="m78">Multiply 7 × 8. From the left index, 8 on C runs off the end of D. Use the right index, read 5.6, and put the point back by estimation: 7 × 8 is about 50, so 56.</li>
+        <li data-try="mdiv">Divide 8.4 ÷ 2.4. Put the hairline on 8.4 on D, slide 2.4 on C under it, and read the quotient on D under the index.</li>
+        <li data-try="mchain">Chain 3 × 4 × 5 without writing down 12. Do 3 × 4 with the right index, leave the hairline on 1.2, bring the left index to the hairline, and go on to 5 on C.</li>
+      </ol>
+      <p class="gloss" data-g="stock"><span class="sig">a.</span>The <em>stock</em>, mahogany faced with boxwood, carries the <em>D</em> scale. From 1 to 2 it is cut in hundredths, from 2 to 4 in fiftieths, and from 4 to 10 in twentieths: the scale crowds to the right, so the divisions get coarser and each stays about the same width.</p>
+      <p class="gloss" data-g="slide"><span class="sig">b.</span>The <em>slide</em> carries <em>C</em>, the same scale again. The 1s at its two ends are its <em>indices</em>. Setting an index over a on D adds the length log a to everything on C.</p>
+      <p class="gloss" data-g="cursor"><span class="sig">c.</span>The <em>cursor</em> is a glass with a fine red <em>hairline</em>, held in brass. It carries a reading from one scale to the scale beside it.</p>
+      <p class="gloss" data-g="glass"><span class="sig">d.</span>The <em>reading glass</em> shows the scales under the hairline five times larger, so you can see which mark the hairline is on.</p>
+      <p class="gloss"><span class="sig">e.</span>If b would fall past the right end, use the <em>right index</em>. The slide moves back one whole length, which is log 10, so D shows the figures of a × b ÷ 10. The rule gives figures, never the decimal point; you place the point by a rough estimate.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE II -->
+  <section class="plate" id="scales" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svSc" class="fig" viewBox="0 0 760 622" aria-label="A slide rule with K and A scales on the upper stock, B, CI and C on the slide, D, L, S and T on the lower stock, and a reading glass showing all nine scales under the hairline"></svg>
+      <p class="caption"><b>Plate II.</b> Nine scales and one hairline. Every scale is read against D.</p>
+      <div class="row"><button type="button" class="q" id="sHome">Slide home</button><button type="button" class="q" id="sSwap">Use the other index</button></div>
+      <p class="keyhint">Drag the slide or the cursor, or use the arrow keys on either.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdSc" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="sroot">Find √20. Put the hairline on 20 on A. Twenty has two figures before the point, so it lies in the right half of A; D reads 4.47. The left half would give √2.</li>
+        <li data-try="ssq">Find 3². Put the hairline on 3 on D; A reads 9.</li>
+        <li data-try="scube">Find ∛50. Put the hairline on 50 on K, in the middle third; D reads 3.68.</li>
+        <li data-try="srec">Find 1/7. Put the hairline on 7 on C; CI reads 1.43, which is 0.143.</li>
+        <li data-try="slog">Find log 2. Put the hairline on 2 on D; L reads .301.</li>
+      </ol>
+      <p class="gloss" data-g="sA"><span class="sig">a.</span><em>A</em> and <em>B</em> fit the whole of D twice into the same length, so each is D at half scale: A over D is x² over x. The left half holds 1 to 10, the right half 10 to 100, and both are figured 1 to 9. For a square root, count the figures before the point: an odd count (2, 200) goes in the left half, an even count (20, 2000) in the right.</p>
+      <p class="gloss" data-g="sK"><span class="sig">b.</span><em>K</em> fits D three times: cubes over D, and cube roots back. Count figures before the point in threes to choose the third.</p>
+      <p class="gloss" data-g="sCI"><span class="sig">c.</span><em>CI</em>, in red, is C run backwards: over b on C it shows 1/b. To multiply, divide by the reciprocal: set b on CI under the hairline at a on D, and a × b is on D under the index.</p>
+      <p class="gloss" data-g="sL"><span class="sig">d.</span><em>L</em> is an ordinary even scale from 0 to 1. Over D it reads the mantissa of log₁₀: log 2 is .301 because 2 sits 0.301 of the way along D.</p>
+      <p class="gloss" data-g="sST"><span class="sig">e.</span><em>S</em> and <em>T</em> are figured in degrees. The angle θ on S stands over 10 sin θ on D, and on T over 10 tan θ, so sin 30° is 5 on D, that is, 0.5. On many rules these two are on the back of the slide; here they sit on the stock.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE III -->
+  <section class="plate" id="gunter" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svGun" class="fig" viewBox="0 0 760 470" aria-label="A boxwood rule with a logarithmic line of numbers from 1 to 100, and a pair of brass dividers standing on it"></svg>
+      <p class="caption"><b>Plate III.</b> A line of numbers and a pair of dividers, after Gunter; then a second line laid against it, after Oughtred.</p>
+      <div class="row"><button type="button" class="q on" id="gModeD" aria-pressed="true">Gunter's dividers</button><button type="button" class="q" id="gModeO" aria-pressed="false">Oughtred's two lines</button></div>
+      <div class="row"><button type="button" class="q" id="gStep">Step the dividers along</button><button type="button" class="q" id="gBack">Step them back</button><button type="button" class="q" id="gReset">Begin again</button></div>
+      <p class="keyhint">Drag either point to open the dividers, or the head to carry them. With the keyboard, each arrow press moves to the next graduation.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdGun" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="gopen">Open the dividers from 1 to 3. They now hold the length log 3.</li>
+        <li data-try="gmul">Multiply 3 × 4. Keep that opening, carry the dividers, and set the left point on 4; the right point falls on 12.</li>
+        <li data-try="gprop">Solve 3 : 5 = 6 : x. Open the dividers from 3 to 5, carry them to 6, and read x = 10.</li>
+        <li data-try="gpow">Open the dividers from 1 to 2 and step them along four times. The points walk 2, 4, 8, 16, and 32 = 2⁵.</li>
+        <li data-try="gough">Change to Oughtred's two lines, slide the upper 1 over 3, and read 12 below the upper 4. Every other product by 3 is there too.</li>
+      </ol>
+      <p class="gloss" data-g="gline"><span class="sig">a.</span>The <em>line of numbers</em> is a single logarithmic line on a boxwood rule, running 1 to 10 and on to 100. The distance from 1 to any number is its logarithm, to scale.</p>
+      <p class="gloss" data-g="gdiv"><span class="sig">b.</span>The <em>dividers</em> are brass, with steel points that find the scratches of the graduation. Drag a point to open them; drag the head to carry them without changing the opening.</p>
+      <p class="gloss"><span class="sig">c.</span>An opening of the dividers is a ratio. Laid from 1 to a, it is log a; laid again from b, it ends at a × b. Stepping it over and over gives a, a², a³, …, which is why equal steps on the line are equal ratios.</p>
+      <p class="gloss" data-g="gough"><span class="sig">d.</span><em>Oughtred's</em> idea was to lay a second line against the first. Slide its 1 over a and every b on it stands over a × b: the dividers' one product becomes a whole table, and the slide rule is born.</p>
+    </aside>
+  </section>
+
+  <div class="fleuron" aria-hidden="true">❦ ❦ ❦</div>
+  <section class="commentary">
+    <h2><span class="no">¶</span>Commentary</h2>
+    <p><b>Logarithms.</b> John Napier published his logarithms in 1614, in the <i>Mirifici logarithmorum canonis descriptio</i>, to turn the multiplications of astronomy into additions. Henry Briggs, after visiting Napier, recast them to base 10, so that multiplying by 10 adds exactly 1. He printed the logarithms of the first thousand numbers in 1617 and the great <i>Arithmetica logarithmica</i> in 1624. Base 10 is what lets a single cycle of the scale serve for every decade: 2, 20, and 0.002 share a mantissa and so share a mark.</p>
+    <p><b>Gunter's line.</b> Edmund Gunter, professor of astronomy at Gresham College, had the idea around 1620 of drawing the logarithms instead of printing them: a line on a rule on which the distance from 1 to n is log n. With a pair of dividers the line multiplies, divides, and works proportions, as on Plate III. For two centuries Gunter's scale, with its lines of numbers, sines, and tangents, was a navigator's instrument.</p>
+    <p><b>Oughtred's slide.</b> William Oughtred saw, around 1622, that two such lines held side by side and slid along each other do the work of the dividers, and do it for every number on the line at once. He described both a straight form and a circular one; his account was printed in 1632, in <i>The Circles of Proportion</i>, translated from his Latin by William Forster. Richard Delamain had published a circular rule in 1630, and the two men quarrelled bitterly over who was first.</p>
+    <p><b>Mannheim's rule.</b> In the 1850s Amédée Mannheim, a French artillery officer, settled the arrangement most later rules kept: squares on A and B above, C and D below, all read together through a sliding cursor with a hairline. That is the rule of Plates I and II. Later patterns added cubes, reciprocals, logarithms, and trigonometric scales on the face and back, and the slide rule stayed in every engineer's pocket until the electronic calculator of the 1970s.</p>
+    <p><b>Why the scale is self-generating.</b> A rule multiplies because the length from 1 to ab is the length from 1 to a plus the length from 1 to b; for a scale that increases steadily, this forces the length to be a fixed multiple of log. So the scale can be made from itself. The step from 1 to 2 also goes from 2 to 4 and from 4 to 8; the step from 1 to 3 goes from 3 to 9. Mark enough such steps and the rest fall between them. The stepping dividers of Plate III do exactly this.</p>
+    <p><b>Accuracy.</b> On a rule 25 cm long, one division is about a millimetre or less, and a careful eye splits it into fifths. That gives about one part in a thousand: three significant figures, four near the left end where the scale is open. It is enough for engineering. The reckon beside each plate shows the exact value of what you set, so you can see the rule's error, which is the reader's error, since the scale itself is exact.</p>
+    <p><b>The decimal point.</b> The rule knows only figures. The product 240 × 0.035 is set exactly as 2.4 × 3.5 and reads 840; a rough estimate, 200 × 0.04 = 8, puts the point: 8.40. Slide rule users learned to carry this estimate in their heads, and it is a habit worth having still.</p>
+    <p><b>Further.</b> Florian Cajori, <i>A History of the Logarithmic Slide Rule and Allied Instruments</i> (1909), still the standard history of the early rules; Peter M. Hopp, <i>Slide Rules: Their History, Models and Makers</i> (1999), for the instruments themselves.</p>
+  </section>
+  <div class="colophon"><span>Drawn for the Wending House, 2026. Drag anything that looks like brass.</span><span>Next: <a href="/slide-rules/">the Slide Rule Cabinet</a>, with circular, complex, finite-field, and relativity rules.</span></div>
+</main>
+
+<script>
+(function(){
+const {E, T, fmt, line} = Folio, $ = id => document.getElementById(id);
+Folio.defs();
+const lg = Math.log10, DEG = Math.PI / 180, clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const ease = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+// a reading, written as a reader would: three significant figures
+const sf = v => v == null || !isFinite(v) ? "—" : v >= 99.95 ? v.toFixed(0) : v >= 9.995 ? v.toFixed(1) : v >= 1 ? v.toFixed(2) : v.toFixed(3);
+const r3 = v => +sf(v);
+const m3 = x => fmt(x, 3);
+const isInt = v => Math.abs(v - Math.round(v)) < 1e-6;
+
+/* ================= GRADUATIONS =================
+   grad([[from, to, step, [m0, m1, m2]], …]): a mark every step; a mark on a multiple of m0 is longest (level 0),
+   then m1 (level 1), m2 (level 2), and the rest are level 3. Where regions meet, the longer mark wins. */
+function grad(regs){
+  const m = new Map();
+  regs.forEach(([a, b, st, ms]) => { for(let n = Math.round(a / st); n <= Math.round(b / st); n++){ const v = n * st;
+    const on = q => Math.abs(v / q - Math.round(v / q)) < 1e-6, lvl = on(ms[0]) ? 0 : on(ms[1]) ? 1 : on(ms[2]) ? 2 : 3, k = v.toFixed(6);
+    if(!m.has(k) || m.get(k).lvl > lvl) m.set(k, {v, lvl}); } });
+  return [...m.values()].sort((p, q) => p.v - q.v);
+}
+const decs = (regs, n) => { const out = []; for(let k = 0; k < n; k++){ const f = Math.pow(10, k); regs.forEach(([a, b, st, ms]) => out.push([a*f, b*f, st*f, ms.map(x => x*f)])); } return out; };
+const CD = [[1, 2, .01, [1, .1, .05]], [2, 4, .02, [1, .5, .1]], [4, 10, .05, [1, .5, .1]]];
+const AB = [[1, 2, .02, [1, .5, .1]], [2, 5, .05, [1, .5, .1]], [5, 10, .1, [1, .5, .5]]];
+const KK = [[1, 3, .05, [1, .5, .1]], [3, 6, .1, [1, .5, .5]], [6, 10, .2, [1, 1, 1]]];
+function scale(o){
+  o.ticks = grad(o.regs).map(g => { const L = o.lab ? o.lab(g.v, g.lvl) : null; return {u:o.u(g.v), lvl:g.lvl, lab:L && L[0], small:L && L[1]}; });
+  (o.extra || []).forEach(x => o.ticks.push({u:o.u(x.v), lvl:x.lvl, lab:x.lab, small:!!x.small, ital:true}));
+  o.lo = o.lo == null ? 0 : o.lo; return o;
+}
+const labCD = (v, l) => isInt(v) ? [String(v > 9.5 ? 1 : Math.round(v)), false] : v < 2 && l === 1 ? [String(Math.round((v - 1) * 10)), true] : null;
+const labDec = skip => v => { const e = Math.floor(lg(v) + 1e-9), m = v / Math.pow(10, e); if(!isInt(m)) return null; const d = Math.round(m);
+  if(d === 1 || d === 10) return [String(Math.round(v)), false]; if(skip && skip.includes(d)) return null; return [String(d), false]; };
+const PI = [{v:Math.PI, lvl:1, lab:"π"}];
+const SLAB = [6,7,8,9,10,15,20,25,30,35,40,45,50,60,70,90], TLAB = [6,7,8,9,10,15,20,25,30,35,40,45];
+const SC = {
+  D:  scale({regs:CD, u:lg, lab:labCD, extra:PI, read:u => Math.pow(10, u), letter:"D", right:"x"}),
+  C:  scale({regs:CD, u:lg, lab:labCD, extra:PI, read:u => Math.pow(10, u), letter:"C", right:"x"}),
+  CI: scale({regs:CD, u:v => 1 - lg(v), lab:labCD, extra:PI, read:u => Math.pow(10, 1 - u), letter:"CI", right:"1/x", cls:"rub"}),
+  A:  scale({regs:decs(AB, 2), u:v => lg(v) / 2, lab:labDec(), extra:[{v:Math.PI, lvl:1, lab:"π", small:true}, {v:10*Math.PI, lvl:1, lab:"π", small:true}], read:u => Math.pow(10, 2*u), letter:"A", right:"x²"}),
+  B:  scale({regs:decs(AB, 2), u:v => lg(v) / 2, lab:labDec(), extra:[{v:Math.PI, lvl:1, lab:"π", small:true}, {v:10*Math.PI, lvl:1, lab:"π", small:true}], read:u => Math.pow(10, 2*u), letter:"B", right:"x²"}),
+  K:  scale({regs:decs(KK, 3), u:v => lg(v) / 3, lab:labDec([9]), read:u => Math.pow(10, 3*u), letter:"K", right:"x³"}),
+  L:  scale({regs:[[0, 1, .002, [.1, .05, .01]]], u:v => v, lab:(v, l) => l === 0 ? [v < 1e-9 ? "0" : v > 1 - 1e-9 ? "1" : "." + Math.round(v * 10), false] : null, read:u => u, letter:"L", right:"lg x"}),
+  S:  scale({regs:[[6, 15, .1, [5, 1, .5]], [15, 30, .2, [5, 1, 1]], [30, 60, .5, [10, 5, 1]], [60, 70, 1, [10, 5, 5]], [70, 80, 2, [10, 10, 10]], [80, 90, 10, [10, 10, 10]]],
+    u:v => lg(10 * Math.sin(v * DEG)), lab:v => SLAB.some(x => Math.abs(x - v) < 1e-6) ? [String(Math.round(v)), false] : null,
+    read:u => Math.asin(Math.pow(10, u) / 10) / DEG, lo:lg(10 * Math.sin(6 * DEG)), letter:"S", right:"sin", deg:true}),
+  T:  scale({regs:[[6, 20, .1, [5, 1, .5]], [20, 45, .2, [5, 1, 1]]],
+    u:v => lg(10 * Math.tan(v * DEG)), lab:v => TLAB.some(x => Math.abs(x - v) < 1e-6) ? [String(Math.round(v)), false] : null,
+    read:u => Math.atan(Math.pow(10, u) / 10) / DEG, lo:lg(10 * Math.tan(6 * DEG)), letter:"T", right:"tan", deg:true})
+};
+// the D marks, for keyboard steps
+const dAll = SC.D.ticks.filter(t => !t.ital).map(t => t.u).sort((a, b) => a - b), dBig = SC.D.ticks.filter(t => !t.ital && t.lvl <= 1).map(t => t.u).sort((a, b) => a - b);
+function nextU(a, dir, list){ let best = null; const base = Math.floor(a);
+  for(let k = base - 1; k <= base + 1; k++) for(const u of list){ const c = k + u;
+    if(dir > 0 ? c > a + 1e-7 && (best === null || c < best) : c < a - 1e-7 && (best === null || c > best)) best = c; }
+  return best == null ? a : best; }
+
+/* draw one scale: marks from the edge yE, going down (d = 1) or up (d = −1), figures beyond them */
+function drawScale(g, sc, xOf, yE, d, P, x0, x1){
+  const paths = ["", "", "", ""];
+  sc.ticks.forEach(t => { const x = xOf(t.u); if(x0 != null && (x < x0 || x > x1)) return;
+    paths[t.lvl] += `M${x.toFixed(2)} ${yE}v${(d * P.len[t.lvl]).toFixed(1)}`;
+    if(t.lab){ const fs = t.small ? P.f1 : P.f0, len = P.len[t.small ? t.lvl : 0], yb = d > 0 ? yE + len + fs * .8 : yE - len - fs * .2;
+      T(t.lab, {x:x.toFixed(2), y:yb.toFixed(1), "font-size":fs, "text-anchor":"middle", class:sc.cls === "rub" ? "rubt" : null, "font-style":t.ital ? "italic" : null}, g); } });
+  paths.forEach((p, i) => { if(p) E("path", {d:p, class:sc.cls || "ink", "stroke-width":P.sw[i]}, g); });
+}
+// boxwood grain: a few long faint lines
+function grain(g, x0, x1, y0, y1, seed){ const n = Math.max(1, Math.round((y1 - y0) / 11));
+  for(let i = 0; i < n; i++){ const y = y0 + (y1 - y0) * (i + .5 + (((seed * 7 + i * 3) % 5) - 2) * .08) / n;
+    E("path", {d:line([x0 + 4, y], [x1 - 4, y + ((i + seed) % 3 - 1) * .8], 30, .9, seed * 13 + i), class:"faded", "stroke-width":.4, opacity:.45}, g); } }
+function screw(g, x, y, r, a){ E("circle", {cx:x, cy:y, r, class:"fvel"}, g); E("circle", {cx:x, cy:y, r, class:"ink", "stroke-width":.8, fill:"url(#hdot)"}, g);
+  const c = Math.cos(a), s = Math.sin(a); E("path", {d:`M${x - c*r*.8},${y - s*r*.8}L${x + c*r*.8},${y + s*r*.8}`, class:"ink", "stroke-width":1.1}, g); }
+
+/* ================= THE RULE =================
+   cfg: X0 (left index on D), Ls (length of one cycle of C/D), y0 (top), rowH, topPad, botPad,
+   top/slide/bottom: rows [name, dir] or null for a blank row; loupe: {y, M, rowH, f0, f1, x0, x1} */
+function Rule(svg, cfg){
+  const {X0, Ls, rowH} = cfg, SX0 = X0 - 54, SX1 = X0 + Ls + 54, W = SX1 - SX0;
+  const R = {s:0, hx:X0 + Ls * .3, X0, Ls, anim:0};
+  let y = cfg.y0; const rows = [];
+  const lay = (list, part) => list.forEach(r => { if(r) rows.push({n:r[0], d:r[1], y, part}); y += rowH; });
+  const top0 = y; y += cfg.topPad; lay(cfg.top, "stock"); const top1 = y; lay(cfg.slide, "slide"); const sl1 = y; lay(cfg.bottom, "stock"); y += cfg.botPad; const bt1 = y;
+  Object.assign(R, {top0, top1, sl0:top1, sl1, bt1, rows});
+  const yE = (r, h, y0) => (r.d > 0 ? y0 : y0 + h);
+  const P = {len:[.55, .42, .32, .22].map(k => k * rowH), sw:[.85, .7, .55, .45], f0:10, f1:7.5};
+
+  // the stock: the channel's floor, the two faces, the mahogany side, and the brass bars across the channel
+  const gBody = E("g", {"data-g":"stock"}, svg);
+  E("rect", {x:SX0, y:top1, width:W, height:sl1 - top1, class:"fink2", opacity:.16}, gBody);
+  E("rect", {x:SX0, y:top1, width:W, height:sl1 - top1, fill:"url(#hx)", opacity:.7}, gBody);
+  [[top0, top1, 1], [sl1, bt1, 2]].forEach(([a, b, sd]) => { E("rect", {x:SX0, y:a, width:W, height:b - a, class:"fvel"}, gBody); grain(gBody, SX0, SX1, a, b, sd);
+    E("rect", {x:SX0, y:a, width:W, height:b - a, class:"ink", "stroke-width":1.1}, gBody); });
+  E("path", {d:`M${SX0},${bt1}L${SX1},${bt1}L${SX1 - 3},${bt1 + 9}L${SX0 + 3},${bt1 + 9}Z`, fill:"url(#h135)", class:"ink", "stroke-width":1}, gBody);
+  E("path", {d:`M${SX0 + 3},${bt1 + 9}L${SX1 - 3},${bt1 + 9}`, class:"ink", "stroke-width":1.4}, gBody);
+  E("path", {d:`M${SX0},${top0 - .5}L${SX1},${top0 - .5}`, class:"ink", "stroke-width":1.5}, gBody);
+  [SX0 + 4, SX1 - 26].forEach(x => { E("rect", {x, y:top1, width:22, height:sl1 - top1, class:"fgold", opacity:.55}, gBody); E("rect", {x, y:top1, width:22, height:sl1 - top1, class:"ink2", "stroke-width":.7, fill:"url(#h45)"}, gBody); });
+  const gStock = E("g", {"data-g":"stock"}, svg);
+  rows.filter(r => r.part === "stock").forEach(r => { const sc = SC[r.n], g = E("g", {"data-g":cfg.gOf ? cfg.gOf(r.n) : null}, gStock);
+    drawScale(g, sc, u => X0 + Ls * u, yE(r, rowH, r.y), r.d, P);
+    T(sc.letter, {x:X0 - 25, y:r.y + rowH / 2 + 4, "font-size":12, "text-anchor":"middle", class:"sc" + (sc.cls === "rub" ? " rubt" : "")}, g);
+    if(cfg.formula) T(sc.right, {x:X0 + Ls + 15, y:r.y + rowH / 2 + 4, "font-size":9.5, "text-anchor":"middle", "font-style":"italic", class:"fadedt"}, g); });
+  if(cfg.engrave) cfg.engrave(E("g", {}, gStock), R);
+
+  // the slide
+  const gS = E("g", {class:"grab", "data-g":"slide"}, svg);
+  E("rect", {x:SX0 + 1, y:top1 + .8, width:W - 2, height:sl1 - top1 - 1.6, class:"fvel"}, gS); grain(gS, SX0, SX1, top1 + 1, sl1 - 1, 5);
+  [SX0 + 1, SX1 - 6].forEach(x => E("rect", {x, y:top1 + .8, width:5, height:sl1 - top1 - 1.6, fill:"url(#h45)", class:"ink2", "stroke-width":.5}, gS));
+  E("rect", {x:SX0 + 1, y:top1 + .8, width:W - 2, height:sl1 - top1 - 1.6, class:"ink", "stroke-width":.9}, gS);
+  rows.filter(r => r.part === "slide").forEach(r => { const sc = SC[r.n], g = E("g", {"data-g":cfg.gOf ? cfg.gOf(r.n) : null}, gS);
+    drawScale(g, sc, u => X0 + Ls * u, yE(r, rowH, r.y), r.d, P);
+    T(sc.letter, {x:X0 - 25, y:r.y + rowH / 2 + 4, "font-size":12, "text-anchor":"middle", class:"sc" + (sc.cls === "rub" ? " rubt" : "")}, g);
+    if(cfg.formula) T(sc.right, {x:X0 + Ls + 15, y:r.y + rowH / 2 + 4, "font-size":9.5, "text-anchor":"middle", "font-style":"italic", class:sc.cls === "rub" ? "rubt" : "fadedt"}, g); });
+  E("rect", {x:SX0, y:top1, width:W, height:sl1 - top1, fill:"transparent"}, gS);
+
+  // brass end braces over the ends of the stock
+  const gBr = E("g", {"data-g":"stock"}, svg);
+  [[SX0 - 3, 1], [SX1 - 23, -1]].forEach(([x, sg]) => [[top0 - 3, top1], [sl1, bt1 + 3]].forEach(([a, b], i) => {
+    E("rect", {x, y:a, width:26, height:b - a, class:"fgold", rx:1.5}, gBr);
+    E("rect", {x, y:a, width:26, height:b - a, fill:"url(#h45w)", opacity:.6, rx:1.5}, gBr);
+    E("rect", {x, y:a, width:26, height:b - a, class:"ink", "stroke-width":1.1, rx:1.5}, gBr);
+    E("path", {d:`M${x + (sg > 0 ? 22 : 4)},${a + 1.5}V${b - 1.5}`, class:"ink2", "stroke-width":.6}, gBr);
+    const n = (b - a) > 40 ? 2 : 1; for(let k = 0; k < n; k++) screw(gBr, x + 13, a + (b - a) * (k + .5) / n, 4, .6 + i + k); }));
+
+  // the cursor: a glass in a brass frame, with a red hairline
+  const gC = E("g", {class:"grab", "data-g":"cursor"}, svg), cy0 = top0 - 12, cy1 = bt1 + 13;
+  E("rect", {x:-26, y:cy0 + 4, width:52, height:cy1 - cy0 - 8, class:"flwash", opacity:.55}, gC);
+  E("rect", {x:-26, y:cy0 + 4, width:52, height:cy1 - cy0 - 8, class:"ink2", "stroke-width":.8}, gC);
+  E("path", {d:`M-20,${cy0 + 30}l16,-16M-15,${cy0 + 44}l26,-26M8,${cy1 - 18}l12,-12`, class:"fvel", style:"stroke:var(--vellum2)", "stroke-width":1.6, opacity:.85}, gC);
+  [[cy0 - 2, 10], [cy1 - 8, 10]].forEach(([a, h]) => { E("rect", {x:-32, y:a, width:64, height:h, class:"fgold", rx:2}, gC); E("rect", {x:-32, y:a, width:64, height:h, fill:"url(#hv)", opacity:.35, rx:2}, gC);
+    E("rect", {x:-32, y:a, width:64, height:h, class:"ink", "stroke-width":1.1, rx:2}, gC); screw(gC, -24, a + h / 2, 2.6, .4); screw(gC, 24, a + h / 2, 2.6, 1.9); });
+  E("path", {d:`M0,${cy0 + 8}V${cy1 - 8}`, class:"rub", "stroke-width":1}, gC);
+
+  // the reading glass
+  let L = null;
+  if(cfg.loupe){ const o = cfg.loupe, M = o.M, n = rows.length, lh = 2 * 10 + n * o.rowH, lx0 = o.x0, lx1 = o.x1, LCX = (lx0 + lx1) / 2, ly0 = o.y;
+    const id = svg.id + "-loupe", cp = E("clipPath", {id}, E("defs", {}, svg)); E("rect", {x:lx0, y:ly0, width:lx1 - lx0, height:lh}, cp);
+    const gL = E("g", {"data-g":"glass"}, svg), gIn = E("g", {"clip-path":`url(#${id})`}, gL);
+    E("rect", {x:lx0, y:ly0, width:lx1 - lx0, height:lh, class:"fvel"}, gIn);
+    const LP = {len:[.55, .42, .32, .22].map(k => k * o.rowH), sw:[1.4, 1.15, .95, .8], f0:o.f0, f1:o.f1};
+    const ly = i => ly0 + 10 + i * o.rowH, iS0 = rows.findIndex(r => r.part === "slide"), iS1 = rows.length - 1 - [...rows].reverse().findIndex(r => r.part === "slide");
+    const xM = u => M * (X0 + Ls * u);
+    const gLst = E("g", {}, gIn), gLsl = E("g", {}, gIn);
+    if(iS0 >= 0){ E("rect", {x:lx0, y:ly(iS0), width:lx1 - lx0, height:(iS1 - iS0 + 1) * o.rowH, fill:"url(#hx)", opacity:.7}, gIn); gIn.insertBefore(gIn.lastChild, gLst); }
+    rows.forEach((r, i) => { const sc = SC[r.n], g = E("g", {}, r.part === "slide" ? gLsl : gLst); if(r.part === "slide") return; drawScale(g, sc, xM, yE(r, o.rowH, ly(i)), r.d, LP); });
+    if(iS0 >= 0){ E("rect", {x:M * (SX0 + 1), y:ly(iS0) + .8, width:M * (W - 2), height:(iS1 - iS0 + 1) * o.rowH - 1.6, class:"fvel"}, gLsl);
+      E("rect", {x:M * (SX0 + 1), y:ly(iS0) + .8, width:M * (W - 2), height:(iS1 - iS0 + 1) * o.rowH - 1.6, class:"ink", "stroke-width":1.1}, gLsl);
+      rows.forEach((r, i) => { if(r.part !== "slide") return; drawScale(E("g", {}, gLsl), SC[r.n], xM, yE(r, o.rowH, ly(i)), r.d, LP); }); }
+    // the edges of the cursor glass, and the hairline
+    const gLh = E("g", {}, gIn);
+    E("path", {d:`M${LCX},${ly0}V${ly0 + lh}`, class:"rub", "stroke-width":1.3}, gLh);
+    // the letters, fixed at the left of the glass
+    rows.forEach((r, i) => { const sc = SC[r.n]; E("rect", {x:lx0 + 3, y:ly(i) + o.rowH / 2 - 8, width:22, height:16, class:"fvel", opacity:.92}, gLh);
+      T(sc.letter, {x:lx0 + 14, y:ly(i) + o.rowH / 2 + 4.5, "font-size":12.5, "text-anchor":"middle", class:"sc" + (sc.cls === "rub" ? " rubt" : "")}, gLh); });
+    // the rim
+    const rim = E("g", {}, gL), b = 7;
+    E("path", {d:`M${lx0 - b},${ly0 - b}H${lx1 + b}V${ly0 + lh + b}H${lx0 - b}ZM${lx0},${ly0}V${ly0 + lh}H${lx1}V${ly0}Z`, class:"fgold", "fill-rule":"evenodd", opacity:.8}, rim);
+    E("path", {d:`M${lx0 - b},${ly0 - b}H${lx1 + b}V${ly0 + lh + b}H${lx0 - b}ZM${lx0},${ly0}V${ly0 + lh}H${lx1}V${ly0}Z`, fill:"url(#h45w)", "fill-rule":"evenodd", opacity:.5}, rim);
+    E("rect", {x:lx0 - b, y:ly0 - b, width:lx1 - lx0 + 2*b, height:lh + 2*b, class:"ink", "stroke-width":1.3}, rim);
+    E("rect", {x:lx0, y:ly0, width:lx1 - lx0, height:lh, class:"ink", "stroke-width":1}, rim);
+    E("rect", {x:lx0 - b - 3, y:ly0 - b - 3, width:lx1 - lx0 + 2*b + 6, height:lh + 2*b + 6, class:"ink2", "stroke-width":.5}, rim);
+    screw(rim, lx0 - b / 2 + .5, ly0 - b / 2 + .5, 2.4, .3); screw(rim, lx1 + b / 2 - .5, ly0 - b / 2 + .5, 2.4, 1.2); screw(rim, lx0 - b / 2 + .5, ly0 + lh + b / 2 - .5, 2.4, 2); screw(rim, lx1 + b / 2 - .5, ly0 + lh + b / 2 - .5, 2.4, .9);
+    T(`under the reading glass, ${M === 5 ? "five" : M === 4 ? "four" : M} times`, {x:LCX, y:ly0 + lh + b + 19, "font-size":13.5, "text-anchor":"middle", "font-style":"italic", class:"fadedt"}, gL);
+    // a faint tie from the cursor to the glass
+    L = {M, LCX, gLst, gLsl, gL};
+  }
+
+  R.uS = () => R.s / Ls; R.uh = () => (R.hx - X0) / Ls;
+  // the value under the hairline on a scale (null when the hairline is off it)
+  R.read = n => { const sc = SC[n], r = rows.find(q => q.n === n), u = R.uh() - (r && r.part === "slide" ? R.uS() : 0);
+    if(u < sc.lo - 2e-4 || u > 1 + 2e-4) return null; return sc.read(clamp(u, sc.lo, 1)); };
+  R.draw = () => { gS.setAttribute("transform", `translate(${R.s.toFixed(2)},0)`); gC.setAttribute("transform", `translate(${R.hx.toFixed(2)},0)`);
+    if(L){ L.gLst.setAttribute("transform", `translate(${(L.LCX - L.M * R.hx).toFixed(2)},0)`); L.gLsl.setAttribute("transform", `translate(${(L.LCX + L.M * (R.s - R.hx)).toFixed(2)},0)`); }
+    if(cfg.onDraw) cfg.onDraw(R); Folio.tryCheck(); };
+  R.stop = () => { R.anim++; };
+  R.to = (tg, dur) => new Promise(res => { const id = ++R.anim, s0 = R.s, h0 = R.hx, t0 = performance.now(), ts = tg.s == null ? s0 : tg.s, th = tg.hx == null ? h0 : tg.hx;
+    dur = dur || 650; const tick = now => { if(id !== R.anim) return res(false); const k = ease(Math.min(1, (now - t0) / dur)); R.s = s0 + (ts - s0) * k; R.hx = h0 + (th - h0) * k; R.draw(); if(k < 1) requestAnimationFrame(tick); else res(true); };
+    requestAnimationFrame(tick); });
+  R.seq = async steps => { for(const st of steps){ if(st.wait){ await new Promise(r => setTimeout(r, st.wait)); continue; } if(!(await R.to(st))) return; } };
+  R.H = u => X0 + Ls * u;          // the hairline position for a place u on D
+  R.swap = () => { R.stop(); const u = R.uS(); R.to({s:(u >= 0 ? u - 1 : u + 1) * Ls}, 700); };
+  let s0 = 0, h0 = 0;
+  Folio.drag(gS, svg, (p, e, p0) => { R.s = clamp(s0 + p.x - p0.x, -Ls, Ls); R.draw(); }, () => { R.stop(); s0 = R.s; });
+  Folio.drag(gC, svg, (p, e, p0) => { R.hx = clamp(h0 + p.x - p0.x, X0 - 40, X0 + Ls + 40); R.draw(); }, () => { R.stop(); h0 = R.hx; });
+  Folio.keys(gS, (dx, dy, big) => { R.stop(); R.s = clamp(nextU(R.uS(), dx || -dy, big ? dBig : dAll), -1, 1) * Ls; R.draw(); }, "The slide. Arrow keys move its index to the next graduation of D; Shift for the next figured one.");
+  Folio.keys(gC, (dx, dy, big) => { R.stop(); R.hx = R.H(clamp(nextU(R.uh(), dx || -dy, big ? dBig : dAll), 0, 1)); R.draw(); }, "The cursor. Arrow keys move the hairline to the next graduation of D; Shift for the next figured one.");
+  return R;
+}
+
+/* a bracket over the rule: a length, labelled */
+function bracket(g, x1, x2, y, cls, label, tcls, yTo, below){
+  if(Math.abs(x2 - x1) < 1.5) return;
+  const k = below ? -1 : 1;
+  E("path", {d:`M${x1},${y + 6*k}V${y}H${x2}V${y + 6*k}`, class:cls, "stroke-width":1.1}, g);
+  const a = Math.min(x1, x2), b = Math.max(x1, x2), mx = (a + b) / 2;
+  E("path", {d:`M${mx - 4},${y}l4,${-4*k}l4,${4*k}`, class:cls, "stroke-width":1}, g);
+  if(yTo) [x1, x2].forEach(x => E("path", {d:`M${x},${y + 6*k}V${yTo}`, class:cls, "stroke-width":.6, "stroke-dasharray":"1.5 2.5", opacity:.8}, g));
+  const t = T(label, {x:clamp(mx, 40, 720), y:below ? y + 19 : y - 7, "font-size":12.5, "text-anchor":"middle", "font-style":"italic", class:tcls}, g);
+  return t;
+}
+
+/* ================= PLATE I: MULTIPLYING AND DIVIDING ================= */
+const svM = $("svMul");
+const gBr1 = E("g", {}, svM);
+const R1 = Rule(svM, {X0:70, Ls:620, y0:80, rowH:24, topPad:6, botPad:10, top:[null], slide:[null, ["C", -1]], bottom:[["D", 1]],
+  engrave:(g, R) => { T("SYSTEM MANNHEIM", {x:380, y:R.top0 + 21, "font-size":11, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"4"}, g);
+    E("path", {d:`M300,${R.top0 + 25}h-60M460,${R.top0 + 25}h60`, class:"faded", "stroke-width":.5}, g); },
+  loupe:{y:240, M:5, rowH:50, f0:15, f1:11, x0:110, x1:650}, onDraw:drawMul});
+const uOk = (u, v) => Math.abs(u - lg(v)) < .0022;
+function mState(){ const uS = R1.uS(), uh = R1.uh(), right = uS < 0, idx = right ? uS + 1 : uS, cU = uh - uS;
+  const onD = uh > -2e-4 && uh < 1 + 2e-4, onC = cU > -2e-4 && cU < 1 + 2e-4, idxOn = idx > -2e-4 && idx < 1 + 2e-4;
+  return {uS, uh, right, idx, cU, onD, onC, idxOn}; }
+function drawMul(R){
+  gBr1.replaceChildren(); const st = mState(), X0 = R.X0, Ls = R.Ls, xI = R.H(st.idx), xh = R.hx;
+  const a = Math.pow(10, st.idx), b = Math.pow(10, st.cU), p = Math.pow(10, st.uh), yR = R.top0 - 14;
+  let s = "";
+  if(st.idxOn) bracket(gBr1, X0, xI, 54, "lap", "log a", "hand", yR);
+  if(st.idxOn && st.onC && st.onD){
+    bracket(gBr1, xI, xh, 54, "rub", st.right ? "log b − 1" : "log b", "rubt", yR);
+    bracket(gBr1, X0, xh, 24, "ink", st.right ? "log a + log b − 1" : "log a + log b", null);
+    const ar = r3(a), br = r3(b), pr = r3(p), prod = st.right ? r3(p * 10) : pr, ex = ar * br, err = (prod - ex) / ex * 100;
+    const A = Math.round(ar), B = Math.round(br), est = A * B;
+    s += `<span class="nw">The ${st.right ? "right" : "left"} index of C</span> stands over a = ${sf(a)} on D. The hairline crosses b = ${sf(b)} on C and ${sf(p)} on D.`;
+    s += `<span class="big">${sf(ar)} × ${sf(br)} = ${sf(prod)}</span>`;
+    s += `<span class="nw">log ${sf(ar)} + log ${sf(br)}</span> <span class="nw">= ${m3(lg(a))} + ${m3(lg(b))}</span> <span class="nw">= ${m3(lg(a) + lg(b))}</span>`;
+    s += st.right ? `. The rule drops the whole 1 and shows ${m3(st.uh)} → ${sf(p)} on D. Estimate ${A} × ${B} = ${est}, so the product is ${sf(prod)}, not ${sf(pr)}.` : ` → ${sf(p)}. Estimate ${A} × ${B} = ${est}, so the point goes after the first figure.`;
+    s += `<hr><span class="dim">Exact: ${sf(ar)} × ${sf(br)} = ${ex.toFixed(4)}; the rule's ${sf(prod)} is off by ${fmt(Math.abs(err), 2)}%.<br>Read backwards it divides: ${sf(prod)} ÷ ${sf(br)} = ${sf(ar)}, the number under the index.</span>`;
+  } else if(st.idxOn){
+    s += `The ${st.right ? "right" : "left"} index of C stands over a = ${sf(a)} on D.<span class="big">${!st.onC ? "off the slide" : "off the end"}</span>`;
+    s += !st.onC ? `The hairline is past the end of C. Bring it back over the slide.` : `<span class="warn">b = ${sf(b)} on C lies past the end of D: a × b would be ${sf(a * b)}, longer than the rule.</span> Use the other index: the slide moves a whole length, log 10, and D shows the figures of a × b ÷ 10.`;
+  } else s += `Neither index of C is over D.<span class="big">set the slide</span>Bring an index of C over the first number on D.`;
+  $("rdMul").innerHTML = s;
+}
+R1.s = R1.Ls * lg(1.5); R1.hx = R1.H(lg(1.5) + lg(2)); R1.draw();
+$("mSwap").onclick = () => R1.swap();
+$("mHair").onclick = () => { R1.stop(); const st = mState(); R1.to({hx:R1.H(clamp(st.idx, 0, 1))}); };
+$("mReset").onclick = () => { R1.stop(); R1.to({s:0, hx:R1.H(lg(2))}); };
+const pair = (st, x, y) => st.onD && ((uOk(st.idx, x) && uOk(st.cU, y)) || (uOk(st.idx, y) && uOk(st.cU, x)));
+Folio.tries({
+  m23:   {setup(){ R1.seq([{s:R1.Ls * lg(2)}, {hx:R1.H(lg(6))}]); }, check(){ const st = mState(); return !st.right && pair(st, 2, 3); }},
+  m2435: {setup(){ R1.seq([{s:R1.Ls * lg(2.4)}, {hx:R1.H(lg(8.4))}]); }, check(){ const st = mState(); return !st.right && pair(st, 2.4, 3.5); }},
+  m78:   {setup(){ R1.seq([{s:R1.Ls * lg(7)}, {hx:R1.H(lg(7) + lg(8))}, {wait:350}, {s:R1.Ls * (lg(7) - 1)}, {hx:R1.H(lg(5.6))}]); }, check(){ const st = mState(); return st.right && pair(st, 7, 8); }},
+  mdiv:  {setup(){ R1.seq([{hx:R1.H(lg(8.4))}, {s:R1.Ls * (lg(8.4) - lg(2.4))}]); }, check(){ const st = mState(); return uOk(st.uh, 8.4) && uOk(st.cU, 2.4) && !st.right; }},
+  mchain:{setup(){ R1.seq([{s:R1.Ls * (lg(3) - 1)}, {hx:R1.H(lg(1.2))}, {wait:300}, {s:R1.Ls * lg(1.2)}, {hx:R1.H(lg(6))}]); },
+          check(){ const st = mState(); return !st.right && uOk(st.uh, 6) && [[1.2, 5], [1.5, 4]].some(([x, y]) => uOk(st.idx, x) && uOk(st.cU, y)); }}
+});
+
+/* ================= PLATE II: THE OTHER SCALES ================= */
+const svS = $("svSc");
+const gOf = n => ({A:"sA", B:"sA", K:"sK", CI:"sCI", L:"sL", S:"sST", T:"sST"})[n] || null;
+const R2 = Rule(svS, {X0:70, Ls:620, y0:58, rowH:24, topPad:4, botPad:6, formula:true, gOf,
+  top:[["K", -1], ["A", -1]], slide:[["B", 1], ["CI", -1], ["C", -1]], bottom:[["D", 1], ["L", 1], ["S", 1], ["T", 1]],
+  loupe:{y:330, M:4, rowH:26, f0:11, f1:8.5, x0:110, x1:650}, onDraw:drawSc});
+function drawSc(R){
+  const v = n => R.read(n), d = v("D"), c = v("C");
+  const row = (k, val, why) => `<tr><td class="k">${k}</td><td class="n">${val}</td><td class="w">${why}</td></tr>`;
+  const dg = x => x == null ? "—" : fmt(x, 1) + "°";
+  let s = `Under the hairline, D reads<span class="big">${sf(d)}</span>`;
+  s += `<table class="worked"><tr><th>scale</th><th>reads</th><th>which is</th></tr>`;
+  s += row("K", sf(v("K")), d == null ? "" : `D³ = ${(d*d*d).toPrecision(4)}`);
+  s += row("A", sf(v("A")), d == null ? "" : `D² = ${(d*d).toPrecision(4)}`);
+  s += row("B", sf(v("B")), c == null ? "" : `C² = ${(c*c).toPrecision(4)}`);
+  s += row("CI", sf(v("CI")), c == null ? "" : `1/C = ${(1/c).toPrecision(4)}`);
+  s += row("C", sf(c), "the slide");
+  s += row("D", sf(d), "");
+  s += row("L", v("L") == null ? "—" : "." + v("L").toFixed(3).slice(2), d == null ? "" : `log D = ${lg(d).toFixed(4)}`);
+  s += row("S", dg(v("S")), v("S") == null ? (d != null ? "below 6°" : "") : `sin θ = ${(Math.sin(v("S")*DEG)).toFixed(4)}`);
+  s += row("T", dg(v("T")), v("T") == null ? (d != null ? "below 6°" : "") : `tan θ = ${(Math.tan(v("T")*DEG)).toFixed(4)}`);
+  s += `</table><span class="dim">A is D², K is D³, and L is log D, whatever the slide does. B, CI, and C ride on the slide. S and T read sin θ and tan θ as D ÷ 10.</span>`;
+  if(d == null) s = `The hairline is off the end of D.<span class="big">—</span>Bring it back over the scales.`;
+  $("rdSc").innerHTML = s;
+}
+R2.s = 0; R2.hx = R2.H(lg(3)); R2.draw();
+$("sHome").onclick = () => { R2.stop(); R2.to({s:0}); };
+$("sSwap").onclick = () => R2.swap();
+const hOk = u => Math.abs(R2.uh() - u) < .0022;
+Folio.tries({
+  sroot: {setup(){ R2.seq([{hx:R2.H(lg(20) / 2)}]); }, check(){ return hOk(lg(20) / 2); }},
+  ssq:   {setup(){ R2.seq([{hx:R2.H(lg(3))}]); }, check(){ return hOk(lg(3)); }},
+  scube: {setup(){ R2.seq([{hx:R2.H(lg(50) / 3)}]); }, check(){ return hOk(lg(50) / 3); }},
+  srec:  {setup(){ R2.seq([{s:0}, {hx:R2.H(lg(7))}]); }, check(){ const cu = R2.uh() - R2.uS(); return Math.abs(cu - lg(7)) < .0022; }},
+  slog:  {setup(){ R2.seq([{hx:R2.H(lg(2))}]); }, check(){ return hOk(lg(2)); }}
+});
+
+/* ================= PLATE III: GUNTER'S LINE AND THE DIVIDERS ================= */
+const svG = $("svGun"), GX0 = 50, GD = 330, YL = 300, LEG = 215, MAXSP = 2 * LEG * .96;
+const GL = scale({regs:decs(AB, 2), u:lg, lab:v => isInt(v) && (v < 10 || isInt(v / 10)) && Math.round(v) !== 90 ? [String(Math.round(v)), false] : null, read:u => Math.pow(10, u)});
+const gU = GL.ticks.map(t => t.u).sort((a, b) => a - b), gBigU = GL.ticks.filter(t => t.lvl <= 1).map(t => t.u).sort((a, b) => a - b);
+const snapU = u => { let lo = 0, hi = gU.length - 1; while(hi - lo > 1){ const m = (lo + hi) >> 1; if(gU[m] < u) lo = m; else hi = m; } return Math.abs(gU[lo] - u) < Math.abs(gU[hi] - u) ? gU[lo] : gU[hi]; };
+const gx = u => GX0 + GD * u;
+const GP = {len:[16, 12, 8.5, 5.5], sw:[.9, .75, .6, .5], f0:11.5, f1:8.5};
+let gm = "div", d1 = 0, d2 = lg(2), go = lg(2), lift = 0, gAnim = 0;
+// the lower rule, with Gunter's line along its upper edge
+const gRule = E("g", {}, svG);
+{ const x0 = GX0 - 30, x1 = GX0 + 2 * GD + 30, y0 = YL, y1 = YL + 60, g = E("g", {"data-g":"gline"}, gRule);
+  E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, class:"fvel"}, g); grain(g, x0, x1, y0, y1, 3);
+  E("path", {d:`M${x0},${y1}L${x1},${y1}L${x1 - 3},${y1 + 9}L${x0 + 3},${y1 + 9}Z`, fill:"url(#h135w)", class:"ink", "stroke-width":1}, g);
+  E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, class:"ink", "stroke-width":1.2}, g);
+  E("path", {d:`M${x0 + 6},${y0 + 32}H${x1 - 6}M${x0 + 6},${y0 + 34.5}H${x1 - 6}`, class:"ink2", "stroke-width":.5}, g);
+  drawScale(g, GL, gx, y0, 1, GP);
+  T("N", {x:GX0 - 17, y:y0 + 22, "font-size":13, class:"sc", "text-anchor":"middle"}, g);
+  T("THE LINE OF NUMBERS", {x:GX0 + GD, y:y0 + 50, "font-size":10.5, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"4"}, g);
+  [x0 + 10, x1 - 10].forEach((x, i) => screw(g, x, y0 + 46, 3, i + .4)); }
+// the upper rule (Oughtred), its line along its lower edge
+const gUp = E("g", {class:"grab", "data-g":"gough"}, svG);
+{ const x0 = GX0 - 30, x1 = GX0 + 2 * GD + 30, y1 = YL, y0 = YL - 60;
+  E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, class:"fvel"}, gUp); grain(gUp, x0, x1, y0, y1, 6);
+  E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, class:"ink", "stroke-width":1.2}, gUp);
+  E("path", {d:`M${x0 + 6},${y1 - 32}H${x1 - 6}M${x0 + 6},${y1 - 34.5}H${x1 - 6}`, class:"ink2", "stroke-width":.5}, gUp);
+  drawScale(gUp, GL, gx, y1, -1, GP);
+  E("path", {d:`M${GX0},${y1}l-5,-9h10z`, class:"frub"}, gUp);
+  T("N", {x:GX0 - 17, y:y1 - 14, "font-size":13, class:"sc", "text-anchor":"middle"}, gUp);
+  T("THE SECOND LINE", {x:GX0 + GD, y:y0 + 16, "font-size":10.5, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"4"}, gUp);
+  E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, fill:"transparent"}, gUp); }
+const gNote = E("g", {}, svG), gDivV = E("g", {"data-g":"gdiv"}, svG), gDivH = E("g", {"data-g":"gdiv"}, svG);
+const gTitle = T("", {x:24, y:34, "font-size":13, class:"sc", "letter-spacing":"2"}, svG);
+const hP1 = E("circle", {r:16, fill:"transparent", class:"grab"}, gDivH), hP2 = E("circle", {r:16, fill:"transparent", class:"grab"}, gDivH), hHd = E("circle", {r:24, fill:"transparent", class:"grab"}, gDivH);
+function leg(g, H, P, shade){
+  const dx = P[0] - H[0], dy = P[1] - H[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L, k = .8, B = [H[0] + dx * k, H[1] + dy * k], w0 = 6.5, w1 = 2.4;
+  const poly = `M${H[0] + nx*w0},${H[1] + ny*w0}L${B[0] + nx*w1},${B[1] + ny*w1}L${B[0] - nx*w1},${B[1] - ny*w1}L${H[0] - nx*w0},${H[1] - ny*w0}Z`;
+  E("path", {d:poly, class:"fgold"}, g);
+  E("path", {d:`M${H[0]},${H[1]}L${B[0]},${B[1]}L${B[0] + nx*w1*shade},${B[1] + ny*w1*shade}L${H[0] + nx*w0*shade},${H[1] + ny*w0*shade}Z`, fill:"url(#h45)", opacity:.8}, g);
+  E("path", {d:poly, class:"ink", "stroke-width":1}, g);
+  E("path", {d:`M${B[0] + nx*w1},${B[1] + ny*w1}L${P[0]},${P[1]}L${B[0] - nx*w1},${B[1] - ny*w1}Z`, class:"fink2"}, g);
+  E("path", {d:`M${B[0] + nx*w1*1.6},${B[1] + ny*w1*1.6}L${B[0] - nx*w1*1.6},${B[1] - ny*w1*1.6}`, class:"ink", "stroke-width":1.6}, g);
+}
+function drawGun(){
+  gNote.replaceChildren(); gDivV.replaceChildren();
+  const div = gm === "div";
+  gUp.style.display = div ? "none" : ""; gDivH.style.display = div ? "" : "none";
+  gUp.setAttribute("transform", `translate(${(GD * go).toFixed(2)},0)`);
+  gTitle.textContent = div ? "GUNTER, ABOUT 1620: ONE LINE, AND DIVIDERS" : "OUGHTRED, ABOUT 1622: TWO LINES, SLIDING";
+  const lo = Math.min(d1, d2), hi = Math.max(d1, d2), sp = hi - lo, p = Math.pow(10, lo), q = Math.pow(10, hi), r = Math.pow(10, sp);
+  let s = "";
+  if(div){
+    const x1 = gx(d1), x2 = gx(d2), yP = YL - lift, w = Math.abs(x2 - x1), h = Math.sqrt(Math.max(0, LEG*LEG - w*w/4)), H = [(x1 + x2) / 2, yP - h];
+    if(lift > .5){ E("path", {d:`M${x1},${YL}V${YL - 8}M${x2},${YL}V${YL - 8}`, class:"faded", "stroke-width":.6}, gDivV); }
+    // the legs, the joint, and the handle
+    leg(gDivV, H, [x1, yP], 1); leg(gDivV, H, [x2, yP], -1);
+    E("rect", {x:H[0] - 4, y:H[1] - 34, width:8, height:24, class:"fgold"}, gDivV); E("rect", {x:H[0] - 4, y:H[1] - 34, width:8, height:24, fill:"url(#hh)", class:"ink", "stroke-width":.9}, gDivV);
+    E("circle", {cx:H[0], cy:H[1] - 38, r:5, class:"fgold"}, gDivV); E("circle", {cx:H[0], cy:H[1] - 38, r:5, class:"ink", "stroke-width":1}, gDivV);
+    E("circle", {cx:H[0], cy:H[1], r:12, class:"fgold"}, gDivV); E("circle", {cx:H[0], cy:H[1], r:12, fill:"url(#h135w)", class:"ink", "stroke-width":1.1}, gDivV);
+    screw(gDivV, H[0], H[1], 4.2, .7);
+    hP1.setAttribute("cx", x1); hP1.setAttribute("cy", yP - 6); hP2.setAttribute("cx", x2); hP2.setAttribute("cy", yP - 6); hHd.setAttribute("cx", H[0]); hHd.setAttribute("cy", H[1] - 14);
+    // the opening, measured twice: where it stands, and laid from 1
+    bracket(gNote, gx(lo), gx(hi), 386, "lap", `the opening: log ${sf(q)} − log ${sf(p)}`, "hand", YL + 70, true);
+    if(lo > .004) bracket(gNote, gx(0), gx(sp), 426, "rub", `the same opening from 1 reaches ${sf(r)}`, "rubt", null, true);
+    s += `The points stand on ${sf(p)} and ${sf(q)}.<span class="big">${sf(q)} ÷ ${sf(p)} = ${sf(r)}</span>`;
+    s += `The opening is <span class="nw">log ${sf(q)} − log ${sf(p)}</span> <span class="nw">= ${m3(hi)} − ${m3(lo)}</span> <span class="nw">= ${m3(sp)},</span> which is log ${sf(r)}.`;
+    s += lo < .004 ? `<hr><span class="dim">One point is on 1, so the dividers hold log ${sf(q)} itself. Lift them and set the left point on any b: the right point falls on ${sf(q)} × b.</span>`
+                   : `<hr><span class="dim">Laid from 1 it reaches ${sf(r)}; laid from ${sf(p)} it reaches ${sf(p)} × ${sf(r)} = ${sf(q)}. Exact: ${(r3(p) * r3(r)).toFixed(4)}.</span>`;
+  } else {
+    const right = go < 0, a = Math.pow(10, right ? go + 1 : go);
+    if(go > .004) bracket(gNote, gx(0), gx(go), 386, "lap", `log ${sf(Math.pow(10, go))}`, "hand", YL + 70, true);
+    const bs = [1.5, 2, 3, 4, 5, 6, 8].filter(b => { const u = go + lg(b); return u >= 0 && u <= 2 + 1e-9; });
+    s += `The ${right ? "10" : "1"} of the upper line stands over ${sf(right ? a * 10 : a)} on the lower.<span class="big">b above, ${sf(Math.pow(10, go))} × b below</span>`;
+    s += `<table class="worked"><tr><th>b on the upper line</th><th>stands over</th></tr>${bs.map(b => `<tr><td>${b}</td><td class="n">${sf(Math.pow(10, go + lg(b)))}</td></tr>`).join("")}</table>`;
+    s += `<span class="dim">Each is log ${sf(Math.pow(10, go))} + log b, read for every b at once. The dividers gave one product per setting; the slide gives a table.</span>`;
+  }
+  $("rdGun").innerHTML = s;
+  $("gStep").disabled = $("gBack").disabled = !div;
+  Folio.tryCheck();
+}
+const gStop = () => { gAnim++; };
+function gTo(tg, dur){ return new Promise(res => { const id = ++gAnim, a1 = d1, a2 = d2, ao = go, t0 = performance.now(), t1 = tg.d1 == null ? a1 : tg.d1, t2 = tg.d2 == null ? a2 : tg.d2, to = tg.go == null ? ao : tg.go, hop = !!tg.hop;
+  dur = dur || 650; const tick = now => { if(id !== gAnim) return res(false); const k = Math.min(1, (now - t0) / dur), e = ease(k);
+    d1 = a1 + (t1 - a1) * e; d2 = a2 + (t2 - a2) * e; go = ao + (to - ao) * e; lift = hop ? 34 * Math.sin(Math.PI * k) : 0; drawGun(); if(k < 1) requestAnimationFrame(tick); else { lift = 0; drawGun(); res(true); } };
+  requestAnimationFrame(tick); }); }
+async function gSeq(steps){ for(const st of steps){ if(st.mode){ setMode(st.mode, true); continue; } if(!(await gTo(st, st.dur))) return; } }
+function stepDiv(dir){ const sp = d2 - d1, lo = Math.min(d1, d2), hi = Math.max(d1, d2), w = hi - lo;
+  if(dir > 0 && hi + w > 2 + 1e-9) return; if(dir < 0 && lo - w < -1e-9) return;
+  return gTo({d1:d1 + dir * Math.abs(sp), d2:d2 + dir * Math.abs(sp), hop:true}, 700); }
+function setMode(m, keep){ if(!keep) gStop(); gm = m; $("gModeD").classList.toggle("on", m === "div"); $("gModeO").classList.toggle("on", m !== "div");
+  $("gModeD").setAttribute("aria-pressed", m === "div"); $("gModeO").setAttribute("aria-pressed", m !== "div"); drawGun(); }
+$("gModeD").onclick = () => setMode("div"); $("gModeO").onclick = () => setMode("ough");
+$("gStep").onclick = () => { gStop(); stepDiv(1); }; $("gBack").onclick = () => { gStop(); stepDiv(-1); };
+$("gReset").onclick = () => { gStop(); gTo({d1:0, d2:lg(2), go:lg(2)}); };
+const uOfX = x => (x - GX0) / GD;
+let g0 = {};
+Folio.drag(hP1, svG, p => { d1 = clamp(snapU(clamp(uOfX(p.x), 0, 2)), d2 - MAXSP / GD, d2 + MAXSP / GD); drawGun(); }, () => gStop());
+Folio.drag(hP2, svG, p => { d2 = clamp(snapU(clamp(uOfX(p.x), 0, 2)), d1 - MAXSP / GD, d1 + MAXSP / GD); drawGun(); }, () => gStop());
+Folio.drag(hHd, svG, (p, e, p0) => { const sp = g0.d2 - g0.d1, lo = Math.min(0, -sp), hi = Math.max(2, 2 - sp);
+  d1 = snapU(clamp(g0.d1 + (p.x - p0.x) / GD, Math.max(0, -sp), Math.min(2, 2 - sp))); d2 = d1 + sp; drawGun(); }, () => { gStop(); g0 = {d1, d2}; });
+Folio.drag(gUp, svG, (p, e, p0) => { go = clamp(g0.go + (p.x - p0.x) / GD, -1.9, 1.9); drawGun(); }, () => { gStop(); g0 = {go}; });
+Folio.keys(hP1, (dx, dy, big) => { gStop(); d1 = clamp(nextU(d1, dx || -dy, big ? gBigU : gU), 0, 2); drawGun(); }, "The left point of the dividers: arrow keys move it to the next graduation.");
+Folio.keys(hP2, (dx, dy, big) => { gStop(); d2 = clamp(nextU(d2, dx || -dy, big ? gBigU : gU), 0, 2); drawGun(); }, "The right point of the dividers: arrow keys move it to the next graduation.");
+Folio.keys(hHd, (dx, dy, big) => { gStop(); const sp = d2 - d1, n = clamp(nextU(d1, dx || -dy, big ? gBigU : gU), Math.max(0, -sp), Math.min(2, 2 - sp)); d1 = n; d2 = n + sp; drawGun(); }, "The head of the dividers: arrow keys carry them along without changing the opening.");
+Folio.keys(gUp, (dx, dy, big) => { gStop(); go = clamp(nextU(go, dx || -dy, big ? gBigU : gU), -1.9, 1.9); drawGun(); }, "Oughtred's upper line: arrow keys slide its 1 to the next graduation of the lower line.");
+drawGun();
+const gOk = (u, v) => Math.abs(u - lg(v)) < .003;
+const pts = (x, y) => gm === "div" && gOk(Math.min(d1, d2), x) && gOk(Math.max(d1, d2), y);
+Folio.tries({
+  gopen: {setup(){ gSeq([{mode:"div"}, {d1:0, d2:lg(3)}]); }, check(){ return pts(1, 3); }},
+  gmul:  {setup(){ gSeq([{mode:"div"}, {d1:0, d2:lg(3)}, {d1:lg(4), d2:lg(12), hop:true, dur:900}]); }, check(){ return pts(4, 12); }},
+  gprop: {setup(){ gSeq([{mode:"div"}, {d1:lg(3), d2:lg(5)}, {d1:lg(6), d2:lg(10), hop:true, dur:800}]); }, check(){ return pts(6, 10); }},
+  gpow:  {setup(){ const l2 = lg(2); gSeq([{mode:"div"}, {d1:0, d2:l2}].concat([1, 2, 3, 4].map(k => ({d1:k * l2, d2:(k + 1) * l2, hop:true, dur:600})))); }, check(){ return pts(16, 32); }},
+  gough: {setup(){ gSeq([{mode:"ough"}, {go:lg(3)}]); }, check(){ return gm !== "div" && Math.abs(go - lg(3)) < .003; }}
+});
+
+Folio.plates(); Folio.glosses();
+})();
+</script>
+</body>
+</html>

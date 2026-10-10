@@ -13,14 +13,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
-<link rel="stylesheet" href="/folio/folio.css?v=1">
-<script src="/folio/folio.js?v=1"></script>
+<link rel="stylesheet" href="/folio/folio.css?v=2">
+<script src="/folio/folio.js?v=2"></script>
 <script src="/ga.js" async></script>
 </head>
 <body>
 <main class="leaf">
-  <div class="runhead"><a href="/palace/">The Wending House</a><span>Of Instruments · Folio the First</span><a href="/puzzles/">Puzzles &amp; Devices</a></div>
+  <div class="runhead" data-folio="cross-ratio"></div>
   <h1>The Cross-Ratio <span class="rub">Ruler</span></h1>
+  <p class="subtitle">Distance read off a picture, by the one number perspective cannot change.</p>
   <p class="incipit">A picture squeezes distances, and squeezes the far ones most; but four points on a line keep one number that no picture can change, their cross-ratio. Calibrate a ruler on three known marks and it reads true distance straight off the picture, wherever the painter stood.</p>
 
   <nav class="platetabs" role="tablist" aria-label="Plates">
@@ -42,11 +43,16 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rdRoad" aria-live="polite"></div>
-      <p class="gloss" data-g="pins"><span class="sig">a.</span>Three <em>brass pins</em> set the ruler: one on the near mark (0 m), one on the sign (10 m), and one on the <em>horizon</em>, which is the picture of the point at infinity. Drag them; they catch when they come near their marks.</p>
-      <p class="gloss" data-g="scale"><span class="sig">b.</span>The <em>graduation</em> is cut from those three pins alone: a height y is marked t = 10·(y−y₀)(y₁₀−y∞)/((y₁₀−y₀)(y−y∞)). The divisions crowd together toward the horizon, as the road does.</p>
-      <p class="gloss" data-g="staff"><span class="sig">c.</span>The red <em>staff</em> stands on the road. Drag it near or far; the ruler reads its foot.</p>
-      <p class="gloss" data-g="posts"><span class="sig">d.</span>The <em>posts</em> stand every ten metres. Count them against the ruler: they fall on 10, 20, 30, as they must.</p>
-      <p class="gloss"><span class="sig">e.</span>Turn the dials and the picture changes. Untick <em>the pins follow</em> first, and you will see the ruler fall off its marks and read wrongly until it is laid again.</p>
+      <ol class="try">
+        <li data-try="r30">Drag the staff to 30 m. It should stand beside the third post.</li>
+        <li data-try="rinv">Change both dials. The gaps between the posts change; their cross-ratio stays 4/3.</li>
+        <li data-try="rnaive">Show the naive ruler, and find the one place past the near mark where it reads true.</li>
+        <li data-try="rlay">Untick <em>the pins follow</em>, change the painter's distance, and read the staff; then lay the ruler again.</li>
+      </ol>
+      <p class="gloss" data-g="pins"><span class="sig">a.</span>Three <em>brass pins</em> set the ruler: on the near mark (0 m), on the sign (10 m), and on the <em>horizon</em>, the picture of the point at infinity. They catch when dragged near their marks.</p>
+      <p class="gloss" data-g="scale"><span class="sig">b.</span>The <em>graduation</em> is cut from the three pins alone, and crowds toward the horizon as the road does.</p>
+      <p class="gloss" data-g="staff"><span class="sig">c.</span>The red <em>staff</em> stands on the road. Drag it; the ruler reads its foot.</p>
+      <p class="gloss" data-g="posts"><span class="sig">d.</span>The <em>posts</em> stand every ten metres, and fall on 10, 20, 30 of the ruler.</p>
     </aside>
   </section>
 
@@ -59,10 +65,16 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rdFloor" aria-live="polite"></div>
-      <p class="gloss" data-g="corners"><span class="sig">a.</span>Four <em>pins</em>, at the corners of one tile, are the whole calibration. Drag any of them: the floor redraws as the picture of the same square grid from wherever a painter could have stood.</p>
-      <p class="gloss" data-g="horizon"><span class="sig">b.</span>The <em>horizon</em> is where the floor's lines meet: the picture of the line at infinity. Each family of parallel joints runs to its own <em>vanishing point</em> on it.</p>
-      <p class="gloss" data-g="lamp"><span class="sig">c.</span>Drag the <em>lamp</em> about the floor. Its place is read in tiles, through the one transformation that carries the pinned tile back to a true square.</p>
-      <p class="gloss"><span class="sig">d.</span>On a line the ruler needs three marks; on a plane it needs four. A projective map of the line has three degrees of freedom, and of the plane, eight: four points, two numbers each.</p>
+      <ol class="try">
+        <li data-try="f32">Put the lamp at (3, 2).</li>
+        <li data-try="f2x">Drag the corners until the near edge AB is twice as long as the far edge DC. It is still one tile.</li>
+        <li data-try="fpar">Tip AB out of parallel with DC. The joints along AB now run to a vanishing point of their own.</li>
+        <li data-try="ffar">Carry the lamp toward the horizon until it is more than 12 tiles from A.</li>
+      </ol>
+      <p class="gloss" data-g="corners"><span class="sig">a.</span>Four <em>pins</em> at the corners of one tile are the whole calibration. Drag one, and the floor redraws as the same grid seen from somewhere else.</p>
+      <p class="gloss" data-g="horizon"><span class="sig">b.</span>The <em>horizon</em> is the picture of the line at infinity. Each family of parallel joints runs to its own <em>vanishing point</em> on it.</p>
+      <p class="gloss" data-g="lamp"><span class="sig">c.</span>The <em>lamp</em> is read in tiles, by the map that carries the pinned tile back to a true square.</p>
+      <p class="gloss"><span class="sig">d.</span>A line needs three marks; a plane needs four. A projective map of the plane has eight degrees of freedom: four points, two numbers each.</p>
     </aside>
   </section>
 
@@ -75,11 +87,17 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rdHarm" aria-live="polite"></div>
-      <p class="gloss" data-g="abc"><span class="sig">a.</span>Mark <em>A, B, C</em> on the line. Each can be dragged along it.</p>
-      <p class="gloss" data-g="lm"><span class="sig">b.</span>Choose any point <em>L</em> off the line, and any point <em>M</em> on the ray from L to C. Draw the lines from L to A and B, and from M to A and B. They cross at <em>K</em> and <em>N</em>.</p>
-      <p class="gloss" data-g="d"><span class="sig">c.</span>The line through K and N meets the first line at <em>D</em>. Now drag L and M wherever you like: the figure swings wildly, and D does not move.</p>
-      <p class="gloss"><span class="sig">d.</span>Everything here is lines through points, so a picture of the figure is the same construction. That is why D cannot depend on L and M: the cross-ratio −1 is fixed by A, B, C alone.</p>
-      <p class="gloss"><span class="sig">e.</span>Slide C to the middle of AB and D runs off to infinity. Painters use this in reverse: the diagonals of a tile in perspective find its middle.</p>
+      <ol class="try">
+        <li data-try="hL">Move L far across the page and watch D stay.</li>
+        <li data-try="hM">Slide M along its line. D stays again.</li>
+        <li data-try="hOut">Drag C outside AB. Now D comes inside: one of the pair is always between A and B.</li>
+        <li data-try="hInf">Make D land at infinity.</li>
+      </ol>
+      <p class="gloss" data-g="abc"><span class="sig">a.</span>Mark <em>A, B, C</em> on the line. Each slides along it.</p>
+      <p class="gloss" data-g="lm"><span class="sig">b.</span>Take any <em>L</em> off the line and any <em>M</em> on the line LC. The lines from L and from M to A and B cross at <em>K</em> and <em>N</em>.</p>
+      <p class="gloss" data-g="d"><span class="sig">c.</span>The line KN meets the first line at <em>D</em>, wherever L and M are.</p>
+      <p class="gloss"><span class="sig">d.</span>The figure is only lines through points, so any picture of it is the same construction. That is why D depends on A, B, C alone.</p>
+      <p class="gloss"><span class="sig">e.</span>With C at the middle of AB, D is at infinity. Painters use this in reverse: the diagonals of a tile in perspective find its middle.</p>
     </aside>
   </section>
 
@@ -99,11 +117,14 @@
 <script>
 (function(){
 const {E, T, defs, drag, line, fmt} = Folio, $ = id => document.getElementById(id);
+// arrow keys for a part that is redrawn: after each step the new copy of the part takes the focus back
+const keyed = (el, id, label, step) => { el.setAttribute("data-k", id);
+  Folio.keys(el, (dx, dy, big) => { step(dx, dy, big); const n = document.querySelector(`[data-k="${id}"]`); if(n && n !== document.activeElement) n.focus(); }, label); };
 
 /* ================= PLATE I: THE ROAD ================= */
 const svR = $("svRoad"); defs(svR);
 const W = 760, H = 540, Y0 = 520, XC = 430, HALF = 250, RX = 26, RW = 54;
-let D = 8, YH = 130, staffT = 23, pins = null, follow = true, showNaive = false;
+let D = 8, YH = 130, staffT = 23, pins = null, follow = true, showNaive = false, sawOff = false, roadOff = false;
 const Y = t => YH + (Y0 - YH) * D / (t + D), Xw = t => HALF * D / (t + D), tOf = y => D * (Y0 - YH) / (y - YH) - D;
 const truePins = () => ({y0:Y(0), y10:Y(10), yi:YH});
 pins = truePins();
@@ -156,14 +177,15 @@ function drawRoad(){
   E("path", {d:`M${vx - 3*ss - 1.5},${ys} L${vx - 2.2*ss - 1},${ys - sh2} L${vx + 2.2*ss + 1},${ys - sh2} L${vx + 3*ss + 1.5},${ys} Z`, class:"frub"}, stg);
   for(let k = 1; k < 8; k++) E("line", {x1:vx - 3*ss - 1.5, x2:vx + 3*ss + 1.5, y1:ys - sh2*k/8, y2:ys - sh2*k/8, class:"fvel", style:"stroke:var(--vellum2)", "stroke-width":Math.max(.6, 2*ss)}, stg);
   E("ellipse", {cx:vx, cy:ys, rx:9*ss + 3, ry:2.5*ss + 1, class:"rub", "stroke-width":1}, stg);
-  drag(stg, svR, p => { const y = Math.min(Y0, Math.max(YH + 3, p.y)); staffT = Math.max(0, tOf(y)); drawRoad(); }); }
+  drag(stg, svR, p => { const y = Math.min(Y0, Math.max(YH + 3, p.y)); staffT = Math.round(Math.max(0, tOf(y)) * 10) / 10; drawRoad(); });
+  keyed(stg, "staff", "The staff: up and down arrows carry it farther or nearer", (dx, dy, big) => { const t = Math.max(0, staffT - dy * (big ? 5 : .5)); if(Y(t) > YH + 3) staffT = t; drawRoad(); }); }
   // the ruler itself: a boxwood strip with a bevelled edge
   const rg = E("g", {}, g), top = Math.max(8, YH - 46);
   E("rect", {x:RX, y:top, width:RW, height:Y0 + 12 - top, class:"fvel"}, rg);
   E("rect", {x:RX, y:top, width:RW, height:Y0 + 12 - top, fill:"url(#h45w)", opacity:.35}, rg);
   E("rect", {x:RX + RW - 8, y:top, width:8, height:Y0 + 12 - top, fill:"url(#hv)", opacity:.8}, rg);
   E("rect", {x:RX, y:top, width:RW, height:Y0 + 12 - top, class:"ink", "stroke-width":1.3}, rg);
-  T("PGL", {x:RX + RW/2 - 4, y:Y0 + 6, "text-anchor":"middle", "font-size":10, class:"sc fadedt"}, rg);
+  if(pins.yi - top > 24) T("PGL", {x:RX + RW/2 - 4, y:top + 14, "text-anchor":"middle", "font-size":10, class:"sc fadedt"}, rg);
   // graduations from the pins
   const sg = E("g", {"data-g":"scale"}, rg), lab = new Set([0,5,10,15,20,30,40,50,75,100,200]); let lastY = 1e9, lastLabel = 1e9;
   for(let t = 0; t <= 1000; t += (t < 20 ? 1 : t < 100 ? 5 : t < 300 ? 25 : 100)){
@@ -185,20 +207,33 @@ function drawRoad(){
     E("path", {d:`M${RX + RW},${y} l9,-6 l9,6 l-9,6 z`, class:on ? "fgold" : "frub", style:"stroke:var(--ink);stroke-width:.9"}, pin);
     E("rect", {x:RX + RW - 2, y:y - 10, width:26, height:20, fill:"transparent"}, pin);
     if(!on) E("path", {d:line([RX + RW + 18, y], [W - 10, y], 18, .3, 17), class:"rub", "stroke-width":.6, "stroke-dasharray":"1 4"}, pin);
-    drag(pin, svR, p => { $("follow").checked = follow = false; let y = Math.min(Y0 + 8, Math.max(top + 2, p.y)); const tp = truePins()[k]; if(Math.abs(y - tp) < 7) y = tp;
-      const np = Object.assign({}, pins, {[k]:y}); if(np.y0 <= np.y10 + 4 || np.y10 <= np.yi + 4) return; pins = np; drawRoad(); });
+    const setPin = (y, snap) => { $("follow").checked = follow = false; y = Math.min(Y0 + 8, Math.max(top + 2, y)); const tp = truePins()[k]; if(Math.abs(y - tp) < snap) y = tp;
+      const np = Object.assign({}, pins, {[k]:y}); if(np.y0 <= np.y10 + 4 || np.y10 <= np.yi + 4) return; pins = np; drawRoad(); };
+    drag(pin, svR, p => setPin(p.y, 7));
+    keyed(pin, "pin" + k, `The pin for ${l}: up and down arrows move it`, (dx, dy, big) => setPin(pins[k] + dy * (big ? 8 : 1.5), 1));
   });
   // reckoning
   const y = Y(staffT), cr = crT(y, pins), naive = 10 * (pins.y0 - y) / (pins.y0 - pins.y10), off = ["y0","y10","yi"].some(k => Math.abs(pins[k] - truePins()[k]) > .6);
-  $("rdRoad").innerHTML = `The ruler reads<span class="big">${fmt(cr, 2)} m</span>${off ? `<span style="color:var(--rubric)">but its pins are off their marks; lay it again.</span>` : `<span class="ok">true distance ${fmt(staffT, 2)} m</span>`}<br>
-    <span class="dim">A ruler laid on to scale would say ${fmt(naive, 2)} m${Math.abs(naive - staffT) > .5 ? `, off by ${fmt(Math.abs(naive - staffT), 1)}` : ""}.</span><br>
-    <span class="dim">Four posts at 10, 20, 30, 40 m: picture gaps ${[10,20,30].map(t => fmt(Y(t) - Y(t + 10), 1)).join(" : ")}, cross-ratio ${fmt(cross4([10,20,30,40].map(Y)), 4)}; on the road ${fmt(cross4([10,20,30,40]), 4)}.</span>`;
+  roadOff = off; if(off) sawOff = true;
+  const h = pins.y0 - y, h10 = pins.y0 - pins.y10, Hh = pins.y0 - pins.yi, f0 = v => fmt(v, 0);
+  $("rdRoad").innerHTML = `The ruler reads<span class="big">${fmt(cr, 2)} m</span>${off ? `<span style="color:var(--rubric)">Its pins are off their marks, so it reads wrongly; lay it again.</span>` : `<span class="ok">The staff is ${fmt(staffT, 2)} m away.</span>`}<br>
+    Same cross-ratio as on the road: with heights <span class="nw">h = ${f0(h)},</span> <span class="nw">h₁₀ = ${f0(h10)},</span> <span class="nw">H = ${f0(Hh)}</span> above the near pin, <span class="nw">t = 10·h(H − h₁₀) / h₁₀(H − h).</span><hr>
+    <span class="dim">A ruler laid on to scale says ${fmt(naive, 2)} m${Math.abs(naive - staffT) > .5 ? `, off by ${fmt(Math.abs(naive - staffT), 1)}` : ""}.<br>
+    Posts at 10, 20, 30, 40 m: gaps ${[10,20,30].map(t => fmt(Y(t) - Y(t + 10), 1)).join(" : ")}, cross-ratio ${fmt(cross4([10,20,30,40].map(Y)), 4)}, as on the road.</span>`;
   $("camo").value = D + " m"; $("horo").value = Math.round((Y0 - YH) / 26) / 10 + " m";
+  Folio.tryCheck();
 }
 function cross4(a){ const [A, B, C, Dd] = a; return ((C - A) * (Dd - B)) / ((C - B) * (Dd - A)); }
 $("cam").oninput = e => { D = +e.target.value; drawRoad(); };
 $("hor").oninput = e => { YH = Y0 - +e.target.value; drawRoad(); };
 $("lay").onclick = () => { pins = truePins(); drawRoad(); };
+const setCam = (d, yh) => { D = d; YH = yh; $("cam").value = D; $("hor").value = Y0 - YH; };
+Folio.tries({
+  r30:{label:"show me", setup(){ pins = truePins(); staffT = 30; drawRoad(); }, check:() => !roadOff && Math.abs(staffT - 30) <= .5},
+  rinv:{label:"show me", setup(){ setCam(16, Y0 - 290); drawRoad(); }, check:() => Math.abs(D - 8) >= 1 && Math.abs(YH - 130) >= 20},
+  rnaive:{label:"show me", setup(){ showNaive = $("naive").checked = true; staffT = 10; drawRoad(); }, check:() => showNaive && Math.abs(staffT - 10) <= .3},
+  rlay:{label:"show me", setup(){ follow = $("follow").checked = false; setCam(D > 30 ? D - 8 : D + 8, YH); drawRoad(); pins = truePins(); drawRoad(); }, check:() => sawOff && !roadOff}
+});
 $("follow").onchange = e => { follow = e.target.checked; drawRoad(); };
 $("naive").onchange = e => { showNaive = e.target.checked; drawRoad(); };
 drawRoad();
@@ -206,7 +241,7 @@ drawRoad();
 /* ================= PLATE II: THE TILED FLOOR ================= */
 const svF = $("svFloor"); defs(svF);
 const C0 = [[300,380],[460,380],[430,300],[315,300]];
-let C = C0.map(p => p.slice()), lamp = [2.2, 1.5], showVan = true;
+let C = C0.map(p => p.slice()), lamp = [2.2, 1.5], showVan = true, flRatio = 1, flPar = 0;
 // the homography H carrying the unit square (0,0),(1,0),(1,1),(0,1) to the four pins
 function solve(A, b){ const n = b.length; A = A.map((r, i) => r.concat([b[i]]));
   for(let c = 0; c < n; c++){ let m = c; for(let r = c + 1; r < n; r++) if(Math.abs(A[r][c]) > Math.abs(A[m][c])) m = r; [A[c], A[m]] = [A[m], A[c]];
@@ -258,30 +293,41 @@ function drawFloor(){
     E("path", {d:`M${L[0] - 7*s},${L[1]} L${L[0] + 7*s},${L[1]} L${L[0] + 3*s},${L[1] - 6*s} L${L[0] - 3*s},${L[1] - 6*s} Z`, class:"fink"}, lg);
     E("path", {d:`M${L[0] - 14*s},${L[1] - 66*s} L${L[0] + 14*s},${L[1] - 66*s} L${L[0] + 8*s},${L[1] - 88*s} L${L[0] - 8*s},${L[1] - 88*s} Z`, fill:"url(#h135)", class:"rub", "stroke-width":1}, lg);
     E("circle", {cx:L[0], cy:L[1], r:20, fill:"transparent"}, lg);
-    drag(lg, svF, p => { const q = app(Hi, [p.x, p.y]); if(q[2] <= 0) return; lamp = [q[0], q[1]]; drawFloor(); }); }
+    drag(lg, svF, p => { const q = app(Hi, [p.x, p.y]); if(!isFinite(q[0]) || app(Hm, q)[2] <= .02) return; lamp = [q[0], q[1]]; drawFloor(); });
+    keyed(lg, "lamp", "The lamp: arrow keys move it a twentieth of a tile, with Shift half a tile", (dx, dy, big) => { const s = big ? .5 : .05, nl = [Math.round((lamp[0] + dx * s) * 100) / 100, Math.round((lamp[1] - dy * s) * 100) / 100]; if(app(Hm, nl)[2] > .02) lamp = nl; drawFloor(); }); }
   // pins
   const cg = E("g", {"data-g":"corners"}, g);
   C.forEach((p, k) => { const pin = E("g", {class:"grab"}, cg);
     E("path", {d:`M${p[0]},${p[1] - 8} l7,8 l-7,8 l-7,-8 z`, class:"fgold", style:"stroke:var(--ink);stroke-width:1"}, pin);
     E("circle", {cx:p[0], cy:p[1], r:16, fill:"transparent"}, pin);
     T("ABCD"[k], {x:p[0] + (k === 1 || k === 2 ? 11 : -19), y:p[1] + (k < 2 ? 18 : -8), "font-size":15, class:"sc rubt"}, cg);
-    drag(pin, svF, q => { const old = C[k]; C[k] = [Math.max(10, Math.min(750, q.x)), Math.max(10, Math.min(530, q.y))];
-      const Hn = homog(SQ, C); if(!convex(C) || !Hn || app(Hn, lamp)[2] <= 0){ C[k] = old; return; } drawFloor(); }); });
+    const setC = (x, y) => { const old = C[k]; C[k] = [Math.max(10, Math.min(750, x)), Math.max(10, Math.min(530, y))];
+      const Hn = homog(SQ, C); if(!convex(C) || !Hn || app(Hn, lamp)[2] <= 0){ C[k] = old; return; } drawFloor(); };
+    drag(pin, svF, q => setC(q.x, q.y));
+    keyed(pin, "corner" + k, `Corner ${"ABCD"[k]} of the pinned tile: arrow keys move it`, (dx, dy, big) => setC(p[0] + dx * (big ? 10 : 2), p[1] + dy * (big ? 10 : 2))); });
   // reckoning
   const ab = Math.hypot(C[1][0]-C[0][0], C[1][1]-C[0][1]), dc = Math.hypot(C[2][0]-C[3][0], C[2][1]-C[3][1]);
-  $("rdFloor").innerHTML = `The lamp stands at<span class="big">(${fmt(lamp[0], 2)}, ${fmt(lamp[1], 2)})</span>tiles from corner A, along AB and AD.<br>
-    <span class="dim">In the picture the near edge AB is ${fmt(ab, 0)} and the far edge DC ${fmt(dc, 0)} units long, yet both are one tile.</span>`;
+  flRatio = ab / dc; flPar = Math.abs(Math.atan2((C[1][0]-C[0][0])*(C[2][1]-C[3][1]) - (C[1][1]-C[0][1])*(C[2][0]-C[3][0]), (C[1][0]-C[0][0])*(C[2][0]-C[3][0]) + (C[1][1]-C[0][1])*(C[2][1]-C[3][1])));
+  $("rdFloor").innerHTML = `The lamp stands at<span class="big">(${fmt(lamp[0], 2)}, ${fmt(lamp[1], 2)})</span>tiles from A, along AB and AD: the map that carries ABCD back to a unit square carries the lamp there.<hr>
+    <span class="dim">In the picture the near edge AB is ${fmt(ab, 0)} long and the far edge DC ${fmt(dc, 0)}, a ratio of ${fmt(ab / dc, 2)}; both are one tile.</span>`;
+  Folio.tryCheck();
 }
 $("flReset").onclick = () => { C = C0.map(p => p.slice()); lamp = [2.2, 1.5]; drawFloor(); };
 $("flTilt").onclick = () => { C = [[250,470],[470,450],[455,330],[300,338]]; if(app(homog(SQ, C), lamp)[2] <= 0) lamp = [.5, .5]; drawFloor(); };
 $("flVan").onchange = e => { showVan = e.target.checked; drawFloor(); };
+Folio.tries({
+  f32:{label:"show me", setup(){ lamp = [3, 2]; if(app(homog(SQ, C), lamp)[2] <= 0) C = C0.map(p => p.slice()); drawFloor(); }, check:() => Math.abs(lamp[0] - 3) <= .05 && Math.abs(lamp[1] - 2) <= .05},
+  f2x:{label:"show me", setup(){ C = [[240,450],[520,450],[450,340],[310,340]]; lamp = [.5, .5]; drawFloor(); }, check:() => Math.abs(flRatio - 2) <= .1},
+  fpar:{label:"show me", setup(){ C = [[260,440],[460,400],[450,310],[300,330]]; lamp = [.5, .5]; drawFloor(); }, check:() => flPar > 2 * Math.PI / 180},
+  ffar:{label:"show me", setup(){ C = C0.map(p => p.slice()); lamp = [3, 12.5]; drawFloor(); }, check:() => Math.hypot(lamp[0], lamp[1]) > 12}
+});
 drawFloor();
 
 /* ================= PLATE III: THE HARMONIC CONSTRUCTION ================= */
 const svH = $("svHarm"); defs(svH);
 const LY = 430, LX0 = 30, LX1 = 730;
-let hA, hB, hC, hL, hMt;
-function hReset(){ hA = 140; hB = 470; hC = 380; hL = [290, 80]; hMt = .5; }
+let hA, hB, hC, hL, hMt, hL0, hMt0, hDx = null;
+function hReset(){ hA = 140; hB = 470; hC = 380; hL = [290, 80]; hMt = .5; hL0 = hL.slice(); hMt0 = hMt; }
 hReset();
 const meet = (p1, p2, p3, p4) => { const d = (p1[0]-p2[0])*(p3[1]-p4[1]) - (p1[1]-p2[1])*(p3[0]-p4[0]); if(Math.abs(d) < 1e-9) return null;
   const a = p1[0]*p2[1] - p1[1]*p2[0], b = p3[0]*p4[1] - p3[1]*p4[0]; return [(a*(p3[0]-p4[0]) - (p1[0]-p2[0])*b) / d, (a*(p3[1]-p4[1]) - (p1[1]-p2[1])*b) / d]; };
@@ -302,12 +348,14 @@ function drawHarm(){
   full(L, A, lg, "ink2", .9, null, 3); full(L, B, lg, "ink2", .9, null, 4); full(L, Cc, lg, "ink2", .9, "4 3", 5);
   full(M, A, lg, "lap", .9, null, 6); full(M, B, lg, "lap", .9, null, 7);
   // wash the triangle LAB and the quadrilateral
-  if(K && N) E("path", {d:`M${A[0]},${A[1]} L${K[0]},${K[1]} L${M[0]},${M[1]} L${N[0]},${N[1]} Z`, class:"flwash"}, g);
+  if(K && N) E("path", {d:`M${A[0]},${A[1]} L${K[0]},${K[1]} L${M[0]},${M[1]} L${N[0]},${N[1]} Z`, class:"flwash", opacity:.7}, g);
   const dg = E("g", {"data-g":"d"}, g);
   if(K && N) full(K, N, dg, "rub", 1.3, null, 8);
   // points
   const dot = (p, name, cls, dx, dy, gg) => { E("circle", {cx:p[0], cy:p[1], r:3.6, class:cls}, gg || g); T(name, {x:p[0] + (dx || 7), y:p[1] + (dy || -8), "font-size":17, class:"sc"}, gg || g); };
-  if(K) dot(K, "K", "fink", 8, -6); if(N) dot(N, "N", "fink", -20, -6);
+  // K and N are lettered on the side away from M, clear of the lines through them
+  const away = (P, nm) => { const dx = P[0] - M[0], dy = P[1] - M[1], l = Math.hypot(dx, dy) || 1; dot(P, nm, "fink", dx / l * 15 - 6, dy / l * 15 + 6); };
+  if(K) away(K, "K"); if(N) away(N, "N");
   dot(M, "M", "flap", 9, 4, lg);
   const hasD = Dp && Math.abs(Dp[0]) < 1e5;
   if(hasD && Dp[0] > 0 && Dp[0] < 760){ E("circle", {cx:Dp[0], cy:LY, r:7, class:"rub", "stroke-width":1.6}, dg); dot([Dp[0], LY], "D", "frub", -6, 26, dg); }
@@ -315,21 +363,39 @@ function drawHarm(){
   const handle = (p, name, fn, cls) => { const h = E("g", {class:"grab", "data-g":name === "L" || name === "M" ? "lm" : "abc"}, g);
     E("path", {d:`M${p[0]},${p[1] - 9} l8,9 l-8,9 l-8,-9 z`, class:cls || "fgold", style:"stroke:var(--ink);stroke-width:1"}, h);
     E("circle", {cx:p[0], cy:p[1], r:18, fill:"transparent"}, h);
-    if(name !== "M") T(name, {x:p[0] + (name === "L" ? 12 : -5), y:p[1] + (name === "L" ? -8 : 28), "font-size":18, class:"sc"}, h);
-    drag(h, svH, fn); };
-  handle(A, "A", q => { hA = Math.max(LX0 + 10, Math.min(LX1 - 10, q.x)); if(Math.abs(hA - hB) < 20 || Math.abs(hA - hC) < 12) return; drawHarm(); });
-  handle(B, "B", q => { hB = Math.max(LX0 + 10, Math.min(LX1 - 10, q.x)); if(Math.abs(hA - hB) < 20 || Math.abs(hB - hC) < 12) return; drawHarm(); });
-  handle(Cc, "C", q => { const x = Math.max(LX0 + 10, Math.min(LX1 - 10, q.x)); if(Math.abs(x - hA) < 12 || Math.abs(x - hB) < 12) return; hC = x; drawHarm(); });
-  handle(L, "L", q => { hL = [Math.max(20, Math.min(740, q.x)), Math.max(20, Math.min(LY - 40, q.y))]; drawHarm(); });
-  handle(M, "M", q => { const dx = Cc[0] - L[0], dy = Cc[1] - L[1]; const t = ((q.x - L[0]) * dx + (q.y - L[1]) * dy) / (dx*dx + dy*dy); hMt = Math.max(.08, Math.min(.92, t)); drawHarm(); }, "flap");
+    if(name !== "M") T(name, {x:p[0] + (name === "L" ? 12 : name === "C" ? (hC > hL[0] ? -19 : 7) : -5), y:p[1] + (name === "L" ? -8 : 28), "font-size":18, class:"sc"}, h);
+    drag(h, svH, fn); return h; };
+  // each point on the line keeps clear of the other two
+  const setX = (nm, v) => { const x = Math.max(LX0 + 10, Math.min(LX1 - 10, v)), o = {A:hA, B:hB, C:hC}; o[nm] = x;
+    if(Math.abs(o.A - o.B) < 20 || Math.abs(o.A - o.C) < 12 || Math.abs(o.B - o.C) < 12) return; hA = o.A; hB = o.B; hC = o.C; drawHarm(); };
+  const setL = (x, y) => { hL = [Math.max(20, Math.min(740, x)), Math.max(20, Math.min(LY - 40, y))]; drawHarm(); };
+  [[A, "A"], [B, "B"], [Cc, "C"]].forEach(([p, nm]) => { const h = handle(p, nm, q => setX(nm, q.x));
+    keyed(h, "h" + nm, `Point ${nm} on the line: left and right arrows slide it`, (dx, dy, big) => setX(nm, p[0] + dx * (big ? 10 : 2))); });
+  const hl = handle(L, "L", q => setL(q.x, q.y));
+  keyed(hl, "hL", "Point L: arrow keys move it", (dx, dy, big) => setL(L[0] + dx * (big ? 20 : 4), L[1] + dy * (big ? 20 : 4)));
+  const hm = handle(M, "M", q => { const dx = Cc[0] - L[0], dy = Cc[1] - L[1]; const t = ((q.x - L[0]) * dx + (q.y - L[1]) * dy) / (dx*dx + dy*dy); hMt = Math.max(.08, Math.min(.92, t)); drawHarm(); }, "flap");
+  keyed(hm, "hM", "Point M on the line from L to C: arrow keys slide it", (dx, dy, big) => { hMt = Math.max(.08, Math.min(.92, hMt + (dy || dx) * (big ? .05 : .01))); drawHarm(); });
   // reckoning
-  const cr = hasD ? ((hC - hA) * (Dp[0] - hB)) / ((hC - hB) * (Dp[0] - hA)) : null;
-  const dPos = hasD ? (Dp[0] < 0 || Dp[0] > 760 ? `${Dp[0] < 0 ? "off the page to the left" : "off the page to the right"}, at ${fmt(Dp[0], 0)}` : `at ${fmt(Dp[0], 0)}`) : "at infinity: C is the midpoint of AB";
-  $("rdHarm").innerHTML = `D falls ${dPos}.<span class="big">(A, B; C, D) = ${cr == null ? "−1" : fmt(cr, 4)}</span>
-    <span class="dim">AC = ${fmt(hC - hA, 0)}, BC = ${fmt(hC - hB, 0)}${hasD ? `, AD = ${fmt(Dp[0] - hA, 0)}, BD = ${fmt(Dp[0] - hB, 0)}` : ""}.<br>Move L or M: D stays.</span>`;
+  const cr = hasD ? ((hC - hA) * (Dp[0] - hB)) / ((hC - hB) * (Dp[0] - hA)) : null, f0 = v => fmt(Math.abs(v), 0);
+  hDx = hasD ? Dp[0] : Infinity;
+  const inC = (hC - hA) * (hC - hB) < 0, far = !hasD || Math.abs(Dp[0]) > 5000;
+  const dPos = far ? "at infinity, or so far off that it may as well be" : Dp[0] < 0 || Dp[0] > 760 ? `off the page, at ${fmt(Dp[0], 0)}` : `at ${fmt(Dp[0], 0)}`;
+  const rr = (nm, u, v) => `<span class="nw">${nm} = ${f0(u)} : ${f0(v)}</span> <span class="nw">= ${fmt(Math.abs(u / v), 2)}</span>`;
+  $("rdHarm").innerHTML = `D falls ${dPos}, and (A, B; C, D) =<span class="big">${cr == null ? "−1" : fmt(cr, 4)}</span>` +
+    (far ? `C is the middle of AB, AC : CB = 1. D must cut AB outside in the same ratio, and only the point at infinity does.` :
+    `C cuts AB ${inC ? "inside" : "outside"}, ${rr("AC : CB", hC - hA, hB - hC)}. D cuts it ${inC ? "outside" : "inside"}, ${rr("AD : DB", Dp[0] - hA, hB - Dp[0])}. The same ratio with opposite signs gives −1.`) +
+    `<br><span class="dim">L and M only build the figure: move them, and D stays.</span>`;
+  Folio.tryCheck();
 }
 $("hmReset").onclick = () => { hReset(); drawHarm(); };
 $("hmMid").onclick = () => { hC = (hA + hB) / 2; drawHarm(); };
+Folio.tries({
+  hL:{label:"show me", setup(){ hL = [hL[0] > 380 ? 110 : 650, 90]; drawHarm(); }, check:() => Math.hypot(hL[0] - hL0[0], hL[1] - hL0[1]) > 150},
+  hM:{label:"show me", setup(){ hMt = hMt > .5 ? .2 : .8; drawHarm(); }, check:() => Math.abs(hMt - hMt0) > .2},
+  hOut:{label:"show me", setup(){ const lo = Math.min(hA, hB), hi = Math.max(hA, hB); hC = hi + 120 < LX1 - 10 ? hi + 120 : lo - 120; drawHarm(); },
+    check:() => (hC - hA) * (hC - hB) > 0 && isFinite(hDx) && (hDx - hA) * (hDx - hB) < 0},
+  hInf:{label:"show me", setup(){ hC = (hA + hB) / 2; drawHarm(); }, check:() => !isFinite(hDx) || Math.abs(hDx) > 5000}
+});
 drawHarm();
 
 Folio.plates(); Folio.glosses();

@@ -1191,6 +1191,10 @@ rooms:
     - {to: 0, wall: back, title: "back to the Entry"}
   objects:
     - {kind: device, icon: linkbook, mount: pedestal, wall: left, title: "A linking book: the Archive", action: link, to: 22, note: "A small book on a stand. Its panel shows the archive, moving faintly. Touch it to go there."}
+    - {kind: device, icon: book, wall: front, title: "Of Instruments", href: "/folio/", note: "The cabinet of instrument folios: the sector, Napier's bones, the slide rule, the planimeters, the cross-ratio ruler, and the rule of turns."}
+    - {kind: device, icon: rule, wall: front, title: "The Sector", href: "/sector/", note: "A folio: Galileo's compass of proportion, its lines of lines, planes, and solids, and the proportional compass."}
+    - {kind: device, icon: cards, wall: front, title: "Napier's Bones", href: "/napier/", note: "A folio: the bones, the Genaille–Lucas rulers, and Napier's chessboard."}
+    - {kind: device, icon: rule, wall: front, title: "The Slide Rule", href: "/slide-rule/", note: "A folio: a plain Mannheim rule, its scales, and Gunter's line with the dividers."}
     - {kind: device, icon: turns, wall: front, title: "The Rule of Turns", href: "/so3-rule/", note: "A folio: a slide rule for SO(3). Hamilton's turns slid along a globe, the self-generating scale, the commutator, and the belt."}
     - {kind: device, icon: cross, wall: front, title: "The Cross-Ratio Ruler", href: "/cross-ratio/", note: "A folio: read true distances off a picture. The road, the tiled floor, and the harmonic construction."}
     - {kind: device, icon: planimeter, wall: front, title: "The Planimeter Bench", href: "/planimeters/", note: "A folio: five instruments that measure area by tracing, polar, linear, hatchet, radial, and counting, with their errors."}

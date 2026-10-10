@@ -73,5 +73,38 @@ function wobble(P, amp, seed){ const r = rng(seed || 1); amp = amp == null ? .5 
   return P.map((p, i) => `${i ? "L" : "M"}${(p[0] + (r() - .5) * amp).toFixed(2)},${(p[1] + (r() - .5) * amp).toFixed(2)}`).join(""); }
 function line(a, b, n, amp, seed){ const P = []; n = n || Math.max(2, Math.ceil(Math.hypot(b[0]-a[0], b[1]-a[1]) / 18)); for(let i = 0; i <= n; i++){ const t = i / n; P.push([a[0] + (b[0]-a[0])*t, a[1] + (b[1]-a[1])*t]); } return wobble(P, amp, seed); }
 function fmt(x, d){ if(!isFinite(x)) return x > 0 ? "∞" : "−∞"; return x.toFixed(d == null ? 2 : d).replace(/^-/, "−"); }
-window.Folio = {E, T, defs, pt, drag, roman, plates, glosses, rng, wobble, line, fmt, NS};
+/* the cabinet: every folio, in order. The running head of each page is written from this list. */
+const FOLIOS = [
+  {slug:"sector",      title:"The Sector",            sub:"Galileo's compass of proportion"},
+  {slug:"napier",      title:"Napier's Bones",        sub:"and the rods that followed them"},
+  {slug:"slide-rule",  title:"The Slide Rule",        sub:"logarithms you can slide"},
+  {slug:"planimeters", title:"The Planimeter Bench",  sub:"area by tracing"},
+  {slug:"cross-ratio", title:"The Cross-Ratio Ruler", sub:"distance read off a picture"},
+  {slug:"so3-rule",    title:"The Rule of Turns",     sub:"a slide rule for rotations"}
+];
+const ORD = ["First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eighth","Ninth","Tenth","Eleventh","Twelfth"];
+// fill <div class="runhead" data-folio="slug"></div>: the house, the folio's number with its neighbours, and the cabinet
+function runhead(){
+  const h = document.querySelector(".runhead[data-folio]"); if(!h) return;
+  const i = FOLIOS.findIndex(f => f.slug === h.dataset.folio), prev = FOLIOS[i - 1], next = FOLIOS[i + 1];
+  h.innerHTML = `<a href="/palace/">The Wending House</a>
+    <span class="folionav">${prev ? `<a href="/${prev.slug}/" title="${prev.title}" rel="prev">‹ ${prev.title}</a>` : ""}<a href="/folio/">Of Instruments · Folio the ${ORD[i]}</a>${next ? `<a href="/${next.slug}/" title="${next.title}" rel="next">${next.title} ›</a>` : ""}</span>
+    <a href="/puzzles/">Puzzles &amp; Devices</a>`;
+}
+// arrow keys for a draggable part: el gets focus, and step(dx, dy, big) is called; Shift takes big steps
+function keys(el, step, label){
+  el.setAttribute("tabindex", "0"); el.setAttribute("role", "slider"); if(label) el.setAttribute("aria-label", label);
+  el.addEventListener("keydown", e => { const d = {ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1]}[e.key]; if(!d) return;
+    e.preventDefault(); step(d[0], d[1], e.shiftKey); });
+}
+/* "Try this": <ol class="try"><li data-try="name">…</li></ol>. Folio.tries({name: {setup(), check() → true when done}})
+   A setup button is added to each item that has one; an item is ticked once its check passes. Call Folio.tryCheck() after each redraw. */
+let TRIES = {};
+function tries(spec){ TRIES = Object.assign(TRIES, spec);
+  document.querySelectorAll(".try li[data-try]").forEach(li => { const t = TRIES[li.dataset.try]; if(!t || li.querySelector(".tset")) return;
+    if(t.setup){ const b = document.createElement("button"); b.type = "button"; b.className = "tset"; b.textContent = t.label || "set it up"; b.onclick = () => { t.setup(); tryCheck(); }; li.appendChild(b); } });
+  tryCheck(); }
+function tryCheck(){ document.querySelectorAll(".try li[data-try]").forEach(li => { const t = TRIES[li.dataset.try]; if(t && t.check){ try{ if(t.check()) li.classList.add("done"); }catch(_){} } }); }
+document.addEventListener("DOMContentLoaded", runhead);
+window.Folio = {E, T, defs, pt, drag, roman, plates, glosses, rng, wobble, line, fmt, NS, FOLIOS, ORD, runhead, keys, tries, tryCheck};
 })();

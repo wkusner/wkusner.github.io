@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Sector</title>
+<meta name="description" content="A folio of the Wending House: Galileo's geometric and military compass, a hinged pair of brass legs that turns similar triangles into a calculator, with the dividers that read it.">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ECDFC0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="/folio/folio.css?v=2">
+<script src="/folio/folio.js?v=2"></script>
+<script src="/ga.js" async></script>
+<style>
+/* page-only additions; colours come from the kit's variables */
+.ctl{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:15px;color:var(--ink2)}
+.ctl .lbl{font:15px var(--fellsc);letter-spacing:.04em;color:var(--ink2)}
+.ctl input.q[type=number]{width:4.4em}
+.reckon{overflow-wrap:anywhere}
+.reckon .warn{color:var(--rubric)}
+</style>
+</head>
+<body>
+<main class="leaf">
+  <div class="runhead" data-folio="sector"></div>
+  <h1>The <span class="rub">Sector</span></h1>
+  <p class="subtitle">Galileo's geometric and military compass, and the dividers that read it.</p>
+  <p class="incipit">Two flat brass legs, hinged at one end, carry the same scales running out from the hinge. Open them, and every pair of matching marks is joined by an invisible chord; all those chords belong to similar triangles, so each is in proportion to its mark. A pair of dividers lifts a length off the page, lays it across the legs, and carries back its proportional part. With one opening the sector divides a line, scales a plan, works the rule of three, doubles a square, and sizes a cannonball.</p>
+
+  <nav class="platetabs" role="tablist" aria-label="Plates">
+    <button type="button" role="tab" data-plate="lines"><span class="no">I.</span>The Line of Lines</button>
+    <button type="button" role="tab" data-plate="planes"><span class="no">II.</span>Planes and Solids</button>
+    <button type="button" role="tab" data-plate="compass"><span class="no">III.</span>The Proportional Compass</button>
+  </nav>
+
+  <!-- PLATE I -->
+  <section class="plate" id="lines" role="tabpanel">
+    <div class="drawing">
+      <svg id="svI" class="fig" viewBox="0 0 760 610" aria-label="An engraved brass sector, opened, with a pair of dividers and a given line AB below it"></svg>
+      <p class="caption"><b>Plate I.</b> The sector opened on its joint, the dividers, and a given line AB.</p>
+      <div class="ctl">
+        <span class="lbl">Mark</span><input class="q" type="number" id="nI" min="1" max="100" step="1" value="100" aria-label="mark number">
+        <span class="lbl">on the line of lines:</span>
+        <button type="button" class="q" data-act="fit">Fit across</button>
+        <button type="button" class="q" data-act="take">Take across</button>
+        <button type="button" class="q" data-act="along">Take along</button>
+      </div>
+      <div class="ctl">
+        <button type="button" class="q" data-act="ab">Take AB</button>
+        <button type="button" class="q" data-act="lay">Lay along the line to read</button>
+        <span class="keyhint">Drag a leg's tip to open the sector; drag the dividers by their head, or by either point.</span>
+      </div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdI" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="fit100">Open the sector until AB, in the dividers, fits across 100–100 of the line of lines.</li>
+        <li data-try="seven">Divide AB into seven equal parts: fit AB across 70–70, then take the span across 10–10.</li>
+        <li data-try="three">Find x with 3 : 5 = 12 : x. Take 12 along the line, fit it across 30–30, take 50–50, and lay it along the line to read x.</li>
+        <li data-try="scale">Scale a line of 40 parts to seven tenths: fit it across 100–100, then take 70–70.</li>
+      </ol>
+      <p class="gloss" data-g="legs"><span class="sig">a.</span>The <em>legs</em> turn on a round joint. Their inner edges, and every line engraved on them, run out from the centre of the joint. Drag the knob at either tip to open them.</p>
+      <p class="gloss" data-g="lines"><span class="sig">b.</span>The <em>line of lines</em>, Galileo's arithmetic line, is cut in equal parts: mark n stands n parts from the centre. One part is the unit of every length on this plate.</p>
+      <p class="gloss" data-g="dividers"><span class="sig">c.</span>The <em>dividers</em> carry a length. Their points catch on any mark, on the centre, and on A and B. Carried by the head, they keep their span.</p>
+      <p class="gloss" data-g="tri"><span class="sig">d.</span>Laid <em>across</em> the legs at n–n, the dividers close a triangle with the centre. The triangle at 100–100 has the same angles, so the chord at n is n/100 of the chord at 100.</p>
+      <p class="gloss" data-g="ab"><span class="sig">e.</span>The <em>given line</em> AB. Drag B to change it. When the dividers hold less than AB, they are stepped along it to show how many times they go.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE II -->
+  <section class="plate" id="planes" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svII" class="fig" viewBox="0 0 760 610" aria-label="The sector with its lines of planes and solids, the dividers, and figures drawn on the given line"></svg>
+      <p class="caption"><b>Plate II.</b> The lines of planes and solids: chords that grow as the square root and the cube root.</p>
+      <div class="ctl">
+        <span class="lbl">Mark</span><input class="q" type="number" id="nII" min="1" max="100" step="1" value="20" aria-label="mark number">
+        <span class="lbl">on the</span>
+        <select class="q" id="kII" aria-label="which line"><option value="planes">line of planes</option><option value="solids">line of solids</option><option value="lines">line of lines</option></select>
+        <button type="button" class="q" data-act="fit">Fit across</button>
+        <button type="button" class="q" data-act="take">Take across</button>
+      </div>
+      <div class="ctl">
+        <button type="button" class="q" data-act="ab">Take AB</button>
+        <button type="button" class="q" data-act="along">Take n along the line of lines</button>
+        <button type="button" class="q" data-act="lay">Lay along the line of lines</button>
+      </div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdII" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="dbl">AB is the side of a square. Find the side of a square twice as big: fit AB across the planes at 20–20, then take 40–40.</li>
+        <li data-try="mean">Find the mean proportional between 20 and 80: take 20 along the line of lines, fit it across the planes at 20–20, and take 80–80.</li>
+        <li data-try="ball">AB is the bore of a one-pound ball. Find the bore for two pounds: fit AB across the solids at 20–20, then take 40–40.</li>
+        <li data-try="half">Find the bore of a ball of half the weight: fit AB across the solids at 40–40, then take 20–20.</li>
+      </ol>
+      <p class="gloss" data-g="planes"><span class="sig">a.</span>The <em>line of planes</em>, Galileo's geometric line, puts mark n at √n times the first. Chords across it are the sides of similar figures whose areas go as the marks.</p>
+      <p class="gloss" data-g="solids"><span class="sig">b.</span>The <em>line of solids</em>, the stereometric line, puts mark n at ∛n times the first. Chords across it are the sides, or diameters, of similar solids whose volumes go as the marks.</p>
+      <p class="gloss" data-g="figs"><span class="sig">c.</span>Below, at <em>quarter size</em>, the figure on AB and the figure on the dividers' span: squares when you work on the planes, balls on the solids.</p>
+      <p class="gloss"><span class="sig">d.</span>Why the spacing: every chord is in proportion to its distance from the centre. To make the chord the side of a square of area n, the mark must stand at a distance in proportion to √n.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE III -->
+  <section class="plate" id="compass" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svIII" class="fig" viewBox="0 0 760 470" aria-label="A proportional compass: two crossed legs pointed at both ends, joined by a sliding pivot"></svg>
+      <p class="caption"><b>Plate III.</b> The proportional compass: crossed legs, a sliding pivot, and two pairs of points.</p>
+      <div class="ctl">
+        <span class="lbl">Set the pivot at</span>
+        <button type="button" class="q" data-r="2">2 : 1</button>
+        <button type="button" class="q" data-r="3">3 : 1</button>
+        <button type="button" class="q" data-r="4">4 : 1</button>
+        <button type="button" class="q" data-r="1">1 : 1</button>
+        <span class="keyhint">Drag the pivot along the slot; drag the long points to open.</span>
+      </div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdIII" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="c2">Set the pivot so that the short points open half as wide as the long ones.</li>
+        <li data-try="c3">Set it for a third.</li>
+        <li data-try="cr2">Set it to copy a plan at half the area. The sides must shrink by √2, so the pivot sits between the 1 and the 2.</li>
+        <li data-try="c4">At 4 : 1, open the long points to 48 parts. The short points then give 12.</li>
+      </ol>
+      <p class="gloss" data-g="pivot"><span class="sig">a.</span>The <em>pivot</em> slides in a slot cut through both legs and is clamped by a screw. The leg is engraved where the pivot gives 2 : 1, 3 : 1, and so on.</p>
+      <p class="gloss" data-g="long"><span class="sig">b.</span>The <em>long points</em>, a from the pivot, take a length off the original.</p>
+      <p class="gloss" data-g="short"><span class="sig">c.</span>The <em>short points</em>, b from the pivot, give it reduced in the ratio b : a, at every opening. The two triangles at the pivot have equal angles there, so they are similar.</p>
+      <p class="gloss" data-g="step"><span class="sig">d.</span>Below, the long span is laid down and the short span <em>stepped off</em> along it, as plain dividers are walked along a line.</p>
+    </aside>
+  </section>
+
+  <div class="fleuron" aria-hidden="true">❦ ❦ ❦</div>
+  <section class="commentary">
+    <h2><span class="no">¶</span>Commentary</h2>
+    <p><b>Galileo's compass.</b> Galileo worked the instrument out at Padua in the later 1590s. From about 1597 his instrument maker, Marcantonio Mazzoleni, made copies in Galileo's house, and Galileo taught their use to private pupils. In 1606 he printed <i>Le operazioni del compasso geometrico et militare</i>, a short manual of worked operations, in a small private edition dedicated to the young Cosimo de' Medici. When Baldassare Capra published a Latin account of the same instrument as his own in 1607, Galileo answered with his <i>Difesa</i>.</p>
+    <p><b>Similar triangles.</b> Lines engraved from the centre of the joint make the same angle with their partners on the other leg, at every opening. The chord between mark n and mark n is therefore 2r·sin α, with r the mark's distance from the centre and α half the angle between the two lines, which the opening fixes. Set one chord to a given length, and every other chord on the same pair of lines is fixed in proportion: the sector has turned the rule of three into a single opening of a hinge. The chord at n–n can never exceed twice n parts, so small numbers are scaled up first: 3 : 5 is worked as 30 : 50.</p>
+    <p><b>Planes and solids.</b> If the side of a figure is doubled, its area grows four times and its volume eight. So the line of planes puts its marks at distances in proportion to √n, and the line of solids at ∛n. A chord across planes 40–40 is then √2 times the chord across 20–20, whatever the opening, and across solids 40–40 it is ∛2 times. The line of planes also finds mean proportionals, and so square roots; the line of solids finds the side of a cube of twice the volume, the old Delian problem, by reading rather than construction.</p>
+    <p><b>For whom.</b> The title says geometric and military. Galileo's instrument also carried a line of metals, giving the sizes of balls of equal weight in gold, lead, silver, copper, iron, and other materials, and a quadrant with a plumb line for laying a gun. A gunner could find the bore for a heavier shot; a surveyor could reduce a plan to scale or divide a field; a merchant could work the rule of three and exchange money, all without written arithmetic.</p>
+    <p><b>The English sector.</b> Thomas Hood published an English instrument under the name of a sector in 1598, and Edmund Gunter's <i>De sectore et radio</i> (1623) made the sector a standard tool of English navigators and surveyors. Sectors were made in brass and ivory into the nineteenth century and are found in many cases of drawing instruments.</p>
+    <p><b>The proportional compass.</b> Reduction compasses with a sliding pivot were in use by about 1600; one design is credited to Jost Bürgi. They do in one setting what the sector does with two: the pivot is set once for the ratio, and each length taken with the long points is given at once, reduced, by the short ones. The sector, by contrast, can be set afresh for any ratio by opening the hinge.</p>
+    <p><b>Further.</b> Galileo Galilei, <i>Operations of the Geometric and Military Compass, 1606</i>, translated with an introduction by Stillman Drake (Smithsonian Institution Press, 1978); Stillman Drake, <i>Galileo at Work: His Scientific Biography</i> (University of Chicago Press, 1978); and Edmund Gunter, <i>De sectore et radio</i> (London, 1623).</p>
+  </section>
+  <div class="colophon"><span>Drawn for the Wending House, 2026. Drag anything that looks like brass.</span><a href="/folio/">The cabinet of instruments</a></div>
+</main>
+
+<script>
+(function(){
+const {E, T, drag, line, fmt, keys} = Folio, $ = id => document.getElementById(id);
+Folio.defs();
+const DEG = Math.PI / 180, f2 = v => (+v).toFixed(2);
+/* ---------- the sector: geometry ----------
+   The joint's centre C is the corner where both inner edges meet. Each leg is a strip of width W along its inner edge.
+   Every scale is a ray from C at a small angle d beyond the inner edge; mark n of a scale stands r(n) from C.
+   With the legs opened by th, the chord between mark n on one leg and mark n on the other is 2·r(n)·sin(th/2 + d). */
+const R = 520, PART = R / 100, LG = 600, W = 102, CX = 116, CY = 258, TH_MAX = 30 * DEG, KNUCK = 36, LD = 204, SMAX = 2 * LD * .975;
+const AX = 60, AY = 572, TIPOFF = Math.atan2(W / 2, LG - 16);
+const SC = {
+  solids: {off:14, f:n => Math.cbrt(n / 100), name:"solids", full:"line of solids", lab:[10,20,30,40,50,60,70,80,90,100], root:"∛"},
+  planes: {off:46, f:n => Math.sqrt(n / 100), name:"planes", full:"line of planes", lab:[20,30,40,50,60,70,80,90,100], root:"√"},
+  lines:  {off:78, f:n => n / 100,            name:"lines",  full:"line of lines",  lab:[10,20,30,40,50,60,70,80,90,100], root:""}
+};
+for(const k in SC){ SC[k].d = Math.asin(SC[k].off / R); SC[k].r = n => R * SC[k].f(n); }
+const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+
+function makeSector(o){
+  const svg = $(o.svg), rd = $(o.rd), sec = svg.closest(".plate");
+  const st = {th:o.th, AB:o.AB, key:o.key, lock:true, msg:"", P:[{x:0, y:0, att:{t:"a"}}, {x:0, y:0, att:{t:"b"}}]};
+  const C = [CX, CY], A = () => [AX, AY], B = () => [AX + st.AB * PART, AY];
+  const rayPt = (key, side, r, th) => { const a = (th == null ? st.th : th) / 2 + SC[key].d; return [CX + r * Math.cos(a), CY - side * r * Math.sin(a)]; };
+  const markPt = (key, side, n, th) => rayPt(key, side, SC[key].r(n), th);
+  const legPt = (side, r, s) => { const h = st.th / 2, c = Math.cos(h), sn = Math.sin(h); return [CX + r * c - s * sn, CY - side * (r * sn + s * c)]; };
+  function resolve(at, cur){ if(!at) return [cur.x, cur.y];
+    switch(at.t){ case "c": return C; case "a": return A(); case "b": return B(); case "m": return markPt(at.key, at.side, at.n); case "ray": return rayPt(at.key, at.side, at.r); } }
+  function sync(){ st.P.forEach(p => { const q = resolve(p.att, p); p.x = q[0]; p.y = q[1]; }); }
+  const spanPx = () => Math.hypot(st.P[1].x - st.P[0].x, st.P[1].y - st.P[0].y), span = () => spanPx() / PART;
+  const chord = (key, n, th) => 2 * SC[key].r(n) * Math.sin((th == null ? st.th : th) / 2 + SC[key].d) / PART;
+  function across(){ const [a, b] = st.P.map(p => p.att); return a && b && a.t === "m" && b.t === "m" && a.key === b.key && a.n === b.n && a.side !== b.side ? {key:a.key, n:a.n} : null; }
+  function lateral(){ const [a, b] = st.P.map(p => p.att);
+    for(const [u, v] of [[a, b], [b, a]]) if(u && u.t === "c" && v && v.key === "lines" && (v.t === "m" || v.t === "ray")) return v.t === "m" ? v.n : v.r / PART; return null; }
+  // the opening at which a span (in parts) fits across radius r on scale key, or null
+  function thFitR(key, r, s){ const x = s * PART / (2 * r); if(x >= 1) return null; const th = 2 * (Math.asin(x) - SC[key].d); return th >= 0 && th <= TH_MAX + 1e-9 ? th : null; }
+  const thFit = (key, n, s) => thFitR(key, SC[key].r(n), s);
+  const rOf = at => at.t === "m" ? SC[at.key].r(at.n) : at.r;
+  const clampV = q => [Math.max(6, Math.min(754, q[0])), Math.max(6, Math.min(604, q[1]))];
+  /* snapping targets: every mark on both legs, the centre, A and B */
+  let targets = [];
+  function buildTargets(){ targets = [{p:C, att:{t:"c"}}, {p:A(), att:{t:"a"}}, {p:B(), att:{t:"b"}}];
+    for(const key in SC) for(const side of [1, -1]) for(let n = 1; n <= 100; n++){ if(SC[key].r(n) < KNUCK) continue; targets.push({p:markPt(key, side, n), att:{t:"m", key, side, n}}); } }
+  function nearest(q, rad){ let best = null, bd = rad; for(const t of targets){ const d = dist(q, t.p); if(d < bd){ bd = d; best = t; } } return best; }
+  /* opening the sector. A gesture begins by deciding what the dividers do:
+     taking (lock false): attached points ride with their marks, and the span changes;
+     carrying (lock true) with one point on a leg: that point rides, the other hangs toward the matching mark and catches it when the span fits;
+     carrying otherwise: the dividers are lifted and stay where they are. */
+  let gest = null;
+  function beginSector(){ sync(); const P = st.P, onLeg = a => a && (a.t === "m" || a.t === "ray");
+    gest = {mode:"ride"};
+    if(st.lock){
+      let i = -1; for(const k of [0, 1]){ const a = P[k].att, b = P[1 - k].att; if(onLeg(a) && (!b || (onLeg(b) && b.key === a.key && b.side === -a.side && Math.abs(rOf(b) - rOf(a)) < .01))){ i = k; break; } }
+      if(i >= 0) gest = {mode:"anchor", i, s:span()};
+      else { P.forEach(p => { if(onLeg(p.att)) p.att = null; }); gest = {mode:"lift"}; }
+    }
+  }
+  function setTheta(th, tol){ th = Math.max(0, Math.min(TH_MAX, th));
+    if(gest && gest.mode === "anchor"){ const i = gest.i, a = st.P[i].att, mir = Object.assign({}, a, {side:-a.side}), ts = thFitR(a.key, rOf(a), gest.s);
+      if(ts != null && Math.abs(th - ts) < tol){ st.th = ts; st.P[1 - i].att = mir; }
+      else { st.th = th; const pa = resolve(a), pm = resolve(mir), dl = dist(pa, pm) || 1, s = gest.s * PART;
+        const q = clampV([pa[0] + (pm[0] - pa[0]) / dl * s, pa[1] + (pm[1] - pa[1]) / dl * s]); st.P[1 - i] = {x:q[0], y:q[1], att:null}; } }
+    else st.th = th; }
+  /* actions */
+  const n = () => Math.max(1, Math.min(100, Math.round(+$(o.nIn).value || 1)));
+  const key = () => o.kSel ? $(o.kSel).value : "lines";
+  const act = {
+    ab(){ st.P = [{x:0, y:0, att:{t:"a"}}, {x:0, y:0, att:{t:"b"}}]; st.lock = true; },
+    fit(){ sync(); const k = key(), m = n(), s = span(), th = thFit(k, m, s);
+      if(SC[k].r(m) < KNUCK){ st.msg = `Mark ${m} lies under the joint.`; return; }
+      if(th == null){ const lo = chord(k, m, 0), hi = chord(k, m, TH_MAX); st.msg = `${fmt(s, 2)} parts will not go across ${m}–${m}: there the chord runs only from ${fmt(lo, 1)} to ${fmt(hi, 1)}.`; return; }
+      st.th = th; st.P = [{x:0, y:0, att:{t:"m", key:k, side:1, n:m}}, {x:0, y:0, att:{t:"m", key:k, side:-1, n:m}}]; st.lock = true; },
+    take(){ const k = key(), m = n(); if(SC[k].r(m) < KNUCK){ st.msg = `Mark ${m} lies under the joint.`; return; }
+      st.P = [{x:0, y:0, att:{t:"m", key:k, side:1, n:m}}, {x:0, y:0, att:{t:"m", key:"" + k, side:-1, n:m}}]; st.lock = false; },
+    along(){ const m = n(); if(m < 7){ st.msg = `Mark ${m} lies under the joint.`; return; }
+      st.P = [{x:0, y:0, att:{t:"c"}}, {x:0, y:0, att:{t:"m", key:"lines", side:1, n:m}}]; st.lock = true; },
+    lay(){ sync(); const s = span(); if(s > 100){ st.msg = "The span is longer than the line of lines."; return; }
+      const near = Math.round(s); st.P = [{x:0, y:0, att:{t:"c"}}, {x:0, y:0, att:Math.abs(s - near) < .015 && near >= 7 ? {t:"m", key:"lines", side:1, n:near} : {t:"ray", key:"lines", side:1, r:s * PART}}]; st.lock = true; }
+  };
+  sec.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", () => { st.msg = ""; act[b.dataset.act](); redraw(); }));
+  if(o.kSel) $(o.kSel).addEventListener("change", () => { st.key = key(); redraw(); });
+
+  /* ---------- drawing ---------- */
+  let G = null;
+  function leg(g, side){
+    const lg = E("g", {"data-g":"legs"}, g);
+    const P = (r, s) => legPt(side, r, s), f = p => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
+    const back = P(-W * .0, W), d = `M${f(P(0, 0))}L${f(P(LG - 6, 0))}L${f(P(LG, 6))}L${f(P(LG, W - 6))}L${f(P(LG - 6, W))}L${f(back)}A${W},${W} 0 0 ${side > 0 ? 0 : 1} ${f(P(-W, 0))}Z`;
+    E("path", {d, class:"fink2", opacity:.14, transform:"translate(3,4)"}, lg);
+    E("path", {d, class:"fvel"}, lg); E("path", {d, class:"fgold", opacity:.5}, lg);
+    E("path", {d, fill:"url(#h45w)", class:"ink", "stroke-width":0, opacity:.55}, lg);
+    E("path", {d, class:"ink", "stroke-width":1.25}, lg);
+    // bevels: a bright one inside the outer edge, a dark one along the inner edge
+    E("path", {d:line(P(4, W - 3), P(LG - 8, W - 3), 24, .25, 3 + side), style:"stroke:var(--vellum2)", fill:"none", "stroke-width":2.2, opacity:.8}, lg);
+    E("path", {d:line(P(KNUCK, 2), P(LG - 8, 2), 24, .25, 5 + side), class:"ink2", "stroke-width":.6}, lg);
+    // a border line engraved round the face
+    E("path", {d:`M${f(P(KNUCK + 4, 5))}L${f(P(LG - 9, 5))}L${f(P(LG - 9, W - 7))}L${f(P(KNUCK + 4, W - 7))}`, class:"ink2", "stroke-width":.45, opacity:.7}, lg);
+    // the scales
+    for(const k of ["solids", "planes", "lines"]){
+      const s = SC[k], em = o.emph.includes(k), cls = em ? "ink" : "ink2", gk = E("g", {"data-g":k, opacity:em ? 1 : .6}, g);
+      const a = st.th / 2 + s.d, u = [Math.cos(a), -side * Math.sin(a)], nv = [-Math.sin(a), -side * Math.cos(a)];
+      const at = (r, t) => [CX + u[0] * r + nv[0] * t, CY + u[1] * r + nv[1] * t];
+      E("path", {d:`M${f(at(KNUCK - 4, 0))}L${f(at(R + 6, 0))}`, class:cls, "stroke-width":em ? .8 : .6}, gk);
+      let last = -9; let dd = "";
+      for(let m = 1; m <= 100; m++){ const r = s.r(m); if(r < KNUCK) continue; const big = m % 10 === 0, mid = m % 5 === 0;
+        if(!big && !mid && r - last < 1.7) continue; last = r;
+        const l = big ? 6 : mid ? 4.2 : 2.6, p = at(r, 0), q = at(r, l); dd += `M${f(p)}L${f(q)}`; }
+      E("path", {d:dd, class:cls, "stroke-width":em ? .55 : .45}, gk);
+      const room = r => k === "lines" ? W - r * Math.sin(s.d) - 3 : (k === "planes" ? 78 - 46 : 46 - 14) * r / R;
+      const rot = -side * a / DEG;
+      for(const m of s.lab){ const r = s.r(m); if(r < KNUCK || room(r) < 13.5) continue; const p = at(r, 10.5);
+        T(String(m), {x:p[0].toFixed(1), y:p[1].toFixed(1), "font-size":em ? 10.5 : 9.5, "text-anchor":"middle", "dominant-baseline":"central", transform:`rotate(${rot.toFixed(2)} ${p[0].toFixed(1)} ${p[1].toFixed(1)})`, class:em ? "" : "fadedt"}, gk); }
+      const pn = at(R + 25, 3.5);
+      T(s.name, {x:pn[0].toFixed(1), y:pn[1].toFixed(1), "font-size":9, "text-anchor":"middle", "dominant-baseline":"central", "letter-spacing":".06em", class:"sc " + (em ? "rubt" : "fadedt"), transform:`rotate(${rot.toFixed(2)} ${pn[0].toFixed(1)} ${pn[1].toFixed(1)})`}, gk);
+    }
+    // the knob at the tip, for opening
+    const kp = P(LG - 16, W / 2), kg = E("g", {class:"grab", "data-g":"legs", "data-k":"tip" + side}, g);
+    E("circle", {cx:kp[0], cy:kp[1], r:8, class:"fgold", opacity:.6}, kg);
+    E("circle", {cx:kp[0], cy:kp[1], r:8, fill:"url(#h135)", class:"ink", "stroke-width":1.1}, kg);
+    E("circle", {cx:kp[0], cy:kp[1], r:2.4, class:"fvel"}, kg);
+    E("circle", {cx:kp[0], cy:kp[1], r:20, fill:"transparent"}, kg);
+    drag(kg, svg, p => { const ang = Math.atan2(side * (CY - p.y), p.x - CX); setTheta(2 * (ang - TIPOFF), .5 * DEG); redraw(); }, () => { st.msg = ""; beginSector(); });
+    keys(kg, (dx, dy, big) => { st.msg = ""; beginSector(); const step = (big ? 1 : .1) * DEG * (dx > 0 || dy < 0 ? 1 : -1); setTheta(st.th + step, Math.abs(step) * .55); redraw(); }, side > 0 ? "the tip of the upper leg: arrows open and close the sector" : "the tip of the lower leg: arrows open and close the sector");
+  }
+  function knuckle(g){ const kg = E("g", {"data-g":"legs"}, g);
+    E("circle", {cx:CX, cy:CY, r:KNUCK - 6, class:"fgold", opacity:.55}, kg);
+    E("circle", {cx:CX, cy:CY, r:KNUCK - 6, fill:"url(#h135)", class:"ink", "stroke-width":1.2}, kg);
+    E("circle", {cx:CX, cy:CY, r:KNUCK - 12, class:"ink2", "stroke-width":.6}, kg);
+    E("circle", {cx:CX, cy:CY, r:9, class:"fvel"}, kg); E("circle", {cx:CX, cy:CY, r:9, class:"ink", "stroke-width":1}, kg);
+    E("line", {x1:CX - 6, y1:CY + 3, x2:CX + 6, y2:CY - 3, class:"ink", "stroke-width":1.1}, kg);
+    E("circle", {cx:CX, cy:CY, r:1.6, class:"frub"}, kg); }
+  function dividers(g){ const p0 = [st.P[0].x, st.P[0].y], p1 = [st.P[1].x, st.P[1].y], s = Math.max(dist(p0, p1), .01);
+    const m = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2], h = Math.sqrt(Math.max(0, LD * LD - s * s / 4));
+    let q = [-(p1[1] - p0[1]) / s, (p1[0] - p0[0]) / s]; const pref = [380 - m[0], 330 - m[1]]; if(q[0] * pref[0] + q[1] * pref[1] < 0) q = [-q[0], -q[1]];
+    const H = [m[0] + q[0] * h, m[1] + q[1] * h], dg = E("g", {"data-g":"dividers"}, g), f = p => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
+    // legs: tapered steel, with a needle at each point
+    const legs = E("g", {class:"grab", "data-k":"head"}, dg);
+    [p0, p1].forEach((P, i) => { const L = dist(H, P) || 1, u = [(P[0] - H[0]) / L, (P[1] - H[1]) / L], v = [-u[1], u[0]];
+      const at = (t, w) => [H[0] + u[0] * t + v[0] * w, H[1] + u[1] * t + v[1] * w];
+      const d = `M${f(at(0, 6))}L${f(at(L - 22, 2.6))}L${f(at(L - 22, -2.6))}L${f(at(0, -6))}Z`;
+      E("path", {d, class:"fink2", opacity:.12, transform:"translate(3,4)"}, legs);
+      E("path", {d, class:"fvel"}, legs); E("path", {d, fill:"url(#h135w)", class:"ink", "stroke-width":1}, legs);
+      E("path", {d:`M${f(at(10, 3.2))}L${f(at(L - 24, 1.3))}`, class:"ink2", "stroke-width":.5}, legs);
+      E("path", {d:`M${f(at(L - 22, 2.2))}L${f(P)}L${f(at(L - 22, -2.2))}Z`, class:"fink"}, legs);
+      E("path", {d:`M${f(at(0, 0))}L${f(at(L - 22, 0))}`, style:"stroke:transparent", "stroke-width":16}, legs); });
+    // the head, with a finial to lift it by
+    const back = [H[0] + q[0] * 22, H[1] + q[1] * 22];
+    E("path", {d:`M${f(H)}L${f(back)}`, class:"ink", "stroke-width":4}, legs);
+    E("circle", {cx:back[0], cy:back[1], r:5, class:"fgold", style:"stroke:var(--ink);stroke-width:1"}, legs);
+    E("circle", {cx:H[0], cy:H[1], r:12, class:"fgold", opacity:.6}, legs); E("circle", {cx:H[0], cy:H[1], r:12, fill:"url(#h45)", class:"ink", "stroke-width":1.2}, legs);
+    E("circle", {cx:H[0], cy:H[1], r:3.2, class:"fvel"}, legs); E("circle", {cx:H[0], cy:H[1], r:3.2, class:"ink", "stroke-width":.8}, legs);
+    E("circle", {cx:H[0], cy:H[1], r:22, fill:"transparent"}, legs);
+    let save = null;
+    drag(legs, svg, (p, e, p0) => { const dx = p.x - p0.x, dy = p.y - p0.y;
+      st.P = save.map(s => { const q = clampV([s[0] + dx, s[1] + dy]); return {x:q[0], y:q[1], att:null}; }); snapCarry(9); redraw(); },
+      () => { st.msg = ""; sync(); save = st.P.map(p => [p.x, p.y]); st.lock = true; });
+    keys(legs, (dx, dy, big) => { st.msg = ""; sync(); const k = big ? 12 : 2; st.P = st.P.map(p => { const q = clampV([p.x + dx * k, p.y + dy * k]); return {x:q[0], y:q[1], att:null}; }); st.lock = true; snapCarry(big ? 6 : 1.5); redraw(); }, "the head of the dividers: arrows carry them");
+    // the points
+    [p0, p1].forEach((P, i) => { const pg = E("g", {class:"grab", "data-k":"pt" + i}, dg);
+      E("circle", {cx:P[0], cy:P[1], r:3.2, class:st.P[i].att ? "rub" : "ink2", "stroke-width":1.1}, pg);
+      E("circle", {cx:P[0], cy:P[1], r:14, fill:"transparent"}, pg);
+      drag(pg, svg, p => movePoint(i, [p.x, p.y], 9), () => { st.msg = ""; sync(); });
+      keys(pg, (dx, dy, big) => { st.msg = ""; sync(); const a = st.P[i].att;
+        if(a && a.t === "m"){ const step = (dx > 0 || dy < 0 ? 1 : -1) * (big ? 10 : 1); let m = a.n + step; while(m >= 1 && m <= 100 && SC[a.key].r(m) < KNUCK) m += step > 0 ? 1 : -1;
+          if(m >= 1 && m <= 100){ st.P[i].att = Object.assign({}, a, {n:m}); st.lock = !across(); } redraw(); }
+        else { const k = big ? 8 : 1; movePoint(i, [st.P[i].x + dx * k, st.P[i].y + dy * k], big ? 4 : 1.2); } }, i ? "the second point of the dividers: on a mark, arrows step along the scale" : "the first point of the dividers: on a mark, arrows step along the scale"); });
+    return H;
+  }
+  function movePoint(i, q, rad){ const o2 = st.P[1 - i], other = [o2.x, o2.y]; q = clampV(q);
+    const d = dist(q, other); if(d > SMAX) q = [other[0] + (q[0] - other[0]) * SMAX / d, other[1] + (q[1] - other[1]) * SMAX / d];
+    const t = nearest(q, rad); st.P[i] = t && dist(t.p, other) <= SMAX ? {x:t.p[0], y:t.p[1], att:t.att} : {x:q[0], y:q[1], att:null};
+    st.lock = !across(); redraw(); }
+  function snapCarry(rad){ for(const i of [0, 1]){ const t = nearest([st.P[i].x, st.P[i].y], rad); if(!t) continue;
+      const dx = t.p[0] - st.P[i].x, dy = t.p[1] - st.P[i].y; st.P.forEach(p => { p.x += dx; p.y += dy; }); st.P[i].att = t.att; return; } }
+  function givenLine(g){ const a = A(), b = B(), gg = E("g", {"data-g":"ab"}, g);
+    E("path", {d:line(a, b, 16, .35, 61), class:"ink", "stroke-width":1.6}, gg);
+    [a, b].forEach(p => E("path", {d:`M${p[0]},${p[1] - 7}L${p[0]},${p[1] + 7}`, class:"ink", "stroke-width":1.3}, gg));
+    T("A", {x:a[0] - 4, y:a[1] + 24, "font-size":16, class:"sc", "text-anchor":"middle"}, gg);
+    T("B", {x:b[0], y:b[1] + 24, "font-size":16, class:"sc", "text-anchor":"middle"}, gg);
+    T(`AB = ${fmt(st.AB, 1)} parts`, {x:(a[0] + b[0]) / 2, y:a[1] + 24, "font-size":13.5, "text-anchor":"middle", class:"hand"}, gg);
+    const bh = E("g", {class:"grab", "data-k":"bh"}, gg);
+    E("path", {d:`M${b[0] + 14},${b[1] - 8} l7,8 l-7,8 l-7,-8 z`, class:"fgold", style:"stroke:var(--ink);stroke-width:1"}, bh);
+    E("circle", {cx:b[0] + 14, cy:b[1], r:14, fill:"transparent"}, bh);
+    drag(bh, svg, p => { st.AB = Math.max(5, Math.min(70, Math.round((p.x - 14 - AX) / PART * 2) / 2)); redraw(); }, () => { st.msg = ""; sync(); });
+    keys(bh, (dx, dy, big) => { st.msg = ""; sync(); st.AB = Math.max(5, Math.min(70, st.AB + (dx > 0 || dy < 0 ? 1 : -1) * (big ? 5 : .5))); redraw(); }, "the end B of the given line: arrows lengthen and shorten it");
+  }
+  function steps(g){ const s = span(); if(!(s > 1.5 && s < st.AB + .05)) return; const a = A(), k = Math.floor(st.AB / s + .004), sg = E("g", {"data-g":"ab"}, g);
+    for(let i = 1; i <= k; i++){ const x0 = a[0] + (i - 1) * s * PART, x1 = a[0] + i * s * PART, r = s * PART / 2;
+      E("path", {d:`M${x0.toFixed(2)},${AY}A${r.toFixed(2)},${Math.min(r, 16).toFixed(2)} 0 0 1 ${x1.toFixed(2)},${AY}`, class:"lap", "stroke-width":.8, "stroke-dasharray":"2 2"}, sg);
+      E("path", {d:`M${x1.toFixed(2)},${AY - 4}L${x1.toFixed(2)},${AY + 4}`, class:"lap", "stroke-width":1}, sg); } }
+  function figs(g){ const s = span(), q = PART / 4, k = st.key, x0 = 600, y0 = 598, gg = E("g", {"data-g":"figs"}, g);
+    if(k === "lines") return;
+    const a = st.AB * q, b = s * q;
+    if(k === "planes"){ E("rect", {x:x0 - a - 6, y:y0 - a, width:a, height:a, fill:"url(#h45w)", class:"ink", "stroke-width":1}, gg);
+      E("rect", {x:x0 + 6, y:y0 - b, width:b, height:b, fill:"url(#h45l)", class:"lap", "stroke-width":1, opacity:.9}, gg); }
+    else { E("circle", {cx:x0 - a / 2 - 6, cy:y0 - a / 2, r:a / 2, fill:"url(#h45w)", class:"ink", "stroke-width":1}, gg);
+      E("circle", {cx:x0 + 6 + b / 2, cy:y0 - b / 2, r:b / 2, fill:"url(#h45l)", class:"lap", "stroke-width":1, opacity:.9}, gg);
+      E("path", {d:`M${x0 - a - 6 + a * .22},${y0 - a * .72}A${a * .3},${a * .3} 0 0 1 ${x0 - 6 - a * .3},${y0 - a * .92}`, style:"stroke:var(--vellum2)", fill:"none", "stroke-width":1.4}, gg); }
+    T("on AB", {x:x0 - 6 - a / 2, y:y0 - a - 6, "font-size":12, "text-anchor":"middle", class:"fadedt", "font-style":"italic"}, gg);
+    T("on the span", {x:x0 + 6 + b / 2, y:y0 - b - 6, "font-size":12, "text-anchor":"middle", class:"hand"}, gg);
+    T("quarter size", {x:752, y:y0, "font-size":11, "text-anchor":"end", class:"fadedt", "font-style":"italic"}, gg); }
+  function triangle(g){ const ac = across(); if(!ac) return; const tg = E("g", {"data-g":"tri"}, g), f = p => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
+    const u = markPt(ac.key, 1, ac.n), l = markPt(ac.key, -1, ac.n), u1 = markPt(ac.key, 1, 100), l1 = markPt(ac.key, -1, 100);
+    E("path", {d:`M${f(C)}L${f(u)}L${f(l)}Z`, class:"fwash"}, tg);
+    E("path", {d:`M${f(u)}L${f(l)}`, class:"rub", "stroke-width":1.1, "stroke-dasharray":"4 3"}, tg);
+    if(ac.n !== 100){ E("path", {d:`M${f(u1)}L${f(l1)}`, class:"lap", "stroke-width":.9, "stroke-dasharray":"2 4"}, tg);
+      T("100–100", {x:u1[0] + 8, y:(u1[1] + l1[1]) / 2 + 4, "font-size":12, class:"hand"}, tg); } }
+
+  function redraw(){
+    const act0 = document.activeElement && svg.contains(document.activeElement) ? document.activeElement.getAttribute("data-k") : null;
+    sync(); buildTargets();
+    if(G) G.remove(); G = E("g", {}, svg); const g = G;
+    if(o.inset) figs(g);
+    givenLine(g); if(o.steps) steps(g);
+    leg(g, -1); leg(g, 1); knuckle(g); triangle(g);
+    dividers(g);
+    if(act0){ const el = svg.querySelector(`[data-k="${act0}"]`); if(el) el.focus(); }
+    reckon(); Folio.tryCheck();
+  }
+  function where(){ const ac = across(), la = lateral(), [a, b] = st.P.map(p => p.att);
+    if(ac) return `across ${SC[ac.key].name} ${ac.n}–${ac.n}`;
+    if(la != null) return `from the centre along the line of lines`;
+    if(a && b && ((a.t === "a" && b.t === "b") || (a.t === "b" && b.t === "a"))) return "on A and B";
+    const one = a || b; if(one && one.t === "m") return `with one point on ${SC[one.key].name} ${one.n}, the other free`;
+    return "lifted off the page"; }
+  function reckon(){ const s = span(), ac = across(), la = lateral(), k = o.kSel ? key() : "lines";
+    let h = st.msg ? `<span class="warn">${st.msg}</span><hr>` : "";
+    h += `The sector is open ${fmt(st.th / DEG, 1)}°.<br><span class="dim">Across ${SC[k].name} 100–100 the chord is ${fmt(chord(k, 100), 2)} parts.</span><hr>`;
+    h += `The dividers hold<span class="big">${fmt(s, 2)} parts</span><span class="dim">${where()}.</span>`;
+    if(ac){ const S = SC[ac.key], c100 = chord(ac.key, 100);
+      h += `<hr>Similar triangles: the chord at ${ac.n} is to the chord at 100 as ${S.root || ""}${ac.n} is to ${S.root || ""}100.<br><span class="nw">${fmt(c100, 2)} × ${S.root ? S.root + "(" + ac.n + "/100)" : ac.n + "/100"}</span> <span class="nw">= ${fmt(c100, 2)} × ${fmt(S.f(ac.n), 4)}</span> <span class="nw">= ${fmt(c100 * S.f(ac.n), 2)}</span>`; }
+    if(la != null) h += `<hr>Laid from the centre, they read <b>${fmt(la, 2)}</b> on the line of lines.`;
+    if(o.steps && s > 1.5 && s < st.AB + .05){ const m = Math.floor(st.AB / s + .004), left = st.AB - m * s;
+      h += `<hr><span class="dim">Stepped along AB they go ${m} time${m === 1 ? "" : "s"}${Math.abs(left) < .05 ? ", exactly" : `, leaving ${fmt(Math.max(0, left), 2)}`}. AB ÷ ${m} = ${fmt(st.AB / m, 2)}.</span>`; }
+    if(o.inset && k !== "lines"){ const r = s / st.AB;
+      h += k === "planes" ? `<hr><span class="dim">Squares on AB and on the span: areas ${fmt(st.AB * st.AB, 0)} : ${fmt(s * s, 0)} = 1 : ${fmt(r * r, 3)}.</span>`
+        : `<hr><span class="dim">Balls on AB and on the span: weights as ${fmt(st.AB, 1)}³ : ${fmt(s, 2)}³ = 1 : ${fmt(r * r * r, 3)}.</span>`; }
+    rd.innerHTML = h; }
+  return {st, redraw, span, across, lateral, chord, act, markPt, sync, thFit, setTheta, beginSector};
+}
+
+/* ================= PLATE I ================= */
+const S1 = makeSector({svg:"svI", rd:"rdI", nIn:"nI", th:12 * DEG, AB:42, key:"lines", emph:["lines"], steps:true});
+S1.redraw();
+/* ================= PLATE II ================= */
+const S2 = makeSector({svg:"svII", rd:"rdII", nIn:"nII", kSel:"kII", th:14 * DEG, AB:25, key:"planes", emph:["planes", "solids"], inset:true});
+S2.redraw();
+
+/* ================= PLATE III: THE PROPORTIONAL COMPASS ================= */
+const svC = $("svIII"), LT = 600, CY3 = 200, X0 = 44, BW = 11, SLOT0 = 90, SLOT1 = 560;
+let ca = 370, cph = 12 * DEG, gC = null;
+const clampPh = ph => Math.max(1 * DEG, Math.min(22 * DEG, Math.asin(Math.min(1, 182 / ca)), ph));
+const ratio = () => ca / (LT - ca), aOf = r => LT * r / (r + 1);
+const longS = () => 2 * ca * Math.sin(cph) / PART, shortS = () => 2 * (LT - ca) * Math.sin(cph) / PART;
+function drawC(){
+  const act0 = document.activeElement && svC.contains(document.activeElement) ? document.activeElement.getAttribute("data-k") : null;
+  if(gC) gC.remove(); gC = E("g", {}, svC); const g = gC, f = p => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
+  const c = Math.cos(cph), s = Math.sin(cph), Px = X0 + ca * c, P = [Px, CY3];
+  // each leg runs from its long point, through the pivot, to its short point
+  const legs = [1, -1].map(sg => { const L0 = [Px - ca * c, CY3 - sg * ca * s], L1 = [Px + (LT - ca) * c, CY3 + sg * (LT - ca) * s]; return {sg, L0, L1}; });
+  legs.forEach(({sg, L0, L1}, idx) => { const u = [(L1[0] - L0[0]) / LT, (L1[1] - L0[1]) / LT], v = [-u[1], u[0]], at = (t, w) => [L0[0] + u[0] * t + v[0] * w, L0[1] + u[1] * t + v[1] * w];
+    const lg = E("g", {"data-g":"legs"}, g);
+    const d = `M${f(at(0, 0))}L${f(at(34, BW))}L${f(at(LT - 34, BW))}L${f(at(LT, 0))}L${f(at(LT - 34, -BW))}L${f(at(34, -BW))}Z`;
+    E("path", {d, class:"fink2", opacity:.14, transform:"translate(3,4)"}, lg);
+    E("path", {d, class:"fgold", opacity:.5}, lg); E("path", {d, fill:idx ? "url(#h135w)" : "url(#h45w)", class:"ink", "stroke-width":0, opacity:.6}, lg);
+    E("path", {d, class:"ink", "stroke-width":1.2}, lg);
+    // steel points at both ends
+    E("path", {d:`M${f(at(0, 0))}L${f(at(30, 3.2))}L${f(at(30, -3.2))}Z`, class:"fink"}, lg);
+    E("path", {d:`M${f(at(LT, 0))}L${f(at(LT - 30, 3.2))}L${f(at(LT - 30, -3.2))}Z`, class:"fink"}, lg);
+    // the slot
+    E("path", {d:`M${f(at(SLOT0, 3.2))}L${f(at(SLOT1, 3.2))}A3.2,3.2 0 0 1 ${f(at(SLOT1, -3.2))}L${f(at(SLOT0, -3.2))}A3.2,3.2 0 0 1 ${f(at(SLOT0, 3.2))}Z`, class:"fvel"}, lg);
+    E("path", {d:`M${f(at(SLOT0, 3.2))}L${f(at(SLOT1, 3.2))}A3.2,3.2 0 0 1 ${f(at(SLOT1, -3.2))}L${f(at(SLOT0, -3.2))}A3.2,3.2 0 0 1 ${f(at(SLOT0, 3.2))}Z`, class:"ink", "stroke-width":.8}, lg);
+    if(idx === 1) legs.scaleAt = at, legs.scaleU = u;
+  });
+  { const at = legs.scaleAt, u = legs.scaleU, pg = E("g", {"data-g":"pivot"}, g); /* the scale of ratios, engraved beside the slot of the lower-right leg */
+      for(let r = 1; r <= 9; r++){ const t = aOf(r); E("path", {d:`M${f(at(t, 5))}L${f(at(t, BW - 1))}`, class:"ink", "stroke-width":.8}, pg);
+      }
+      for(let r = 1.5; r < 5; r += 1){ const t = aOf(r); E("path", {d:`M${f(at(t, 5))}L${f(at(t, 8))}`, class:"ink2", "stroke-width":.6}, pg); }
+      [1, 2, 3, 4, 5, 6, 8].forEach(r => { const p = at(aOf(r), BW + 9); T(String(r), {x:p[0].toFixed(1), y:p[1].toFixed(1), "font-size":11, "text-anchor":"middle", "dominant-baseline":"central", transform:`rotate(${(Math.atan2(u[1], u[0]) / DEG).toFixed(2)} ${p[0].toFixed(1)} ${p[1].toFixed(1)})`}, pg); }); }
+  // point labels
+  const [Lu, Ll] = [legs[0], legs[1]];
+  const lgp = E("g", {"data-g":"long"}, g), sgp = E("g", {"data-g":"short"}, g);
+  E("path", {d:line(Lu.L0, Ll.L0, 6, .3, 71), class:"rub", "stroke-width":1, "stroke-dasharray":"4 3"}, lgp);
+  E("path", {d:line(Lu.L1, Ll.L1, 6, .3, 72), class:"lap", "stroke-width":1, "stroke-dasharray":"4 3"}, sgp);
+  T(`${fmt(longS(), 2)}`, {x:Lu.L0[0] + 10, y:CY3 + 5, "font-size":15, class:"hand", style:"fill:var(--rubric)"}, lgp);
+  T(`${fmt(shortS(), 2)}`, {x:Lu.L1[0] + 10, y:CY3 + 5, "font-size":15, class:"hand"}, sgp);
+  // the similar triangles, washed
+  E("path", {d:`M${f(P)}L${f(Lu.L0)}L${f(Ll.L0)}Z`, class:"fwash"}, lgp);
+  E("path", {d:`M${f(P)}L${f(Lu.L1)}L${f(Ll.L1)}Z`, class:"flwash"}, sgp);
+  T("a", {x:(P[0] + Lu.L0[0]) / 2, y:(P[1] + Lu.L0[1]) / 2 - 16, "font-size":17, "font-style":"italic", class:"rubt", "text-anchor":"middle"}, lgp);
+  T("b", {x:(P[0] + Ll.L1[0]) / 2, y:(P[1] + Ll.L1[1]) / 2 - 16, "font-size":17, "font-style":"italic", class:"rubt", "text-anchor":"middle"}, sgp);
+  // the pivot: a slide with a milled screw
+  const pv = E("g", {class:"grab", "data-g":"pivot", "data-k":"pivot"}, g);
+  E("rect", {x:Px - 15, y:CY3 - 15, width:30, height:30, rx:4, class:"fgold", opacity:.6}, pv);
+  E("rect", {x:Px - 15, y:CY3 - 15, width:30, height:30, rx:4, fill:"url(#h45)", class:"ink", "stroke-width":1.1}, pv);
+  E("circle", {cx:Px, cy:CY3, r:10, class:"fvel"}, pv);
+  E("circle", {cx:Px, cy:CY3, r:10, fill:"url(#hdot)", class:"ink", "stroke-width":1}, pv);
+  for(let i = 0; i < 16; i++){ const t = i * Math.PI / 8; E("line", {x1:Px + 10 * Math.cos(t), y1:CY3 + 10 * Math.sin(t), x2:Px + 12.5 * Math.cos(t), y2:CY3 + 12.5 * Math.sin(t), class:"ink", "stroke-width":.8}, pv); }
+  E("line", {x1:Px - 5, y1:CY3, x2:Px + 5, y2:CY3, class:"ink", "stroke-width":1.4}, pv);
+  E("path", {d:`M${Px},${CY3 - 22}L${Px - 5},${CY3 - 30}L${Px + 5},${CY3 - 30}Z`, class:"frub"}, pv);
+  E("circle", {cx:Px, cy:CY3, r:24, fill:"transparent"}, pv);
+  drag(pv, svC, p => { let a = (p.x - X0) / Math.cos(cph); for(let r = 1; r <= 9; r++) if(Math.abs(aOf(r) - a) < 3.5) a = aOf(r); ca = Math.max(300, Math.min(545, a)); cph = clampPh(cph); drawC(); });
+  keys(pv, (dx, dy, big) => { ca = Math.max(300, Math.min(545, ca + (dx > 0 || dy < 0 ? 1 : -1) * (big ? 5 : .5))); cph = clampPh(cph); drawC(); }, "the sliding pivot: arrows move it along the slot");
+  // the long points: drag to open
+  [Lu, Ll].forEach(({L0, sg}, i) => { const hg = E("g", {class:"nsgrab", "data-g":"long", "data-k":"lp" + i}, g);
+    E("circle", {cx:L0[0], cy:L0[1], r:5, class:"fgold", style:"stroke:var(--ink);stroke-width:1"}, hg);
+    E("circle", {cx:L0[0], cy:L0[1], r:18, fill:"transparent"}, hg);
+    drag(hg, svC, p => { const P2 = [X0 + ca * Math.cos(cph), CY3]; let ph = Math.atan2(Math.abs(p.y - CY3), Math.max(20, P2[0] - p.x)); cph = clampPh(ph); drawC(); });
+    keys(hg, (dx, dy, big) => { cph = clampPh(cph + (sg * dy < 0 || dx > 0 ? 1 : -1) * (big ? 1 : .1) * DEG); drawC(); }, "a long point: arrows open and close the compass"); });
+  // below: the long span laid down, the short stepped along it
+  const yS = 425, sg = E("g", {"data-g":"step"}, g), Ls = longS() * PART, Ss = shortS() * PART;
+  E("path", {d:line([X0, yS], [X0 + Ls, yS], 14, .3, 81), class:"ink", "stroke-width":1.5}, sg);
+  [X0, X0 + Ls].forEach(x => E("path", {d:`M${x},${yS - 7}L${x},${yS + 7}`, class:"rub", "stroke-width":1.3}, sg));
+  const k = Math.floor(Ls / Ss + .004);
+  for(let i = 1; i <= Math.min(k, 40); i++){ const x0 = X0 + (i - 1) * Ss, x1 = X0 + i * Ss;
+    E("path", {d:`M${x0.toFixed(2)},${yS}A${(Ss / 2).toFixed(2)},${Math.min(Ss / 2, 22).toFixed(2)} 0 0 1 ${x1.toFixed(2)},${yS}`, class:"lap", "stroke-width":.9, "stroke-dasharray":"2 2"}, sg);
+    E("path", {d:`M${x1.toFixed(2)},${yS - 4}L${x1.toFixed(2)},${yS + 4}`, class:"lap", "stroke-width":1}, sg); }
+  T("the long span, with the short span stepped along it", {x:X0, y:yS + 30, "font-size":13, "font-style":"italic", class:"fadedt"}, sg);
+  if(act0){ const el = svC.querySelector(`[data-k="${act0}"]`); if(el) el.focus(); }
+  // reckoning
+  const r = ratio(), left = (Ls - k * Ss) / PART;
+  $("rdIII").innerHTML = `The pivot divides the legs as<span class="big">${fmt(r, 3)} : 1</span><span class="dim">a = ${fmt(ca / PART, 1)}, b = ${fmt((LT - ca) / PART, 1)} parts; the compass is open ${fmt(2 * cph / DEG, 1)}°.</span><hr>
+    Long points: 2a·sin ${fmt(cph / DEG, 1)}° = <b>${fmt(longS(), 2)}</b><br>Short points: 2b·sin ${fmt(cph / DEG, 1)}° = <b>${fmt(shortS(), 2)}</b><br>
+    <span class="nw">${fmt(longS(), 2)} ÷ ${fmt(shortS(), 2)} = ${fmt(longS() / shortS(), 3)}</span> <span class="dim">= a ÷ b, at any opening: the sine cancels.</span><hr>
+    <span class="dim">The short span steps ${k} time${k === 1 ? "" : "s"} along the long${Math.abs(left) < .05 ? ", exactly" : `, leaving ${fmt(left, 2)}`}. Areas copied with the short points shrink by ${fmt(r * r, 3)}.</span>`;
+  Folio.tryCheck();
+}
+document.querySelectorAll("#compass [data-r]").forEach(b => b.addEventListener("click", () => { ca = aOf(+b.dataset.r); drawC(); }));
+drawC();
+
+/* ================= TRY THIS ================= */
+const near = (a, b, t) => Math.abs(a - b) <= t;
+const acrossIs = (S, k, m) => { const a = S.across(); return a && a.key === k && (m == null || a.n === m); };
+const setup = (S, o) => { Object.assign(S.st, {msg:""}, o.st || {}); if(o.inN) $(o.inN[0]).value = o.inN[1]; if(o.k){ $("kII").value = o.k; S.st.key = o.k; } if(o.act) S.act[o.act](); S.redraw(); };
+Folio.tries({
+  fit100: {label:"set it up", setup(){ setup(S1, {st:{AB:42, th:6 * DEG}, inN:["nI", 100], act:"ab"}); }, check(){ return near(S1.chord("lines", 100), S1.st.AB, .2); }},
+  seven:  {label:"set it up", setup(){ setup(S1, {st:{AB:42, th:6 * DEG}, inN:["nI", 70], act:"ab"}); }, check(){ return acrossIs(S1, "lines", 10) && near(S1.span(), S1.st.AB / 7, .08); }},
+  three:  {label:"set it up", setup(){ setup(S1, {st:{th:6 * DEG}, inN:["nI", 12], act:"along"}); $("nI").value = 30; }, check(){ const l = S1.lateral(); return l != null && near(l, 20, .12); }},
+  scale:  {label:"set it up", setup(){ setup(S1, {st:{AB:40, th:6 * DEG}, inN:["nI", 100], act:"ab"}); }, check(){ return acrossIs(S1, "lines", 70) && near(S1.span(), 28, .12); }},
+  dbl:    {label:"set it up", setup(){ setup(S2, {st:{AB:25, th:6 * DEG}, k:"planes", inN:["nII", 20], act:"ab"}); }, check(){ return acrossIs(S2, "planes") && near(S2.span(), 25 * Math.SQRT2, .15); }},
+  mean:   {label:"set it up", setup(){ setup(S2, {st:{th:6 * DEG}, k:"planes", inN:["nII", 20], act:"along"}); }, check(){ return acrossIs(S2, "planes", 80) && near(S2.span(), 40, .15); }},
+  ball:   {label:"set it up", setup(){ setup(S2, {st:{AB:24, th:6 * DEG}, k:"solids", inN:["nII", 20], act:"ab"}); }, check(){ return acrossIs(S2, "solids") && near(S2.span(), S2.st.AB * Math.cbrt(2), .15) && near(S2.st.AB, 24, .01); }},
+  half:   {label:"set it up", setup(){ setup(S2, {st:{AB:24, th:6 * DEG}, k:"solids", inN:["nII", 40], act:"ab"}); }, check(){ return acrossIs(S2, "solids") && near(S2.span(), S2.st.AB / Math.cbrt(2), .15) && near(S2.st.AB, 24, .01); }},
+  c2:  {label:"set it up", setup(){ ca = 330; cph = 8 * DEG; drawC(); }, check(){ return near(ratio(), 2, .02); }},
+  c3:  {label:"set it up", setup(){ ca = 330; cph = 8 * DEG; drawC(); }, check(){ return near(ratio(), 3, .02); }},
+  cr2: {label:"set it up", setup(){ ca = 330; cph = 8 * DEG; drawC(); }, check(){ return near(ratio(), Math.SQRT2, .012); }},
+  c4:  {label:"set it up", setup(){ ca = aOf(4); cph = 6 * DEG; drawC(); }, check(){ return near(ratio(), 4, .03) && near(longS(), 48, .5); }}
+});
+window.__sector = {S1, S2, C:{get a(){ return ca; }, set a(v){ ca = v; drawC(); }, get ph(){ return cph; }, set ph(v){ cph = v; drawC(); }, ratio, longS, shortS, LT, PART}, R, PART, SC};
+Folio.plates(); Folio.glosses();
+})();
+</script>
+</body>
+</html>

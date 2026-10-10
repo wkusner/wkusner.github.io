@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Napier's Bones</title>
+<meta name="description" content="A folio of the Wending House: Napier's multiplying rods of 1617, the Genaille–Lucas rulers that carry for you, and Napier's chessboard of binary counters.">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ECDFC0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="/folio/folio.css?v=2">
+<script src="/folio/folio.js?v=2"></script>
+<script src="/ga.js" async></script>
+<style>
+/* page-only additions; colours come from the kit's variables */
+.reckon{overflow-wrap:anywhere}
+.reckon .eq{display:block;margin-top:2px}
+.reckon table.worked{margin:6px 0 2px}
+.reckon table.worked td{font-family:var(--hand);color:var(--lapis)}
+.reckon table.worked td.l{font-family:var(--fell);color:var(--ink2);font-size:14px}
+.reckon table.worked tr.tot td{border-top:1px solid var(--ink2);border-bottom:none;color:var(--rubric)}
+.reckon table.worked tr.cur td{background:var(--wash)}
+.ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:15px}
+.ctl label{font:15px var(--fellsc);letter-spacing:.04em;color:var(--ink2)}
+.ctl input.q{width:8.5ch;font-family:var(--hand);color:var(--lapis);font-size:17px}
+.ctl input.q.sm{width:4.5ch}
+svg .hit{fill:transparent;stroke:none;cursor:pointer}
+svg [role=button]{cursor:pointer}
+svg [role=button]:focus{outline:none}
+svg [role=button]:focus-visible{filter:drop-shadow(0 0 2.5px var(--rubric)) drop-shadow(0 0 1px var(--rubric))}
+svg .lift{filter:drop-shadow(2px 4px 2px rgba(60,40,20,.35))}
+</style>
+</head>
+<body>
+<main class="leaf">
+  <div class="runhead" data-folio="napier"></div>
+  <h1>Napier's <span class="rub">Bones</span></h1>
+  <p class="subtitle">and the rods and boards that came after them.</p>
+  <p class="incipit">In 1617, the year he died, John Napier of Merchiston published a small book on reckoning with rods, the <i>Rabdologiae</i>. Each rod carries one column of the times table. Lay the rods for a number side by side and any row of its multiplication table can be read across them, so only the sums along the diagonals are left to do. Nearly three centuries later, Genaille and Lucas cut rods that do those sums as well. In the same book Napier turned a chessboard into a calculator that works in binary.</p>
+
+  <nav class="platetabs" role="tablist" aria-label="Plates">
+    <button type="button" role="tab" data-plate="bones"><span class="no">I.</span>The Bones</button>
+    <button type="button" role="tab" data-plate="genaille"><span class="no">II.</span>The Genaille–Lucas Rulers</button>
+    <button type="button" role="tab" data-plate="board"><span class="no">III.</span>The Chessboard</button>
+  </nav>
+
+  <!-- PLATE I -->
+  <section class="plate" id="bones" role="tabpanel">
+    <div class="drawing">
+      <svg id="svBones" class="fig" viewBox="0 0 760 584" aria-label="A board holding the index rod and a row of Napier's rods, with a box of spare rods beside it"></svg>
+      <p class="caption"><b>Plate I.</b> The bones, after Napier's <i>Rabdologiae</i> (1617): a board, the index rod, and a box of rods.</p>
+      <div class="ctl">
+        <label for="bnNum">The number</label><input id="bnNum" class="q" inputmode="numeric" autocomplete="off" value="425" aria-label="The number to multiply, up to eight digits"><button type="button" class="q" id="bnLay">Lay the rods</button>
+        <label for="bnMul">times</label><input id="bnMul" class="q sm" inputmode="numeric" autocomplete="off" value="7" aria-label="The multiplier, up to three digits">
+      </div>
+      <div class="row"><button type="button" class="q prime" id="bnNext">Next step</button><button type="button" class="q" id="bnAll">Read it all</button><button type="button" class="q" id="bnReset">Begin again</button><button type="button" class="q" id="bnClear">Empty the board</button></div>
+      <p class="keyhint">Click a rod in the box to lay it; click a rod on the board to put it back, or drag it (or use the arrow keys) to change its place.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdBones" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="b425x6">Multiply 425 × 6. Every diagonal sum is a single digit, so the row reads off directly.</li>
+        <li data-try="b425x8">Multiply 425 × 8. One diagonal reaches 10: write 0 and carry 1 to the next.</li>
+        <li data-try="b3071x8">Multiply 3,071 × 8. The 0 rod is blank but keeps its place.</li>
+        <li data-try="bBig">Multiply 46,785,399 × 7: eight rods and nine strips, read in one pass.</li>
+        <li data-try="b425x367">Multiply 425 × 367: three rows, each moved one place left, then added.</li>
+      </ol>
+      <p class="gloss" data-g="box"><span class="sig">a.</span>The <em>box</em> holds rods for the digits 0 to 9, as many of each as you need.</p>
+      <p class="gloss" data-g="rods"><span class="sig">b.</span>Each <em>rod</em> is one column of the times table. Its head shows a digit d, and cell n below holds n·d, with the tens above the slanting line and the units below it.</p>
+      <p class="gloss" data-g="index"><span class="sig">c.</span>The <em>index rod</em> is fixed at the left of the board. Click one of its numbers to choose that row.</p>
+      <p class="gloss" data-g="diag"><span class="sig">d.</span>Read the chosen row across the rods. Each slanting strip holds the units of one product and the tens of the product to its right, and those belong to the same place. Add each strip, from right to left, and carry.</p>
+      <p class="gloss"><span class="sig">e.</span>For a multiplier with several digits, read one row for each digit and add the rows, each moved one place further left, as in long multiplication. The rods give you the rows, and you still do that last sum on paper.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE II -->
+  <section class="plate" id="genaille" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svGen" class="fig" viewBox="0 0 760 804" aria-label="Genaille–Lucas multiplying rulers: each rod has a band for each multiplier from 2 to 9, with black triangles pointing to the rod on the left"></svg>
+      <p class="caption"><b>Plate II.</b> The rulers of Henri Genaille and Édouard Lucas (1891). Follow the triangles from right to left, and the product reads off with no carrying.</p>
+      <div class="ctl">
+        <label for="glNum">The number</label><input id="glNum" class="q" inputmode="numeric" autocomplete="off" value="425" aria-label="The number to multiply, up to eight digits"><button type="button" class="q" id="glLay">Lay the rulers</button>
+        <label for="glMul">times</label><select id="glMul" class="q" aria-label="The multiplier, 2 to 9"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option selected>7</option><option>8</option><option>9</option></select>
+      </div>
+      <div class="row"><button type="button" class="q prime" id="glNext">Next step</button><button type="button" class="q" id="glAll">Read it all</button><button type="button" class="q" id="glReset">Begin again</button></div>
+      <p class="keyhint">Click a band on the index rod to choose the multiplier.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdGen" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="g425x7">Multiply 425 × 7 by following the triangles. Compare it with Plate I.</li>
+        <li data-try="g99x9">Multiply 99,999 × 9. Every place carries 8, and you never write a carry down.</li>
+        <li data-try="g3071x8">Multiply 3,071 × 8, and watch which cell of each band you land in.</li>
+        <li data-try="gOwn">Lay a number of six or more digits of your own and multiply it by 6.</li>
+      </ol>
+      <p class="gloss" data-g="gband"><span class="sig">a.</span>Each rod has a <em>band</em> for each multiplier n from 2 to 9. The band has n cells, one for each carry that can come in from the right, 0 to n − 1. The cell for carry c shows the units digit of n·d + c.</p>
+      <p class="gloss" data-g="gtri"><span class="sig">b.</span>Each black <em>triangle</em> has its broad end over the cells that pass on the same carry. Its point touches the rod to the left at the cell for that carry.</p>
+      <p class="gloss" data-g="gindex"><span class="sig">c.</span>The <em>index rod</em> holds the multipliers, and beside each the digits 0 to n − 1. The last triangle points to one of them, and that is the first digit of the product.</p>
+      <p class="gloss" data-g="gpath"><span class="sig">d.</span>Begin at the top cell of the band on the rightmost rod, since nothing is carried into the units. Read its digit and follow its triangle to the next rod, then read and follow again. The product comes out from right to left.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE III -->
+  <section class="plate" id="board" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svBoard" class="fig" viewBox="0 0 680 586" aria-label="Napier's chessboard for location arithmetic: each square is worth a power of two, and counters on the board make a number"></svg>
+      <p class="caption"><b>Plate III.</b> Napier's chessboard (<i>Rabdologiae</i>, 1617). Each square is worth twice the square to its right and twice the square below it.</p>
+      <div class="ctl">
+        <label for="lnNum">Lay a number</label><input id="lnNum" class="q" inputmode="numeric" autocomplete="off" value="87" aria-label="A number from 1 to 1023, to lay on the bottom row"><button type="button" class="q" id="lnLay">Lay it</button>
+        <label for="lnA">Multiply</label><input id="lnA" class="q sm" inputmode="numeric" autocomplete="off" value="13" aria-label="The multiplicand, 1 to 31"><span>×</span><input id="lnB" class="q sm" inputmode="numeric" autocomplete="off" value="11" aria-label="The multiplier, 1 to 31"><button type="button" class="q" id="lnMul">Set it up</button>
+      </div>
+      <div class="row"><button type="button" class="q prime" id="lnNext">Next step</button><button type="button" class="q" id="lnAll">Do it all</button><button type="button" class="q" id="lnDouble">Double</button><button type="button" class="q" id="lnClear">Clear the board</button></div>
+      <p class="keyhint">Click a square to put a counter on it, and click a counter to take it off. Drag a counter, or focus it and use the arrow keys, to move it.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdBoard" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="l87">Lay 87 on the bottom row by hand, with one counter for each power of two in it.</li>
+        <li data-try="lAdd">Add 13 and 11: lay both on the bottom row, then simplify.</li>
+        <li data-try="lDouble">Double 13 by moving every counter one square to the left.</li>
+        <li data-try="l13x11">Multiply 13 × 11 on the board.</li>
+        <li data-try="l25x19">Multiply 25 × 19, and read the answer in Napier's letters.</li>
+      </ol>
+      <p class="gloss" data-g="lsq"><span class="sig">a.</span>Each <em>square</em> is worth a power of two: 1 at the bottom right, doubling with each step to the left and each step up. Its value is written in its corner. The number on the board is the sum of the squares that hold counters.</p>
+      <p class="gloss" data-g="lfoot"><span class="sig">b.</span>Napier named the values of the bottom row by <em>letters</em>, a = 1, b = 2, c = 4, d = 8, and so on, so 87 = 64 + 16 + 4 + 2 + 1 is written abceg.</p>
+      <p class="gloss" data-g="lsimp"><span class="sig">c.</span>To <em>simplify</em>, take two counters off one square and put one on the next square to the left, since 2·2<sup>k</sup> = 2<sup>k+1</sup>. Repeat until no square holds two, and the number is in binary.</p>
+      <p class="gloss" data-g="ldiag"><span class="sig">d.</span>One square down and one square left is worth the same, so a counter can slide down its <em>slanting row</em> to the bottom without changing the number.</p>
+      <p class="gloss" data-g="lmarg"><span class="sig">e.</span>To multiply, mark the multiplicand along the foot and the multiplier up the side. Put a counter wherever a marked column meets a marked row: it is worth 2<sup>i</sup>·2<sup>j</sup> = 2<sup>i+j</sup>. Slide them all down, and simplify.</p>
+    </aside>
+  </section>
+
+  <div class="fleuron" aria-hidden="true">❦ ❦ ❦</div>
+  <section class="commentary">
+    <h2><span class="no">¶</span>Commentary</h2>
+    <p><b>The lattice.</b> The bones are a lattice multiplication cut into pieces. In the lattice, or <i>gelosia</i>, method you rule a grid with one column for each digit of the multiplicand and one row for each digit of the multiplier. You write each digit product in its cell, split by a diagonal into tens and units, and add along the diagonals. Italian arithmetic books of the fifteenth century, such as the Treviso Arithmetic of 1478, call it multiplying <i>per gelosia</i>, after the latticed screens set in Venetian windows. The method is older than that name, and appears earlier in Arabic arithmetic.</p>
+    <p><b>Napier's step.</b> Each column of a lattice depends on only one digit, so it can be made once and kept. Napier carved each column of the times table on a rod. To multiply, you lay out rods for the multiplicand, and the multiplier digit picks the row. His own rods were square in section, with a column on each of the four faces, and the digits on opposite faces add to nine. The diagonal sums are never more than 9 + 8 + 1 = 18, so a carry is never more than 1.</p>
+    <p><b>The book.</b> <i>Rabdologiae</i>, from the Greek for "rod" and "reckoning", appeared in Edinburgh in 1617, three years after Napier's tables of logarithms. Besides the rods for multiplication and division, it describes special rods that help extract square and cube roots. It also describes the <i>promptuary</i>, a box of strips that does whole multiplications without writing partial products, and, in an appendix, the location arithmetic of Plate III.</p>
+    <p><b>How the bones spread.</b> Sets in wood, bone, and ivory were made all over Europe within a few years. Wilhelm Schickard's calculating machine of 1623 carried the bones on turning cylinders in its upper half and an adding mechanism below. Later makers mounted them on cylinders in boxes, as Gaspar Schott did in his <i>Organum Mathematicum</i> (1668). The bones also suggested a step to the slide rule: they show that a multiplication table can be built into a mechanism you read instead of memorize.</p>
+    <p><b>Genaille and Lucas.</b> The bones leave the carrying to the user. Édouard Lucas asked whether rods could do it themselves, and Henri Genaille, a French engineer, answered with the rulers of Plate II, published in 1891. The key fact is that when you multiply by n, the carry into any place is at most n − 1, since 9n + (n − 1) is less than 10n. So each rod needs only n cells for each multiplier, one for each possible carry, and a triangle in each cell can show where its own carry sends you. Genaille also made rulers for division on the same plan.</p>
+    <p><b>Location arithmetic.</b> On Napier's chessboard each square is worth a power of two, and a number is a set of counters, so this is arithmetic in base 2. Addition is putting counters together, and simplifying turns a heap into binary. Doubling is a shift one square left, and multiplying is the same placing and sliding as the lattice, done with powers of two instead of digits. Napier also did subtraction, division, and square roots on the board. It is binary arithmetic nearly ninety years before Leibniz wrote about the binary numerals in 1703, though Napier treated it as a device for reckoning, not as a way of writing numbers.</p>
+    <p><b>Further.</b> John Napier, <i>Rabdologiae, seu Numerationis per Virgulas Libri Duo</i> (Edinburgh, 1617), and its English translation by William Frank Richardson, <i>Rabdology</i> (MIT Press and Tomash Publishers, 1990). Édouard Lucas, <i>Récréations mathématiques</i> (four volumes, 1882–1894). Frank J. Swetz, <i>Capitalism and Arithmetic: The New Math of the 15th Century</i> (1987), which translates the Treviso Arithmetic.</p>
+  </section>
+  <div class="colophon"><span>Drawn for the Wending House, 2026. Drag anything that looks like brass.</span><span>Napier's other invention, built into wood: <a href="/slide-rule/">the Slide Rule</a>.</span></div>
+</main>
+
+<script>
+(function(){
+const {E, T, line} = Folio, $ = id => document.getElementById(id);
+Folio.defs();
+
+/*MATH-BEGIN*/
+const NB = {
+  // reading row n of Napier's rods laid for the digits a (left to right): the diagonals, right to left
+  bones(a, n){
+    const k = a.length, P = a.map(d => d * n), diags = []; let c = 0;
+    for(let p = 0; p <= k; p++){
+      const ui = k - 1 - p, ti = k - p;                 // units of rod ui and tens of rod ti share place p
+      const u = ui >= 0 ? P[ui] % 10 : null, t = ti < k ? Math.floor(P[ti] / 10) : null;
+      const s = (u || 0) + (t || 0) + c;
+      diags.push({p, u, t, ui, ti, cin:c, sum:s, digit:s % 10, cout:Math.floor(s / 10)}); c = Math.floor(s / 10);
+    }
+    const str = diags.map(d => d.digit).reverse().join("").replace(/^0+(?=\d)/, "");
+    return {diags, product:str, row:P};
+  },
+  // Genaille–Lucas: rod d, multiplier n, incoming carry c
+  cell(d, n, c){ const v = d * n + c; return {digit:v % 10, out:Math.floor(v / 10)}; },
+  // the triangles of rod d in band n: each covers the cells c0..c1 that pass on the same carry, and points at that cell of the rod to the left
+  tris(d, n){ const T = [];
+    for(let c = 0; c < n; c++){ const o = Math.floor((d * n + c) / 10), last = T[T.length - 1];
+      if(last && last.out === o) last.c1 = c; else T.push({c0:c, c1:c, out:o}); }
+    return T; },
+  // read by the rules alone: start at cell 0 of the rightmost rod, follow the triangles
+  genaille(a, n){ let c = 0; const path = [];
+    for(let i = a.length - 1; i >= 0; i--){ const tri = NB.tris(a[i], n).find(t => c >= t.c0 && c <= t.c1);
+      path.push({i, c, digit:(a[i] * n + c) % 10, out:tri.out}); c = tri.out; }
+    const lead = c, str = (String(lead) + path.map(s => s.digit).reverse().join("")).replace(/^0+(?=\d)/, "");
+    return {path, lead, product:str}; },
+  // location arithmetic: counters {i (row, from the foot), j (column, from the right)}; square (i, j) is worth 2^(i+j)
+  N: 10,
+  val: cs => cs.reduce((s, q) => s + 2 ** (q.i + q.j), 0),
+  key: q => q.i * 100 + q.j,
+  heap(cs){ const m = new Map(); cs.forEach(q => { const k = NB.key(q); m.set(k, (m.get(k) || []).concat([q])); }); return m; },
+  // one simplification: the least valuable square holding two counters gives them up for one on the next square left (or up, at the edge)
+  simplify1(cs){ const m = NB.heap(cs); let best = null;
+    m.forEach(list => { if(list.length < 2) return; const q = list[0]; if(q.j === NB.N - 1 && q.i === NB.N - 1) return;
+      if(!best || q.i + q.j < best[0].i + best[0].j || (q.i + q.j === best[0].i + best[0].j && q.i < best[0].i)) best = list; });
+    if(!best) return null;
+    const [a, b] = best, to = a.j + 1 < NB.N ? {i:a.i, j:a.j + 1} : {i:a.i + 1, j:a.j};
+    return {cs:cs.filter(q => q !== b).map(q => q === a ? Object.assign({}, q, to) : q), from:{i:a.i, j:a.j}, to, gone:b.id, kept:a.id}; },
+  // slide a counter down its slanting row as far as it goes
+  slid: q => q.i + q.j <= NB.N - 1 ? {i:0, j:q.i + q.j} : {i:q.i + q.j - (NB.N - 1), j:NB.N - 1},
+  bits(n){ const b = []; for(let k = 0; n > 0; k++, n = Math.floor(n / 2)) if(n % 2) b.push(k); return b; },
+  // a number on the bottom row (spilling up the left edge past 2^9)
+  lay: n => NB.bits(n).map(k => k < NB.N ? {i:0, j:k} : {i:k - NB.N + 1, j:NB.N - 1}),
+  letters: n => NB.bits(n).map(k => "abcdefghijklmnopqrstuvwxyz"[k]).join(""),
+  simplified(cs){ let ok = true; NB.heap(cs).forEach(l => { if(l.length > 1) ok = false; }); return ok; },
+  digits: s => String(s).replace(/\D/g, "").split("").map(Number),
+  group: s => String(s).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+};
+/*MATH-END*/
+
+const g3 = NB.group;
+
+/* =========================================================
+   PLATE I: THE BONES
+   ========================================================= */
+const svB = $("svBones");
+const CW = 54, CH = 42, BX = 20, BY = 30, LIP = 14, MAXR = 8;
+const IX = BX + LIP + 4, RY = BY + LIP + 4, SX = IX + CW + 6;             // index rod x, rods top, first slot x
+const slotX = i => SX + i * (CW + 2);
+const BW = slotX(MAXR) - 2 + 4 + LIP - BX, BH = (RY + 10 * CH) + 4 + LIP - BY;
+const cellY = n => RY + n * CH;                                            // n = 0 is the head, 1..9 the rows
+const P1 = {digits:[4,2,5], mult:"7", si:0, steps:[], timer:null, drag:null, focus:null};
+
+function bnSteps(){
+  const a = P1.digits, ms = NB.digits(P1.mult), L = ms.length, steps = [];
+  if(!a.length || !L) return steps;
+  for(let j = 0; j < L; j++){ const m = ms[L - 1 - j];
+    if(m === 0){ steps.push({kind:"zero", j, m}); continue; }
+    const r = NB.bones(a, m); steps.push({kind:"row", j, m, r});
+    r.diags.forEach(d => { if(!(d.p === a.length && d.sum === 0)) steps.push({kind:"diag", j, m, r, d}); });
+    if(L > 1) steps.push({kind:"partial", j, m, r}); }
+  if(L > 1) steps.push({kind:"sum"});
+  return steps;
+}
+function bnRebuild(keepSi){ bnStop(); P1.steps = bnSteps(); P1.si = keepSi ? Math.min(P1.si, P1.steps.length) : 0; drawBones(); }
+function bnStop(){ if(P1.timer){ clearInterval(P1.timer); P1.timer = null; $("bnAll").textContent = "Read it all"; } }
+
+// a rod: the body, its head, and nine cells split by a slanting line
+function rodBody(g, x, y, w, h, wood, plain){
+  E("rect", {x, y, width:w, height:h, class:"fvel"}, g);
+  E("rect", {x, y, width:w, height:h, class:"fgold", opacity:wood ? .30 : .12}, g);
+  if(wood || !plain) E("rect", {x, y, width:w, height:h, fill:wood ? "url(#h45w)" : "url(#hhw)", opacity:wood ? .35 : .22}, g);
+  E("rect", {x:x + w - 4, y, width:4, height:h, fill:"url(#hv)", opacity:.7}, g);
+  E("rect", {x, y, width:w, height:h, class:"ink", "stroke-width":1.2, rx:1.5}, g);
+}
+function napierRod(g, x, d, opt){
+  opt = opt || {};
+  rodBody(g, x, RY, CW, 10 * CH);
+  // the head
+  T(String(d), {x:x + CW / 2, y:RY + CH * .72, "text-anchor":"middle", "font-size":26}, g);
+  E("path", {d:line([x, RY + CH - 2], [x + CW, RY + CH - 2], 3, .25, d + 3), class:"ink", "stroke-width":.7}, g);
+  E("path", {d:line([x, RY + CH], [x + CW, RY + CH], 3, .25, d + 5), class:"ink", "stroke-width":1}, g);
+  for(let n = 1; n <= 9; n++){
+    const y = cellY(n), v = n * d, tens = Math.floor(v / 10), units = v % 10, sel = opt.row === n;
+    if(n > 1) E("path", {d:line([x, y], [x + CW, y], 3, .3, n * 7 + d), class:"ink2", "stroke-width":.75}, g);
+    E("path", {d:line([x + CW, y], [x, y + CH], 3, .35, n * 11 + d), class:"ink2", "stroke-width":.7}, g);
+    if(tens) T(String(tens), {x:x + CW * .27, y:y + CH * .45, "text-anchor":"middle", "font-size":17, class:sel ? "" : ""}, g);
+    T(String(units), {x:x + CW * .73, y:y + CH * .86, "text-anchor":"middle", "font-size":17}, g);
+  }
+}
+function drawBones(){
+  svB.replaceChildren();
+  const g = E("g", {}, svB), steps = P1.steps, si = P1.si, cur = steps[si - 1];
+  const k = P1.digits.length;
+  // which multiplier digit is in hand, and how far its diagonals have gone
+  let curJ = cur ? (cur.kind === "sum" ? -1 : cur.j) : (steps[0] ? steps[0].j : -1);
+  const rowStep = steps.find(s => s.j === curJ && (s.kind === "row" || s.kind === "zero"));
+  const row = cur && cur.kind !== "sum" && rowStep && rowStep.kind === "row" ? rowStep.m : null;
+  const doneDiags = steps.slice(0, si).filter(s => s.kind === "diag" && s.j === curJ).map(s => s.d);
+  const curDiag = cur && cur.kind === "diag" ? cur.d : null;
+
+  // the board, with its lip
+  const bg = E("g", {}, g);
+  E("rect", {x:BX, y:BY, width:BW, height:BH, fill:"url(#h135w)", class:"ink", "stroke-width":1.3}, bg);
+  E("rect", {x:BX, y:BY, width:BW, height:BH, class:"fgold", opacity:.18}, bg);
+  E("rect", {x:BX + LIP, y:BY + LIP, width:BW - 2 * LIP, height:BH - 2 * LIP, class:"fvel"}, bg);
+  E("rect", {x:BX + LIP, y:BY + LIP, width:BW - 2 * LIP, height:BH - 2 * LIP, fill:"url(#hdot)", opacity:.45}, bg);
+  E("rect", {x:BX + LIP, y:BY + LIP, width:BW - 2 * LIP, height:BH - 2 * LIP, class:"ink", "stroke-width":.9}, bg);
+  E("path", {d:`M${BX + LIP + 3},${BY + BH - LIP - 1}L${BX + LIP + 3},${BY + LIP + 3}L${BX + BW - LIP - 1},${BY + LIP + 3}`, class:"ink2", "stroke-width":2.2, opacity:.5}, bg);
+  // empty slots
+  for(let i = k; i < MAXR; i++) E("rect", {x:slotX(i) + 3, y:RY + 3, width:CW - 6, height:10 * CH - 6, class:"faded", "stroke-width":.7, "stroke-dasharray":"2 4"}, bg);
+
+  // the index rod
+  const ig = E("g", {"data-g":"index"}, g);
+  rodBody(ig, IX, RY, CW, 10 * CH, true);
+  E("path", {d:`M${IX + CW / 2},${RY + 10}l8,11l-8,11l-8,-11z`, class:"ink", "stroke-width":.9}, ig);
+  E("circle", {cx:IX + CW / 2, cy:RY + 21, r:2, class:"fink"}, ig);
+  E("path", {d:line([IX, RY + CH], [IX + CW, RY + CH], 3, .25, 2), class:"ink", "stroke-width":1}, ig);
+  for(let n = 1; n <= 9; n++){
+    const y = cellY(n);
+    if(n > 1) E("path", {d:line([IX, y], [IX + CW, y], 3, .3, n), class:"ink2", "stroke-width":.75}, ig);
+    T(String(n), {x:IX + CW / 2, y:y + CH * .7, "text-anchor":"middle", "font-size":22, class:row === n ? "rubt" : ""}, ig);
+    const hb = E("rect", {x:IX, y, width:CW, height:CH, class:"hit", role:"button", tabindex:0, "aria-label":`Choose row ${n}`}, ig);
+    const pick = () => { bnStop(); $("bnMul").value = P1.mult = String(n); P1.steps = bnSteps(); P1.si = 1; drawBones(); };
+    hb.addEventListener("click", pick);
+    hb.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); pick(); } });
+  }
+
+  // the chosen row, washed across the board
+  if(row){ const y = cellY(row), x1 = k ? slotX(k - 1) + CW : IX + CW;
+    E("rect", {x:IX - 3, y:y - 1, width:x1 - IX + 6, height:CH + 2, class:"fwash"}, g); }
+
+  // the rods
+  const rg = E("g", {"data-g":"rods"}, g);
+  P1.digits.forEach((d, i) => {
+    const one = E("g", {class:"grab", "data-slot":i}, rg);
+    napierRod(one, slotX(i), d, {row});
+    Folio.keys(one, dx => { const j = Math.max(0, Math.min(k - 1, i + dx)); if(j === i) return; const a = P1.digits.slice(); a.splice(j, 0, a.splice(i, 1)[0]); P1.digits = a; P1.focus = j; bnSync(); }, `Rod ${d}, place ${i + 1}: arrow keys move it, Delete puts it back`);
+    one.addEventListener("keydown", e => { if(e.key === "Delete" || e.key === "Backspace" || e.key === "Enter"){ e.preventDefault(); P1.digits.splice(i, 1); P1.focus = Math.min(i, P1.digits.length - 1); bnSync(); } });
+    Folio.drag(one, svB, (p, ev, p0) => { const dx = p.x - p0.x; P1.drag = {i, dx}; one.setAttribute("transform", `translate(${dx},-5)`); one.classList.add("lift"); rg.appendChild(one); },
+      null,
+      () => { const dr = P1.drag; P1.drag = null;
+        if(!dr || Math.abs(dr.dx) < 5){ P1.digits.splice(i, 1); bnSync(); return; }
+        const j = Math.max(0, Math.min(k - 1, Math.round(i + dr.dx / (CW + 2)))); const a = P1.digits.slice(); a.splice(j, 0, a.splice(i, 1)[0]); P1.digits = a; bnSync(); });
+  });
+  if(P1.focus != null){ const f = rg.querySelector(`[data-slot="${P1.focus}"]`); if(f) f.focus(); P1.focus = null; }
+
+  // the diagonals of the chosen row: finished ones lightly, the current one strongly
+  const dg = E("g", {"data-g":"diag"}, g);
+  if(row){
+    const y = cellY(row), tri = (i, part) => { const x = slotX(i);
+      return part === "u" ? `M${x + CW},${y}L${x + CW},${y + CH}L${x},${y + CH}Z` : `M${x},${y}L${x + CW},${y}L${x},${y + CH}Z`; };
+    const strip = (d, cls, op) => { if(d.ui >= 0) E("path", {d:tri(d.ui, "u"), class:cls, opacity:op}, dg); if(d.ti < k) E("path", {d:tri(d.ti, "t"), class:cls, opacity:op}, dg); };
+    doneDiags.forEach(d => { if(d !== curDiag) strip(d, "flwash", 1); });
+    if(curDiag){ strip(curDiag, "fwash", 1); strip(curDiag, "fwash", 1);
+      const ring = (cx, cy) => E("ellipse", {cx, cy:cy - 6, rx:11, ry:12, class:"rub", "stroke-width":1.3}, dg);
+      if(curDiag.ui >= 0) ring(slotX(curDiag.ui) + CW * .73, y + CH * .86);
+      if(curDiag.ti < k && curDiag.t) ring(slotX(curDiag.ti) + CW * .27, y + CH * .45); }
+  }
+
+  // the slate under the board: carries and the product, written in by hand
+  const sy = BY + BH + 10, sg = E("g", {}, g);
+  const xPlace = p => p === 0 ? slotX(k - 1) + CW * .72 : (k - p === 0 ? slotX(0) - 3 : slotX(k - p) - 1);
+  E("path", {d:line([IX, sy + 40], [BX + BW - LIP, sy + 40], 20, .4, 51), class:"faded", "stroke-width":.6, "stroke-dasharray":"3 3"}, sg);
+  E("path", {d:line([IX, sy + 76], [BX + BW - LIP, sy + 76], 20, .4, 52), class:"ink2", "stroke-width":.9}, sg);
+  T("carries", {x:BX + 2, y:sy + 34, "font-size":12, class:"sc fadedt"}, sg);
+  T("product", {x:BX + 2, y:sy + 70, "font-size":12, class:"sc fadedt"}, sg);
+  if(k && row){
+    const ds = doneDiags, last = ds[ds.length - 1];
+    ds.forEach(d => {
+      const x = xPlace(d.p), isCur = d === curDiag;
+      const lead = d.p === k && d.digit === 0;
+      if(!lead) T(String(d.digit), {x, y:sy + 70, "text-anchor":"middle", "font-size":isCur ? 30 : 26, class:"hand" + (isCur ? " rubt" : "")}, sg);
+      if(d.cout) T(String(d.cout), {x:xPlace(d.p + 1) + 1, y:sy + 34, "text-anchor":"middle", "font-size":16, class:"hand rubt"}, sg);
+    });
+    if(curDiag && (curDiag.u != null || curDiag.t != null)){ const x = xPlace(curDiag.p);
+      E("path", {d:`M${x},${cellY(row) + CH + 4}L${x},${sy + 44}`, class:"rub", "stroke-width":.7, "stroke-dasharray":"1 3"}, sg); }
+    void last;
+  }
+
+  // the box of rods
+  const narrow = window.innerWidth < 640;
+  const bxx = narrow ? BX : BX + BW + 12, bxw = narrow ? BW : 744 - bxx, bxy = narrow ? BY + BH + 104 : BY, bxh = narrow ? 212 : BH, box = E("g", {"data-g":"box"}, g);
+  svB.setAttribute("viewBox", narrow ? `0 0 ${BX + BW + 18} ${bxy + bxh + 34}` : "0 0 760 584");
+  E("rect", {x:bxx, y:bxy, width:bxw, height:bxh, fill:"url(#h45w)", class:"ink", "stroke-width":1.3}, box);
+  E("rect", {x:bxx, y:bxy, width:bxw, height:bxh, class:"fgold", opacity:.22}, box);
+  E("rect", {x:bxx + 8, y:bxy + 8, width:bxw - 16, height:bxh - 16, class:"fvel"}, box);
+  E("rect", {x:bxx + 8, y:bxy + 8, width:bxw - 16, height:bxh - 16, fill:"url(#hhw)", opacity:.5}, box);
+  E("rect", {x:bxx + 8, y:bxy + 8, width:bxw - 16, height:bxh - 16, class:"ink", "stroke-width":.8}, box);
+  if(!narrow) E("line", {x1:bxx + 8, x2:bxx + bxw - 8, y1:bxy + bxh / 2, y2:bxy + bxh / 2, class:"ink", "stroke-width":1.6}, box);
+  const mw = narrow ? 36 : 26, mh = 9 * 16 + 30, per = narrow ? 10 : 5, gap = (bxw - 16 - per * mw) / (per + 1);
+  for(let d = 0; d <= 9; d++){
+    const col = d % per, tier = Math.floor(d / per), x = bxx + 8 + gap + col * (mw + gap), y = bxy + 18 + tier * (bxh / 2 - 2);
+    const mg = E("g", {role:"button", tabindex:0, "aria-label":`Lay a ${d} rod on the board`}, box);
+    E("rect", {x:x + 2, y:y + 3, width:mw, height:mh, class:"fink2", opacity:.18}, mg);
+    rodBody(mg, x, y, mw, mh);
+    T(String(d), {x:x + mw / 2, y:y + 20, "text-anchor":"middle", "font-size":17}, mg);
+    E("line", {x1:x, x2:x + mw, y1:y + 27, y2:y + 27, class:"ink", "stroke-width":.8}, mg);
+    for(let n = 1; n <= 9; n++){ const yy = y + 30 + (n - 1) * 16, v = n * d;
+      if(n > 1) E("line", {x1:x, x2:x + mw, y1:yy, y2:yy, class:"ink2", "stroke-width":.45}, mg);
+      E("line", {x1:x + mw, y1:yy, x2:x, y2:yy + 16, class:"ink2", "stroke-width":.4}, mg);
+      if(v >= 10) T(String(Math.floor(v / 10)), {x:x + mw * .26, y:yy + 8, "text-anchor":"middle", "font-size":7.5, class:"fadedt"}, mg);
+      T(String(v % 10), {x:x + mw * .74, y:yy + 14, "text-anchor":"middle", "font-size":7.5, class:"fadedt"}, mg); }
+    const add = () => { if(P1.digits.length >= MAXR) return; P1.digits.push(d); bnSync(); };
+    mg.addEventListener("click", add);
+    mg.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); add(); } });
+  }
+  T("A box of rods", {x:bxx + bxw / 2, y:bxy + bxh + 22, "text-anchor":"middle", "font-size":13, class:"sc fadedt"}, g);
+
+  bnReckon(cur, row, doneDiags);
+  $("bnNext").disabled = si >= steps.length; $("bnAll").disabled = si >= steps.length && !P1.timer;
+  Folio.tryCheck();
+}
+function bnSync(){ $("bnNum").value = P1.digits.join(""); bnRebuild(); }
+function bnReckon(cur, row, doneDiags){
+  const a = P1.digits, steps = P1.steps, si = P1.si, ms = NB.digits(P1.mult);
+  if(!a.length){ $("rdBones").innerHTML = `The board is empty.<span class="dim eq">Click rods in the box, or type a number and lay the rods.</span>`; return; }
+  if(!ms.length){ $("rdBones").innerHTML = `${g3(a.join(""))} × ?<span class="dim eq">Choose a row on the index rod, or type a multiplier.</span>`; return; }
+  const num = a.join(""), L = ms.length, finished = si >= steps.length;
+  let h = `<span class="nw">${g3(num)} × ${g3(P1.mult)}</span>`;
+  if(si === 0) h += `<span class="dim eq">${L > 1 ? `Read one row for each digit of ${P1.mult}, starting with the units digit ${ms[L - 1]}.` : `Press Next step to choose row ${ms[0]} on the index rod.`}</span>`;
+  else if(cur.kind === "row") h += `<span class="eq">Row ${cur.m} of each rod: ${cur.r.row.map(v => String(v).padStart(2, "0")).join(" | ")}.</span><span class="dim eq">Add along the slanting strips, from right to left.</span>`;
+  else if(cur.kind === "zero") h += `<span class="eq">The digit ${cur.m === 0 ? "0" : cur.m} gives a row of zeros: nothing to read.</span>`;
+  else if(cur.kind === "diag"){ const d = cur.d, parts = [];
+    if(d.u != null) parts.push(d.u); if(d.t != null) parts.push(d.t); if(d.cin) parts.push(`carry ${d.cin}`);
+    const ord = ["units", "tens", "hundreds", "thousands", "ten-thousands", "hundred-thousands", "millions", "ten-millions", "hundred-millions"][d.p] || `place ${d.p + 1}`;
+    h += `<span class="eq">The ${ord} strip: ${parts.length ? parts.join(" + ") : "0"} = ${d.sum}.</span><span class="eq">Write ${d.digit}${d.cout ? `, carry ${d.cout}` : ""}.</span>`; }
+  else if(cur.kind === "sum") h += `<span class="eq">Add the rows, each in its place.</span>`;
+  else if(cur.kind === "partial") h += `<span class="eq">Row ${cur.m} reads ${g3(cur.r.product)}; it stands for ${cur.m}${"0".repeat(cur.j)}, so move it ${cur.j} place${cur.j === 1 ? "" : "s"} left.</span>`;
+  // the reading of the current row, once its diagonals are all done
+  if(L === 1 && finished && steps.length){ const r = NB.bones(a, ms[0]);
+    h += `<span class="big">${g3(r.product)}</span><span class="dim eq">Strips, right to left: ${r.diags.filter(d => !(d.p === a.length && d.sum === 0)).map(d => [d.u, d.t, d.cin || null].filter(v => v != null).join("+") || "0").join(" · ")}</span>`; }
+  // the worked table for a long multiplier
+  if(L > 1){
+    let rows = "";
+    for(let j = 0; j < L; j++){ const m = ms[L - 1 - j], idx = steps.findIndex(s => s.j === j && (s.kind === "partial" || s.kind === "zero"));
+      const shown = idx >= 0 && idx < si, val = m ? NB.bones(a, m).product : "0";
+      rows += `<tr class="${cur && cur.j === j && cur.kind !== "sum" ? "cur" : ""}"><td class="l">row ${m}${j ? ` × 1${"0".repeat(j)}` : ""}</td><td class="n">${shown ? g3((BigInt(val) * 10n ** BigInt(j)).toString()) : ""}</td></tr>`; }
+    const tot = (BigInt(num) * BigInt(P1.mult)).toString();
+    rows += `<tr class="tot"><td class="l">sum</td><td class="n">${finished ? g3(tot) : ""}</td></tr>`;
+    h += `<table class="worked"><tr><th>row</th><th style="text-align:right">partial product</th></tr>${rows}</table>`;
+    if(finished) h += `<span class="big">${g3(tot)}</span>`;
+  }
+  $("rdBones").innerHTML = h;
+}
+function bnLay(){ const s = $("bnNum").value.replace(/\D/g, "").slice(0, MAXR); P1.digits = NB.digits(s); $("bnNum").value = s; bnMul(false); bnRebuild(); }
+function bnMul(redraw){ const s = $("bnMul").value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 3); $("bnMul").value = s; P1.mult = s; if(redraw !== false) bnRebuild(); }
+$("bnLay").onclick = bnLay;
+$("bnNum").addEventListener("keydown", e => { if(e.key === "Enter") bnLay(); });
+$("bnMul").addEventListener("change", () => bnMul());
+$("bnMul").addEventListener("keydown", e => { if(e.key === "Enter") bnMul(); });
+$("bnNext").onclick = () => { bnStop(); if(P1.si < P1.steps.length){ P1.si++; drawBones(); } };
+$("bnReset").onclick = () => { bnStop(); P1.si = 0; drawBones(); };
+$("bnClear").onclick = () => { bnStop(); P1.digits = []; $("bnNum").value = ""; bnRebuild(); };
+$("bnAll").onclick = () => {
+  if(P1.timer){ bnStop(); return; }
+  if(P1.si >= P1.steps.length) P1.si = 0;
+  $("bnAll").textContent = "Stop";
+  P1.timer = setInterval(() => { if(P1.si >= P1.steps.length){ bnStop(); drawBones(); return; } P1.si++; drawBones(); }, 420);
+  P1.si++; drawBones();
+};
+bnRebuild();
+let bnNarrow = window.innerWidth < 640;
+window.addEventListener("resize", () => { const n = window.innerWidth < 640; if(n !== bnNarrow){ bnNarrow = n; drawBones(); } });
+
+/* =========================================================
+   PLATE II: THE GENAILLE–LUCAS RULERS
+   ========================================================= */
+const svG = $("svGen");
+const GW = 76, GIW = 64, GH = 15, GBX = 18, GBY = 50, GLIP = 12, GMAX = 8;
+const GIX = GBX + GLIP + 4, GRY = GBY + GLIP + 4, GHEAD = 40, GSX = GIX + GIW + 6;
+const gSlot = i => GSX + i * (GW + 2);
+const bandTop = n => { let y = GRY + GHEAD + 4; for(let m = 2; m < n; m++) y += m * GH; return y; };
+const GBOT = bandTop(10);
+const P2 = {digits:[4,2,5], n:7, si:0, timer:null};
+const glSteps = () => P2.digits.length ? P2.digits.length + 1 : 0;
+function glStop(){ if(P2.timer){ clearInterval(P2.timer); P2.timer = null; $("glAll").textContent = "Read it all"; } }
+
+function drawGen(){
+  svG.replaceChildren();
+  const g = E("g", {}, svG), a = P2.digits, k = a.length, n = P2.n, R = NB.genaille(a, n), si = P2.si;
+  const right = k ? gSlot(k - 1) + GW : GSX;
+  const ns = Math.max(5, k), bw = gSlot(ns) - 2 + 4 + GLIP - GBX, bh = GBOT + 4 + GLIP - GBY, vbw = GBX + bw + 18;
+  svG.setAttribute("viewBox", `0 0 ${vbw} 804`); svG.style.maxWidth = Math.round(vbw * 1.08) + "px"; svG.style.margin = "0 auto";
+  // board
+  E("rect", {x:GBX, y:GBY, width:bw, height:bh, fill:"url(#h135w)", class:"ink", "stroke-width":1.3}, g);
+  E("rect", {x:GBX, y:GBY, width:bw, height:bh, class:"fgold", opacity:.18}, g);
+  E("rect", {x:GBX + GLIP, y:GBY + GLIP, width:bw - 2 * GLIP, height:bh - 2 * GLIP, class:"fvel"}, g);
+  E("rect", {x:GBX + GLIP, y:GBY + GLIP, width:bw - 2 * GLIP, height:bh - 2 * GLIP, fill:"url(#hdot)", opacity:.45}, g);
+  E("rect", {x:GBX + GLIP, y:GBY + GLIP, width:bw - 2 * GLIP, height:bh - 2 * GLIP, class:"ink", "stroke-width":.9}, g);
+  for(let i = k; i < ns; i++) E("rect", {x:gSlot(i) + 3, y:GRY + 3, width:GW - 6, height:GBOT - GRY - 6, class:"faded", "stroke-width":.7, "stroke-dasharray":"2 4"}, g);
+  // the chosen band, washed
+  E("rect", {x:GIX - 3, y:bandTop(n) - 1, width:right - GIX + 6, height:n * GH + 2, class:"fwash"}, g);
+
+  // the index rod
+  const ig = E("g", {"data-g":"gindex"}, g);
+  rodBody(ig, GIX, GRY, GIW, GBOT - GRY, true);
+  E("path", {d:`M${GIX + GIW / 2},${GRY + 9}l8,11l-8,11l-8,-11z`, class:"ink", "stroke-width":.9}, ig);
+  for(let m = 2; m <= 9; m++){
+    const y0 = bandTop(m), sel = m === n;
+    E("path", {d:line([GIX, y0], [GIX + GIW, y0], 4, .3, m), class:"ink", "stroke-width":m === 2 ? 1.1 : .9}, ig);
+    T(String(m), {x:GIX + 18, y:y0 + m * GH / 2 + 8, "text-anchor":"middle", "font-size":m === 2 ? 20 : 24, class:sel ? "rubt" : ""}, ig);
+    E("line", {x1:GIX + GIW - 20, x2:GIX + GIW - 20, y1:y0, y2:y0 + m * GH, class:"ink2", "stroke-width":.5}, ig);
+    for(let c = 0; c < m; c++) T(String(c), {x:GIX + GIW - 10, y:y0 + (c + .5) * GH + 4.2, "text-anchor":"middle", "font-size":12, class:sel ? "" : "fadedt"}, ig);
+    const hb = E("rect", {x:GIX, y:y0, width:GIW, height:m * GH, class:"hit", role:"button", tabindex:0, "aria-label":`Choose the band for ${m}`}, ig);
+    const pick = () => { glStop(); P2.n = m; $("glMul").value = String(m); P2.si = 0; drawGen(); };
+    hb.addEventListener("click", pick); hb.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); pick(); } });
+  }
+  E("path", {d:line([GIX, GBOT], [GIX + GIW, GBOT], 4, .3, 9), class:"ink", "stroke-width":1}, ig);
+
+  // the rods
+  const rg = E("g", {}, g), tg = E("g", {"data-g":"gtri"}, g);
+  a.forEach((d, i) => {
+    const x = gSlot(i), one = E("g", {"data-g":"gband"}, rg);
+    rodBody(one, x, GRY, GW, GBOT - GRY, false, true);
+    T(String(d), {x:x + GW / 2, y:GRY + 29, "text-anchor":"middle", "font-size":26}, one);
+    E("path", {d:line([x, GRY + GHEAD], [x + GW, GRY + GHEAD], 3, .25, d), class:"ink", "stroke-width":.8}, one);
+    for(let m = 2; m <= 9; m++){
+      const y0 = bandTop(m), sel = m === n;
+      E("path", {d:line([x, y0], [x + GW, y0], 4, .3, m * 3 + i), class:"ink", "stroke-width":m === 2 ? 1.1 : .9}, one);
+      E("line", {x1:x + GW - 20, x2:x + GW - 20, y1:y0, y2:y0 + m * GH, class:"ink2", "stroke-width":.45}, one);
+      for(let c = 0; c < m; c++){ const v = NB.cell(d, m, c);
+        if(c) E("line", {x1:x + GW - 20, x2:x + GW, y1:y0 + c * GH, y2:y0 + c * GH, class:"faded", "stroke-width":.35}, one);
+        T(String(v.digit), {x:x + GW - 10, y:y0 + (c + .5) * GH + 4.2, "text-anchor":"middle", "font-size":12, class:sel ? "" : "fadedt"}, one); }
+      NB.tris(d, m).forEach(t => {
+        const yt = y0 + t.c0 * GH + 1.2, yb = y0 + (t.c1 + 1) * GH - 1.2, ya = y0 + (t.out + .5) * GH, xb = x + GW - 22;
+        E("path", {d:`M${xb},${yt}L${xb},${yb}L${x + 1.5},${ya}Z`, class:sel ? "fink" : "fink2", opacity:sel ? .92 : .62}, tg);
+      });
+    }
+    E("path", {d:line([x, GBOT], [x + GW, GBOT], 4, .3, 9), class:"ink", "stroke-width":1}, one);
+  });
+
+  // the path, as far as it has been followed
+  const pg = E("g", {"data-g":"gpath"}, g), y0 = bandTop(n);
+  if(k && si > 0){
+    let pts = [[right + 8, y0 + .5 * GH]];
+    E("path", {d:`M${right + 16},${y0 + .5 * GH}l-8,-5v10z`, class:"frub"}, pg);
+    for(let s = 0; s < Math.min(si, k); s++){
+      const st = R.path[s], x = gSlot(st.i), yc = y0 + (st.c + .5) * GH, ya = y0 + (st.out + .5) * GH;
+      pts.push([x + GW - 1, yc], [x + GW - 24, yc], [x + 2, ya]);
+      if(s === k - 1 || s < si - 1) pts.push([x - 4, ya]);
+      E("rect", {x:x + GW - 19, y:yc - GH / 2 + 1, width:18, height:GH - 2, rx:3, class:"rub", "stroke-width":1.3}, pg);
+      T(String(st.digit), {x:x + GW / 2, y:GBY - 10, "text-anchor":"middle", "font-size":s === si - 1 ? 26 : 23, class:"hand" + (s === si - 1 ? " rubt" : "")}, pg);
+    }
+    E("path", {d:"M" + pts.map(p => p.map(v => v.toFixed(1)).join(",")).join("L"), class:"rub", "stroke-width":1.6, "stroke-linejoin":"round"}, pg);
+    if(si > k){ const ya = y0 + (R.lead + .5) * GH;
+      E("rect", {x:GIX + GIW - 19, y:ya - GH / 2 + 1, width:18, height:GH - 2, rx:3, class:"rub", "stroke-width":1.3}, pg);
+      if(R.lead) T(String(R.lead), {x:GIX + GIW / 2, y:GBY - 10, "text-anchor":"middle", "font-size":26, class:"hand rubt"}, pg); }
+  }
+  // reckoning
+  let h = `<span class="nw">${k ? g3(a.join("")) : "?"} × ${n}</span>`;
+  if(!k) h += `<span class="dim eq">Type a number and lay the rulers.</span>`;
+  else if(si === 0) h += `<span class="dim eq">Press Next step to begin at the top cell of band ${n} on the rightmost rod.</span>`;
+  else if(si <= k){ const st = R.path[si - 1];
+    h += `<span class="eq">Rod ${a[st.i]}, entered at cell ${st.c}: ${n}·${a[st.i]} + ${st.c} = ${a[st.i] * n + st.c}.</span><span class="eq">Read ${st.digit}; the triangle points to cell ${st.out} of the ${st.i ? "next rod" : "index rod"}.</span>`;
+    h += `<span class="dim eq">So far: ${R.path.slice(0, si).map(s => s.digit).reverse().join("")}</span>`; }
+  else { h += `<span class="eq">The index rod gives the first digit${R.lead ? `, ${R.lead}` : `: 0, so there is none`}.</span><span class="big">${g3(R.product)}</span><span class="dim eq">Read right to left: ${R.path.map(s => s.digit).join(", ")}${R.lead ? ", " + R.lead : ""}. Check: ${g3(a.join(""))} × ${n} = ${g3((BigInt(a.join("")) * BigInt(n)).toString())}.</span>`; }
+  $("rdGen").innerHTML = h;
+  $("glNext").disabled = si >= glSteps(); $("glAll").disabled = !k;
+  Folio.tryCheck();
+}
+function glLay(){ const s = $("glNum").value.replace(/\D/g, "").slice(0, GMAX); $("glNum").value = s; P2.digits = NB.digits(s); glStop(); P2.si = 0; drawGen(); }
+$("glLay").onclick = glLay;
+$("glNum").addEventListener("keydown", e => { if(e.key === "Enter") glLay(); });
+$("glMul").onchange = e => { glStop(); P2.n = +e.target.value; P2.si = 0; drawGen(); };
+$("glNext").onclick = () => { glStop(); if(P2.si < glSteps()){ P2.si++; drawGen(); } };
+$("glReset").onclick = () => { glStop(); P2.si = 0; drawGen(); };
+$("glAll").onclick = () => {
+  if(P2.timer){ glStop(); return; }
+  if(P2.si >= glSteps()) P2.si = 0;
+  $("glAll").textContent = "Stop";
+  P2.timer = setInterval(() => { if(P2.si >= glSteps()){ glStop(); drawGen(); return; } P2.si++; drawGen(); }, 520);
+  P2.si++; drawGen();
+};
+drawGen();
+
+/* =========================================================
+   PLATE III: THE CHESSBOARD
+   ========================================================= */
+const svL = $("svBoard");
+const S = 46, N = NB.N, LX0 = 62, LY0 = 30;
+const sqX = j => LX0 + (N - 1 - j) * S, sqY = i => LY0 + (N - 1 - i) * S;      // top-left corner of square (i, j)
+const P3 = {cs:[], nextId:1, mul:null, anim:null, pairs:0, lastDouble:null, timer:null, focus:null, note:""};
+const nc = q => Object.assign({id:P3.nextId++}, q);
+function lnSet(cs, note){ P3.cs = cs; if(note != null) P3.note = note; }
+
+function drawBoard(frac){
+  svL.replaceChildren();
+  const g = E("g", {}, svL), cs = P3.cs, an = P3.anim;
+  // frame
+  const fx = LX0 - 14, fy = LY0 - 14, fw = N * S + 28;
+  E("rect", {x:fx, y:fy, width:fw, height:fw, fill:"url(#h45w)", class:"ink", "stroke-width":1.3}, g);
+  E("rect", {x:fx, y:fy, width:fw, height:fw, class:"fgold", opacity:.2}, g);
+  const sg = E("g", {"data-g":"lsq"}, g);
+  for(let i = 0; i < N; i++) for(let j = 0; j < N; j++){
+    const x = sqX(j), y = sqY(i), dark = (i + j) % 2 === 1;
+    E("rect", {x, y, width:S, height:S, class:"fvel"}, sg);
+    if(dark) E("rect", {x, y, width:S, height:S, fill:"url(#hx)", opacity:.42}, sg);
+    const v = 2 ** (i + j);
+    T(String(v), {x:x + 3, y:y + S - 4, "font-size":v >= 10000 ? 7.5 : 9, class:"fadedt"}, sg);
+  }
+  E("rect", {x:LX0, y:LY0, width:N * S, height:N * S, class:"ink", "stroke-width":1.1}, g);
+  // the slanting rows, drawn faintly
+  const dg = E("g", {"data-g":"ldiag"}, g);
+  for(let s = 1; s <= 2 * N - 2; s++){
+    const ends = []; for(let i = 0; i < N; i++){ const j = s - i; if(j >= 0 && j < N) ends.push([sqX(j) + S / 2, sqY(i) + S / 2]); }
+    if(ends.length > 1) E("path", {d:line(ends[0], ends[ends.length - 1], 6, .4, s), class:"rub", "stroke-width":.5, opacity:.28, "stroke-dasharray":"1 4"}, dg);
+  }
+  // margins: values and letters along the foot, values up the side
+  const fg = E("g", {"data-g":"lfoot"}, g);
+  for(let j = 0; j < N; j++){ const x = sqX(j) + S / 2;
+    T("abcdefghij"[j], {x, y:LY0 + N * S + 30, "text-anchor":"middle", "font-size":17, class:"sc rubt"}, fg);
+    T(String(2 ** j), {x, y:LY0 + N * S + 47, "text-anchor":"middle", "font-size":11.5, class:"fadedt"}, fg); }
+  const mg = E("g", {"data-g":"lmarg"}, g);
+  for(let i = 0; i < N; i++){ const y = sqY(i) + S / 2;
+    T(String(2 ** i), {x:LX0 + N * S + 20, y:y + 4, "font-size":11.5, class:"fadedt"}, mg); }
+  // the multiplication marks
+  if(P3.mul){ const {a, b} = P3.mul;
+    NB.bits(a).forEach(j => { const x = sqX(j) + S / 2; E("path", {d:`M${x},${LY0 + N * S + 52}l6,9h-12z`, class:"frub"}, mg);
+      if(P3.mul.stage === 1) E("path", {d:line([x, LY0 + N * S], [x, LY0], 10, .3, j), class:"rub", "stroke-width":.7, "stroke-dasharray":"3 3", opacity:.7}, mg); });
+    NB.bits(b).forEach(i => { const y = sqY(i) + S / 2; E("path", {d:`M${LX0 + N * S + 60},${y}l9,-6v12z`, class:"frub"}, mg);
+      if(P3.mul.stage === 1) E("path", {d:line([LX0, y], [LX0 + N * S, y], 10, .3, i + 20), class:"rub", "stroke-width":.7, "stroke-dasharray":"3 3", opacity:.7}, mg); });
+    T(`${a} along the foot`, {x:LX0, y:LY0 + N * S + 78, "font-size":13, class:"hand"}, mg);
+    T(`${b} up the side`, {x:LX0 + N * S + 70, y:LY0 - 2, "text-anchor":"end", "font-size":13, class:"hand"}, mg);
+  }
+  // hit squares (click to add a counter)
+  const hg = E("g", {}, g);
+  for(let i = 0; i < N; i++) for(let j = 0; j < N; j++){
+    const r = E("rect", {x:sqX(j), y:sqY(i), width:S, height:S, class:"hit"}, hg);
+    r.addEventListener("click", () => { if(P3.anim) return; lnStop(); P3.mul = null; lnSet(P3.cs.concat([nc({i, j})]), ""); drawBoard(); });
+  }
+  // counters: stacked discs, in place or on their way
+  const cg = E("g", {"data-g":"lsimp"}, g), t = frac == null ? 1 : frac, ease = t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+  const posOf = q => [sqX(q.j) + S / 2, sqY(q.i) + S / 2];
+  const where = q => { if(an && an.from[q.id]){ const p0 = posOf(an.from[q.id]), p1 = posOf(q); return [p0[0] + (p1[0] - p0[0]) * ease, p0[1] + (p1[1] - p0[1]) * ease]; } return posOf(q); };
+  const draws = cs.map(q => ({q, p:where(q), fade:an && !an.from[q.id] ? ease : 1}));
+  if(an) (an.gone || []).forEach(q => draws.push({q, p:an.goneTo ? (() => { const p0 = posOf(q), p1 = posOf(an.goneTo); return [p0[0] + (p1[0] - p0[0]) * ease, p0[1] + (p1[1] - p0[1]) * ease]; })() : posOf(q), fade:1 - ease}));
+  const stackN = new Map(), stackK = new Map();
+  if(!an) cs.forEach(q => { const k = NB.key(q); stackN.set(k, (stackN.get(k) || 0) + 1); });
+  draws.forEach(dr => {
+    const k = NB.key(dr.q), h = stackK.get(k) || 0; if(!an) stackK.set(k, h + 1);
+    const [x, y] = [dr.p[0] - h * 2.5, dr.p[1] - h * 3.5], one = E("g", {class:"grab", opacity:dr.fade.toFixed(3), "data-id":dr.q.id}, cg);
+    E("ellipse", {cx:x + 1.5, cy:y + 3, rx:14, ry:13, class:"fink2", opacity:.25}, one);
+    E("circle", {cx:x, cy:y, r:14, class:"fgold", style:"stroke:var(--ink);stroke-width:1.1"}, one);
+    E("circle", {cx:x, cy:y, r:9.5, class:"ink", "stroke-width":.6, opacity:.7}, one);
+    E("circle", {cx:x, cy:y, r:14, fill:"url(#h45)", opacity:.25}, one);
+    if(an) return;
+    const n = stackN.get(k); if(n > 1 && h === n - 1) T("×" + n, {x:x + 13, y:y - 10, "font-size":14, class:"hand rubt"}, cg);
+    // drag, click to remove, arrow keys
+    const q = dr.q;
+    Folio.keys(one, (dx, dy) => { const j = q.j - dx, i = q.i - dy; if(i < 0 || j < 0 || i >= N || j >= N) return; P3.mul = null; lnSet(P3.cs.map(r => r === q ? Object.assign({}, r, {i, j}) : r), ""); P3.focus = q.id; drawBoard(); }, `Counter on the square worth ${2 ** (q.i + q.j)}: arrow keys move it, Delete removes it`);
+    one.addEventListener("keydown", e => { if(e.key === "Delete" || e.key === "Backspace"){ e.preventDefault(); P3.mul = null; lnSet(P3.cs.filter(r => r !== q), ""); drawBoard(); } });
+    let moved = false;
+    Folio.drag(one, svL, (p, ev, p0) => { if(Math.hypot(p.x - p0.x, p.y - p0.y) > 4) moved = true; if(moved){ one.setAttribute("transform", `translate(${p.x - p0.x},${p.y - p0.y})`); one.classList.add("lift"); cg.appendChild(one); } },
+      () => { if(P3.anim) return false; lnStop(); moved = false; },
+      p => { P3.mul = null;
+        if(!moved){ lnSet(P3.cs.filter(r => r !== q), ""); drawBoard(); return; }
+        const j = N - 1 - Math.floor((p.x - LX0) / S), i = N - 1 - Math.floor((p.y - LY0) / S);
+        if(i < 0 || j < 0 || i >= N || j >= N) lnSet(P3.cs.filter(r => r !== q), "");
+        else lnSet(P3.cs.map(r => r === q ? Object.assign({}, r, {i, j}) : r), "");
+        drawBoard(); });
+  });
+  if(P3.focus != null){ const f = cg.querySelector(`[data-id="${P3.focus}"]`); if(f) f.focus(); P3.focus = null; }
+  if(frac == null) lnReckon();
+}
+function animate(to, from, gone, goneTo, note, ms){
+  return new Promise(res => {
+    P3.anim = {from, gone, goneTo}; P3.cs = to; if(note != null) P3.note = note;
+    const t0 = performance.now(), D = ms || 420;
+    const tick = now => { const f = Math.min(1, (now - t0) / D); drawBoard(f); if(f < 1) requestAnimationFrame(tick); else { P3.anim = null; drawBoard(); res(); } };
+    requestAnimationFrame(tick);
+  });
+}
+const posMap = cs => Object.fromEntries(cs.map(q => [q.id, {i:q.i, j:q.j}]));
+// what "Next step" does: the next stage of a multiplication, else slide, else simplify
+function lnNextOp(){
+  const cs = P3.cs, M = P3.mul;
+  if(M && M.stage === 0){ const add = []; NB.bits(M.b).forEach(i => NB.bits(M.a).forEach(j => add.push(nc({i, j}))));
+    M.stage = 1; return {to:add, from:posMap(cs), note:`A counter at each crossing, ${add.length} in all. Where the row worth 2<sup>i</sup> meets the column worth 2<sup>j</sup>, the counter is worth 2<sup>i</sup>·2<sup>j</sup> = 2<sup>i+j</sup>.`}; }
+  if(cs.some(q => q.i > 0 && q.i + q.j <= N - 1)){
+    if(M) M.stage = 2;
+    return {to:cs.map(q => Object.assign({}, q, NB.slid(q))), from:posMap(cs), note:"Each counter slides down its slanting row to the foot. One square down and one left is worth the same."}; }
+  const s = NB.simplify1(cs);
+  if(s){ P3.pairs++; if(M) M.stage = 3; const v = 2 ** (s.from.i + s.from.j);
+    const gone = cs.find(q => q.id === s.gone);
+    return {to:s.cs, from:posMap(cs), gone:[gone], goneTo:s.to, note:`Two counters worth ${v} make one worth ${2 * v}.`}; }
+  if(M){ M.done = true; }
+  return null;
+}
+async function lnNext(){ if(P3.anim) return false; const op = lnNextOp(); if(!op){ lnReckon(); Folio.tryCheck(); return false; }
+  await animate(op.to, op.from, op.gone, op.goneTo, op.note); if(P3.mul && !lnPending()) P3.mul.done = true; lnReckon(); return true; }
+function lnPending(){ const cs = P3.cs; return (P3.mul && P3.mul.stage === 0) || cs.some(q => q.i > 0 && q.i + q.j <= N - 1) || !!NB.simplify1(cs); }
+function lnStop(){ if(P3.timer){ P3.timer = false; $("lnAll").textContent = "Do it all"; } }
+async function lnAll(){ if(P3.timer){ lnStop(); return; } P3.timer = true; $("lnAll").textContent = "Stop";
+  while(P3.timer && lnPending()){ await lnNext(); await new Promise(r => setTimeout(r, 120)); }
+  lnStop(); lnReckon(); }
+function lnReckon(){
+  const cs = P3.cs, v = NB.val(cs), simp = NB.simplified(cs), foot = cs.every(q => q.i === 0), M = P3.mul;
+  let h = "";
+  if(M){ const ba = NB.bits(M.a), bb = NB.bits(M.b);
+    h += `<span class="nw">${M.a} × ${M.b}</span><span class="dim eq">${M.a} = ${ba.map(k => 2 ** k).reverse().join(" + ")} along the foot; ${M.b} = ${bb.map(k => 2 ** k).reverse().join(" + ")} up the side.</span>`; }
+  if(P3.note) h += `<span class="eq">${P3.note}</span>`;
+  if(!cs.length) h += `<span class="dim eq">The board is empty. Click squares to put counters on them, or lay a number.</span>`;
+  else {
+    const vals = cs.map(q => 2 ** (q.i + q.j)).sort((x, y) => y - x);
+    const sum = vals.length <= 10 ? vals.join(" + ") + " = " : `${vals.length} counters, worth `;
+    h += `<span class="eq">${sum}${g3(v)}</span><span class="big">${g3(v)}</span>`;
+    if(simp && foot) h += `<span class="dim eq">In binary ${v.toString(2)}; in Napier's letters <i>${NB.letters(v)}</i>.</span>`;
+    else if(!foot && !M) h += `<span class="dim eq">Some counters are above the foot. Next step slides them down.</span>`;
+    else if(!simp) h += `<span class="dim eq">Some squares hold two or more counters. Next step simplifies them.</span>`;
+    if(M && M.done && v === M.a * M.b) h += `<span class="ok eq">${M.a} × ${M.b} = ${g3(v)}</span>`;
+  }
+  $("rdBoard").innerHTML = h;
+  $("lnNext").disabled = !lnPending() || !!P3.anim;
+  $("lnDouble").disabled = !cs.length || cs.some(q => q.i === N - 1 && q.j === N - 1);
+  Folio.tryCheck();
+}
+function lnLayNum(n, keep){ lnStop(); P3.mul = null; P3.pairs = 0; P3.lastDouble = null; lnSet((keep ? P3.cs : []).concat(NB.lay(n).map(nc)), `${n} laid on the foot: ${NB.bits(n).map(k => 2 ** k).reverse().join(" + ")}.`); drawBoard(); }
+$("lnLay").onclick = () => { let n = parseInt($("lnNum").value.replace(/\D/g, ""), 10); if(!(n >= 1)) return; n = Math.min(n, 1023); $("lnNum").value = n; lnLayNum(n); };
+$("lnNum").addEventListener("keydown", e => { if(e.key === "Enter") $("lnLay").click(); });
+function lnSetup(a, b){ lnStop(); a = Math.max(1, Math.min(31, a | 0)); b = Math.max(1, Math.min(31, b | 0)); $("lnA").value = a; $("lnB").value = b;
+  P3.mul = {a, b, stage:0, done:false}; P3.pairs = 0; lnSet([], "The numbers are marked in the margins. Next step puts the counters on."); drawBoard(); }
+$("lnMul").onclick = () => lnSetup(parseInt($("lnA").value, 10) || 1, parseInt($("lnB").value, 10) || 1);
+$("lnNext").onclick = () => { lnStop(); lnNext(); };
+$("lnAll").onclick = lnAll;
+$("lnDouble").onclick = async () => { if(P3.anim) return; lnStop(); const before = NB.val(P3.cs), cs = P3.cs;
+  if(cs.some(q => q.i === N - 1 && q.j === N - 1)) return; P3.mul = null;
+  const to = cs.map(q => Object.assign({}, q, q.j + 1 < N ? {j:q.j + 1} : {i:q.i + 1}));
+  await animate(to, posMap(cs), null, null, "Every counter moves one square left: each is worth twice as much.");
+  P3.lastDouble = {from:before, to:NB.val(P3.cs)}; lnReckon(); };
+$("lnClear").onclick = () => { lnStop(); P3.mul = null; P3.pairs = 0; lnSet([], ""); drawBoard(); };
+lnSetup(13, 11);
+
+/* =========================================================
+   TRY THIS
+   ========================================================= */
+const tab = id => { const b = document.querySelector(`[data-plate="${id}"]`); if(b && !b.classList.contains("on")) b.click(); };
+const bnSet = (num, mul) => () => { tab("bones"); $("bnNum").value = num; $("bnMul").value = mul; bnLay(); };
+const bnDone = (num, mul) => () => P1.digits.join("") === num && P1.mult === mul && P1.steps.length > 0 && P1.si >= P1.steps.length;
+const glSet = (num, n) => () => { tab("genaille"); $("glNum").value = num; $("glMul").value = String(n); P2.n = n; glLay(); };
+const glDone = (num, n) => () => P2.digits.join("") === num && P2.n === n && P2.digits.length > 0 && P2.si >= glSteps();
+const lnFoot = () => P3.cs.every(q => q.i === 0) && NB.simplified(P3.cs);
+const lnMulDone = (a, b) => () => !!P3.mul && P3.mul.a === a && P3.mul.b === b && P3.mul.done && lnFoot() && NB.val(P3.cs) === a * b;
+Folio.tries({
+  b425x6:  {label:"lay it", setup:bnSet("425", "6"), check:bnDone("425", "6")},
+  b425x8:  {label:"lay it", setup:bnSet("425", "8"), check:bnDone("425", "8")},
+  b3071x8: {label:"lay it", setup:bnSet("3071", "8"), check:bnDone("3071", "8")},
+  bBig:    {label:"lay it", setup:bnSet("46785399", "7"), check:bnDone("46785399", "7")},
+  b425x367:{label:"lay it", setup:bnSet("425", "367"), check:bnDone("425", "367")},
+  g425x7:  {label:"lay it", setup:glSet("425", 7), check:glDone("425", 7)},
+  g99x9:   {label:"lay it", setup:glSet("99999", 9), check:glDone("99999", 9)},
+  g3071x8: {label:"lay it", setup:glSet("3071", 8), check:glDone("3071", 8)},
+  gOwn:    {check:() => P2.digits.length >= 6 && P2.n === 6 && P2.si >= glSteps()},
+  l87:     {label:"clear the board", setup:() => { tab("board"); $("lnClear").click(); }, check:() => !P3.mul && P3.cs.length > 0 && lnFoot() && NB.val(P3.cs) === 87},
+  lAdd:    {label:"lay them", setup:() => { tab("board"); lnLayNum(13); lnLayNum(11, true); P3.note = "13 and 11 laid on the foot together. Squares with two counters need simplifying."; lnReckon(); },
+            check:() => P3.pairs > 0 && lnFoot() && NB.val(P3.cs) === 24},
+  lDouble: {label:"lay 13", setup:() => { tab("board"); lnLayNum(13); }, check:() => !!P3.lastDouble && P3.lastDouble.from === 13 && P3.lastDouble.to === 26},
+  l13x11:  {label:"set it up", setup:() => { tab("board"); lnSetup(13, 11); }, check:lnMulDone(13, 11)},
+  l25x19:  {label:"set it up", setup:() => { tab("board"); lnSetup(25, 19); }, check:lnMulDone(25, 19)}
+});
+
+Folio.plates(); Folio.glosses();
+})();
+</script>
+</body>
+</html>

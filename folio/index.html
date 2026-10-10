@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Of Instruments</title>
+<meta name="description" content="The Wending House's cabinet of instruments: computing and measuring devices drawn as plates in a manuscript, each one working.">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ECDFC0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="/folio/folio.css?v=2">
+<script src="/folio/folio.js?v=2"></script>
+<script src="/ga.js" async></script>
+</head>
+<body>
+<main class="leaf">
+  <div class="runhead"><a href="/palace/">The Wending House</a><span>Of Instruments · the Contents</span><a href="/puzzles/">Puzzles &amp; Devices</a></div>
+  <h1>Of <span class="rub">Instruments</span></h1>
+  <p class="subtitle">A cabinet of computing and measuring devices, drawn as plates in a manuscript, each one working.</p>
+  <p class="incipit">Every instrument here turns a piece of mathematics into a motion of the hand: sliding, opening, laying rods side by side, tracing, or turning. Each folio has a few plates. Drag anything that looks like brass, read the result in the margin, and work the exercises under “Try this”; they tick themselves when you have done them.</p>
+  <div class="cabinet" id="cab"></div>
+  <div class="fleuron" aria-hidden="true">❦ ❦ ❦</div>
+  <section class="commentary">
+    <h2><span class="no">¶</span>How to read a folio</h2>
+    <p><b>The plate.</b> Each plate is one idea. The drawing is the instrument; its brass parts move, by mouse, by touch, or by the arrow keys once you have tabbed to them.</p>
+    <p><b>The margin.</b> The reckoning at the top of the margin is written in as you work: the reading, and the reason for it. Below it, “Try this” sets small tasks in order of difficulty. The glosses, lettered a, b, c, explain the parts of the drawing; hover over one and its part is picked out.</p>
+    <p><b>The commentary.</b> Below the plates: the mathematics in full, a little history, and where to read further.</p>
+    <p><b>The older cabinet.</b> Some instruments have earlier, plainer editions, kept as they were, and there are more devices on the <a href="/puzzles/">Puzzles &amp; Devices</a> page: the <a href="/slide-rules/">Slide Rule Cabinet</a>, the <a href="/stereonet/">Stereonet</a>, <a href="/turns/">Hamilton's Turns</a>, the <a href="/tropical/">Tropical Slide Rule</a>, and the <a href="/p-adic/">p-adic Ruler</a>.</p>
+  </section>
+  <div class="colophon"><span>Drawn for the Wending House, 2026.</span><a href="/palace/">Into the house</a></div>
+</main>
+<script>
+(function(){
+const {E, FOLIOS, ORD, roman} = Folio;
+// a small vignette for each instrument, in ink
+const V = {
+  "sector": g => { E("path",{d:"M30,70 L150,18 M30,70 L160,62",class:"ink","stroke-width":7,"stroke-linecap":"round"},g); E("path",{d:"M30,70 L150,18 M30,70 L160,62",class:"fvel",style:"stroke:var(--vellum2);stroke-width:4.4;stroke-linecap:round"},g);
+    for(let k=1;k<10;k++){ const t=k/10; E("line",{x1:30+120*t,y1:70-52*t,x2:30+130*t,y2:70-8*t,class:"faded","stroke-width":.5,"stroke-dasharray":"2 2"},g); } E("circle",{cx:30,cy:70,r:8,class:"fgold",style:"stroke:var(--ink)"},g); },
+  "napier": g => { for(let r=0;r<5;r++){ const x=24+r*30; E("rect",{x,y:8,width:26,height:72,class:"fvel",style:"stroke:var(--ink);stroke-width:1"},g);
+    for(let c=1;c<6;c++) E("line",{x1:x,y1:8+c*12,x2:x+26,y2:8+c*12,class:"ink2","stroke-width":.6},g); for(let c=0;c<6;c++) E("line",{x1:x+26,y1:8+c*12,x2:x,y2:20+c*12,class:"faded","stroke-width":.5},g);
+    Folio.T(String([4,2,5,7,0][r]),{x:x+13,y:18,"text-anchor":"middle","font-size":10},g); } },
+  "slide-rule": g => { E("rect",{x:8,y:22,width:184,height:46,class:"fvel",style:"stroke:var(--ink)"},g); E("rect",{x:40,y:36,width:152,height:18,fill:"url(#h45w)",style:"stroke:var(--ink)",class:"ink"},g);
+    for(let k=1;k<=10;k++){ const x=8+184*Math.log10(k); E("line",{x1:x,y1:68,x2:x,y2:60,class:"ink","stroke-width":.8},g); } E("rect",{x:96,y:14,width:22,height:62,class:"flwash",style:"stroke:var(--ink2)"},g); E("line",{x1:107,y1:14,x2:107,y2:76,class:"rub","stroke-width":1.2},g); },
+  "planimeters": g => { E("path",{d:"M120,30 C160,20 175,55 150,70 C125,85 95,70 100,52 C104,40 108,33 120,30 Z",class:"fwash",style:"stroke:var(--rubric)"},g);
+    E("path",{d:"M30,78 L80,30 L150,58",class:"ink","stroke-width":4,"stroke-linecap":"round"},g); E("circle",{cx:30,cy:78,r:6,fill:"url(#hx)",style:"stroke:var(--ink)",class:"ink"},g); E("circle",{cx:118,cy:44,r:6,class:"fgold",style:"stroke:var(--ink)"},g); },
+  "cross-ratio": g => { E("path",{d:"M10,24 L190,24",class:"rub","stroke-dasharray":"4 3"},g); E("path",{d:"M40,84 L100,24 L160,84",class:"ink","stroke-width":1.1},g);
+    for(let t=0;t<40;t+=4){ const y=24+60*4/(t+4), w=3*4/(t+4); E("rect",{x:100-w,y,width:2*w,height:Math.max(.6,3*4/(t+4)),class:"fink2"},g); } E("rect",{x:14,y:18,width:14,height:68,class:"fvel",style:"stroke:var(--ink)"},g); },
+  "so3-rule": g => { E("circle",{cx:100,cy:48,r:38,fill:"url(#h45w)",style:"stroke:var(--ink)",class:"ink"},g); E("ellipse",{cx:100,cy:48,rx:38,ry:12,class:"ink2","stroke-width":.7},g); E("ellipse",{cx:100,cy:48,rx:14,ry:38,class:"ink2","stroke-width":.7},g);
+    E("path",{d:"M74,30 A38,38 0 0 1 120,22",class:"lap","stroke-width":4},g); E("path",{d:"M120,22 A38,38 0 0 1 134,62",class:"rub","stroke-width":4},g); E("path",{d:"M74,30 Q100,52 134,62",class:"ink","stroke-width":1.4,"stroke-dasharray":"3 2"},g); }
+};
+const cab = document.getElementById("cab"); Folio.defs();
+FOLIOS.forEach((f, i) => { const a = document.createElement("a"); a.href = "/" + f.slug + "/";
+  a.innerHTML = `<span class="no">Folio ${roman(i + 1)} · the ${ORD[i]}</span><h2>${f.title}</h2>`;
+  const svg = E("svg", {viewBox:"0 0 200 92", "aria-hidden":"true"}); a.appendChild(svg); if(V[f.slug]) V[f.slug](E("g", {}, svg));
+  const p = document.createElement("p"); p.textContent = f.sub.charAt(0).toUpperCase() + f.sub.slice(1) + "."; a.appendChild(p); cab.appendChild(a); });
+})();
+</script>
+</body>
+</html>

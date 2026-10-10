@@ -13,11 +13,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
-<link rel="stylesheet" href="/folio/folio.css?v=1">
-<script src="/folio/folio.js?v=1"></script>
+<link rel="stylesheet" href="/folio/folio.css?v=2">
+<script src="/folio/folio.js?v=2"></script>
 <script src="/ga.js" async></script>
 <style>
 .margin svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+/* the instrument's dials and the hand's dials line up as one table */
+.drawing .dials{grid-template-columns:9.2em minmax(0,1fr) 4.6em}
+@media (max-width:520px){.drawing .dials{grid-template-columns:8.6em minmax(0,1fr) 4.2em}}
 .detail .caption{margin-top:4px}
 .reckon .bud{display:block;margin-top:4px}
 .runs h3{margin-bottom:2px}
@@ -27,8 +30,9 @@
 </head>
 <body>
 <main class="leaf">
-  <div class="runhead"><a href="/palace/">The Wending House</a><span>Of Instruments · Folio the Second</span><a href="/puzzles/">Puzzles &amp; Devices</a></div>
+  <div class="runhead" data-folio="planimeters"></div>
   <h1>The Planimeter <span class="rub">Bench</span></h1>
+  <p class="subtitle">Area by tracing: five instruments that turn one trip round a curve into a number.</p>
   <p class="incipit">To know the area of a field on a map, you need not count squares. Run a point once round its edge, and a little wheel, a knife, or a pair of counters keeps an account that comes out to the area. Five such instruments are laid out here on one tracing table, each with its reading and its errors.</p>
 
   <nav class="platetabs" role="tablist" aria-label="Plates">
@@ -51,11 +55,16 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rd-polar" aria-live="polite"></div>
-      <p class="gloss" data-g="pole"><span class="sig">a.</span>The <em>pole</em>: a heavy weight with a needle beneath, pressed into the table. Drag it anywhere on the board.</p>
-      <p class="gloss" data-g="arms"><span class="sig">b.</span>The <em>pole arm</em> a and the <em>tracer arm</em> b, hinged at the elbow. The elbow can only swing on the dotted circle about the pole.</p>
-      <p class="gloss" data-g="wheel"><span class="sig">c.</span>The <em>measuring wheel</em> rides on the tracer arm with its axle along the arm. It rolls when the arm moves sideways and skids when the arm slides along itself, so it counts only the sideways motion. Fig. 2 shows its drum, its vernier, and the disk that counts whole turns.</p>
-      <p class="gloss" data-g="tracer"><span class="sig">d.</span>The <em>tracer point</em>, under a magnifying ring. Take it once round the curve and back to where it began. The area is the tracer arm's length times the distance the wheel rolled: A = b·w.</p>
-      <p class="gloss"><span class="sig">e.</span>Drag the pole inside the curve. The elbow now goes all the way round its circle, and the wheel misses a fixed amount, π(a² + b² − 2bc), which is added to the reading.</p>
+      <ol class="try">
+        <li data-try="p1">Choose the 3 cm circle, press <em>A perfect hand</em>, and read 28.27 cm², which is 9π.</li>
+        <li data-try="p2">Drag the pole inside the curve. The reading now adds the zero circle, π(a² + b² − 2bc).</li>
+        <li data-try="p3">With a perfect hand, slide the wheel along the arm. The reading stays true wherever it rides.</li>
+        <li data-try="p4">Raise the tremor to 0.15 cm and press <em>Measure</em>. The slivers the hand adds and removes nearly cancel.</li>
+      </ol>
+      <p class="gloss" data-g="pole"><span class="sig">a.</span>The <em>pole</em>, a weight with a needle beneath. Drag it anywhere on the board.</p>
+      <p class="gloss" data-g="arms"><span class="sig">b.</span>The <em>pole arm</em> a and the <em>tracer arm</em> b, hinged at the elbow, which swings on the dotted circle.</p>
+      <p class="gloss" data-g="wheel"><span class="sig">c.</span>The <em>wheel</em> has its axle along the arm, so it rolls with the arm's sideways motion and skids with the rest. Fig. 2 shows its drum, vernier, and counting disk.</p>
+      <p class="gloss" data-g="tracer"><span class="sig">d.</span>The <em>tracer point</em> goes once round the curve. The area is the arm's length times the wheel's roll: A = b·w.</p>
     </aside>
   </section>
 
@@ -70,11 +79,16 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rd-linear" aria-live="polite"></div>
-      <p class="gloss" data-g="rail"><span class="sig">a.</span>The <em>rail</em>, a steel straightedge laid across the table. Drag it up or down.</p>
-      <p class="gloss" data-g="carriage"><span class="sig">b.</span>The <em>carriage</em> runs on four rollers along the rail and carries the elbow, which therefore moves on a straight line instead of a circle.</p>
-      <p class="gloss" data-g="wheel"><span class="sig">c.</span>The <em>wheel</em> on the tracer arm, the same as in Plate I. It rolls only with the arm's sideways motion.</p>
-      <p class="gloss" data-g="tracer"><span class="sig">d.</span>The <em>tracer point</em>. Go once round, and A = b·w exactly, as before.</p>
-      <p class="gloss"><span class="sig">e.</span>There is no correction term here. The elbow cannot go round anything, so the curve may be as long as the rail allows: a strip of a river, or a whole year of a recording chart.</p>
+      <ol class="try">
+        <li data-try="l1">Measure the 3 cm circle with a perfect hand: 28.27 cm² again.</li>
+        <li data-try="l2">Drag the rail to the far side of the curve. The wheel runs the other way, and the area is the same.</li>
+        <li data-try="l3">With a perfect hand, shorten the tracer arm b. The wheel rolls farther, and b·w does not change.</li>
+      </ol>
+      <p class="gloss" data-g="rail"><span class="sig">a.</span>The <em>rail</em>, a steel straightedge. Drag it up or down.</p>
+      <p class="gloss" data-g="carriage"><span class="sig">b.</span>The <em>carriage</em> carries the elbow along the rail, on a straight line instead of a circle.</p>
+      <p class="gloss" data-g="wheel"><span class="sig">c.</span>The <em>wheel</em>, as in Plate I, rolls only with the arm's sideways motion.</p>
+      <p class="gloss" data-g="tracer"><span class="sig">d.</span>The <em>tracer point</em>. Once round, and A = b·w exactly.</p>
+      <p class="gloss"><span class="sig">e.</span>The elbow cannot go round anything, so there is no correction term, and the curve may be as long as the rail: a river, or a year of a recording chart.</p>
     </aside>
   </section>
 
@@ -88,11 +102,16 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rd-hatchet" aria-live="polite"></div>
-      <p class="gloss" data-g="start"><span class="sig">a.</span>The <em>starting point</em> S, near the middle of the curve. It begins at the centroid; drag it elsewhere and watch the error grow.</p>
-      <p class="gloss" data-g="knife"><span class="sig">b.</span>The <em>knife edge</em>. It can move along the rod but not across it, like the back wheel of a bicycle. Its track, dotted, is made of tractrices.</p>
-      <p class="gloss" data-g="rod"><span class="sig">c.</span>The <em>point</em> at the other end of the rod. Carry it from S straight out to the curve, once round, and straight back to S.</p>
-      <p class="gloss" data-g="theta"><span class="sig">d.</span>The rod comes home turned by a small angle θ. Then A ≈ L²θ, with θ in radians. The dashed line is where the rod began.</p>
-      <p class="gloss"><span class="sig">e.</span>This is the one instrument here that is not exact. The leftover turn is a holonomy, and L²θ is only its first term; a longer rod and a start near the centroid make the rest small.</p>
+      <ol class="try">
+        <li data-try="h1">Measure the 3 cm circle with a perfect hand. It is still a little off: L²θ is only a first approximation.</li>
+        <li data-try="h2">Halve the hatchet's error by changing L.</li>
+        <li data-try="h3">Drag S 3 cm or more from the centroid, and watch the error grow.</li>
+      </ol>
+      <p class="gloss" data-g="start"><span class="sig">a.</span>The <em>starting point</em> S, set at first on the centroid.</p>
+      <p class="gloss" data-g="knife"><span class="sig">b.</span>The <em>knife edge</em> moves along the rod but not across it, like the back wheel of a bicycle. Its dotted track is made of tractrices.</p>
+      <p class="gloss" data-g="rod"><span class="sig">c.</span>The <em>point</em> goes from S out to the curve, once round, and back to S.</p>
+      <p class="gloss" data-g="theta"><span class="sig">d.</span>The rod comes home turned by θ, and A ≈ L²θ. The dashed line is where it began.</p>
+      <p class="gloss"><span class="sig">e.</span>The leftover turn is a holonomy, and L²θ is its first term. A long rod and a start near the centroid make the rest small.</p>
     </aside>
   </section>
 
@@ -106,11 +125,15 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rd-radial" aria-live="polite"></div>
-      <p class="gloss" data-g="centre"><span class="sig">a.</span>The <em>centre</em>, and a disk of ground glass fixed to the table under it. Drag it; it may stand inside the curve or outside.</p>
-      <p class="gloss" data-g="arm"><span class="sig">b.</span>The <em>arm</em> turns about the centre, and the tracer <em>slides</em> along it in a slot. So the tracer's place is given by polar coordinates: r along the arm, θ round the disk.</p>
-      <p class="gloss" data-g="cam"><span class="sig">c.</span>A <em>cam</em> at the hub, worked by a cord from the slider, sets the wheel at the distance ρ = r²/2k from the centre. Its edge is cut to a parabola. (The cord and cam are drawn schematically.)</p>
-      <p class="gloss" data-g="wheel"><span class="sig">d.</span>The <em>wheel</em> rests on the glass with its axle along the arm. When the arm turns by dθ it rolls ρ dθ = r² dθ/2k; when the wheel is moved in or out it only skids.</p>
-      <p class="gloss"><span class="sig">e.</span>So the wheel totals (1/k)·½∮r² dθ, and the area is A = k·w. This is Green's theorem in polar form, and no correction is needed wherever the centre stands.</p>
+      <ol class="try">
+        <li data-try="r1">Measure the 3 cm circle with a perfect hand: 28.27 cm².</li>
+        <li data-try="r2">Drag the centre inside the curve. No correction is needed.</li>
+        <li data-try="r3">Lower k until the wheel would run off the edge of the glass.</li>
+      </ol>
+      <p class="gloss" data-g="centre"><span class="sig">a.</span>The <em>centre</em>, over a disk of ground glass. Drag it, inside the curve or out.</p>
+      <p class="gloss" data-g="arm"><span class="sig">b.</span>The <em>arm</em> turns about the centre and the tracer <em>slides</em> along it, so the tracer is placed in polar coordinates r and θ.</p>
+      <p class="gloss" data-g="cam"><span class="sig">c.</span>A <em>cam</em> at the hub, cut to a parabola and worked by a cord from the slider, sets the wheel at ρ = r²/2k. (Cord and cam are drawn schematically.)</p>
+      <p class="gloss" data-g="wheel"><span class="sig">d.</span>The <em>wheel</em> on the glass rolls ρ dθ as the arm turns by dθ, so it totals (1/k)·½∮r² dθ, and A = k·w: Green's theorem in polar form.</p>
     </aside>
   </section>
 
@@ -124,11 +147,15 @@
     </div>
     <aside class="margin">
       <div class="reckon" id="rd-frame" aria-live="polite"></div>
-      <p class="gloss" data-g="rails"><span class="sig">a.</span>Two fixed <em>rails</em>, above and below the sheet, and a <em>bridge</em> that runs along them. The bridge's place is x.</p>
-      <p class="gloss" data-g="carriage"><span class="sig">b.</span>A <em>carriage</em> runs up and down the bridge and carries the tracer. Its place is y.</p>
-      <p class="gloss" data-g="counters"><span class="sig">c.</span>Two <em>counting wheels</em>, one on the bridge's foot and one on the carriage, click once for each step they roll. Fig. 2 shows their counters.</p>
-      <p class="gloss"><span class="sig">d.</span>At each click of the y wheel, add the current x count times the step in y. The total is Σ x·Δy = ∮x dy, which is the area: Green's theorem done by counting.</p>
-      <p class="gloss"><span class="sig">e.</span>Its only intrinsic error is the count itself: each reading is off by up to half a step. Make the step coarse and see how fast the error grows.</p>
+      <ol class="try">
+        <li data-try="x1">Set the count to 0.5 cm and measure the 5 cm square with a perfect hand: exactly 25, since its corners lie on the counts.</li>
+        <li data-try="x2">Now measure the 3 cm circle at 0.5 cm. The coarse count shows.</li>
+        <li data-try="x3">Bring the count down to 0.02 cm, and the circle comes within a tenth of a per cent.</li>
+      </ol>
+      <p class="gloss" data-g="rails"><span class="sig">a.</span>Two fixed <em>rails</em>, and a <em>bridge</em> that runs along them. The bridge's place is x.</p>
+      <p class="gloss" data-g="carriage"><span class="sig">b.</span>A <em>carriage</em> runs along the bridge with the tracer. Its place is y.</p>
+      <p class="gloss" data-g="counters"><span class="sig">c.</span>Two <em>counting wheels</em> click once a step. Fig. 2 shows their counters.</p>
+      <p class="gloss"><span class="sig">d.</span>At each click in y, add the x count times the step. The total Σ x·Δy = ∮x dy is the area: Green's theorem by counting, off by at most half a step in each reading.</p>
     </aside>
   </section>
 
@@ -195,7 +222,7 @@ const RAD_ARM = 15, RAD_DISK = 4.5;    // radial planimeter: arm and glass disk,
 const KINDS = ["polar", "linear", "hatchet", "radial", "frame"];
 
 let inst = "polar", curve = [], pole = {x:3, y:3}, rail = 4.5, hstart = null, rctr = {x:3.5, y:9.5};
-let seed = 12345, runs = [], anim = 0, drawing = false, drawPts = [], shown = null;
+let seed = 12345, runs = [], anim = 0, drawing = false, drawPts = [], shown = null, curveName = "blob", last = {}, tremorRun = false;
 
 /* ---------- curves ---------- */
 function preset(name){ const cx = 13.5, cy = 9.5, pts = [], n = 720;
@@ -383,7 +410,7 @@ KINDS.forEach(k => H[k] = E("g", {}, gHand));
   disc(g, [0, 0], 28, "fvel", "url(#hx)", 1.6); E("circle", {cx:0, cy:0, r:21, class:"ink", "stroke-width":.7}, g);
   E("circle", {cx:0, cy:0, r:25, class:"ink2", "stroke-width":.5, "stroke-dasharray":"1 2.2"}, g);
   disc(g, [0, 0], 10, "fgold", "url(#h45)", 1.1); E("circle", {cx:-2.5, cy:-2.5, r:2, class:"fvel"}, g);
-  sig(g, "a", -34, -26); E("circle", {cx:0, cy:0, r:34, fill:"transparent"}, g);
+  H.poleSig = sig(g, "a", -34, -26); E("circle", {cx:0, cy:0, r:34, fill:"transparent"}, g);
   H.pole = g; })();
 // the rail: a steel straightedge across the board, graduated
 (function(){ const g = E("g", {class:"nsgrab", "data-g":"rail"}, H.linear);
@@ -394,13 +421,13 @@ KINDS.forEach(k => H[k] = E("g", {}, gHand));
   E("line", {x1:10, x2:VW - 10, y1:1.5, y2:1.5, style:"stroke:var(--vellum2)", "stroke-width":1}, g);
   for(let i = 0; i <= WCM; i++) E("line", {x1:X(i), x2:X(i), y1:-9, y2:i % 5 ? -5.5 : -3, class:"ink", "stroke-width":.7}, g);
   [10, VW - 26].forEach(x => { E("rect", {x, y:-12, width:16, height:24, class:"fgold", opacity:.5}, g); E("rect", {x, y:-12, width:16, height:24, fill:"url(#h45)", class:"ink", "stroke-width":1}, g); });
-  sig(g, "a", 46, -14); E("rect", {x:10, y:-16, width:VW - 20, height:32, fill:"transparent"}, g);
+  sig(g, "a", 96, -14); E("rect", {x:10, y:-16, width:VW - 20, height:32, fill:"transparent"}, g);
   H.rail = g; })();
 // the hatchet's starting point
 (function(){ const g = E("g", {class:"grab", "data-g":"start"}, H.hatchet);
   E("circle", {cx:0, cy:0, r:9, class:"rub", "stroke-width":1.3}, g);
   E("path", {d:"M-16,0H-5M5,0H16M0,-16V-5M0,5V16", class:"rub", "stroke-width":1.1}, g);
-  T("S", {x:12, y:22, "font-size":16, class:"sc rubt"}, g); sig(g, "a", -18, -16);
+  T("S", {x:12, y:22, "font-size":16, class:"sc rubt"}, g); H.startSig = sig(g, "a", -18, -16);
   E("circle", {cx:0, cy:0, r:22, fill:"transparent"}, g);
   H.start = g; })();
 // the radial planimeter's centre and its glass disk
@@ -427,6 +454,12 @@ drag(H.pole, svg, p => { pole = clampB(cmOf(p)); placeHandles(); refresh(); }, (
 drag(H.rail, svg, p => { rail = Math.max(-.4, Math.min(HCM + .4, cmOf(p).y)); placeHandles(); refresh(); }, () => { stopAnim(); });
 drag(H.start, svg, p => { hstart = clampB(cmOf(p)); placeHandles(); refresh(); }, () => { stopAnim(); });
 drag(H.disk, svg, (p, e, p0) => { rctr = clampB(cmOf(p)); placeHandles(); refresh(); }, () => { stopAnim(); });
+// arrow keys: a millimetre a press, a centimetre with Shift; up is up the sheet
+const nudge = (q, dx, dy, big) => clampB({x:q.x + dx * (big ? 1 : .1), y:q.y - dy * (big ? 1 : .1)});
+Folio.keys(H.pole, (dx, dy, big) => { stopAnim(); pole = nudge(pole, dx, dy, big); refresh(); }, "The pole: arrow keys move it");
+Folio.keys(H.rail, (dx, dy, big) => { stopAnim(); rail = Math.max(-.4, Math.min(HCM + .4, rail - dy * (big ? 1 : .1))); refresh(); }, "The rail: up and down arrows move it");
+Folio.keys(H.start, (dx, dy, big) => { stopAnim(); hstart = nudge(hstart || centroid(curve), dx, dy, big); refresh(); }, "The starting point S: arrow keys move it");
+Folio.keys(H.disk, (dx, dy, big) => { stopAnim(); rctr = nudge(rctr, dx, dy, big); refresh(); }, "The centre and its glass disk: arrow keys move it");
 
 /* ---------- each instrument, drawn in one state ---------- */
 function trailOf(states, k, key){ const P = []; for(let i = 0; i <= k; i += 2) P.push(sv(states[i][key])); if(k % 2) P.push(sv(states[k][key])); return P; }
@@ -444,11 +477,16 @@ function drawPolar(g, s, o){
   hinge(g, J);
   wheelAsm(g, sv(s.W), s.u, s.w, 30, "wheel");
   tracer(g, Tp, s.u, "tracer");
-  const n = [-us[1], us[0]], m = [(P[0] + J[0]) / 2, (P[1] + J[1]) / 2];
-  const pa = [J[0] - P[0], J[1] - P[1]], pl = Math.hypot(pa[0], pa[1]) || 1, pn = [-pa[1] / pl, pa[0] / pl];
-  sig(g, "b", m[0] + pn[0] * 18, m[1] + pn[1] * 18 + 6);
-  const W = sv(s.W); sig(g, "c", W[0] - us[0] * 30 + n[0] * 30, W[1] - us[1] * 30 + n[1] * 30 + 6);
-  sig(g, "d", Tp[0] + n[0] * 26 + us[0] * 10, Tp[1] + n[1] * 26 + us[1] * 10 + 6);
+  // the letters go on the open side of each arm, away from the other arm, so they stay clear when the arms fold
+  const pa = [J[0] - P[0], J[1] - P[1]], pl = Math.hypot(pa[0], pa[1]) || 1, pu = [pa[0] / pl, pa[1] / pl];
+  let pn = [-pu[1], pu[0]]; if(pn[0] * us[0] + pn[1] * us[1] > 0) pn = [-pn[0], -pn[1]];
+  let n = [-us[1], us[0]]; if(n[0] * -pu[0] + n[1] * -pu[1] > 0) n = [-n[0], -n[1]];
+  const m = [P[0] + pa[0] * .55, P[1] + pa[1] * .55];
+  sig(g, "b", m[0] + pn[0] * 20, m[1] + pn[1] * 20 + 6);
+  // c goes on the side of the wheel away from its counting disk
+  const W = sv(s.W); sig(g, "c", W[0] - us[1] * 42, W[1] + us[0] * 42 + 6);
+  sig(g, "d", Tp[0] + us[0] * 30 + n[0] * 8, Tp[1] + us[1] * 30 + n[1] * 8 + 6);
+  H.poleSig.setAttribute("x", f2(-pu[0] * 42)); H.poleSig.setAttribute("y", f2(-pu[1] * 42 + 6));
 }
 function drawLinear(g, s, o){
   if(!s){ const y = Y(rail); [1, -1].forEach(sg => E("line", {x1:12, x2:VW - 12, y1:Y(rail + sg * o.lb), y2:Y(rail + sg * o.lb), class:"rub", "stroke-width":.9, "stroke-dasharray":"7 5"}, g));
@@ -469,10 +507,10 @@ function drawLinear(g, s, o){
   hinge(g, J);
   wheelAsm(g, sv(s.W), s.u, s.w, 30, "wheel");
   tracer(g, Tp, s.u, "tracer");
-  const n = [-us[1], us[0]], W = sv(s.W);
+  const W = sv(s.W); let n = [-us[1], us[0]]; if(n[0] < 0 || (n[0] === 0 && n[1] > 0)) n = [-n[0], -n[1]];
   sig(g, "b", J[0] - 66, J[1] + (Y(rail) > VH / 2 ? -14 : 30));
-  sig(g, "c", W[0] - us[0] * 30 + n[0] * 30, W[1] - us[1] * 30 + n[1] * 30 + 6);
-  sig(g, "d", Tp[0] + n[0] * 26 + us[0] * 10, Tp[1] + n[1] * 26 + us[1] * 10 + 6);
+  sig(g, "c", W[0] - us[1] * 42, W[1] + us[0] * 42 + 6);
+  sig(g, "d", Tp[0] + us[0] * 30 + n[0] * 8, Tp[1] + us[1] * 30 + n[1] * 8 + 6);
 }
 function drawHatchet(g, states, k, res){
   const s = states[k], St = res.start, S0 = sv(St), L = res.L;
@@ -507,7 +545,10 @@ function drawHatchet(g, states, k, res){
   E("circle", {cx:3, cy:4, r:8, class:"fink2", opacity:.14}, pg);
   disc(pg, [0, 0], 8, "fvel", "url(#h135w)", 1.3); disc(pg, [0, 0], 2.4, "frub", null, .6);
   sig(g, "b", Hp[0] + n[0] * 30, Hp[1] + n[1] * 30 + 6);
-  sig(g, "c", Tp[0] - n[0] * 26 + us[0] * 16, Tp[1] - n[1] * 26 + us[1] * 16 + 6);
+  // the point's letter goes on past the tip, and S's letter off to the side, so neither sits in the arc of θ
+  sig(g, "c", Tp[0] + us[0] * 26, Tp[1] + us[1] * 26 + 6);
+  const u0 = [states[0].T.x - states[0].H.x, -(states[0].T.y - states[0].H.y)], l0 = Math.hypot(u0[0], u0[1]) || 1;
+  H.startSig.setAttribute("x", f2(u0[1] / l0 * 28)); H.startSig.setAttribute("y", f2(-u0[0] / l0 * 28 + 6));
 }
 function drawRadial(g, s, o){
   const O = sv(rctr); let u = {x:1, y:0};
@@ -541,7 +582,8 @@ function drawRadial(g, s, o){
   const us = [u.x, -u.y], n = [-us[1], us[0]];
   sig(g, "b", O[0] + us[0] * L * .62 - n[0] * 26, O[1] + us[1] * L * .62 - n[1] * 26 + 6);
   sig(g, "c", O[0] + us[0] * 40 + n[0] * 52, O[1] + us[1] * 40 + n[1] * 52 + 6);
-  if(s) sig(g, "d", O[0] + us[0] * s.rho * PX - n[0] * 58, O[1] + us[1] * s.rho * PX - n[1] * 58 + 6);
+  // d goes below the wheel, unless the wheel is in by the cam, when it goes above, past the counting disk
+  if(s){ const side = s.rho * PX > 90 ? 38 : -74; sig(g, "d", O[0] + us[0] * s.rho * PX + n[0] * side, O[1] + us[1] * s.rho * PX + n[1] * side + 6); }
 }
 function dial(g, c, r, frac, key){ const dg = E("g", key ? {"data-g":key} : {}, g);
   E("circle", {cx:c[0], cy:c[1], r, class:"fvel"}, dg); E("circle", {cx:c[0], cy:c[1], r, class:"ink", "stroke-width":1.1}, dg);
@@ -570,7 +612,7 @@ function drawFrame(g, s, o){
   const xs = s ? s.x / o.res : 0, ys = s ? s.y / o.res : 0;
   dial(g, [x + 40, VH - 18], 12, (xs % 100) / 100, "counters");
   dial(g, [x + 36, y], 12, (ys % 100) / 100, "counters");
-  sig(g, "a", 70, VH - 32); sig(g, "b", x - 34, y - 22); sig(g, "c", x + 64, y + 6);
+  sig(g, "a", VW - 22, VH - 44); sig(g, "b", x - 34, y - 22); sig(g, "c", x + 64, y + 6);
 }
 
 /* ---------- Fig. 2: the counting parts, enlarged ---------- */
@@ -675,6 +717,9 @@ function liveReckon(kind, s, o){
 function result(kind, noise, log){
   const truth = Math.abs(shoelace(curve)), o = params();
   const res = simulate(kind, tracePath(noise.tremor, noise.seed + 7), o, noise, true);
+  const perfect = !noise.tremor && !noise.slip && !noise.q;
+  last[kind] = {ok:res.ok, msg:res.msg, est:res.est, truth, err:res.est - truth, extra:res.extra, curve:curveName, perfect, o};
+  if(log && kind === "polar" && noise.tremor >= .15 && res.ok) tremorRun = true;
   if(!res.ok){ $("rd-" + kind).innerHTML = `<span style="color:var(--rubric)">${res.msg}</span>`; return res; }
   const rows = [["intrinsic", {tremor:0, slip:0, q:0}], ["tremor", {tremor:noise.tremor, slip:0, q:0}], ["slip", {tremor:0, slip:noise.slip, q:0}]].concat(kind === "frame" ? [] : [["reading", {tremor:0, slip:0, q:noise.q}]]);
   const bud = rows.map(([l, nz]) => { const r = simulate(kind, tracePath(nz.tremor, noise.seed + 7), o, Object.assign({seed:noise.seed}, nz), false); return [l, r.ok ? r.est - truth : NaN]; });
@@ -722,7 +767,7 @@ function refresh(log){
   stopAnim(); placeHandles();
   const res = result(inst, noiseNow(), log);
   if(res.ok) drawInst(res.states, res.states.length - 1, res); else drawInst(null, 0, res);
-  shown = res;
+  shown = res; Folio.tryCheck();
 }
 function trace(){
   stopAnim(); seed = Math.floor(Math.random() * 1e9); placeHandles();
@@ -743,16 +788,18 @@ drag(pad, svg, p => { const q = cmOf(p), l = drawPts[drawPts.length - 1]; if(Mat
     gDraw.innerHTML = ""; E("path", {d:pathD(drawPts.map(sv)), class:"rub", "stroke-width":1.8, "stroke-linejoin":"round", "stroke-linecap":"round"}, gDraw); },
   p => { stopAnim(); drawPts = [cmOf(p)]; },
   () => { drawing = false; pad.style.display = "none"; $("draw").classList.remove("on"); gDraw.innerHTML = "";
-    if(drawPts.length > 20 && Math.abs(shoelace(drawPts)) > 1){ curve = drawPts; hstart = null; drawCurve(); refresh(); }
+    if(drawPts.length > 20 && Math.abs(shoelace(drawPts)) > 1){ curve = drawPts; curveName = "own"; hstart = null; drawCurve(); refresh(); }
     else { refresh(); $("rd-" + inst).insertAdjacentHTML("afterbegin", `<span style="color:var(--rubric)">That curve was too small; try again.</span><br>`); } });
 $("draw").onclick = () => { stopAnim(); drawing = !drawing; pad.style.display = drawing ? "" : "none"; $("draw").classList.toggle("on", drawing);
   if(drawing) $("rd-" + inst).innerHTML = "Draw a closed curve on the sheet with one stroke. It is closed for you with a straight line back to its start."; else refresh(); };
 
 /* ---------- controls ---------- */
-$("preset").onchange = () => { curve = preset($("preset").value); hstart = null; drawCurve(); refresh(); };
+const setCurve = name => { $("preset").value = curveName = name; curve = preset(name); hstart = null; drawCurve(); };
+$("preset").onchange = () => { setCurve($("preset").value); refresh(); };
 $("trace").onclick = trace;
 $("measure").onclick = () => { seed = Math.floor(Math.random() * 1e9); refresh(true); };
-$("perfect").onclick = () => { $("nt").value = 0; $("ns").value = 0; $("nq").value = "0"; outs(); refresh(); };
+const perfectHand = () => { $("nt").value = 0; $("ns").value = 0; $("nq").value = "0"; outs(); };
+$("perfect").onclick = () => { perfectHand(); refresh(); };
 $("clearruns").onclick = () => { runs = []; drawRuns(); };
 const UNITS = [["pa", " cm"], ["pb", " cm"], ["pc", " cm"], ["lb", " cm"], ["lc", " cm"], ["hl", " cm"], ["rk", " cm"], ["xr", " cm"], ["nt", " cm"], ["ns", "%"]];
 function outs(){ for(const [id, u] of UNITS) $(id + "o").value = $(id).value + u; }
@@ -771,6 +818,34 @@ function onShow(id){
 }
 curve = preset("blob"); drawBoard(); drawCurve();
 Folio.plates(onShow); Folio.glosses();
+
+/* ---------- Try this ---------- */
+const setV = (id, v) => { $(id).value = v; outs(); };
+const L_ = k => last[k] || {};
+const circ = k => { const r = L_(k); return r.ok && r.curve === "circle" && r.perfect && Math.abs(r.est - 28.27) < .005; };
+const exact = k => { const r = L_(k); return r.ok && r.perfect && Math.abs(r.err) < .01; };
+// the hatchet's error with a perfect hand, for a given rod and start
+const hErr = (L, St) => { const save = hstart; hstart = St; const r = simulate("hatchet", resample(curve, 1600), Object.assign(params(), {L}), {seed:1, tremor:0, slip:0, q:0}, false); hstart = save; return r.ok ? r.est - Math.abs(shoelace(curve)) : NaN; };
+const circleSetup = () => { setCurve("circle"); perfectHand(); refresh(); };
+Folio.tries({
+  p1:{label:"show me", setup:circleSetup, check:() => circ("polar")},
+  p2:{label:"show me", setup(){ pole = centroid(curve); setV("pb", +$("pa").value); refresh(); }, check:() => L_("polar").ok && L_("polar").extra > 0},
+  p3:{label:"show me", setup(){ perfectHand(); setV("pc", 11); refresh(); }, check:() => exact("polar") && L_("polar").o.c !== 5},
+  p4:{label:"show me", setup(){ setV("nt", .15); seed = Math.floor(Math.random() * 1e9); refresh(true); }, check:() => tremorRun},
+  l1:{label:"show me", setup:circleSetup, check:() => circ("linear")},
+  l2:{label:"show me", setup(){ rail = Math.min(HCM + .4, Math.max(...curve.map(p => p.y)) + 1.5); refresh(); }, check:() => L_("linear").ok && curve.every(p => p.y < rail)},
+  l3:{label:"show me", setup(){ perfectHand(); rail = centroid(curve).y; setV("lb", 7); refresh(); }, check:() => exact("linear") && L_("linear").o.lb < 10},
+  h1:{label:"show me", setup:circleSetup, check:() => { const r = L_("hatchet"); return r.ok && r.curve === "circle" && r.perfect && Math.abs(r.err) >= .0005; }},
+  h2:{label:"show me", setup(){ setV("hl", 24); refresh(); }, check:() => { const L = params().L, S = hstart || centroid(curve); return L !== 12 && Math.abs(hErr(L, S)) <= .5 * Math.abs(hErr(12, S)); }},
+  h3:{label:"show me", setup(){ const c = centroid(curve); hstart = {x:c.x + 3.3, y:c.y}; refresh(); },
+    check:() => { if(!hstart) return false; const c = centroid(curve), L = params().L; return Math.hypot(hstart.x - c.x, hstart.y - c.y) >= 3 && Math.abs(hErr(L, hstart)) > 2 * Math.abs(hErr(L, c)); }},
+  r1:{label:"show me", setup:circleSetup, check:() => circ("radial")},
+  r2:{label:"show me", setup(){ rctr = centroid(curve); refresh(); }, check:() => L_("radial").ok && inside(rctr, curve)},
+  r3:{label:"show me", setup(){ rctr = {x:3.5, y:9.5}; setV("rk", 15); refresh(); }, check:() => { const r = L_("radial"); return !r.ok && /glass/.test(r.msg || ""); }},
+  x1:{label:"show me", setup(){ setCurve("square"); perfectHand(); setV("xr", .5); refresh(); }, check:() => { const r = L_("frame"); return r.ok && r.curve === "square" && r.perfect && r.o.res >= .5 && Math.abs(r.err) < .005; }},
+  x2:{label:"show me", setup(){ setCurve("circle"); perfectHand(); setV("xr", .5); refresh(); }, check:() => { const r = L_("frame"); return r.ok && r.curve === "circle" && r.o.res >= .5; }},
+  x3:{label:"show me", setup(){ setCurve("circle"); perfectHand(); setV("xr", .02); refresh(); }, check:() => { const r = L_("frame"); return r.ok && r.curve === "circle" && r.perfect && r.o.res <= .02 && Math.abs(r.err / r.truth) < .001; }}
+});
 })();
 </script>
 </body>
