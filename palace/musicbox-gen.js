@@ -150,6 +150,154 @@ function createEngine(ac, dest, onNote){
       g.gain.setValueAtTime(v*.13, t); g.gain.setTargetAtTime(0, t, open ? .12 : .018); n.connect(hp); hp.connect(g); n.start(t, Math.random()); n.stop(t + (open ? .6 : .12)); },
     ride: (t, v, p) => { const P = pan(p); [[3150, 1], [4700, .6], [6350, .4]].forEach(([f, a]) => { const g = gain(0, P); g.gain.setValueAtTime(v*a*.035, t); g.gain.setTargetAtTime(0, t, .35); osc("square", f, t, t + 1.2, g); }); PERC.hat(t, v*.4, p); },
   };
+  /* ---------- a wider orchestra, made from seven models. Every instrument is a model plus a few settings,
+     the same settings the instrument maker offers, so a visitor's own instruments sit in the list beside these.
+     The common settings: bright 0–1, sustain 0–1, attack 0–1, vib 0–1 (vibrato), body (Hz: the main resonance),
+     buzz 0–1 (sawari, rasp, or breath), detune (cents, for doubled courses or reed banks), trem (Hz, repeated plucks or a motor). ---------- */
+  const WAVES = {};
+  const waveOf = amps => { const k = amps.map(a => a.toFixed(3)).join(","); if(WAVES[k]) return WAVES[k]; const re = new Float32Array(amps.length + 1), im = new Float32Array(amps.length + 1); amps.forEach((a, i) => { im[i + 1] = a; }); return (WAVES[k] = ac.createPeriodicWave(re, im)); };
+  const shaper = amt => { const n = 1024, c = new Float32Array(n); for(let i = 0; i < n; i++){ const x = i/(n/2) - 1; c[i] = Math.tanh((1 + amt*6)*x + amt*.4*x*x)/Math.tanh(1 + amt*6); } const w = ac.createWaveShaper(); w.curve = c; return w; };
+  // resonances: a bank of band-pass filters, mixed with some of the dry signal
+  const bodyBank = (dst, peaks, dry = .5) => { const inp = ac.createGain(), d = ac.createGain(); d.gain.value = dry; inp.connect(d); d.connect(dst);
+    peaks.forEach(([fc, q, a]) => { const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fq(fc); bp.Q.value = q; const g = ac.createGain(); g.gain.value = a; inp.connect(bp); bp.connect(g); g.connect(dst); }); return inp; };
+  const vibrato = (param, f, t, end, depth, rate, delay = .25) => { if(!depth) return; const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = rate || 5.5; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(f*depth, t + delay + .35); l.connect(lg); lg.connect(param); l.start(t); l.stop(end); };
+  const breath = (dst, centre, t, end, amt, v, q = 1.5) => { if(!amt) return; const n = ac.createBufferSource(); n.buffer = noiseBuf; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fq(centre); bp.Q.value = q; const g = ac.createGain(); g.gain.value = 0;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*amt*.09, t + .05); g.gain.setTargetAtTime(v*amt*.04, t + .05, .15); g.gain.setTargetAtTime(0, Math.max(t + .06, end - .12), .06); n.connect(bp); bp.connect(g); g.connect(dst); n.start(t, Math.random()); n.stop(end + .1); };
+  const K = (o, k, dflt) => o[k] == null ? dflt : o[k];
+  // one plucked string: Karplus–Strong for low and middle notes (a loop with no gain above 1), decaying partials above about 330 Hz,
+  // where a Web Audio feedback loop can't be made short enough
+  function string1(f, t, dur, v, o, dst){ const bright = K(o, "bright", .5), sus = K(o, "sustain", .5), fade = t + Math.max(.4, dur);
+    if(f > 330){ const n = 2 + Math.round(bright*7); for(let k = 1; k <= n; k++){ const g = ac.createGain(), dec = (.25 + sus*2.2)/(1 + (k - 1)*(1.4 - bright)); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*.22/Math.pow(k, 1.25 - bright*.6), t + .003); g.gain.setTargetAtTime(0, t + .003, dec); g.connect(dst); osc(k === 1 ? "triangle" : "sine", f*k*(1 + .0004*k*k), t, t + dec*5 + .2, g); } return; }
+    const src = ac.createBufferSource(); src.buffer = noiseBuf; const burst = ac.createGain(), soft = ac.createBiquadFilter(); soft.type = "lowpass"; soft.frequency.value = fq(f*(2 + bright*16)); soft.Q.value = -6;
+    burst.gain.setValueAtTime(v*.55, t); burst.gain.setValueAtTime(0, t + 1/f*1.2);
+    const dl = ac.createDelay(1); dl.delayTime.value = 1/f; const fb = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = fq(Math.min(9000, f*(3 + bright*10))); lp.Q.value = -6;
+    const g = Math.min(.985, .955 + sus*.03); fb.gain.setValueAtTime(g, t); fb.gain.setTargetAtTime(0, fade + .3, .25);
+    const o2 = ac.createGain(); o2.gain.value = 1; o2.gain.setTargetAtTime(0, fade, .35); o2.connect(dst);
+    src.connect(soft); soft.connect(burst); burst.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(o2); src.start(t); src.stop(t + .05);
+    setTimeout(() => { try { fb.disconnect(); o2.disconnect(); lp.disconnect(); } catch(e){} }, (fade - ac.currentTime + 2)*1000); }
+  const MODELS = {
+    plucked(f, t, d, v, p, o){ const P = pan(p), level = gain(K(o, "level", 1)/(1 + K(o, "buzz", 0)*4), P);
+      let dst = level; if(K(o, "buzz", 0) > 0){ const sh = shaper(o.buzz), hi = ac.createBiquadFilter(); hi.type = "peaking"; hi.frequency.value = fq(K(o, "body", 400)*6); hi.gain.value = 6*o.buzz; hi.Q.value = 1; sh.connect(hi); hi.connect(level); dst = sh; }
+      const body = K(o, "body", 0) ? bodyBank(dst, o.peaks || [[o.body, 3, .45], [o.body*2.6, 3, .25], [o.body*7, 2, .12]], .55) : dst;
+      const courses = K(o, "detune", 0) ? [0, o.detune] : [0], oct = o.octave ? [0, 1200] : [];
+      const strike = (tt, vv) => { (oct.length ? oct : courses).forEach((c, i) => string1(f*Math.pow(2, c/1200), tt + i*.006, d, vv*(i ? .6 : 1), o, body)); };
+      const tr = K(o, "trem", 0); if(tr && d > .35){ const n = Math.floor(d*tr); for(let i = 0; i < n; i++) strike(t + i/tr, v*(i ? .55 : 1)); } else strike(t, v);
+      if(K(o, "click", 0)){ const c = gain(0, P), n = ac.createBufferSource(); n.buffer = noiseBuf; const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 2500; c.gain.setValueAtTime(v*o.click*.25, t); c.gain.setTargetAtTime(0, t, .008); n.connect(hp); hp.connect(c); n.start(t, Math.random()); n.stop(t + .05); } },
+    bowed(f, t, d, v, p, o){ const P = pan(p), end = t + d, rel = .25 + K(o, "sustain", .5)*.5, g = ac.createGain();
+      const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = fq(f*(3 + K(o, "bright", .5)*18)); lp.Q.value = .3; g.connect(lp);
+      const body = bodyBank(gain(K(o, "level", 1), P), o.peaks || [[K(o, "body", 600), 3, .55], [K(o, "body", 600)*2.1, 3, .5], [K(o, "body", 600)*4.4, 2.5, .3]], .35); lp.connect(body);
+      env(g, t, .03 + K(o, "attack", .3)*.45, v*.42, .4, .85, rel, end);
+      const voices = K(o, "detune", 0) ? [-o.detune/2, o.detune/2] : [0];
+      voices.forEach(c => { const s = osc("sawtooth", f, t, end + rel + .5, g); s.detune.value = c; vibrato(s.frequency, f, t, end + rel, .002 + K(o, "vib", .5)*.011, K(o, "vibRate", 5.6), .2); });
+      breath(body, f*4, t, end, K(o, "buzz", .2)*.7, v, 1); },
+    reed(f, t, d, v, p, o){ const P = pan(p), end = t + d, g = ac.createGain(), bright = K(o, "bright", .5);
+      const amps = o.harm || Array.from({length: 14}, (_, i) => { const k = i + 1; return (o.odd && k % 2 === 0 ? .12 : 1)/Math.pow(k, 1.7 - bright*1.3); });
+      const s = ac.createOscillator(); s.setPeriodicWave(waveOf(amps)); const bend = K(o, "bend", 0);
+      s.frequency.setValueAtTime(f*(1 - bend), t); s.frequency.exponentialRampToValueAtTime(f, t + .06 + bend*1.5); s.connect(g); s.start(t); s.stop(end + 1);
+      vibrato(s.frequency, f, t, end + .6, K(o, "vib", .3)*.012, K(o, "vibRate", 5), .3);
+      const body = bodyBank(gain(K(o, "level", 1), P), o.peaks || [[K(o, "body", 1200), 2.5, .6], [K(o, "body", 1200)*2.3, 3, .3]], .55);
+      const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = fq(f*(4 + bright*14)); lp.Q.value = .2; g.connect(lp); lp.connect(body);
+      env(g, t, .02 + K(o, "attack", .3)*.25, v*(.3 + .25*Math.max(0, K(o, "bright", .5) - .7)*4), .3, .82, .12 + K(o, "sustain", .3)*.4, end);
+      breath(body, f*3, t, end, K(o, "buzz", .3), v, 1.2); },
+    flute(f, t, d, v, p, o){ const P = pan(p), end = t + d, g = gain(0, gain(K(o, "level", 1), P)), bright = K(o, "bright", .3);
+      env(g, t, .04 + K(o, "attack", .3)*.25, v*.2, .3, .8, .2 + K(o, "sustain", .3)*.3, end);
+      const s = osc("sine", f, t, end + .6, g); const h2 = gain(bright*.3, g), h3 = gain(bright*.12, g); osc("sine", f*2, t, end + .6, h2); osc("sine", f*3, t, end + .6, h3);
+      vibrato(s.frequency, f, t, end + .5, K(o, "vib", .4)*.009, K(o, "vibRate", 5), .35);
+      breath(g.gain ? P : P, f*2.2, t, end, K(o, "buzz", .4)*1.4, v, 3);
+      if(K(o, "chiff", 0)){ const c = gain(0, P); c.gain.setValueAtTime(v*o.chiff*.12, t); c.gain.setTargetAtTime(0, t + .01, .02); osc("sine", f*4, t, t + .1, c); } },
+    brass(f, t, d, v, p, o){ const P = pan(p), end = t + d, g = ac.createGain(), bright = K(o, "bright", .5), att = .03 + K(o, "attack", .3)*.18;
+      const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.Q.value = 1; lp.frequency.setValueAtTime(fq(f*1.2), t); lp.frequency.linearRampToValueAtTime(fq(f*(2.5 + bright*10*v)), t + att); lp.frequency.setTargetAtTime(fq(f*(2 + bright*6)), t + att, .2);
+      g.connect(lp); lp.connect(bodyBank(gain(K(o, "level", 1), P), [[K(o, "body", 900), 2, .4]], .8)); env(g, t, att, v*.33, .3, .85, .15 + K(o, "sustain", .3)*.3, end);
+      const s = osc("sawtooth", f*.985, t, end + 1, g); s.frequency.exponentialRampToValueAtTime(f, t + att*1.2); vibrato(s.frequency, f, t, end + .5, K(o, "vib", .2)*.008, 5.2, .4); },
+    freereed(f, t, d, v, p, o){ const P = pan(p), end = t + d, g = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = fq(f*(3 + K(o, "bright", .5)*10)); lp.Q.value = .3; g.connect(lp);
+      lp.connect(bodyBank(gain(K(o, "level", 1), P), [[K(o, "body", 1400), 2, .4]], .7)); env(g, t, .02 + K(o, "attack", .3)*.15, v*.11, .2, .9, .1 + K(o, "sustain", .2)*.25, end);
+      const dt = K(o, "detune", 12), voices = o.voices || [-dt, 0, dt]; voices.forEach(c => { const s = ac.createOscillator(); s.setPeriodicWave(waveOf(Array.from({length: 12}, (_, i) => (i % 2 ? .5 : 1)/(i + 1)))); s.frequency.value = f; s.detune.value = c; s.connect(g); s.start(t); s.stop(end + 1); });
+      if(K(o, "trem", 0)){ const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = o.trem; lg.gain.value = .35; const am = ac.createGain(); am.gain.value = .65; g.disconnect(); g.connect(am); am.connect(lp); l.connect(lg); lg.connect(am.gain); l.start(t); l.stop(end + 1); }
+      breath(lp, f*2, t, end, K(o, "buzz", 0), v); },
+    struck(f, t, d, v, p, o){ const P = pan(p), level = gain(K(o, "level", 1), P), sus = K(o, "sustain", .5), bright = K(o, "bright", .5);
+      const parts = o.partials || [[1, 1, .3 + sus*4], [2.76, bright*.5, (.3 + sus*4)*.45], [5.4, bright*.25, (.3 + sus*4)*.22], [8.93, bright*.12, (.3 + sus*4)*.12]];
+      let dst = level; if(K(o, "trem", 0)){ const am = ac.createGain(); am.gain.value = .7; am.connect(level); const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = o.trem; lg.gain.value = .3; l.connect(lg); lg.connect(am.gain); l.start(t); l.stop(t + parts[0][2]*4 + 1); dst = am; }
+      parts.forEach(([k, a, dec]) => { if(!a) return; const g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.2, t + .002 + K(o, "attack", 0)*.05); g.gain.setTargetAtTime(0, t + .003, dec/3); g.connect(dst); osc("sine", f*k, t, t + dec*1.6 + .3, g); });
+      if(K(o, "buzz", 0)){ const c = gain(0, P), n = ac.createBufferSource(); n.buffer = noiseBuf; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fq(f*3); bp.Q.value = 1; c.gain.setValueAtTime(v*o.buzz*.2, t); c.gain.setTargetAtTime(0, t, .01); n.connect(bp); bp.connect(c); n.start(t, Math.random()); n.stop(t + .06); } },
+  };
+  const MODEL_NAMES = {plucked:"Plucked string", bowed:"Bowed string", reed:"Reed", flute:"Flute (edge-blown)", brass:"Brass (lip-buzzed)", freereed:"Free reed", struck:"Struck (bar, bell, tine)"};
+  // the instruments: [key, name, family, model, settings]
+  const ORCH = [
+    // plucked
+    ["guitar", "Steel-string guitar", "Plucked strings", "plucked", {bright:.6, sustain:.75, body:105, peaks:[[105,4,.5],[230,3,.3],[2700,1.5,.12]]}],
+    ["nylon", "Classical guitar", "Plucked strings", "plucked", {bright:.35, sustain:.7, body:98, peaks:[[98,4,.55],[205,3,.3],[1900,1.5,.08]]}],
+    ["lute", "Lute (eleven courses)", "Plucked strings", "plucked", {bright:.42, sustain:.55, detune:4, body:130, peaks:[[130,4,.5],[390,3,.32],[1500,2,.1]]}],
+    ["theorbo", "Theorbo (bass lute)", "Plucked strings", "plucked", {bright:.35, sustain:.85, body:85, peaks:[[85,4,.6],[260,3,.3]]}],
+    ["mandolin", "Mandolin", "Plucked strings", "plucked", {bright:.75, sustain:.35, detune:6, trem:11, body:300, peaks:[[300,3,.4],[1400,2,.2]]}],
+    ["banjo", "Banjo", "Plucked strings", "plucked", {bright:.9, sustain:.2, body:420, peaks:[[420,6,.6],[1250,4,.3]], click:.4}],
+    ["harp", "Harp", "Plucked strings", "plucked", {bright:.3, sustain:.95, body:180}],
+    ["harpsichord", "Harpsichord (8′ and 4′)", "Plucked strings", "plucked", {bright:.95, sustain:.7, octave:true, body:220, click:.35}],
+    ["shamisen", "Shamisen", "Plucked strings", "plucked", {bright:.8, sustain:.3, buzz:.55, body:340, peaks:[[340,5,.55],[2200,3,.3]], click:.6}],
+    ["sanshin", "Sanshin (Okinawa)", "Plucked strings", "plucked", {bright:.6, sustain:.4, buzz:.2, body:300, click:.3}],
+    ["pipa", "Pipa (tremolo)", "Plucked strings", "plucked", {bright:.75, sustain:.45, trem:14, buzz:.1, body:380}],
+    ["guzheng", "Guzheng", "Plucked strings", "plucked", {bright:.6, sustain:.9, body:240}],
+    ["sitar", "Sitar (jawari buzz)", "Plucked strings", "plucked", {bright:.75, sustain:.85, buzz:.75, body:260}],
+    ["balalaika", "Balalaika", "Plucked strings", "plucked", {bright:.7, sustain:.35, trem:9, body:330}],
+    ["bouzouki", "Bouzouki", "Plucked strings", "plucked", {bright:.8, sustain:.55, detune:1200, body:280}],
+    // bowed
+    ["violin", "Violin", "Bowed strings", "bowed", {bright:.65, attack:.25, vib:.55, vibRate:5.8, peaks:[[480,3,.45],[1150,3,.55],[2800,2.5,.5],[4500,3,.22]]}],
+    ["viola", "Viola", "Bowed strings", "bowed", {bright:.5, attack:.3, vib:.5, vibRate:5.5, peaks:[[380,3,.5],[900,3,.5],[2300,2.5,.35]]}],
+    ["cello", "Cello", "Bowed strings", "bowed", {bright:.45, attack:.35, vib:.5, vibRate:5.2, peaks:[[220,3,.6],[580,3,.5],[1500,2.5,.35]]}],
+    ["contrabass", "Double bass (arco)", "Bowed strings", "bowed", {bright:.3, attack:.45, vib:.25, vibRate:4.8, peaks:[[110,3,.6],[350,3,.4],[900,2,.2]]}],
+    ["gamba", "Viola da gamba (no vibrato)", "Bowed strings", "bowed", {bright:.5, attack:.25, vib:.03, peaks:[[400,4,.5],[1100,4,.6],[2600,3,.25]], buzz:.35}],
+    ["erhu", "Erhu", "Bowed strings", "bowed", {bright:.6, attack:.2, vib:.85, vibRate:6.2, peaks:[[900,3,.7],[2400,3,.4]], buzz:.3}],
+    ["strings", "String section", "Bowed strings", "bowed", {bright:.4, attack:.6, vib:.35, detune:14, peaks:[[350,2,.5],[1000,2,.5],[2600,2,.3]]}],
+    // flutes
+    ["recorder", "Recorder", "Flutes", "flute", {bright:.25, vib:.05, buzz:.35, chiff:.6}],
+    ["ney", "Ney (end-blown reed flute)", "Flutes", "flute", {bright:.15, vib:.5, buzz:1, attack:.5}],
+    ["bansuri", "Bansuri", "Flutes", "flute", {bright:.25, vib:.6, buzz:.6}],
+    ["panpipes", "Panpipes", "Flutes", "flute", {bright:.1, vib:.1, buzz:.8, chiff:.9}],
+    ["ocarina", "Ocarina", "Flutes", "flute", {bright:.05, vib:.25, buzz:.15}],
+    // double reeds, the duduk's family among them
+    ["oboe", "Oboe", "Double reeds", "reed", {bright:.75, vib:.35, body:1150, peaks:[[1150,3,.6],[2900,3,.35]], buzz:.15}],
+    ["englishhorn", "Cor anglais", "Double reeds", "reed", {bright:.55, vib:.35, body:900, peaks:[[900,3,.6],[2300,3,.3]], buzz:.15}],
+    ["bassoon", "Bassoon", "Double reeds", "reed", {bright:.5, vib:.25, body:480, peaks:[[480,3,.6],[1150,3,.35]], buzz:.15}],
+    ["duduk", "Duduk (Armenia)", "Double reeds", "reed", {bright:.25, vib:.5, vibRate:4.6, bend:.03, body:700, peaks:[[700,2.5,.6],[1600,3,.25]], buzz:.45, attack:.6, sustain:.6}],
+    ["mey", "Mey (Turkey)", "Double reeds", "reed", {bright:.3, vib:.55, vibRate:5, bend:.035, body:650, buzz:.5, attack:.5}],
+    ["balaban", "Balaban (Azerbaijan)", "Double reeds", "reed", {bright:.28, vib:.45, bend:.03, body:620, buzz:.55, attack:.55}],
+    ["guan", "Guan (China)", "Double reeds", "reed", {bright:.55, vib:.5, bend:.05, body:950, buzz:.4}],
+    ["hichiriki", "Hichiriki (gagaku)", "Double reeds", "reed", {bright:.85, vib:.2, bend:.06, body:1300, buzz:.35}],
+    ["piri", "Piri (Korea)", "Double reeds", "reed", {bright:.8, vib:.6, bend:.05, body:1200, buzz:.35}],
+    ["zurna", "Zurna", "Double reeds", "reed", {bright:1, vib:.3, bend:.02, body:1600, peaks:[[1600,2,.7],[3200,2,.4]], buzz:.25}],
+    ["suona", "Suona", "Double reeds", "reed", {bright:.95, vib:.4, bend:.04, body:1500, buzz:.25}],
+    ["shawm", "Shawm (Renaissance)", "Double reeds", "reed", {bright:.9, vib:.05, body:1200, buzz:.3}],
+    // single reeds
+    ["clarinet", "Clarinet", "Single reeds", "reed", {bright:.55, odd:true, vib:.05, body:1500, buzz:.15}],
+    ["bassclarinet", "Bass clarinet", "Single reeds", "reed", {bright:.45, odd:true, vib:.05, body:700, buzz:.2}],
+    ["sax", "Alto saxophone", "Single reeds", "reed", {bright:.7, vib:.4, body:1300, peaks:[[1300,2,.6],[2700,2.5,.4]], buzz:.35}],
+    // brass
+    ["trumpet", "Trumpet", "Brass", "brass", {bright:.8, attack:.2, vib:.15, body:1300}],
+    ["horn", "French horn", "Brass", "brass", {bright:.3, attack:.45, vib:.1, body:500}],
+    ["trombone", "Trombone", "Brass", "brass", {bright:.55, attack:.3, vib:.1, body:600}],
+    ["tuba", "Tuba", "Brass", "brass", {bright:.3, attack:.4, vib:.05, body:300}],
+    // free reeds
+    ["accordion", "Accordion (musette)", "Free reeds", "freereed", {bright:.6, detune:14, body:1400}],
+    ["bandoneon", "Bandoneon", "Free reeds", "freereed", {bright:.45, detune:3, body:1100, voices:[0, 1200]}],
+    ["harmonica", "Harmonica", "Free reeds", "freereed", {bright:.7, detune:4, voices:[-4, 4], body:1800, buzz:.3, trem:5.5}],
+    ["sheng", "Sheng", "Free reeds", "freereed", {bright:.4, detune:2, voices:[0, 702], body:1200}],
+    // struck
+    ["vibraphone", "Vibraphone (motor on)", "Struck", "struck", {sustain:.7, trem:5.5, partials:[[1,1,3],[4,.28,1],[10,.05,.35]]}],
+    ["glockenspiel", "Glockenspiel", "Struck", "struck", {partials:[[2,1,2.2],[5.42,.35,1],[10.8,.15,.4]]}],
+    ["xylophone", "Xylophone", "Struck", "struck", {partials:[[1,1,.35],[3,.45,.15],[6,.15,.07]], buzz:.4}],
+    ["celesta", "Celesta", "Struck", "struck", {partials:[[2,1,1.4],[8,.18,.35]]}],
+    ["steelpan", "Steel pan", "Struck", "struck", {partials:[[1,1,1.5],[2,.6,1.1],[3,.25,.6],[4.2,.12,.35]]}],
+    ["handpan", "Handpan", "Struck", "struck", {partials:[[1,1,3.4],[2,.5,2.4],[3,.22,1.4]]}],
+  ];
+  const META = {};
+  Object.keys(INST).forEach(k => { META[k] = {name: k.charAt(0).toUpperCase() + k.slice(1), family: "The house's own"}; });
+  Object.assign(META, {comb:{name:"Music-box comb", family:"The house's own"}, bell:{name:"Bell (FM)", family:"Struck"}, pluck:{name:"Plucked string (plain)", family:"Plucked strings"}, koto:{name:"Koto", family:"Plucked strings"}, oud:{name:"Oud", family:"Plucked strings"},
+    flute:{name:"Flute", family:"Flutes"}, shakuhachi:{name:"Shakuhachi", family:"Flutes"}, bowed:{name:"Bowed (sārangī-like)", family:"Bowed strings"}, organ:{name:"Pipe organ", family:"Keyboards"}, piano:{name:"Piano", family:"Keyboards"}, upright:{name:"Upright bass", family:"Plucked strings"},
+    keys:{name:"Electric piano (tine)", family:"Keyboards"}, epiano:{name:"Electric piano (FM)", family:"Keyboards"}, marimba:{name:"Marimba", family:"Struck"}, metal:{name:"Saron (gamelan)", family:"Struck"}, gong:{name:"Gong", family:"Struck"}, kalimba:{name:"Kalimba", family:"Struck"},
+    chimes:{name:"Wind chimes", family:"Struck"}, bowl:{name:"Singing bowl", family:"Struck"}, temple:{name:"Temple bell", family:"Struck"}, tanpura:{name:"Tanpura", family:"Drones and voices"}, drone:{name:"Drone", family:"Drones and voices"}, throat:{name:"Overtone singing", family:"Drones and voices"},
+    pad:{name:"Pad", family:"Synths"}, bass:{name:"Synth bass", family:"Synths"}});
+  function define(key, name, family, model, settings){ if(!MODELS[model]) return false; const o = Object.assign({}, settings); INST[key] = (f, t, d, v, p) => MODELS[model](f, t, d, v, p, o); META[key] = {name, family, model, settings: o}; return true; }
+  ORCH.forEach(([k, n, fam, m, o]) => define(k, n, fam, m, o));
+  INST.none = () => {}; META.none = {name:"(silent)", family:"—"};
   const INSTRUMENTS = Object.keys(INST);
 
   /* the state the generators read: tempo, scale, tuning, root, roles → instruments */
@@ -259,6 +407,26 @@ function createEngine(ac, dest, onNote){
       step(b, t, spb){ const L = scaleLen(); // drops fall at random, bunching like a dripping eave
         const n = Math.floor(rand(0, 3*st.density + 1)); for(let k = 0; k < n; k++){ const d = Math.floor(rand(L, 3*L)); play("lead", d, 0, t + rand(0, spb), spb, rand(.25, .55), rand(-.9, .9)); }
         if(b % 8 === 0 && chance(.5)) play("harmony", pick([0, 2, 4]), 0, t, spb*2, .3, rand(-.5, .5)); if(b % 32 === 0) play("bass", 0, -1, t, spb*33, .35); }},
+    // a Baroque trio over a continuo: the bass walks in eighths, the harpsichord fills in broken chords, the violin spins sequences in sixteenths
+    // over a circle of fifths, and every eighth bar closes with a cadential trill
+    baroque: {name:"Baroque trio (continuo)", roles:{lead:"violin", harmony:"harpsichord", bass:"cello"}, bpm:88, scale:"ionian",
+      step(b, t, spb){ const L = scaleLen(), bar = Math.floor(b/4), beat = b % 4, h = spb/2, q = spb/4;
+        const prog = [0, 3, 6, 2, 5, 1, 4, 0], ch = prog[bar % 8], nx = prog[(bar + 1) % 8], cad = bar % 8 === 6;
+        // continuo: the root on the beat, a step toward the next chord on the off-beat
+        play("bass", ch + (beat === 2 ? 4 : 0) - (beat === 3 ? 1 : 0), -1, t, h*.9, .55, -.2);
+        play("bass", (beat === 3 ? nx + (nx > ch ? -1 : 1) : ch + [2, 4, 2, 4][beat]), -1, t + h, h*.85, .4, -.2);
+        // harpsichord: a broken chord, low to high
+        if(chance(.5 + st.density*.5)) [0, 2, 4, 7].forEach((k, i) => play("harmony", ch + k, 0, t + i*q, q*1.4, .32, .25));
+        // the violin: a four-note cell, moved down by step each bar (a sequence), or the trill at the cadence
+        if(cad && beat >= 2){ const top = ch + L + 1; for(let i = 0; i < 4; i++) play("lead", top + (i % 2), 0, t + i*q, q*.95, .45, .1); }
+        else if(bar % 8 === 7 && beat === 0) play("lead", L, 0, t, spb*3.5, .55, .1);
+        else if(bar % 8 !== 7 && chance(.4 + st.density*.6)){ const cell = [[4, 3, 2, 3], [2, 4, 7, 4], [7, 6, 4, 2], [0, 2, 4, 2]][beat], base = ch + L; cell.forEach((k, i) => play("lead", base + k, 0, t + i*q, q*.9, .38 + (i ? 0 : .08), .1)); } }},
+    // a lute prelude in the broken style (style brisé): chords spread across the courses, never quite together
+    luteprelude: {name:"Lute prelude (style brisé)", roles:{lead:"lute", harmony:"lute", bass:"theorbo"}, bpm:66, scale:"aeolian",
+      step(b, t, spb){ const L = scaleLen(), bar = Math.floor(b/4), beat = b % 4, q = spb/4, prog = mem.prog || (mem.prog = pick([[0, 5, 3, 4], [0, 3, 6, 4], [0, 6, 5, 4]])), ch = prog[bar % 4];
+        if(beat === 0) play("bass", ch, -1, t, spb*3.8, .55, -.3);
+        const shape = [0, 4, 7, 9, 11, 9, 7, 4], up = mem.up = (beat === 0 ? !mem.up : mem.up);
+        for(let i = 0; i < 4; i++){ if(!chance(.55 + st.density*.45)) continue; const k = shape[(beat*4 + i) % 8]; play(i % 2 ? "lead" : "harmony", ch + (up ? k : 11 - k) - 2, 0, t + i*q + rand(0, .02), q*3, .35, (i - 1.5)*.15); } }},
     sparse: {name:"Silence and single notes", roles:{lead:"comb", harmony:"bell", bass:"gong"}, bpm:40, scale:"hirajoshi",
       step(b, t, spb){ if(chance(.18*st.density + .05)) play(chance(.7) ? "lead" : "harmony", Math.floor(rand(0, scaleLen()*2)), 0, t, spb*4, .5, rand(-.8, .8)); if(b % 32 === 0) play("bass", 0, -2, t, spb*16, .4); }},
   };
@@ -331,7 +499,7 @@ function createEngine(ac, dest, onNote){
   const NOISES = [["off","Off"],["white","White: equal power per hertz"],["pink","Pink: equal power per octave (−3 dB/oct)"],["brown","Brown (red): −6 dB/oct, like surf"],["deepbrown","Deep brown: −9 dB/oct, a far roar"],["blue","Blue: +3 dB/oct, a hiss"],["violet","Violet: +6 dB/oct, a sizzle"],["grey","Grey: sounds equally loud at every pitch (inverse A-weighting)"],["green","Green: the middle of the spectrum, around 500 Hz"],["velvet","Velvet: sparse random clicks, 1,500 a second"]];
   const setAmbLevel = v => { ambOut.gain.setTargetAtTime(v, ac.currentTime, .2); };
 
-  return {st, start, stop, set, useGenreDefaults, preview, ambience, setAmbLevel, freq, noise, NOISES, setTape, _noiseBuffer: c => colouredNoise(c), get running(){ return running; }, out, ambOut, GENRES, INSTRUMENTS, PERC: Object.keys(PERC)};
+  return {st, start, stop, set, useGenreDefaults, preview, ambience, setAmbLevel, freq, noise, NOISES, setTape, _noiseBuffer: c => colouredNoise(c), get running(){ return running; }, out, ambOut, GENRES, get INSTRUMENTS(){ return Object.keys(INST); }, META, MODELS: MODEL_NAMES, define, PERC: Object.keys(PERC)};
 }
 
 const API = {TUNINGS, SCALES, scaleOf, degreeCents, AMBIENCES, createEngine, cents2ratio};

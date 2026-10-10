@@ -17,8 +17,21 @@ window.MBMANUAL = `<div class="mbx-manual text">
 <li><b>Change ringing</b>: six bells ring the plain hunt. Every pair swaps, (12)(34)(56), then the inner pairs swap, (23)(45), and so on until rounds come back after twelve rows. These are permutations you can hear.</li>
 <li><b>Overtone drone</b>: one pitch, with a narrow resonance walking up and down its harmonics, as in Tuvan throat singing.</li>
 <li><b>Lounge</b>: ii–V–I seventh chords, a walking bass, and brushes.</li>
+<li><b>Baroque trio (continuo)</b>: a cello walks in eighths under a harpsichord's broken chords while a violin spins four-note cells in sixteenths. The harmony runs round the circle of fifths (I–IV–vii°–iii–vi–ii–V–I), each bar's cell moves down a step (a sequence), and every eighth bar ends with a cadential trill.</li>
+<li><b>Lute prelude (style brisé)</b>: chords spread across the lute's courses, rising one bar and falling the next, never quite together, over a theorbo bass.</li>
 <li><b>Silence and single notes</b>: almost nothing.</li>
 </ul>
+<p><b>Players.</b> Lead, harmony, and bass each choose an instrument; the switch beside each lets that player rest. The list is grouped by family:</p>
+<ul>
+<li><b>Plucked strings</b>: steel-string and classical guitar, lute, theorbo, mandolin, banjo, harp, harpsichord, shamisen, sanshin, pipa, guzheng, sitar, balalaika, bouzouki, koto, oud.</li>
+<li><b>Bowed strings</b>: violin, viola, cello, double bass, viola da gamba, erhu, a string section.</li>
+<li><b>Flutes</b>: flute, recorder, ney, bansuri, panpipes, ocarina, shakuhachi.</li>
+<li><b>Double reeds</b>: oboe, cor anglais, bassoon, and the duduk's family: duduk (Armenia), mey (Turkey), balaban (Azerbaijan), guan (China), hichiriki (Japan), piri (Korea), with the loud outdoor reeds zurna, suona, and shawm.</li>
+<li><b>Single reeds</b>: clarinet (odd harmonics only, so its tone is hollow), bass clarinet, alto saxophone. <b>Brass</b>: trumpet, horn, trombone, tuba. <b>Free reeds</b>: accordion, bandoneon, harmonica, sheng. <b>Struck</b>: vibraphone, glockenspiel, xylophone, celesta, steel pan, handpan, and the house's bells and bowls.</li>
+</ul>
+<p><b>How they are made.</b> Every one is one of seven models with a few settings. A plucked string is a Karplus–Strong loop (a burst of noise circulating in a tuned delay, darkening each time round), with resonances for the body, doubled courses, repeated plucks for tremolo, and a buzzing bridge for the shamisen's sawari and the sitar's jawari. A bowed string is a sawtooth (the slip-stick of the bow) through the body's formants, with vibrato. A reed is a chosen set of harmonics (odd only for the clarinet) through a formant and a little breath, scooping up into each note for the duduk family. Flutes are nearly pure tones with breath and a chiff; brass opens its filter as the lips buzz harder; free reeds beat several slightly detuned reeds together; struck instruments are sums of decaying inharmonic partials.</p>
+<p><b>Make an instrument.</b> Open <i>Make an instrument</i>, start from any instrument in the list, and change its settings: brightness, sustain, attack, vibrato and its rate, the body's resonance, buzz (rasp or breath), doubling, tremolo, and a scoop into the note. Try it, then add it: it joins the list under <i>Yours</i>, kept in this browser.</p>
+<p><b>Switches.</b> The small switch beside a slider (swing, reverberation, ambience level, and the noise's level, breathing, width, and muffling) turns its effect off without moving the slider, so you can compare with and without. The room's response and its reverberation can be set from here as well as from the Room drawer.</p>
 <p><b>Moods.</b> The row of buttons at the top sets everything at once: the music, its players, the room, the ambience, and the noise. Choose one, then adjust anything below.</p>
 <ul>
 <li><b>Lo-fi beats</b>: electric-piano ninth chords, an upright bass, and a boom-bap kit (kick on one and the "and" of two, snare on two and four, swung hi-hats), all through tape, with vinyl crackle.</li>
