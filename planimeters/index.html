@@ -1,313 +1,777 @@
 <!doctype html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Planimeter Bench</title>
+<meta name="description" content="A folio of the Wending House: five plates of instruments that measure an area by tracing its edge, with the error of each reading taken apart.">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#AD2119">
-<meta name="msapplication-config" content="/browserconfig.xml">
-<meta name="theme-color" content="#F9F4E5">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Planimeter Bench</title>
+<meta name="theme-color" content="#ECDFC0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<style>
-:root{
-  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
-  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
-  --accent:#2F5DB8; --accent-ink:#FFFFFF;
-  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
-  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
-    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
-    --accent:#8AA8FF; --accent-ink:#0E1620;
-  }
-}
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
-  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
-  --accent:#8AA8FF; --accent-ink:#0E1620;
-}
-html,body{background:var(--bg);}
-body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
-.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
-h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
-h1 span{color:var(--brass);}
-.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
-.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
-@media (max-width:900px){.inst{grid-template-columns:1fr;}}
-.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
-svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
-.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
-button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
-button:hover{border-color:var(--muted);}
-button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
-button:disabled{opacity:.45;cursor:not-allowed;}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
-.ctl input[type=range]{width:100%;}
-.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
-.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
-.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
-select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
-select{font-family:var(--sans);}
-.small{font-size:12px;color:var(--muted);}
-.note{columns:2 320px;column-gap:28px;}
-.note p{margin:0 0 10px;break-inside:avoid;}
-.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
-.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
-.status.good{color:var(--c);} .status.warn{color:var(--hair);}
-
-
-.tabs{display:flex;flex-wrap:wrap;gap:6px;}
-.tabs button{font:600 15px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;}
-canvas#cv{width:100%;height:auto;display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;touch-action:none;}
-table.bud{border-collapse:collapse;font-family:var(--mono);font-size:12.5px;width:100%;}
-table.bud td,table.bud th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:right;}
-table.bud th:first-child,table.bud td:first-child{text-align:left;}
-table.bud th{color:var(--muted);font-weight:500;}
-.pctl{display:none;} .pctl.on{display:grid;}
-
-body{margin:0}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="/folio/folio.css?v=1">
+<script src="/folio/folio.js?v=1"></script>
 <script src="/ga.js" async></script>
+<style>
+.margin svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.detail .caption{margin-top:4px}
+.reckon .bud{display:block;margin-top:4px}
+.runs h3{margin-bottom:2px}
+.runs .sum{font-size:14.5px;color:var(--ink2);margin:4px 0 6px}
+#shared{display:none}
+</style>
 </head>
 <body>
+<main class="leaf">
+  <div class="runhead"><a href="/palace/">The Wending House</a><span>Of Instruments · Folio the Second</span><a href="/puzzles/">Puzzles &amp; Devices</a></div>
+  <h1>The Planimeter <span class="rub">Bench</span></h1>
+  <p class="incipit">To know the area of a field on a map, you need not count squares. Run a point once round its edge, and a little wheel, a knife, or a pair of counters keeps an account that comes out to the area. Five such instruments are laid out here on one tracing table, each with its reading and its errors.</p>
 
-<div class="wrap">
-  <header>
-    <h1>Planimeter <span>Bench</span></h1>
-    <p class="tag">Trace a closed curve with four instruments that measure area by rolling, sliding, or counting: the polar and linear planimeters, Prytz's hatchet, and an x–y encoder. Each reading comes with its error, split into where it comes from.</p>
-  </header>
-  <div class="tabs" id="tabs">
-    <button type="button" data-i="polar" class="on">Polar</button>
-    <button type="button" data-i="linear">Linear</button>
-    <button type="button" data-i="hatchet">Hatchet</button>
-    <button type="button" data-i="xy">X–Y encoder</button>
-  </div>
-  <div class="inst">
-    <div class="stage">
-      <div class="row">
-        <select id="preset" aria-label="Curve"><option value="blob">Blob</option><option value="circle">Circle, r = 3 cm</option><option value="square">Square, 5 cm</option><option value="ellipse">Ellipse 4 × 2.5 cm</option><option value="cardioid">Cardioid</option><option value="star">Star</option></select>
-        <button type="button" id="draw">Draw your own</button>
-        <span style="flex:1"></span>
-        <button type="button" id="trace" class="primary">Trace</button>
-        <button type="button" id="measure">Measure instantly</button>
-      </div>
-      <canvas id="cv" width="1000" height="700" aria-label="Tracing table"></canvas>
-      <div id="status" class="status"></div>
-      <div class="ctl pctl on" data-p="polar">
-        <label for="pa">Pole arm a</label><input id="pa" type="range" min="6" max="16" step="0.5" value="11"><output id="pao"></output>
-        <label for="pb">Tracer arm b</label><input id="pb" type="range" min="5" max="14" step="0.5" value="9"><output id="pbo"></output>
-        <label for="pc">Wheel at c</label><input id="pc" type="range" min="0" max="14" step="0.5" value="5"><output id="pco"></output>
-      </div>
-      <div class="ctl pctl" data-p="linear">
-        <label for="lb">Tracer arm b</label><input id="lb" type="range" min="5" max="14" step="0.5" value="9"><output id="lbo"></output>
-        <label for="lc">Wheel at c</label><input id="lc" type="range" min="0" max="14" step="0.5" value="5"><output id="lco"></output>
-      </div>
-      <div class="ctl pctl" data-p="hatchet">
-        <label for="hl">Rod length L</label><input id="hl" type="range" min="5" max="40" step="0.5" value="12"><output id="hlo"></output>
-      </div>
-      <div class="ctl pctl" data-p="xy">
-        <label for="xr">Encoder step</label><input id="xr" type="range" min="0.01" max="0.5" step="0.01" value="0.1"><output id="xro"></output>
-      </div>
-      <div class="ctl">
-        <label for="nt">Hand tremor</label><input id="nt" type="range" min="0" max="0.2" step="0.005" value="0.03"><output id="nto"></output>
-        <label for="ns">Wheel slip</label><input id="ns" type="range" min="0" max="5" step="0.1" value="0.5"><output id="nso"></output>
-        <label for="nq">Reading</label><select id="nq"><option value="1">vernier (fine)</option><option value="10">dial only (coarse)</option><option value="0">exact</option></select><span></span>
+  <nav class="platetabs" role="tablist" aria-label="Plates">
+    <button type="button" role="tab" data-plate="polar"><span class="no">I.</span>The Polar Planimeter</button>
+    <button type="button" role="tab" data-plate="linear"><span class="no">II.</span>The Linear Planimeter</button>
+    <button type="button" role="tab" data-plate="hatchet"><span class="no">III.</span>Prytz's Hatchet</button>
+    <button type="button" role="tab" data-plate="radial"><span class="no">IV.</span>The Radial Planimeter</button>
+    <button type="button" role="tab" data-plate="frame"><span class="no">V.</span>The Counting Frame</button>
+  </nav>
+
+  <!-- PLATE I -->
+  <section class="plate" id="polar" role="tabpanel">
+    <div class="drawing">
+      <p class="caption"><b>Plate I.</b> The polar planimeter, after Amsler (1854): a pole, two arms, and a wheel.</p>
+      <div class="dials">
+        <label for="pa">The pole arm a</label><input id="pa" type="range" min="6" max="16" step="0.5" value="11"><output id="pao"></output>
+        <label for="pb">The tracer arm b</label><input id="pb" type="range" min="5" max="14" step="0.5" value="9"><output id="pbo"></output>
+        <label for="pc">The wheel at c</label><input id="pc" type="range" min="0" max="14" step="0.5" value="5"><output id="pco"></output>
       </div>
     </div>
-    <aside style="display:flex;flex-direction:column;gap:14px">
-      <div class="card"><h2>Reading</h2><div id="read" class="read"></div></div>
-      <div class="card"><h2>Error budget</h2><div id="budget"></div><div class="small">Each row turns on one source of error by itself, using the same random draws, so you can see which one dominates.</div></div>
-      <div class="card"><h2>Runs</h2><svg id="runs" class="fig" viewBox="0 0 320 170" aria-label="Error by run"></svg><div id="runsum" class="read"></div><button type="button" id="clearruns">Clear runs</button></div>
+    <aside class="margin">
+      <div class="reckon" id="rd-polar" aria-live="polite"></div>
+      <p class="gloss" data-g="pole"><span class="sig">a.</span>The <em>pole</em>: a heavy weight with a needle beneath, pressed into the table. Drag it anywhere on the board.</p>
+      <p class="gloss" data-g="arms"><span class="sig">b.</span>The <em>pole arm</em> a and the <em>tracer arm</em> b, hinged at the elbow. The elbow can only swing on the dotted circle about the pole.</p>
+      <p class="gloss" data-g="wheel"><span class="sig">c.</span>The <em>measuring wheel</em> rides on the tracer arm with its axle along the arm. It rolls when the arm moves sideways and skids when the arm slides along itself, so it counts only the sideways motion. Fig. 2 shows its drum, its vernier, and the disk that counts whole turns.</p>
+      <p class="gloss" data-g="tracer"><span class="sig">d.</span>The <em>tracer point</em>, under a magnifying ring. Take it once round the curve and back to where it began. The area is the tracer arm's length times the distance the wheel rolled: A = b·w.</p>
+      <p class="gloss"><span class="sig">e.</span>Drag the pole inside the curve. The elbow now goes all the way round its circle, and the wheel misses a fixed amount, π(a² + b² − 2bc), which is added to the reading.</p>
     </aside>
-  </div>
-  <section class="card note">
-    <h2>How each instrument works</h2>
-    <p><b>Polar planimeter (Amsler, 1854).</b> A pole is pinned down. An arm of length a runs to an elbow, and an arm of length b runs to the tracer. A wheel on the tracer arm rolls only across the arm. By Green's theorem the area is A = b·w, where w is the distance the wheel rolled. If the pole sits inside the curve, the elbow goes all the way around and you add π(a² + b² − 2bc), where c is the wheel's distance from the elbow.</p>
-    <p><b>Linear planimeter.</b> The elbow runs along a straight rail instead of a circle. The same Green's-theorem argument gives A = b·w exactly, with no correction term, and the curve can be as long as the rail.</p>
-    <p><b>Hatchet planimeter (Prytz, 1875).</b> A rod of length L has a knife edge at one end and a point at the other. The knife can only move along the rod, like a bicycle's back wheel. Start at a point near the middle, go out to the curve, trace it, and come back. The rod has turned by an angle θ, and A ≈ L²θ. That is only approximate: the error shrinks roughly like 1/L² and depends on where you start. The knife's path is a tractrix, and the leftover rotation is holonomy, the same effect as the rolling ball.</p>
-    <p><b>X–Y encoder.</b> Two wheels count steps in x and in y, and the area is the sum of x·Δy: Green's theorem done by counting. Its error is quantization: each count is ±½ step.</p>
-    <p><b>Where error comes from.</b> <em>Tremor</em> is the hand wobbling off the line. <em>Slip</em> is the wheel skidding by a random percentage at each step. <em>Reading</em> is the resolution of the dial or vernier. <em>Intrinsic</em> is what the instrument does wrong even with a perfect hand: sampling for the exact instruments, and the L²θ approximation for the hatchet.</p>
-    <p><b>Units.</b> The table is 25 cm × 17.5 cm with a 1 cm grid. The wheel has a 2 cm diameter, the vernier reads 1/1000 of a turn, and the dial alone reads 1/100.</p>
   </section>
-</div>
+
+  <!-- PLATE II -->
+  <section class="plate" id="linear" role="tabpanel" hidden>
+    <div class="drawing">
+      <p class="caption"><b>Plate II.</b> The linear planimeter: the elbow runs on a carriage along a straight rail.</p>
+      <div class="dials">
+        <label for="lb">The tracer arm b</label><input id="lb" type="range" min="5" max="14" step="0.5" value="10"><output id="lbo"></output>
+        <label for="lc">The wheel at c</label><input id="lc" type="range" min="0" max="14" step="0.5" value="5"><output id="lco"></output>
+      </div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rd-linear" aria-live="polite"></div>
+      <p class="gloss" data-g="rail"><span class="sig">a.</span>The <em>rail</em>, a steel straightedge laid across the table. Drag it up or down.</p>
+      <p class="gloss" data-g="carriage"><span class="sig">b.</span>The <em>carriage</em> runs on four rollers along the rail and carries the elbow, which therefore moves on a straight line instead of a circle.</p>
+      <p class="gloss" data-g="wheel"><span class="sig">c.</span>The <em>wheel</em> on the tracer arm, the same as in Plate I. It rolls only with the arm's sideways motion.</p>
+      <p class="gloss" data-g="tracer"><span class="sig">d.</span>The <em>tracer point</em>. Go once round, and A = b·w exactly, as before.</p>
+      <p class="gloss"><span class="sig">e.</span>There is no correction term here. The elbow cannot go round anything, so the curve may be as long as the rail allows: a strip of a river, or a whole year of a recording chart.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE III -->
+  <section class="plate" id="hatchet" role="tabpanel" hidden>
+    <div class="drawing">
+      <p class="caption"><b>Plate III.</b> Prytz's hatchet (1875): a bent rod with a knife edge at one end and a point at the other.</p>
+      <div class="dials">
+        <label for="hl">The rod's length L</label><input id="hl" type="range" min="5" max="30" step="0.5" value="12"><output id="hlo"></output>
+      </div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rd-hatchet" aria-live="polite"></div>
+      <p class="gloss" data-g="start"><span class="sig">a.</span>The <em>starting point</em> S, near the middle of the curve. It begins at the centroid; drag it elsewhere and watch the error grow.</p>
+      <p class="gloss" data-g="knife"><span class="sig">b.</span>The <em>knife edge</em>. It can move along the rod but not across it, like the back wheel of a bicycle. Its track, dotted, is made of tractrices.</p>
+      <p class="gloss" data-g="rod"><span class="sig">c.</span>The <em>point</em> at the other end of the rod. Carry it from S straight out to the curve, once round, and straight back to S.</p>
+      <p class="gloss" data-g="theta"><span class="sig">d.</span>The rod comes home turned by a small angle θ. Then A ≈ L²θ, with θ in radians. The dashed line is where the rod began.</p>
+      <p class="gloss"><span class="sig">e.</span>This is the one instrument here that is not exact. The leftover turn is a holonomy, and L²θ is only its first term; a longer rod and a start near the centroid make the rest small.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE IV -->
+  <section class="plate" id="radial" role="tabpanel" hidden>
+    <div class="drawing">
+      <p class="caption"><b>Plate IV.</b> A radial planimeter: an arm turning about a centre, a tracer sliding on it, and a wheel on a glass disk.</p>
+      <div class="dials">
+        <label for="rk">The cam's constant k</label><input id="rk" type="range" min="15" max="40" step="1" value="25"><output id="rko"></output>
+      </div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rd-radial" aria-live="polite"></div>
+      <p class="gloss" data-g="centre"><span class="sig">a.</span>The <em>centre</em>, and a disk of ground glass fixed to the table under it. Drag it; it may stand inside the curve or outside.</p>
+      <p class="gloss" data-g="arm"><span class="sig">b.</span>The <em>arm</em> turns about the centre, and the tracer <em>slides</em> along it in a slot. So the tracer's place is given by polar coordinates: r along the arm, θ round the disk.</p>
+      <p class="gloss" data-g="cam"><span class="sig">c.</span>A <em>cam</em> at the hub, worked by a cord from the slider, sets the wheel at the distance ρ = r²/2k from the centre. Its edge is cut to a parabola. (The cord and cam are drawn schematically.)</p>
+      <p class="gloss" data-g="wheel"><span class="sig">d.</span>The <em>wheel</em> rests on the glass with its axle along the arm. When the arm turns by dθ it rolls ρ dθ = r² dθ/2k; when the wheel is moved in or out it only skids.</p>
+      <p class="gloss"><span class="sig">e.</span>So the wheel totals (1/k)·½∮r² dθ, and the area is A = k·w. This is Green's theorem in polar form, and no correction is needed wherever the centre stands.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE V -->
+  <section class="plate" id="frame" role="tabpanel" hidden>
+    <div class="drawing">
+      <p class="caption"><b>Plate V.</b> The counting frame: a cross-slide whose two wheels count steps in x and in y.</p>
+      <div class="dials">
+        <label for="xr">One count is</label><input id="xr" type="range" min="0.01" max="0.5" step="0.01" value="0.1"><output id="xro"></output>
+      </div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rd-frame" aria-live="polite"></div>
+      <p class="gloss" data-g="rails"><span class="sig">a.</span>Two fixed <em>rails</em>, above and below the sheet, and a <em>bridge</em> that runs along them. The bridge's place is x.</p>
+      <p class="gloss" data-g="carriage"><span class="sig">b.</span>A <em>carriage</em> runs up and down the bridge and carries the tracer. Its place is y.</p>
+      <p class="gloss" data-g="counters"><span class="sig">c.</span>Two <em>counting wheels</em>, one on the bridge's foot and one on the carriage, click once for each step they roll. Fig. 2 shows their counters.</p>
+      <p class="gloss"><span class="sig">d.</span>At each click of the y wheel, add the current x count times the step in y. The total is Σ x·Δy = ∮x dy, which is the area: Green's theorem done by counting.</p>
+      <p class="gloss"><span class="sig">e.</span>Its only intrinsic error is the count itself: each reading is off by up to half a step. Make the step coarse and see how fast the error grows.</p>
+    </aside>
+  </section>
+
+  <!-- shared parts, moved into whichever plate is open -->
+  <div id="shared">
+    <svg id="table" class="fig" viewBox="0 0 1080 780" role="img" aria-label="The tracing table: a sheet ruled in centimetres, a curve in ink, and the instrument of the open plate"></svg>
+    <div id="bench" class="row">
+      <select class="q" id="preset" aria-label="The curve to trace">
+        <option value="blob">A field</option><option value="circle">A circle, r = 3 cm</option><option value="square">A square, 5 cm</option>
+        <option value="ellipse">An ellipse, 4 by 2.5 cm</option><option value="cardioid">A cardioid</option><option value="star">A star</option>
+      </select>
+      <button type="button" class="q" id="draw">Draw your own</button>
+      <button type="button" class="q" id="perfect">A perfect hand</button>
+      <span style="flex:1"></span>
+      <button type="button" class="q prime" id="trace">Trace</button>
+      <button type="button" class="q" id="measure">Measure</button>
+    </div>
+    <div id="noise" class="dials">
+      <label for="nt">The hand's tremor</label><input id="nt" type="range" min="0" max="0.2" step="0.005" value="0.03"><output id="nto"></output>
+      <label for="ns">The wheel's slip</label><input id="ns" type="range" min="0" max="5" step="0.1" value="0.5"><output id="nso"></output>
+      <label for="nq">The reading</label><select class="q" id="nq"><option value="1">by vernier</option><option value="10">by the dial alone</option><option value="0">exact</option></select><span></span>
+    </div>
+    <div id="detail" class="detail">
+      <svg id="det" viewBox="0 0 280 150" role="img" aria-label="The counting parts of the instrument, enlarged"></svg>
+      <p class="caption"><b>Fig. 2.</b> <span id="detcap">The wheel, enlarged.</span></p>
+    </div>
+    <div id="runsbox" class="runs">
+      <h3>The runs</h3>
+      <svg id="runs" viewBox="0 0 280 118" role="img" aria-label="The error of each run, in per cent, by instrument"></svg>
+      <p class="sum" id="runsum"></p>
+      <button type="button" class="q" id="clearruns">Clear the runs</button>
+    </div>
+  </div>
+
+  <div class="fleuron" aria-hidden="true">❦ ❦ ❦</div>
+  <section class="commentary">
+    <h2><span class="no">¶</span>Commentary</h2>
+    <p><b>Green's theorem.</b> The area inside a closed curve can be read off the curve alone: A = ∮x dy = ½∮(x dy − y dx). Every instrument on this bench is a machine for one form of that integral. The tracer supplies the curve, and something that rolls, turns, or counts does the adding.</p>
+    <p><b>Why A = b·w.</b> As the tracer arm moves, it sweeps area. If its elbow end moves sideways by dn and the arm turns by dφ, it sweeps b·dn + ½b²dφ. The wheel, at distance c from the elbow, rolls dw = dn + c·dφ. So the swept area is b·dw + b(½b − c)dφ. Round a closed curve the arm comes back to its old angle, so ∮dφ = 0, and the elbow, swinging back and forth on its arc, encloses nothing. What is left is A = b·w.</p>
+    <p><b>The pole inside.</b> If the pole lies inside the curve, the elbow goes once round its circle of radius a and the arm turns once round, ∮dφ = 2π. The same bookkeeping gives A = b·w + πa² + 2πb(½b − c) = b·w + π(a² + b² − 2bc). The constant π(a² + b² − 2bc) is the area of the instrument's "zero circle", and it is usually given with the instrument.</p>
+    <p><b>The linear planimeter.</b> Here the elbow runs on a straight line. It encloses no area, the arm returns to its angle, and A = b·w with no constant. Makers such as Coradi built them to run on a pair of heavy rollers instead of a rail, so that a long strip could be measured in one pass.</p>
+    <p><b>The hatchet.</b> Prytz's rod is a different kind of machine. Its knife edge cannot move sideways, so the rod obeys a rule about direction rather than position, and a closed trip of the point need not bring the rod back to its old direction. The leftover angle is a holonomy, like the turn of a pendulum carried round the Earth. For a curve small compared with L, starting near its centroid, θ ≈ A/L², which is the rule A ≈ L²θ. The error falls as L grows, and grows as S moves off the centroid.</p>
+    <p><b>The radial planimeter.</b> In polar coordinates about any centre, Green's theorem reads A = ½∮r² dθ. The instrument of Plate IV forms this by a disk-and-wheel integrator, of the kind James Thomson described and Kelvin used in his harmonic analyser, and Bush later in his differential analyser: a wheel resting on a disk at distance ρ from its centre rolls ρ dθ as the disk turns by dθ against it. A cam makes ρ = r²/2k, so the wheel's total is A/k. The design here is drawn to show the principle; I do not know of a maker who sold one in this form.</p>
+    <p><b>The counting frame.</b> A cross-slide reads x and y separately, as a plotting table or a digitizer does. The area is then a sum, Σ x̄·Δy, taken step by step with the average x of each step. The only intrinsic error is the size of a count; the errors of the individual counts partly cancel round the curve.</p>
+    <p><b>Where error comes from.</b> <i>Tremor</i> is the hand wandering off the line; it adds and removes slivers, which nearly cancel. <i>Slip</i> is the wheel skidding by a small random fraction at each step; for the hatchet it is the knife drifting sideways. <i>Reading</i> is the resolution of the dial: a vernier reads a thousandth of a turn, the dial alone a hundredth. <i>Intrinsic</i> is what the instrument gets wrong with a perfect hand: almost nothing for the exact instruments, and the whole L²θ approximation for the hatchet. The budget in each margin turns on one source at a time, with the same random draws.</p>
+    <p><b>Units.</b> The sheet is 25 by 17.5 cm, ruled in centimetres. Every measuring wheel is 2 cm across, so one turn is 2π cm of rolling. The true area is computed from the curve by the shoelace formula.</p>
+    <p><b>Further.</b> Amsler's own account of the polar planimeter (Zürich, 1856); the chapter on planimeters in Bryant and Sangwin, <i>How Round Is Your Circle?</i> (2008); and Foote, Levi, and Tabachnikov, "Tractrices, bicycle tire tracks, hatchet planimeters, and a 100-year-old conjecture", <i>American Mathematical Monthly</i> (2013), on the geometry of Prytz's hatchet.</p>
+  </section>
+  <div class="colophon"><span>Drawn for the Wending House, 2026. Drag anything that looks like brass.</span><a href="/planimeters/first-edition/">The first edition of this page</a></div>
+</main>
+
 <script>
 (function(){
-const $=id=>document.getElementById(id);
-const cv=$("cv"), ctx=cv.getContext("2d"), PX=40, WCM=25, HCM=17.5;
-const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";
-let inst="polar", curve=[], drawing=false, drawPts=[], pole={x:3,y:3}, rail=9.5, hstart=null, runs=[], anim=null, dragWhat=null;
-const WHEEL_C=Math.PI*2; // 2 cm diameter
-// ---------- curves ----------
-function preset(name){const cx=13.5,cy=9.5,pts=[],n=720;
-  for(let i=0;i<n;i++){const t=2*Math.PI*i/n;let x,y;
-    if(name==="circle"){x=3*Math.cos(t);y=3*Math.sin(t);}
-    else if(name==="ellipse"){x=4*Math.cos(t);y=2.5*Math.sin(t);}
-    else if(name==="cardioid"){const r=2*(1-Math.cos(t));x=r*Math.cos(t)+2;y=r*Math.sin(t);}
-    else if(name==="star"){const r=3+1.2*Math.cos(5*t);x=r*Math.cos(t);y=r*Math.sin(t);}
-    else if(name==="square"){const s=i/n*4,k=Math.floor(s),f=s-k;const P=[[-2.5,-2.5],[2.5,-2.5],[2.5,2.5],[-2.5,2.5],[-2.5,-2.5]];x=P[k][0]+(P[k+1][0]-P[k][0])*f;y=P[k][1]+(P[k+1][1]-P[k][1])*f;}
-    else {const r=3+0.6*Math.cos(2*t)+0.4*Math.sin(3*t);x=1.2*r*Math.cos(t);y=r*Math.sin(t);}
-    pts.push({x:cx+x,y:cy+y});}
-  return pts;}
-function shoelace(P){let s=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];s+=a.x*b.y-b.x*a.y;}return s/2;}
-function centroid(P){let A=0,cx=0,cy=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],c=a.x*b.y-b.x*a.y;A+=c;cx+=(a.x+b.x)*c;cy+=(a.y+b.y)*c;}A/=2;return{x:cx/(6*A),y:cy/(6*A)};}
-function inside(p,P){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)c=!c;}return c;}
-function resample(P,n){const L=[0];for(let i=1;i<=P.length;i++){const a=P[i-1],b=P[i%P.length];L.push(L[i-1]+Math.hypot(b.x-a.x,b.y-a.y));}
-  const tot=L[L.length-1],out=[];let j=0;for(let k=0;k<=n;k++){const s=tot*k/n;while(j<P.length-1&&L[j+1]<s)j++;const a=P[j],b=P[(j+1)%P.length],f=(s-L[j])/((L[j+1]-L[j])||1);out.push({x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f});}return out;}
-// seeded random
-function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-function gauss(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function tremorPath(P,sig,seed){ if(!sig) return P; const r=rng(seed); const K=6, comp=[];
-  for(let k=0;k<K;k++) comp.push({f:3+Math.floor(r()*40),px:r()*6.28,py:r()*6.28,a:sig*Math.sqrt(2/K)*(0.5+r())});
-  return P.map((p,i)=>{const t=2*Math.PI*i/(P.length-1);let dx=0,dy=0;for(const c of comp){dx+=c.a*Math.sin(c.f*t+c.px);dy+=c.a*Math.sin(c.f*t+c.py);}
-    // keep the curve closed: taper at the ends
-    return {x:p.x+dx,y:p.y+dy};});}
-// ---------- instruments ----------
-const P=()=>({a:+$("pa").value,b:+$("pb").value,c:+$("pc").value,lb:+$("lb").value,lc:+$("lc").value,L:+$("hl").value,res:+$("xr").value});
-function elbowPolar(T,a,b){const dx=T.x-pole.x,dy=T.y-pole.y,L=Math.hypot(dx,dy);if(L>a+b-1e-6||L<Math.abs(a-b)+1e-6)return null;
-  const x=(L*L+a*a-b*b)/(2*L),h=Math.sqrt(Math.max(a*a-x*x,0)),ex=dx/L,ey=dy/L;return{x:pole.x+x*ex-h*ey,y:pole.y+x*ey+h*ex};}
-function elbowLinear(T,b){const dy=T.y-rail;if(Math.abs(dy)>=b)return null;return{x:T.x-Math.sqrt(b*b-dy*dy),y:rail};}
-// simulate one instrument on a tracer path; returns {est, states(for drawing), counter, ok}
-function simulate(kind,path,o,noise,wantStates){
-  const r=rng(noise.seed), states=wantStates?[]:null;
-  if(kind==="polar"||kind==="linear"){
-    const b=kind==="polar"?o.b:o.lb, c=kind==="polar"?o.c:o.lc; let w=0,prevW=null;
-    for(let i=0;i<path.length;i++){const T=path[i];const J=kind==="polar"?elbowPolar(T,o.a,b):elbowLinear(T,b);if(!J)return{ok:false,msg:kind==="polar"?"The tracer is out of reach of the arms here. Move the pole or lengthen the arms.":"The tracer is too far from the rail. Lengthen the arm or drag the rail."};
-      const ux=(T.x-J.x)/b,uy=(T.y-J.y)/b,W={x:J.x+c*ux,y:J.y+c*uy};
-      if(prevW){let d=-uy*(W.x-prevW.x)+ux*(W.y-prevW.y);if(noise.slip)d*=1+noise.slip/100*gauss(r);w+=d;}
-      prevW=W; if(states)states.push({T,J,W,u:{x:ux,y:uy},w});}
-    let wr=w; if(noise.q){const step=WHEEL_C/(noise.q===1?1000:100);wr=Math.round(w/step)*step;}
-    let est=b*wr, extra=0; if(kind==="polar"&&inside(pole,curve)){extra=Math.PI*(o.a*o.a+b*b-2*b*c);est+=extra*Math.sign(w||1);}
-    return{ok:true,est:Math.abs(est),states,counter:`wheel rolled ${ (w/WHEEL_C).toFixed(4)} turns (${w.toFixed(3)} cm)`+(extra?`; pole inside, so add π(a²+b²−2bc) = ${extra.toFixed(2)} cm²`:""),formula:`A = b·w${extra?" + π(a²+b²−2bc)":""}`};}
-  if(kind==="hatchet"){
-    const L=o.L, S=hstart||centroid(curve), full=[];
-    const n1=200;for(let i=0;i<n1;i++)full.push({x:S.x+(path[0].x-S.x)*i/n1,y:S.y+(path[0].y-S.y)*i/n1});
-    for(const p of path)full.push(p);
-    for(let i=1;i<=n1;i++)full.push({x:path[0].x+(S.x-path[0].x)*i/n1,y:path[0].y+(S.y-path[0].y)*i/n1});
-    let T0=full[0],H={x:T0.x,y:T0.y-L},th=Math.atan2(T0.y-H.y,T0.x-H.x),th0=th,prev=th;
-    for(let i=1;i<full.length;i++){const T=full[i];const ux=(T0.x-H.x)/L,uy=(T0.y-H.y)/L,dx=T.x-T0.x,dy=T.y-T0.y,along=ux*dx+uy*dy;
-      H={x:H.x+along*ux,y:H.y+along*uy};
-      if(noise.slip){const side=noise.slip/100*gauss(r)*Math.hypot(dx,dy);H.x+=-uy*side;H.y+=ux*side;}
-      const vx=T.x-H.x,vy=T.y-H.y,l=Math.hypot(vx,vy);H={x:T.x-vx/l*L,y:T.y-vy/l*L};T0=T;
-      const ang=Math.atan2(vy,vx);let d=ang-prev;d=Math.atan2(Math.sin(d),Math.cos(d));th+=d;prev=ang;
-      if(states)states.push({T,H,th:th-th0});}
-    let dth=th-th0; if(noise.q){const step=(noise.q===1?0.1:1)*Math.PI/180;dth=Math.round(dth/step)*step;}
-    return{ok:true,est:Math.abs(L*L*dth),states,counter:`rod turned ${(dth*180/Math.PI).toFixed(3)}°`,formula:"A ≈ L²θ"};}
-  if(kind==="xy"){const s=o.res;let A=0,prev=null;const q=v=>Math.round(v/s)*s;
-    let px=0,py=0,started=false;
-    for(let i=0;i<path.length;i++){const T=path[i];let x=q(T.x),y=q(T.y);
-      if(noise.slip&&started){x=px+(x-px)*(1+noise.slip/100*gauss(r));y=py+(y-py)*(1+noise.slip/100*gauss(r));}
-      if(started)A+=0.5*(px+x)*(y-py);px=x;py=y;started=true;if(states)states.push({T,x,y,A});}
-    // close the loop
-    return{ok:true,est:Math.abs(A),states,counter:`${Math.round(Math.abs(A)/(s*s))} count² of ${s} cm`,formula:"A = Σ x·Δy (counted)"};}
+const {E, T, defs, drag, wobble, fmt, rng} = Folio, $ = id => document.getElementById(id);
+defs();
+
+/* ================= THE TABLE ================= */
+const svg = $("table"), PX = 40, WCM = 25, HCM = 17.5, OX = 40, OY = 40, VW = 1080, VH = 780;
+const X = x => OX + x * PX, Y = y => OY + (HCM - y) * PX, sv = p => [X(p.x), Y(p.y)];
+const cmOf = p => ({x:(p.x - OX) / PX, y:HCM - (p.y - OY) / PX});
+const deg = u => -Math.atan2(u.y, u.x) * 180 / Math.PI;
+const WHEEL_C = Math.PI * 2;           // wheels 2 cm across
+const RAD_ARM = 15, RAD_DISK = 4.5;    // radial planimeter: arm and glass disk, cm
+const KINDS = ["polar", "linear", "hatchet", "radial", "frame"];
+
+let inst = "polar", curve = [], pole = {x:3, y:3}, rail = 4.5, hstart = null, rctr = {x:3.5, y:9.5};
+let seed = 12345, runs = [], anim = 0, drawing = false, drawPts = [], shown = null;
+
+/* ---------- curves ---------- */
+function preset(name){ const cx = 13.5, cy = 9.5, pts = [], n = 720;
+  for(let i = 0; i < n; i++){ const t = 2 * Math.PI * i / n; let x, y;
+    if(name === "circle"){ x = 3 * Math.cos(t); y = 3 * Math.sin(t); }
+    else if(name === "ellipse"){ x = 4 * Math.cos(t); y = 2.5 * Math.sin(t); }
+    else if(name === "cardioid"){ const r = 2 * (1 - Math.cos(t)); x = r * Math.cos(t) + 2; y = r * Math.sin(t); }
+    else if(name === "star"){ const r = 3 + 1.2 * Math.cos(5 * t); x = r * Math.cos(t); y = r * Math.sin(t); }
+    else if(name === "square"){ const s = i / n * 4, k = Math.floor(s), f = s - k, P = [[-2.5,-2.5],[2.5,-2.5],[2.5,2.5],[-2.5,2.5],[-2.5,-2.5]]; x = P[k][0] + (P[k+1][0] - P[k][0]) * f; y = P[k][1] + (P[k+1][1] - P[k][1]) * f; }
+    else { const r = 3 + .6 * Math.cos(2 * t) + .4 * Math.sin(3 * t); x = 1.2 * r * Math.cos(t); y = r * Math.sin(t); }
+    pts.push({x:cx + x, y:cy + y}); }
+  return pts; }
+function shoelace(P){ let s = 0; for(let i = 0; i < P.length; i++){ const a = P[i], b = P[(i + 1) % P.length]; s += a.x * b.y - b.x * a.y; } return s / 2; }
+function centroid(P){ let A = 0, cx = 0, cy = 0; for(let i = 0; i < P.length; i++){ const a = P[i], b = P[(i + 1) % P.length], c = a.x * b.y - b.x * a.y; A += c; cx += (a.x + b.x) * c; cy += (a.y + b.y) * c; } A /= 2; return {x:cx / (6 * A), y:cy / (6 * A)}; }
+function inside(p, P){ let c = false; for(let i = 0, j = P.length - 1; i < P.length; j = i++){ const a = P[i], b = P[j]; if((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; }
+function resample(P, n){ const L = [0]; for(let i = 1; i <= P.length; i++){ const a = P[i-1], b = P[i % P.length]; L.push(L[i-1] + Math.hypot(b.x - a.x, b.y - a.y)); }
+  const tot = L[L.length - 1], out = []; let j = 0; for(let k = 0; k <= n; k++){ const s = tot * k / n; while(j < P.length - 1 && L[j+1] < s) j++; const a = P[j], b = P[(j + 1) % P.length], f = (s - L[j]) / ((L[j+1] - L[j]) || 1); out.push({x:a.x + (b.x - a.x) * f, y:a.y + (b.y - a.y) * f}); } return out; }
+function gauss(r){ let u = 0, v = 0; while(!u) u = r(); while(!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function tremorPath(P, sig, sd){ if(!sig) return P; const r = rng(sd), K = 6, comp = [];
+  for(let k = 0; k < K; k++) comp.push({f:3 + Math.floor(r() * 40), px:r() * 6.28, py:r() * 6.28, a:sig * Math.sqrt(2 / K) * (.5 + r())});
+  return P.map((p, i) => { const t = 2 * Math.PI * i / (P.length - 1); let dx = 0, dy = 0; for(const c of comp){ dx += c.a * Math.sin(c.f * t + c.px); dy += c.a * Math.sin(c.f * t + c.py); } return {x:p.x + dx, y:p.y + dy}; }); }
+const tracePath = (sig, sd) => tremorPath(resample(curve, 1600), sig, sd);
+
+/* ---------- the instruments' mechanics ---------- */
+const params = () => ({a:+$("pa").value, b:+$("pb").value, c:+$("pc").value, lb:+$("lb").value, lc:+$("lc").value, L:+$("hl").value, k:+$("rk").value, res:+$("xr").value});
+function elbowPolar(T, a, b){ const dx = T.x - pole.x, dy = T.y - pole.y, L = Math.hypot(dx, dy); if(L > a + b - 1e-6 || L < Math.abs(a - b) + 1e-6) return null;
+  const x = (L * L + a * a - b * b) / (2 * L), h = Math.sqrt(Math.max(a * a - x * x, 0)), ex = dx / L, ey = dy / L; return {x:pole.x + x * ex - h * ey, y:pole.y + x * ey + h * ex}; }
+function elbowLinear(T, b){ const dy = T.y - rail; if(Math.abs(dy) >= b) return null; return {x:T.x - Math.sqrt(b * b - dy * dy), y:rail}; }
+// the rod starts pointing from the knife to S along whichever of eight directions keeps the knife furthest inside the sheet
+function knifeDir(St, L){ let best = {x:0, y:1}, bd = -1e9;
+  for(let i = 0; i < 8; i++){ const a = Math.PI / 2 + i * Math.PI / 4, d = {x:Math.cos(a), y:Math.sin(a)}, hx = St.x - d.x * L, hy = St.y - d.y * L, m = Math.min(hx, WCM - hx, hy, HCM - hy);
+    if(m > bd + 1e-9){ bd = m; best = d; } }
+  return best; }
+const quantWheel = (w, q) => { if(!q) return w; const step = WHEEL_C / (q === 1 ? 1000 : 100); return Math.round(w / step) * step; };
+// one pass of an instrument along a tracer path: the estimate, its counters, and (if asked) every state for drawing
+function simulate(kind, path, o, noise, want){
+  const r = rng(noise.seed), S = want ? [] : null;
+  if(kind === "polar" || kind === "linear"){
+    const b = kind === "polar" ? o.b : o.lb, c = kind === "polar" ? o.c : o.lc; let w = 0, prevW = null, prevU = null;
+    for(let i = 0; i < path.length; i++){ const T = path[i], J = kind === "polar" ? elbowPolar(T, o.a, b) : elbowLinear(T, b);
+      if(!J) return {ok:false, msg:kind === "polar" ? "The tracer is out of reach of the arms here. Move the pole, or lengthen the arms." : "The tracer is too far from the rail. Lengthen the arm, or drag the rail nearer."};
+      const ux = (T.x - J.x) / b, uy = (T.y - J.y) / b, W = {x:J.x + c * ux, y:J.y + c * uy};
+      // the wheel rolls by the step of its contact point across the arm, taken at the arm's mid-step direction
+      if(prevW){ const mx = (ux + prevU.x) / 2, my = (uy + prevU.y) / 2; let d = -my * (W.x - prevW.x) + mx * (W.y - prevW.y); if(noise.slip) d *= 1 + noise.slip / 100 * gauss(r); w += d; }
+      prevW = W; prevU = {x:ux, y:uy}; if(S) S.push({T, J, W, u:{x:ux, y:uy}, w}); }
+    const wr = quantWheel(w, noise.q); let est = b * wr, extra = 0;
+    // with the pole inside, the elbow goes once round its circle in the same sense as the tracer goes round the curve
+    if(kind === "polar" && inside(pole, curve)){ extra = Math.PI * (o.a * o.a + b * b - 2 * b * c); est += extra * Math.sign(shoelace(curve)); }
+    return {ok:true, est:Math.abs(est), states:S, w:wr, b, extra, sense:Math.sign(shoelace(curve))}; }
+  if(kind === "hatchet"){
+    const L = o.L, St = hstart || centroid(curve), full = [], n1 = 200;
+    for(let i = 0; i < n1; i++) full.push({x:St.x + (path[0].x - St.x) * i / n1, y:St.y + (path[0].y - St.y) * i / n1});
+    for(const p of path) full.push(p);
+    for(let i = 1; i <= n1; i++) full.push({x:path[0].x + (St.x - path[0].x) * i / n1, y:path[0].y + (St.y - path[0].y) * i / n1});
+    const dir = knifeDir(St, L); let T0 = full[0], H = {x:T0.x - dir.x * L, y:T0.y - dir.y * L}, th = Math.atan2(T0.y - H.y, T0.x - H.x), th0 = th, prev = th;
+    if(S) S.push({T:T0, H:{x:H.x, y:H.y}, th:0});
+    for(let i = 1; i < full.length; i++){ const T = full[i], ux = (T0.x - H.x) / L, uy = (T0.y - H.y) / L, dx = T.x - T0.x, dy = T.y - T0.y, along = ux * dx + uy * dy;
+      H = {x:H.x + along * ux, y:H.y + along * uy};
+      if(noise.slip){ const side = noise.slip / 100 * gauss(r) * Math.hypot(dx, dy); H.x += -uy * side; H.y += ux * side; }
+      const vx = T.x - H.x, vy = T.y - H.y, l = Math.hypot(vx, vy); H = {x:T.x - vx / l * L, y:T.y - vy / l * L}; T0 = T;
+      const ang = Math.atan2(vy, vx); let d = ang - prev; d = Math.atan2(Math.sin(d), Math.cos(d)); th += d; prev = ang;
+      if(S) S.push({T, H, th:th - th0}); }
+    let dth = th - th0; if(noise.q){ const step = (noise.q === 1 ? .1 : 1) * Math.PI / 180; dth = Math.round(dth / step) * step; }
+    return {ok:true, est:Math.abs(L * L * dth), states:S, dth, L, start:St}; }
+  if(kind === "radial"){
+    const k = o.k, rmax = Math.min(RAD_ARM, Math.sqrt(2 * k * RAD_DISK)); let w = 0, th = 0, prevA = null, prevR2 = 0;
+    for(let i = 0; i < path.length; i++){ const T = path[i], dx = T.x - rctr.x, dy = T.y - rctr.y, rr = Math.hypot(dx, dy);
+      if(rr > rmax) return {ok:false, msg:rr > RAD_ARM ? "The tracer runs off the end of the arm here. Move the centre nearer the curve." : "Here the wheel would run off the edge of the glass disk. Move the centre nearer the curve, or raise k."};
+      const ang = Math.atan2(dy, dx);
+      if(prevA != null){ let d = ang - prevA; d = Math.atan2(Math.sin(d), Math.cos(d)); let dw = (rr * rr + prevR2) / (4 * k) * d; if(noise.slip) dw *= 1 + noise.slip / 100 * gauss(r); w += dw; th += d; }
+      prevA = ang; prevR2 = rr * rr; if(S) S.push({T, r:rr, ang, rho:rr * rr / (2 * k), w, th}); }
+    const wr = quantWheel(w, noise.q);
+    return {ok:true, est:Math.abs(k * wr), states:S, w:wr, k}; }
+  if(kind === "frame"){ const s = o.res, q = v => Math.round(v / s) * s; let A = 0, px = 0, py = 0, started = false;
+    for(let i = 0; i < path.length; i++){ const T = path[i]; let x = q(T.x), y = q(T.y);
+      if(noise.slip && started){ x = px + (x - px) * (1 + noise.slip / 100 * gauss(r)); y = py + (y - py) * (1 + noise.slip / 100 * gauss(r)); }
+      if(started) A += .5 * (px + x) * (y - py); px = x; py = y; started = true; if(S) S.push({T, x, y, A}); }
+    return {ok:true, est:Math.abs(A), states:S, A, s}; }
 }
-function tracePath(noiseT,seed){return tremorPath(resample(curve,1600),noiseT,seed);}
-// ---------- drawing ----------
-function toPx(p){return[p.x*PX,cv.height-p.y*PX];}
-function fromEvt(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*cv.width/PX,y:(cv.height-(e.clientY-r.top)/r.height*cv.height)/PX};}
-function drawBase(){const c=ctx;c.clearRect(0,0,cv.width,cv.height);c.fillStyle=css("--panel");c.fillRect(0,0,cv.width,cv.height);
-  c.strokeStyle=css("--line");c.lineWidth=1;for(let x=0;x<=WCM;x++){c.beginPath();c.moveTo(x*PX,0);c.lineTo(x*PX,cv.height);c.stroke();}for(let y=0;y<=HCM;y++){c.beginPath();c.moveTo(0,cv.height-y*PX);c.lineTo(cv.width,cv.height-y*PX);c.stroke();}
-  if(curve.length){c.beginPath();curve.forEach((p,i)=>{const[x,y]=toPx(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.closePath();c.fillStyle=css("--soft");c.globalAlpha=.6;c.fill();c.globalAlpha=1;c.strokeStyle=css("--ink");c.lineWidth=2;c.stroke();}
-  if(drawing&&drawPts.length){c.beginPath();drawPts.forEach((p,i)=>{const[x,y]=toPx(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.strokeStyle=css("--hair");c.lineWidth=2;c.stroke();}
-  if(inst==="polar"){const[x,y]=toPx(pole);c.fillStyle=css("--hair");c.beginPath();c.arc(x,y,8,0,7);c.fill();c.fillStyle=css("--muted");c.font="14px IBM Plex Sans, sans-serif";c.fillText("pole (drag)",x+12,y+4);}
-  if(inst==="linear"){const y=cv.height-rail*PX;c.strokeStyle=css("--brass");c.lineWidth=4;c.beginPath();c.moveTo(0,y);c.lineTo(cv.width,y);c.stroke();c.fillStyle=css("--muted");c.font="14px IBM Plex Sans, sans-serif";c.fillText("rail (drag up or down)",8,y-8);}
-  if(inst==="hatchet"&&curve.length){const S=hstart||centroid(curve);const[x,y]=toPx(S);c.strokeStyle=css("--hair");c.lineWidth=2;c.beginPath();c.moveTo(x-8,y);c.lineTo(x+8,y);c.moveTo(x,y-8);c.lineTo(x,y+8);c.stroke();c.fillStyle=css("--muted");c.font="14px IBM Plex Sans, sans-serif";c.fillText("start (drag)",x+12,y-8);}
+
+/* ---------- drawing helpers: brass, steel, wheels ---------- */
+const f2 = v => v.toFixed(2);
+function grp(parent, at, ang, extra){ return E("g", Object.assign({transform:`translate(${f2(at[0])},${f2(at[1])}) rotate(${f2(ang)})`}, extra || {}), parent); }
+// a metal bar with rounded ends between two points, hatched and shadowed like an engraving
+function bar(parent, A, B, h, metal, key){
+  const g = E("g", key ? {"data-g":key} : {}, parent);
+  const dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L, nx = -uy * h, ny = ux * h;
+  const d = `M${f2(A[0]+nx)},${f2(A[1]+ny)}L${f2(B[0]+nx)},${f2(B[1]+ny)}A${h},${h} 0 0 0 ${f2(B[0]-nx)},${f2(B[1]-ny)}L${f2(A[0]-nx)},${f2(A[1]-ny)}A${h},${h} 0 0 0 ${f2(A[0]+nx)},${f2(A[1]+ny)}Z`;
+  E("path", {d, class:"fink2", opacity:.14, transform:"translate(3,4)"}, g);
+  E("path", {d, class:metal === "steel" ? "fvel" : "fgold", opacity:metal === "steel" ? 1 : .5}, g);
+  E("path", {d, fill:metal === "steel" ? "url(#h135w)" : "url(#h45)", class:"ink", "stroke-width":1.1}, g);
+  // a bright bevel along one edge, a dark one along the other
+  E("line", {x1:A[0] + nx * .45, y1:A[1] + ny * .45, x2:B[0] + nx * .45, y2:B[1] + ny * .45, style:"stroke:var(--vellum2)", "stroke-width":Math.max(1, h * .32), opacity:.85}, g);
+  E("line", {x1:A[0] - nx * .62, y1:A[1] - ny * .62, x2:B[0] - nx * .62, y2:B[1] - ny * .62, class:"ink2", "stroke-width":.6}, g);
+  return g; }
+function disc(g, c, r, base, hatch, w){ if(base) E("circle", {cx:c[0], cy:c[1], r, class:base, opacity:base === "fgold" ? .5 : 1}, g);
+  return E("circle", {cx:c[0], cy:c[1], r, fill:hatch || "none", class:"ink", "stroke-width":w || 1}, g); }
+// the tracer arm is graduated in centimetres from the elbow, as the makers' arms were
+function armScale(g, J, us, b){ const n = [-us[1], us[0]];
+  for(let i = 1; i < b; i++){ const p = [J[0] + us[0] * i * PX, J[1] + us[1] * i * PX], l = i % 5 ? 3.5 : 6;
+    E("line", {x1:f2(p[0] + n[0] * 7.5), y1:f2(p[1] + n[1] * 7.5), x2:f2(p[0] + n[0] * (7.5 - l)), y2:f2(p[1] + n[1] * (7.5 - l)), class:"ink", "stroke-width":.7}, g); } }
+function hinge(g, at){ disc(g, at, 9, "fgold", "url(#h135)", 1.1); disc(g, at, 4, "fvel", null, .9);
+  E("line", {x1:at[0] - 3, y1:at[1] + 1.5, x2:at[0] + 3, y2:at[1] - 1.5, class:"ink", "stroke-width":1}, g); }
+function sig(g, ch, x, y){ return T(ch, {x:f2(x), y:f2(y), class:"rubt", "font-size":19, "font-style":"italic", "text-anchor":"middle", style:"paint-order:stroke;stroke:var(--vellum2);stroke-width:3.5px"}, g); }
+// the measuring wheel, seen from above: its axle lies along the arm, so its drum shows as a band across the arm
+function wheelAsm(parent, at, u, w, R, key){
+  const k = grp(parent, at, deg(u), key ? {"data-g":key} : {});
+  E("rect", {x:-14, y:-R - 6, width:28, height:2 * R + 12, rx:3, class:"fink2", opacity:.14, transform:"translate(3,4)"}, k);
+  E("rect", {x:-14, y:-R - 6, width:28, height:2 * R + 12, rx:3, class:"fgold", opacity:.5}, k);
+  E("rect", {x:-14, y:-R - 6, width:28, height:2 * R + 12, rx:3, fill:"url(#h135)", class:"ink", "stroke-width":1}, k);
+  E("rect", {x:-8.5, y:-R - 2, width:18, height:2 * R + 4, class:"fvel"}, k);
+  E("rect", {x:-8.5, y:-R - 2, width:18, height:2 * R + 4, class:"ink2", "stroke-width":.6}, k);
+  // the drum, graduated in hundredths, turning as the wheel rolls
+  E("rect", {x:-7, y:-R, width:10, height:2 * R, class:"fvel"}, k);
+  for(let i = 0; i < 100; i++){ const ph = 2 * Math.PI * i / 100 + w, c = Math.cos(ph); if(c < .08) continue; const y = -R * Math.sin(ph);
+    E("line", {x1:-7, x2:i % 10 === 0 ? 3 : i % 5 === 0 ? -1 : -3.5, y1:f2(y), y2:f2(y), class:"ink", "stroke-width":i % 10 === 0 ? .9 : .5, opacity:.35 + .65 * c}, k); }
+  E("rect", {x:-7, y:-R, width:10, height:R * .28, fill:"url(#hh)", opacity:.9}, k);
+  E("rect", {x:-7, y:R * .72, width:10, height:R * .28, fill:"url(#hh)", opacity:.9}, k);
+  E("rect", {x:-7, y:-R, width:10, height:2 * R, class:"ink", "stroke-width":.9}, k);
+  // the knurled rim that touches the paper
+  E("rect", {x:3, y:-R, width:5.5, height:2 * R, rx:1.5, fill:"url(#hx)", class:"ink", "stroke-width":.9}, k);
+  // the vernier, fixed to the frame against the drum
+  E("rect", {x:-13, y:-7, width:6, height:14, class:"fvel"}, k);
+  for(let i = 0; i <= 10; i++) E("line", {x1:-13, x2:i % 5 ? -10 : -8, y1:-6 + i * 1.2, y2:-6 + i * 1.2, class:"ink", "stroke-width":.4}, k);
+  E("rect", {x:-13, y:-7, width:6, height:14, class:"ink", "stroke-width":.8}, k);
+  // the counting disk, geared to turn once for ten turns of the wheel
+  const cy = -R - 19; E("line", {x1:0, y1:-R - 6, x2:0, y2:cy + 11, class:"ink", "stroke-width":2.2}, k);
+  E("circle", {cx:0, cy, r:11, class:"fvel"}, k); E("circle", {cx:0, cy, r:11, class:"ink", "stroke-width":1.1}, k);
+  for(let i = 0; i < 10; i++){ const a = i * Math.PI / 5; E("line", {x1:f2(8 * Math.sin(a)), y1:f2(cy - 8 * Math.cos(a)), x2:f2(11 * Math.sin(a)), y2:f2(cy - 11 * Math.cos(a)), class:"ink", "stroke-width":.6}, k); }
+  const a = w / 10; E("line", {x1:0, y1:cy, x2:f2(8.5 * Math.sin(a)), y2:f2(cy - 8.5 * Math.cos(a)), class:"rub", "stroke-width":1.4}, k);
+  E("circle", {cx:0, cy, r:1.5, class:"fink"}, k);
+  return k; }
+// the tracer point under its magnifying ring, with the handle knob behind it on the arm
+function tracer(parent, at, u, key){
+  const k = grp(parent, at, deg(u), key ? {"data-g":key} : {});
+  disc(k, [-30, 0], 8.5, "fgold", "url(#h45)", 1); disc(k, [-30, 0], 4, "fvel", null, .7);
+  E("circle", {cx:3, cy:4, r:15, class:"fink2", opacity:.12}, k);
+  E("circle", {cx:0, cy:0, r:15, class:"flwash"}, k);
+  E("circle", {cx:0, cy:0, r:15, class:"ink", "stroke-width":1.8}, k);
+  E("circle", {cx:0, cy:0, r:11.5, class:"ink2", "stroke-width":.6}, k);
+  E("path", {d:"M-9,0H-3M3,0H9M0,-9V-3M0,3V9", class:"ink2", "stroke-width":.6}, k);
+  E("circle", {cx:0, cy:0, r:1.8, class:"frub"}, k);
+  return k; }
+
+/* ---------- the board, the sheet, the curve ---------- */
+const gBoard = E("g", {}, svg), gCurve = E("g", {}, svg), gInst = E("g", {}, svg), gHand = E("g", {}, svg), gDraw = E("g", {}, svg);
+function drawBoard(){
+  const g = gBoard, r = rng(11);
+  E("rect", {x:1, y:1, width:VW - 2, height:VH - 2, fill:"url(#hhw)", opacity:.5}, g);
+  for(let i = 0; i < 40; i++){ const y0 = 6 + i * (VH - 12) / 40 + r() * 5, P = []; for(let x = 0; x <= VW; x += 36) P.push([x, y0 + 3 * Math.sin(x / 95 + i) + 1.6 * Math.sin(x / 29 + 2 * i)]);
+    E("path", {d:wobble(P, .8, i + 3), class:"faded", "stroke-width":.55, opacity:.55}, g); }
+  E("rect", {x:1, y:1, width:VW - 2, height:VH - 2, class:"ink", "stroke-width":1.4}, g);
+  E("rect", {x:7, y:7, width:VW - 14, height:VH - 14, class:"ink2", "stroke-width":.6}, g);
+  // the sheet of vellum, with its shadow
+  E("rect", {x:OX + 4, y:OY + 5, width:WCM * PX, height:HCM * PX, class:"fink2", opacity:.16}, g);
+  E("rect", {x:OX, y:OY, width:WCM * PX, height:HCM * PX, class:"fvel"}, g);
+  for(let i = 0; i <= WCM; i++) E("line", {x1:X(i), x2:X(i), y1:Y(0), y2:Y(HCM), class:"faded", "stroke-width":i % 5 ? .35 : .7, opacity:i % 5 ? .6 : .8}, g);
+  for(let j = 0; j <= HCM; j++) E("line", {x1:X(0), x2:X(WCM), y1:Y(j), y2:Y(j), class:"faded", "stroke-width":j % 5 ? .35 : .7, opacity:j % 5 ? .6 : .8}, g);
+  for(let i = 5; i < WCM; i += 5) T(String(i), {x:X(i) + 3, y:Y(0) - 4, "font-size":11, class:"fadedt"}, g);
+  for(let j = 5; j < HCM; j += 5) T(String(j), {x:X(0) + 3, y:Y(j) - 4, "font-size":11, class:"fadedt"}, g);
+  E("rect", {x:OX, y:OY, width:WCM * PX, height:HCM * PX, class:"ink2", "stroke-width":1.1}, g);
+  // a scale of centimetres, engraved in the corner
+  const sx = X(19), sy = Y(.75);
+  for(let i = 0; i < 5; i++) E("rect", {x:sx + i * PX, y:sy, width:PX, height:5, class:i % 2 ? "fvel" : "fink2"}, g);
+  E("rect", {x:sx, y:sy, width:5 * PX, height:5, class:"ink", "stroke-width":.8}, g);
+  T("0", {x:sx, y:sy - 4, "font-size":11, "text-anchor":"middle", class:"fadedt"}, g);
+  T("5 centimetres", {x:sx + 5 * PX, y:sy - 4, "font-size":11, "text-anchor":"end", class:"fadedt", "font-style":"italic"}, g);
+  // drawing pins at the corners
+  [[OX + 9, OY + 9], [OX + WCM * PX - 9, OY + 9], [OX + 9, Y(0) - 9], [OX + WCM * PX - 9, Y(0) - 9]].forEach(p => { disc(g, p, 5.5, "fgold", "url(#h45)", .9); E("circle", {cx:p[0] - 1.5, cy:p[1] - 1.5, r:1.3, class:"fvel"}, g); });
 }
-function drawState(s,trail){const c=ctx;const o=P();c.lineCap="round";
-  if(trail&&trail.length>1){c.beginPath();trail.forEach((p,i)=>{const[x,y]=toPx(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.strokeStyle=css("--a");c.lineWidth=2;c.stroke();}
-  if(inst==="polar"||inst==="linear"){const A=inst==="polar"?toPx(pole):null,J=toPx(s.J),T=toPx(s.T),W=toPx(s.W);
-    c.strokeStyle=css("--ink");c.lineWidth=5;c.beginPath();if(A){c.moveTo(...A);c.lineTo(...J);}c.moveTo(...J);c.lineTo(...T);c.stroke();
-    c.fillStyle=css("--brass");c.beginPath();c.arc(J[0],J[1],6,0,7);c.fill();
-    c.save();c.translate(W[0],W[1]);c.rotate(-Math.atan2(s.u.y,s.u.x));c.fillStyle=css("--c");c.fillRect(-4,-16,8,32);c.restore();
-    c.fillStyle=css("--hair");c.beginPath();c.arc(T[0],T[1],5,0,7);c.fill();}
-  if(inst==="hatchet"){const H=toPx(s.H),T=toPx(s.T);c.strokeStyle=css("--ink");c.lineWidth=5;c.beginPath();c.moveTo(...H);c.lineTo(...T);c.stroke();
-    const ang=Math.atan2(-(T[1]-H[1]),T[0]-H[0]);c.save();c.translate(H[0],H[1]);c.rotate(-ang);c.fillStyle=css("--c");c.beginPath();c.moveTo(0,-14);c.lineTo(10,0);c.lineTo(0,14);c.closePath();c.fill();c.restore();
-    c.fillStyle=css("--hair");c.beginPath();c.arc(T[0],T[1],5,0,7);c.fill();}
-  if(inst==="xy"){const T=toPx(s.T);c.strokeStyle=css("--c");c.setLineDash([5,5]);c.lineWidth=1.5;c.beginPath();c.moveTo(T[0],cv.height);c.lineTo(T[0],T[1]);c.lineTo(0,T[1]);c.stroke();c.setLineDash([]);
-    c.fillStyle=css("--hair");c.beginPath();c.arc(T[0],T[1],5,0,7);c.fill();c.fillStyle=css("--ink");c.font="13px IBM Plex Mono, monospace";c.fillText(`x=${s.x.toFixed(2)}`,T[0]+6,cv.height-6);c.fillText(`y=${s.y.toFixed(2)}`,4,T[1]-6);}
+function drawCurve(){
+  gCurve.innerHTML = ""; if(!curve.length) return;
+  const P = resample(curve, 360).map(p => sv(p)), d = "M" + P.map(p => f2(p[0]) + "," + f2(p[1])).join("L") + "Z";
+  E("path", {d, class:"fwash"}, gCurve);
+  E("path", {d, fill:"url(#hhw)", opacity:.35}, gCurve);
+  E("path", {d:wobble(P, .5, 5) + "Z", class:"ink", "stroke-width":1.7, "stroke-linejoin":"round"}, gCurve);
 }
-function noiseNow(seed){return{tremor:+$("nt").value,slip:+$("ns").value,q:+$("nq").value,seed};}
-function fmt(x,d=3){return x.toFixed(d);}
-function result(kind,noise,withRun){
-  const truth=Math.abs(shoelace(curve)), o=P();
-  const path=tracePath(noise.tremor,noise.seed+7);
-  const res=simulate(kind,path,o,noise,false); if(!res.ok){$("status").textContent=res.msg;$("status").className="status warn";return null;}
-  const err=res.est-truth;
-  $("read").innerHTML=`True area (shoelace): ${fmt(truth)} cm²<br>${res.counter}<br>${res.formula}<br><span class="big">${fmt(res.est)} cm²</span><br>error ${err>=0?"+":""}${fmt(err)} cm² (${err>=0?"+":""}${fmt(100*err/truth,2)}%)`;
-  // budget
-  const rows=[["Intrinsic only",{tremor:0,slip:0,q:0}],["+ reading only",{tremor:0,slip:0,q:noise.q}],["+ slip only",{tremor:0,slip:noise.slip,q:0}],["+ tremor only",{tremor:noise.tremor,slip:0,q:0}],["All together",{tremor:noise.tremor,slip:noise.slip,q:noise.q}]];
-  let h='<table class="bud"><tr><th>source</th><th>estimate</th><th>error</th><th>%</th></tr>';
-  for(const [lab,nz] of rows){const pth=tracePath(nz.tremor,noise.seed+7);const r=simulate(kind,pth,o,Object.assign({seed:noise.seed},nz),false);if(!r.ok)continue;const e=r.est-truth;h+=`<tr><td>${lab}</td><td>${fmt(r.est,2)}</td><td>${e>=0?"+":""}${fmt(e,3)}</td><td>${e>=0?"+":""}${fmt(100*e/truth,2)}</td></tr>`;}
-  $("budget").innerHTML=h+"</table>";
-  if(withRun){runs.push({kind,pct:100*err/truth});drawRuns();}
-  $("status").textContent="";$("status").className="status";
-  return res;}
-function drawRuns(){const svg=$("runs");const NS="http://www.w3.org/2000/svg";svg.innerHTML="";
-  const E=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e;};
-  const kinds=["polar","linear","hatchet","xy"],names={polar:"Polar",linear:"Linear",hatchet:"Hatchet",xy:"X–Y"},cols={polar:"var(--a)",linear:"var(--c)",hatchet:"var(--b)",xy:"var(--brass)"};
-  const m=Math.max(1,...runs.map(r=>Math.abs(r.pct)));const lim=Math.ceil(m);const y=v=>80-v/lim*62;
-  E("line",{x1:40,y1:80,x2:315,y2:80,stroke:"var(--muted)"});
-  const lt=(v,t)=>{const e=E("text",{x:34,y:y(v)+4,"text-anchor":"end","font-size":10,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"});e.textContent=t;};
-  lt(lim,"+"+lim+"%");lt(0,"0");lt(-lim,"−"+lim+"%");
-  kinds.forEach((k,i)=>{const x0=50+i*68;const t=E("text",{x:x0+25,y:162,"text-anchor":"middle","font-size":11,fill:"var(--muted)","font-family":"IBM Plex Sans, sans-serif"});t.textContent=names[k];
-    runs.filter(r=>r.kind===k).forEach((r,j)=>E("circle",{cx:x0+6+(j%8)*6,cy:y(r.pct),r:3.2,fill:cols[k]}));});
-  const by=k=>runs.filter(r=>r.kind===k).map(r=>r.pct);
-  $("runsum").innerHTML=kinds.map(k=>{const v=by(k);if(!v.length)return"";const mu=v.reduce((a,b)=>a+b,0)/v.length,sd=Math.sqrt(v.reduce((a,b)=>a+(b-mu)**2,0)/Math.max(1,v.length-1));return`${names[k]}: ${v.length} run${v.length>1?"s":""}, mean ${mu>=0?"+":""}${mu.toFixed(2)}%, sd ${sd.toFixed(2)}%`;}).filter(Boolean).join("<br>")||"No runs yet. Each Trace or Measure adds one.";}
-function measure(log){cancelAnimationFrame(anim);drawBase();const seed=Math.floor(Math.random()*1e9);const noise=noiseNow(seed);const res=result(inst,noise,log===true);
-  if(res){const path=tracePath(noise.tremor,seed+7);const r2=simulate(inst,path,P(),noise,true);if(r2.ok)drawState(r2.states[r2.states.length-1],inst==="hatchet"?r2.states.map(s=>s.H):null);}}
-function trace(){cancelAnimationFrame(anim);const seed=Math.floor(Math.random()*1e9);const noise=noiseNow(seed);const path=tracePath(noise.tremor,seed+7);
-  const r=simulate(inst,path,P(),noise,true);if(!r.ok){drawBase();$("status").textContent=r.msg;$("status").className="status warn";return;}
-  const S=r.states,N=S.length,start=performance.now(),dur=4500;
-  const tick=now=>{const f=Math.min(1,(now-start)/dur),k=Math.max(1,Math.floor(f*(N-1)));drawBase();
-    const trailT=S.slice(0,k+1).map(s=>s.T);ctx.beginPath();trailT.forEach((p,i)=>{const[x,y]=toPx(p);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.strokeStyle=css("--hair");ctx.lineWidth=1.5;ctx.stroke();
-    drawState(S[k],inst==="hatchet"?S.slice(0,k+1).map(s=>s.H):null);
-    const s=S[k];let live="";const o=P();
-    if(inst==="polar"||inst==="linear")live=`wheel: ${(s.w/WHEEL_C).toFixed(4)} turns → b·w = ${((inst==="polar"?o.b:o.lb)*s.w).toFixed(3)} cm²`;
-    if(inst==="hatchet")live=`rod angle: ${(s.th*180/Math.PI).toFixed(2)}° → L²θ = ${(o.L*o.L*s.th).toFixed(3)} cm²`;
-    if(inst==="xy")live=`running Σ x·Δy = ${s.A.toFixed(3)} cm²`;
-    $("status").textContent=live;$("status").className="status";
-    if(f<1)anim=requestAnimationFrame(tick);else{result(inst,noise,true);}};
-  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){measure(true);return;}
-  anim=requestAnimationFrame(tick);}
-// ---------- interaction ----------
-cv.addEventListener("pointerdown",e=>{const p=fromEvt(e);try{cv.setPointerCapture(e.pointerId);}catch(_){}
-  if(drawing){drawPts=[p];dragWhat="draw";return;}
-  if(inst==="polar"&&Math.hypot(p.x-pole.x,p.y-pole.y)<0.8){dragWhat="pole";return;}
-  if(inst==="linear"&&Math.abs(p.y-rail)<0.6){dragWhat="rail";return;}
-  if(inst==="hatchet"){const S=hstart||centroid(curve);if(Math.hypot(p.x-S.x,p.y-S.y)<0.8){dragWhat="start";return;}}});
-cv.addEventListener("pointermove",e=>{if(!dragWhat)return;const p=fromEvt(e);
-  if(dragWhat==="draw"){const q=drawPts[drawPts.length-1];if(Math.hypot(p.x-q.x,p.y-q.y)>0.08)drawPts.push(p);}
-  if(dragWhat==="pole")pole=p; if(dragWhat==="rail")rail=Math.max(0.2,Math.min(HCM-0.2,p.y)); if(dragWhat==="start")hstart=p;
-  drawBase();});
-const endDrag=()=>{if(dragWhat==="draw"){drawing=false;$("draw").classList.remove("on");if(drawPts.length>20&&Math.abs(shoelace(drawPts))>1){curve=drawPts;hstart=null;$("status").textContent="Your curve is closed automatically with a straight segment back to the start.";}else $("status").textContent="That curve was too small. Try again with Draw your own.";drawBase();}
-  else if(dragWhat){measure();}dragWhat=null;};
-cv.addEventListener("pointerup",endDrag);cv.addEventListener("pointercancel",endDrag);
-$("draw").onclick=()=>{drawing=true;drawPts=[];$("draw").classList.add("on");$("status").textContent="Drag on the table to draw a closed curve.";$("status").className="status";};
-$("preset").onchange=()=>{curve=preset($("preset").value);hstart=null;measure();};
-$("trace").onclick=trace; $("measure").onclick=()=>measure(true); $("clearruns").onclick=()=>{runs=[];drawRuns();};
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{inst=b.dataset.i;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
-  document.querySelectorAll(".pctl").forEach(d=>d.classList.toggle("on",d.dataset.p===inst));measure();});
-const outs=[["pa"," cm"],["pb"," cm"],["pc"," cm"],["lb"," cm"],["lc"," cm"],["hl"," cm"],["xr"," cm"],["nt"," cm"],["ns","%"]];
-for(const [id,u] of outs){const f=()=>{$(id+"o").value=$(id).value+u;};$(id).addEventListener("input",f);$(id).addEventListener("change",measure);f();}
-$("nq").onchange=measure;
-curve=preset("blob"); drawBase(); drawRuns(); measure();
+
+/* ---------- the handles, which persist so a drag keeps hold of them ---------- */
+const H = {};
+KINDS.forEach(k => H[k] = E("g", {}, gHand));
+// the pole: a weight with a needle beneath
+(function(){ const g = E("g", {class:"grab", "data-g":"pole"}, H.polar);
+  E("circle", {cx:4, cy:5, r:28, class:"fink2", opacity:.16}, g);
+  disc(g, [0, 0], 28, "fvel", "url(#hx)", 1.6); E("circle", {cx:0, cy:0, r:21, class:"ink", "stroke-width":.7}, g);
+  E("circle", {cx:0, cy:0, r:25, class:"ink2", "stroke-width":.5, "stroke-dasharray":"1 2.2"}, g);
+  disc(g, [0, 0], 10, "fgold", "url(#h45)", 1.1); E("circle", {cx:-2.5, cy:-2.5, r:2, class:"fvel"}, g);
+  sig(g, "a", -34, -26); E("circle", {cx:0, cy:0, r:34, fill:"transparent"}, g);
+  H.pole = g; })();
+// the rail: a steel straightedge across the board, graduated
+(function(){ const g = E("g", {class:"nsgrab", "data-g":"rail"}, H.linear);
+  E("rect", {x:12, y:-6, width:VW - 24, height:16, class:"fink2", opacity:.14}, g);
+  E("rect", {x:10, y:-9, width:VW - 20, height:18, class:"fvel"}, g);
+  E("rect", {x:10, y:-9, width:VW - 20, height:18, fill:"url(#hhw)", class:"ink", "stroke-width":1.2}, g);
+  E("line", {x1:10, x2:VW - 10, y1:0, y2:0, class:"ink2", "stroke-width":1.4}, g);
+  E("line", {x1:10, x2:VW - 10, y1:1.5, y2:1.5, style:"stroke:var(--vellum2)", "stroke-width":1}, g);
+  for(let i = 0; i <= WCM; i++) E("line", {x1:X(i), x2:X(i), y1:-9, y2:i % 5 ? -5.5 : -3, class:"ink", "stroke-width":.7}, g);
+  [10, VW - 26].forEach(x => { E("rect", {x, y:-12, width:16, height:24, class:"fgold", opacity:.5}, g); E("rect", {x, y:-12, width:16, height:24, fill:"url(#h45)", class:"ink", "stroke-width":1}, g); });
+  sig(g, "a", 46, -14); E("rect", {x:10, y:-16, width:VW - 20, height:32, fill:"transparent"}, g);
+  H.rail = g; })();
+// the hatchet's starting point
+(function(){ const g = E("g", {class:"grab", "data-g":"start"}, H.hatchet);
+  E("circle", {cx:0, cy:0, r:9, class:"rub", "stroke-width":1.3}, g);
+  E("path", {d:"M-16,0H-5M5,0H16M0,-16V-5M0,5V16", class:"rub", "stroke-width":1.1}, g);
+  T("S", {x:12, y:22, "font-size":16, class:"sc rubt"}, g); sig(g, "a", -18, -16);
+  E("circle", {cx:0, cy:0, r:22, fill:"transparent"}, g);
+  H.start = g; })();
+// the radial planimeter's centre and its glass disk
+(function(){ const g = E("g", {class:"grab", "data-g":"centre"}, H.radial), R = RAD_DISK * PX;
+  E("circle", {cx:0, cy:0, r:R, class:"flwash"}, g);
+  E("circle", {cx:0, cy:0, r:R, fill:"url(#hdot)", opacity:.35}, g);
+  E("circle", {cx:0, cy:0, r:R, class:"ink", "stroke-width":1.2}, g);
+  E("circle", {cx:0, cy:0, r:R - 9, class:"ink2", "stroke-width":.5}, g);
+  for(let d = 0; d < 360; d += 5){ const a = d * Math.PI / 180, l = d % 30 ? (d % 10 ? 4 : 6) : 9; E("line", {x1:f2(R * Math.cos(a)), y1:f2(-R * Math.sin(a)), x2:f2((R - l) * Math.cos(a)), y2:f2(-(R - l) * Math.sin(a)), class:"ink", "stroke-width":d % 30 ? .5 : .9}, g);
+    if(d % 30 === 0) T(String(d), {x:f2((R - 19) * Math.cos(a)), y:f2(-(R - 19) * Math.sin(a) + 3.5), "font-size":10, "text-anchor":"middle", class:"fadedt"}, g); }
+  sig(g, "a", -R * .72, -R * .72);
+  H.disk = g;
+  H.hub = E("g", {}, H.radial); })();
+function placeHandles(){
+  KINDS.forEach(k => H[k].style.display = k === inst ? "" : "none");
+  H.pole.setAttribute("transform", `translate(${f2(X(pole.x))},${f2(Y(pole.y))})`);
+  H.rail.setAttribute("transform", `translate(0,${f2(Y(rail))})`);
+  const S = hstart || (curve.length ? centroid(curve) : {x:13.5, y:9.5});
+  H.start.setAttribute("transform", `translate(${f2(X(S.x))},${f2(Y(S.y))})`);
+  H.disk.setAttribute("transform", `translate(${f2(X(rctr.x))},${f2(Y(rctr.y))})`);
+}
+const clampB = p => ({x:Math.max(-.6, Math.min(WCM + .6, p.x)), y:Math.max(-.6, Math.min(HCM + .6, p.y))});
+drag(H.pole, svg, p => { pole = clampB(cmOf(p)); placeHandles(); refresh(); }, () => { stopAnim(); });
+drag(H.rail, svg, p => { rail = Math.max(-.4, Math.min(HCM + .4, cmOf(p).y)); placeHandles(); refresh(); }, () => { stopAnim(); });
+drag(H.start, svg, p => { hstart = clampB(cmOf(p)); placeHandles(); refresh(); }, () => { stopAnim(); });
+drag(H.disk, svg, (p, e, p0) => { rctr = clampB(cmOf(p)); placeHandles(); refresh(); }, () => { stopAnim(); });
+
+/* ---------- each instrument, drawn in one state ---------- */
+function trailOf(states, k, key){ const P = []; for(let i = 0; i <= k; i += 2) P.push(sv(states[i][key])); if(k % 2) P.push(sv(states[k][key])); return P; }
+function pathD(P){ return "M" + P.map(p => f2(p[0]) + "," + f2(p[1])).join("L"); }
+function drawPolar(g, s, o){
+  const P = sv(pole);
+  E("circle", {cx:P[0], cy:P[1], r:o.a * PX, class:"faded", "stroke-width":.9, "stroke-dasharray":"2 5", "data-g":"arms"}, g);
+  if(!s){ E("circle", {cx:P[0], cy:P[1], r:(o.a + o.b) * PX, class:"rub", "stroke-width":.9, "stroke-dasharray":"7 5"}, g);
+    if(Math.abs(o.a - o.b) > .1) E("circle", {cx:P[0], cy:P[1], r:Math.abs(o.a - o.b) * PX, class:"rub", "stroke-width":.9, "stroke-dasharray":"7 5"}, g);
+    T("the tracer's reach", {x:P[0] + 8, y:P[1] - (o.a + o.b) * PX - 6, "font-size":13, class:"rubt", "font-style":"italic"}, g); return; }
+  const J = sv(s.J), Tp = sv(s.T), us = [s.u.x, -s.u.y], far = Math.max(o.b, o.c) * PX + 12;
+  bar(g, P, J, 6.5, "brass", "arms");
+  bar(g, [J[0] - us[0] * 24, J[1] - us[1] * 24], [J[0] + us[0] * far, J[1] + us[1] * far], 7.5, "brass", "arms");
+  armScale(g, J, us, o.b);
+  hinge(g, J);
+  wheelAsm(g, sv(s.W), s.u, s.w, 30, "wheel");
+  tracer(g, Tp, s.u, "tracer");
+  const n = [-us[1], us[0]], m = [(P[0] + J[0]) / 2, (P[1] + J[1]) / 2];
+  const pa = [J[0] - P[0], J[1] - P[1]], pl = Math.hypot(pa[0], pa[1]) || 1, pn = [-pa[1] / pl, pa[0] / pl];
+  sig(g, "b", m[0] + pn[0] * 18, m[1] + pn[1] * 18 + 6);
+  const W = sv(s.W); sig(g, "c", W[0] - us[0] * 30 + n[0] * 30, W[1] - us[1] * 30 + n[1] * 30 + 6);
+  sig(g, "d", Tp[0] + n[0] * 26 + us[0] * 10, Tp[1] + n[1] * 26 + us[1] * 10 + 6);
+}
+function drawLinear(g, s, o){
+  if(!s){ const y = Y(rail); [1, -1].forEach(sg => E("line", {x1:12, x2:VW - 12, y1:Y(rail + sg * o.lb), y2:Y(rail + sg * o.lb), class:"rub", "stroke-width":.9, "stroke-dasharray":"7 5"}, g));
+    T("the tracer's reach", {x:60, y:Y(rail + o.lb) - 6, "font-size":13, class:"rubt", "font-style":"italic"}, g); return; }
+  const J = sv(s.J), Tp = sv(s.T), us = [s.u.x, -s.u.y], far = Math.max(o.lb, o.lc) * PX + 12;
+  // the carriage on its four rollers
+  const cg = E("g", {"data-g":"carriage"}, g);
+  [[-36, -15], [36, -15], [-36, 15], [36, 15]].forEach(([dx, dy]) => { E("rect", {x:J[0] + dx - 12, y:J[1] + dy - 5, width:24, height:10, rx:2, class:"fvel"}, cg);
+    E("rect", {x:J[0] + dx - 12, y:J[1] + dy - 5, width:24, height:10, rx:2, fill:"url(#hv)", class:"ink", "stroke-width":.9}, cg);
+    E("line", {x1:J[0] + dx, x2:J[0] + dx, y1:J[1] + dy - 7, y2:J[1] + dy + 7, class:"ink", "stroke-width":1.4}, cg); });
+  E("rect", {x:J[0] - 50, y:J[1] - 9, width:104, height:22, rx:4, class:"fink2", opacity:.14}, cg);
+  E("rect", {x:J[0] - 52, y:J[1] - 12, width:104, height:24, rx:4, class:"fgold", opacity:.5}, cg);
+  E("rect", {x:J[0] - 52, y:J[1] - 12, width:104, height:24, rx:4, fill:"url(#h45)", class:"ink", "stroke-width":1.1}, cg);
+  E("line", {x1:J[0] - 48, x2:J[0] + 48, y1:J[1] - 8, y2:J[1] - 8, style:"stroke:var(--vellum2)", "stroke-width":1.4, opacity:.85}, cg);
+  [-42, 42].forEach(dx => disc(cg, [J[0] + dx, J[1]], 3, "fvel", null, .8));
+  bar(g, [J[0] - us[0] * 24, J[1] - us[1] * 24], [J[0] + us[0] * far, J[1] + us[1] * far], 7.5, "brass", "arms");
+  armScale(g, J, us, o.lb);
+  hinge(g, J);
+  wheelAsm(g, sv(s.W), s.u, s.w, 30, "wheel");
+  tracer(g, Tp, s.u, "tracer");
+  const n = [-us[1], us[0]], W = sv(s.W);
+  sig(g, "b", J[0] - 66, J[1] + (Y(rail) > VH / 2 ? -14 : 30));
+  sig(g, "c", W[0] - us[0] * 30 + n[0] * 30, W[1] - us[1] * 30 + n[1] * 30 + 6);
+  sig(g, "d", Tp[0] + n[0] * 26 + us[0] * 10, Tp[1] + n[1] * 26 + us[1] * 10 + 6);
+}
+function drawHatchet(g, states, k, res){
+  const s = states[k], St = res.start, S0 = sv(St), L = res.L;
+  // the way out to the curve and back
+  E("path", {d:pathD([S0, sv(curve[0])]), class:"faded", "stroke-width":1, "stroke-dasharray":"4 4"}, g);
+  // where the rod began
+  const H0 = sv(states[0].H), T0 = sv(states[0].T);
+  E("line", {x1:H0[0], y1:H0[1], x2:T0[0], y2:T0[1], class:"ink2", "stroke-width":1, "stroke-dasharray":"6 4", "data-g":"theta"}, g);
+  // the knife's track
+  if(k > 0) E("path", {d:pathD(trailOf(states, k, "H")), class:"lap", "stroke-width":1.3, "stroke-dasharray":"1.5 3", "stroke-linecap":"round", "data-g":"knife"}, g);
+  const Hp = sv(s.H), Tp = sv(s.T), u = {x:(s.T.x - s.H.x) / L, y:(s.T.y - s.H.y) / L}, us = [u.x, -u.y], n = [-us[1], us[0]];
+  // the turn θ, drawn as an arc about S when the point is home
+  if(k === states.length - 1 && Math.abs(s.th) > 1e-4){ const R = Math.min(90, L * PX * .45), f0 = Math.atan2(H0[1] - T0[1], H0[0] - T0[0]), M = 40;
+    const P = []; for(let i = 0; i <= M; i++){ const a = f0 - s.th * i / M; P.push([S0[0] + R * Math.cos(a), S0[1] + R * Math.sin(a)]); }
+    const ag = E("g", {"data-g":"theta"}, g);
+    E("path", {d:pathD([S0].concat(P)) + "Z", class:"fwash"}, ag);
+    E("path", {d:pathD(P), class:"rub", "stroke-width":1.4}, ag);
+    const am = f0 - s.th / 2; T("θ", {x:S0[0] + (R + 14) * Math.cos(am), y:S0[1] + (R + 14) * Math.sin(am) + 6, "font-size":19, class:"rubt", "font-style":"italic", "text-anchor":"middle"}, ag);
+    sig(ag, "d", S0[0] + (R + 14) * Math.cos(am) + 18, S0[1] + (R + 14) * Math.sin(am) + 6); }
+  // the rod, of steel, bent down at both ends
+  bar(g, [Hp[0] + us[0] * 6, Hp[1] + us[1] * 6], [Tp[0] - us[0] * 6, Tp[1] - us[1] * 6], 3.6, "steel", "rod");
+  // the knife: a hatchet blade standing on its edge along the rod
+  const kg = grp(g, Hp, deg(u), {"data-g":"knife"});
+  E("path", {d:"M-26,2 Q0,9 26,2 L19,-15 Q0,-19 -19,-15 Z", class:"fink2", opacity:.14, transform:"translate(3,4)"}, kg);
+  E("path", {d:"M-26,2 Q0,9 26,2 L19,-15 Q0,-19 -19,-15 Z", class:"fvel"}, kg);
+  E("path", {d:"M-26,2 Q0,9 26,2 L19,-15 Q0,-19 -19,-15 Z", fill:"url(#h45)", class:"ink", "stroke-width":1.1}, kg);
+  E("path", {d:"M-26,2 Q0,9 26,2", class:"rub", "stroke-width":1.6}, kg);
+  E("path", {d:"M-5,-16 L-5,-3 L5,-3 L5,-16", class:"ink", "stroke-width":1, fill:"none"}, kg);
+  disc(kg, [0, -10], 3, "fvel", null, .8);
+  // the point
+  const pg = grp(g, Tp, deg(u), {"data-g":"rod"});
+  E("circle", {cx:3, cy:4, r:8, class:"fink2", opacity:.14}, pg);
+  disc(pg, [0, 0], 8, "fvel", "url(#h135w)", 1.3); disc(pg, [0, 0], 2.4, "frub", null, .6);
+  sig(g, "b", Hp[0] + n[0] * 30, Hp[1] + n[1] * 30 + 6);
+  sig(g, "c", Tp[0] - n[0] * 26 + us[0] * 16, Tp[1] - n[1] * 26 + us[1] * 16 + 6);
+}
+function drawRadial(g, s, o){
+  const O = sv(rctr); let u = {x:1, y:0};
+  if(s && s.r > 1e-6) u = {x:(s.T.x - rctr.x) / s.r, y:(s.T.y - rctr.y) / s.r};
+  else if(!s && curve.length){ const d = Math.hypot(curve[0].x - rctr.x, curve[0].y - rctr.y) || 1; u = {x:(curve[0].x - rctr.x) / d, y:(curve[0].y - rctr.y) / d}; }
+  const k = grp(g, O, deg(u)), L = RAD_ARM * PX;
+  if(!s){ E("circle", {cx:O[0], cy:O[1], r:Math.min(RAD_ARM, Math.sqrt(2 * o.k * RAD_DISK)) * PX, class:"rub", "stroke-width":.9, "stroke-dasharray":"7 5"}, g); }
+  // the arm, slotted and graduated, with its counterweight
+  const ag = bar(k, [-48, 0], [L + 8, 0], 9, "brass", "arm");
+  E("rect", {x:26, y:-2.4, width:L - 26, height:4.8, rx:2.4, class:"fvel"}, ag);
+  E("rect", {x:26, y:-2.4, width:L - 26, height:4.8, rx:2.4, class:"ink2", "stroke-width":.6}, ag);
+  for(let i = 1; i <= RAD_ARM; i++) E("line", {x1:i * PX, x2:i * PX, y1:-9, y2:i % 5 ? -5.5 : -3.5, class:"ink", "stroke-width":.7}, ag);
+  disc(ag, [-42, 0], 15, "fvel", "url(#hx)", 1.2);
+  // the cam at the hub, cut to a parabola, and its cord to the slider
+  const cg = E("g", {"data-g":"cam"}, k);
+  E("path", {d:"M14,10 Q34,10 52,34 L60,30 Q42,0 14,0 Z", class:"fgold", opacity:.5}, cg);
+  E("path", {d:"M14,10 Q34,10 52,34 L60,30 Q42,0 14,0 Z", fill:"url(#h135)", class:"ink", "stroke-width":1}, cg);
+  E("path", {d:"M14,10 Q34,10 52,34", class:"rub", "stroke-width":1.2}, cg);
+  if(s){ E("path", {d:`M58,31 L${f2(Math.max(70, s.r * PX - 4))},16`, class:"ink2", "stroke-width":.8, "stroke-dasharray":"5 2 1 2"}, cg);
+    const rho = s.rho * PX; E("path", {d:`M40,20 L${f2(Math.max(42, rho))},14`, class:"ink2", "stroke-width":.8}, cg); }
+  // the hub
+  disc(k, [0, 0], 13, "fgold", "url(#h45)", 1.2); disc(k, [0, 0], 4, "fvel", null, .8);
+  if(s){
+    wheelAsm(k, [s.rho * PX, 0], {x:1, y:0}, s.w, 20, "wheel");
+    const sg = E("g", {"data-g":"arm"}, k), x = s.r * PX;
+    E("rect", {x:x - 17, y:-14, width:34, height:28, rx:3, class:"fink2", opacity:.14, transform:"translate(3,4)"}, sg);
+    E("rect", {x:x - 17, y:-14, width:34, height:28, rx:3, class:"fgold", opacity:.5}, sg);
+    E("rect", {x:x - 17, y:-14, width:34, height:28, rx:3, fill:"url(#h135)", class:"ink", "stroke-width":1}, sg);
+    tracer(k, [x, 0], {x:1, y:0}, "tracer");
+  }
+  const us = [u.x, -u.y], n = [-us[1], us[0]];
+  sig(g, "b", O[0] + us[0] * L * .62 - n[0] * 26, O[1] + us[1] * L * .62 - n[1] * 26 + 6);
+  sig(g, "c", O[0] + us[0] * 40 + n[0] * 52, O[1] + us[1] * 40 + n[1] * 52 + 6);
+  if(s) sig(g, "d", O[0] + us[0] * s.rho * PX - n[0] * 58, O[1] + us[1] * s.rho * PX - n[1] * 58 + 6);
+}
+function dial(g, c, r, frac, key){ const dg = E("g", key ? {"data-g":key} : {}, g);
+  E("circle", {cx:c[0], cy:c[1], r, class:"fvel"}, dg); E("circle", {cx:c[0], cy:c[1], r, class:"ink", "stroke-width":1.1}, dg);
+  for(let i = 0; i < 20; i++){ const a = i * Math.PI / 10; E("line", {x1:f2(c[0] + (r - (i % 2 ? 2.5 : 4)) * Math.sin(a)), y1:f2(c[1] - (r - (i % 2 ? 2.5 : 4)) * Math.cos(a)), x2:f2(c[0] + r * Math.sin(a)), y2:f2(c[1] - r * Math.cos(a)), class:"ink", "stroke-width":.6}, dg); }
+  const a = frac * 2 * Math.PI; E("line", {x1:c[0], y1:c[1], x2:f2(c[0] + (r - 2) * Math.sin(a)), y2:f2(c[1] - (r - 2) * Math.cos(a)), class:"rub", "stroke-width":1.5}, dg);
+  E("circle", {cx:c[0], cy:c[1], r:1.6, class:"fink"}, dg); }
+function drawFrame(g, s, o){
+  const x = s ? X(s.T.x) : X(13.5), y = s ? Y(s.T.y) : Y(9.5), rg = E("g", {"data-g":"rails"}, g);
+  bar(rg, [16, VH - 18], [VW - 16, VH - 18], 6, "steel");
+  bar(rg, [16, 18], [VW - 16, 18], 6, "steel");
+  for(let i = 0; i <= WCM; i++) E("line", {x1:X(i), x2:X(i), y1:VH - 24, y2:VH - (i % 5 ? 20 : 17), class:"ink", "stroke-width":.7}, rg);
+  // the bridge and its two feet
+  bar(rg, [x, 22], [x, VH - 22], 7, "brass");
+  E("rect", {x:x - 1.6, y:30, width:3.2, height:VH - 60, class:"fvel"}, rg);
+  [18, VH - 18].forEach(yy => { E("rect", {x:x - 26, y:yy - 11, width:52, height:22, rx:3, class:"fgold", opacity:.5}, rg);
+    E("rect", {x:x - 26, y:yy - 11, width:52, height:22, rx:3, fill:"url(#h45)", class:"ink", "stroke-width":1.1}, rg);
+    [-17, 17].forEach(dx => { E("rect", {x:x + dx - 6, y:yy - 4, width:12, height:8, rx:1.5, fill:"url(#hv)", class:"ink", "stroke-width":.8}, rg); }); });
+  // the carriage on the bridge
+  const cg = E("g", {"data-g":"carriage"}, g);
+  E("rect", {x:x - 19, y:y - 26, width:38, height:52, rx:3, class:"fink2", opacity:.14, transform:"translate(3,4)"}, cg);
+  E("rect", {x:x - 19, y:y - 26, width:38, height:52, rx:3, class:"fgold", opacity:.5}, cg);
+  E("rect", {x:x - 19, y:y - 26, width:38, height:52, rx:3, fill:"url(#h135)", class:"ink", "stroke-width":1.1}, cg);
+  [-20, 20].forEach(dy => E("rect", {x:x - 6, y:y + dy - 4, width:12, height:8, rx:1.5, fill:"url(#hh)", class:"ink", "stroke-width":.8}, cg));
+  tracer(g, [x, y], {x:0, y:1}, "tracer");
+  // the counting wheels' dials
+  const xs = s ? s.x / o.res : 0, ys = s ? s.y / o.res : 0;
+  dial(g, [x + 40, VH - 18], 12, (xs % 100) / 100, "counters");
+  dial(g, [x + 36, y], 12, (ys % 100) / 100, "counters");
+  sig(g, "a", 70, VH - 32); sig(g, "b", x - 34, y - 22); sig(g, "c", x + 64, y + 6);
+}
+
+/* ---------- Fig. 2: the counting parts, enlarged ---------- */
+const det = $("det");
+function wheelFace(g, cx, cy, R, w, num){
+  const wg = E("g", {"data-g":"wheel"}, g);
+  E("circle", {cx:cx, cy:cy, r:R + 4, fill:"url(#hx)", class:"ink", "stroke-width":1}, wg);
+  E("circle", {cx:cx, cy:cy, r:R, class:"fvel"}, wg); E("circle", {cx:cx, cy:cy, r:R, class:"ink", "stroke-width":1}, wg);
+  for(let i = 0; i < 100; i++){ const a = 2 * Math.PI * i / 100 - w, l = i % 10 === 0 ? R * .2 : i % 5 === 0 ? R * .13 : R * .08;
+    E("line", {x1:f2(cx + R * Math.sin(a)), y1:f2(cy - R * Math.cos(a)), x2:f2(cx + (R - l) * Math.sin(a)), y2:f2(cy - (R - l) * Math.cos(a)), class:"ink", "stroke-width":i % 10 ? .45 : .9}, wg);
+    if(num && i % 10 === 0) T(String(i / 10), {x:f2(cx + R * .66 * Math.sin(a)), y:f2(cy - R * .66 * Math.cos(a) + 4), "font-size":R > 50 ? 11 : 9, "text-anchor":"middle"}, wg); }
+  disc(wg, [cx, cy], R * .14, "fgold", "url(#h45)", .9);
+  // the vernier: ten divisions in the space of nine, fixed above the rim
+  const vg = E("g", {}, g), step = 2 * Math.PI / 100 * .9;
+  E("path", {d:`M${f2(cx + (R + 5) * Math.sin(-5.6 * step))},${f2(cy - (R + 5) * Math.cos(-5.6 * step))} A${R + 5},${R + 5} 0 0 1 ${f2(cx + (R + 5) * Math.sin(5.6 * step))},${f2(cy - (R + 5) * Math.cos(5.6 * step))} L${f2(cx + (R + 15) * Math.sin(5.6 * step))},${f2(cy - (R + 15) * Math.cos(5.6 * step))} A${R + 15},${R + 15} 0 0 0 ${f2(cx + (R + 15) * Math.sin(-5.6 * step))},${f2(cy - (R + 15) * Math.cos(-5.6 * step))} Z`, class:"fgold", opacity:.5}, vg);
+  for(let i = -5; i <= 5; i++){ const a = i * step; E("line", {x1:f2(cx + (R + 5) * Math.sin(a)), y1:f2(cy - (R + 5) * Math.cos(a)), x2:f2(cx + (R + (i % 5 ? 10 : 14)) * Math.sin(a)), y2:f2(cy - (R + (i % 5 ? 10 : 14)) * Math.cos(a)), class:i ? "ink" : "rub", "stroke-width":i ? .5 : 1.2}, vg); }
+}
+function drawDetail(kind, s, res, o){
+  det.innerHTML = "";
+  if(kind === "polar" || kind === "linear" || kind === "radial"){
+    const w = s ? s.w : 0, turns = w / WHEEL_C;
+    if(kind === "radial"){
+      // the cam's law, ρ = r²/2k, with the wheel's present place on it
+      const g = E("g", {"data-g":"cam"}, det), x0 = 22, y0 = 128, sx = 9, sy = 22, rmax = Math.min(RAD_ARM, Math.sqrt(2 * o.k * RAD_DISK));
+      E("path", {d:`M${x0},${y0 - 4.6 * sy}V${y0}H${x0 + 15.5 * sx}`, class:"ink2", "stroke-width":.9}, g);
+      E("line", {x1:x0, x2:x0 + 15 * sx, y1:y0 - RAD_DISK * sy, y2:y0 - RAD_DISK * sy, class:"faded", "stroke-width":.7, "stroke-dasharray":"3 3"}, g);
+      T("edge of the glass", {x:x0 + 4, y:y0 - RAD_DISK * sy - 4, "font-size":9.5, class:"fadedt", "font-style":"italic"}, g);
+      const P = []; for(let r = 0; r <= rmax + 1e-9; r += .25) P.push([x0 + r * sx, y0 - r * r / (2 * o.k) * sy]);
+      E("path", {d:pathD(P), class:"rub", "stroke-width":1.3}, g);
+      for(let r = 5; r <= 15; r += 5){ E("line", {x1:x0 + r * sx, x2:x0 + r * sx, y1:y0, y2:y0 + 3, class:"ink2"}, g); T(String(r), {x:x0 + r * sx, y:y0 + 13, "font-size":10, "text-anchor":"middle", class:"fadedt"}, g); }
+      T("r", {x:x0 + 15.5 * sx + 3, y:y0 + 4, "font-size":13, "font-style":"italic"}, g);
+      T("ρ", {x:x0 - 12, y:y0 - 4.2 * sy + 4, "font-size":13, "font-style":"italic"}, g);
+      if(s) { E("line", {x1:x0 + s.r * sx, x2:x0 + s.r * sx, y1:y0, y2:y0 - s.rho * sy, class:"lap", "stroke-width":.8, "stroke-dasharray":"2 2"}, g); E("circle", {cx:x0 + s.r * sx, cy:y0 - s.rho * sy, r:3.4, class:"frub"}, g); }
+      wheelFace(det, 222, 62, 38, w, true);
+      T(`${fmt(turns, 3)} turns`, {x:222, y:140, "font-size":15, "text-anchor":"middle", class:"hand"}, det);
+      $("detcap").textContent = "The cam's law ρ = r²/2k, and the wheel on the glass.";
+    } else {
+      wheelFace(det, 82, 80, 52, w, true);
+      const cg = E("g", {"data-g":"wheel"}, det);
+      dial(cg, [216, 64], 38, turns / 10);
+      for(let i = 0; i < 10; i++){ const a = i * Math.PI / 5; T(String(i), {x:f2(216 + 25 * Math.sin(a)), y:f2(64 - 25 * Math.cos(a) + 4), "font-size":10, "text-anchor":"middle"}, cg); }
+      T(`${fmt(turns, 4)} turns`, {x:216, y:126, "font-size":15, "text-anchor":"middle", class:"hand"}, det);
+      T("the drum and vernier", {x:82, y:147, "font-size":10.5, "text-anchor":"middle", class:"fadedt", "font-style":"italic"}, det);
+      T("the counting disk", {x:216, y:147, "font-size":10.5, "text-anchor":"middle", class:"fadedt", "font-style":"italic"}, det);
+      $("detcap").textContent = "The wheel's drum, its vernier, and the disk that counts whole turns.";
+    }
+  } else if(kind === "hatchet"){
+    const th = s ? s.th : 0, cx = 140, cy = 122, R = 104, g = E("g", {"data-g":"theta"}, det);
+    E("path", {d:`M${cx - R},${cy} A${R},${R} 0 0 1 ${cx + R},${cy} Z`, class:"fvel"}, g);
+    E("path", {d:`M${cx - R},${cy} A${R},${R} 0 0 1 ${cx + R},${cy} Z`, class:"ink", "stroke-width":1.1}, g);
+    E("path", {d:`M${cx - R + 16},${cy} A${R - 16},${R - 16} 0 0 1 ${cx + R - 16},${cy}`, class:"ink2", "stroke-width":.5}, g);
+    for(let d = 0; d <= 180; d += 2){ const a = d * Math.PI / 180, l = d % 10 ? 5 : 10; E("line", {x1:f2(cx + R * Math.cos(a)), y1:f2(cy - R * Math.sin(a)), x2:f2(cx + (R - l) * Math.cos(a)), y2:f2(cy - (R - l) * Math.sin(a)), class:"ink", "stroke-width":d % 10 ? .45 : .8}, g);
+      if(d % 30 === 0 && d) T(String(Math.abs(90 - d)), {x:f2(cx + (R - 24) * Math.cos(a)), y:f2(cy - (R - 24) * Math.sin(a) + 4), "font-size":10, "text-anchor":"middle", class:"fadedt"}, g); }
+    const a1 = Math.PI / 2 + th, Rr = R - 4, P = []; for(let i = 0; i <= 30; i++){ const a = Math.PI / 2 + (a1 - Math.PI / 2) * i / 30; P.push([cx + Rr * .8 * Math.cos(a), cy - Rr * .8 * Math.sin(a)]); }
+    E("path", {d:pathD([[cx, cy]].concat(P)) + "Z", class:"fwash"}, g);
+    E("line", {x1:cx, y1:cy, x2:cx, y2:cy - Rr, class:"ink2", "stroke-width":1, "stroke-dasharray":"5 3"}, g);
+    E("line", {x1:cx, y1:cy, x2:f2(cx + Rr * Math.cos(a1)), y2:f2(cy - Rr * Math.sin(a1)), class:"rub", "stroke-width":1.6}, g);
+    disc(g, [cx, cy], 4, "fgold", null, .9);
+    T(`θ = ${fmt(th * 180 / Math.PI, 3)}°`, {x:cx, y:cy + 24, "font-size":15, "text-anchor":"middle", class:"hand"}, det);
+    $("detcap").textContent = "The rod's turn, laid against a protractor. The dashed line is where it began.";
+  } else {
+    const xs = s ? Math.round(s.x / o.res) : 0, ys = s ? Math.round(s.y / o.res) : 0, A = s ? s.A : 0;
+    const counter = (x, y, lab, v) => { const g = E("g", {"data-g":"counters"}, det), str = String(Math.abs(v)).padStart(4, "0").slice(-4);
+      E("rect", {x:x - 4, y:y - 4, width:4 * 24 + 8, height:38, rx:3, class:"fgold", opacity:.5}, g);
+      E("rect", {x:x - 4, y:y - 4, width:4 * 24 + 8, height:38, rx:3, fill:"url(#h45)", class:"ink", "stroke-width":1}, g);
+      for(let i = 0; i < 4; i++){ E("rect", {x:x + i * 24 + 1, y, width:22, height:30, class:"fvel"}, g); E("rect", {x:x + i * 24 + 1, y, width:22, height:30, class:"ink", "stroke-width":.8}, g);
+        E("rect", {x:x + i * 24 + 1, y, width:22, height:6, fill:"url(#hh)", opacity:.8}, g); E("rect", {x:x + i * 24 + 1, y:y + 24, width:22, height:6, fill:"url(#hh)", opacity:.8}, g);
+        T(str[i], {x:x + i * 24 + 12, y:y + 21, "font-size":18, "text-anchor":"middle"}, g); }
+      T(lab, {x:x - 14, y:y + 21, "font-size":17, "text-anchor":"middle", "font-style":"italic", class:"rubt"}, g); };
+    counter(34, 14, "x", xs); counter(34, 64, "y", ys);
+    T("counts of", {x:162, y:36, "font-size":12, class:"fadedt", "font-style":"italic"}, det);
+    T(`${o.res} cm`, {x:162, y:54, "font-size":15, class:"hand"}, det);
+    T(`Σ x·Δy = ${fmt(A, 3)} cm²`, {x:140, y:136, "font-size":16, "text-anchor":"middle", class:"hand"}, det);
+    $("detcap").textContent = "The two counters, and the running sum.";
+  }
+}
+
+/* ---------- the reckoning ---------- */
+const sg = (x, d) => Math.abs(x) < .5 * Math.pow(10, -d) ? (0).toFixed(d) : (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d);
+function noiseNow(){ return {tremor:+$("nt").value, slip:+$("ns").value, q:+$("nq").value, seed}; }
+function counterLine(kind, res, live){
+  if(kind === "polar" || kind === "linear"){ const t = `The wheel ${live ? "has rolled" : "rolled"} ${fmt(res.w / WHEEL_C, 4)} turns, ${fmt(res.w, 3)} cm.`;
+    return {line:t, rule:res.extra ? `A = b·w + π(a² + b² − 2bc) = ${res.b} × (${fmt(res.w, 3)}) ${res.sense > 0 ? "+" : "−"} ${fmt(res.extra, 2)}, for the pole is inside` : `A = b·w = ${res.b} × ${fmt(Math.abs(res.w), 3)}`}; }
+  if(kind === "hatchet") return {line:`The rod ${live ? "has turned" : "came home turned"} ${fmt(res.dth * 180 / Math.PI, 3)}°, θ = ${fmt(res.dth, 5)}.`, rule:`A ≈ L²θ = ${res.L}² × ${fmt(Math.abs(res.dth), 5)}`};
+  if(kind === "radial") return {line:`The wheel ${live ? "has rolled" : "rolled"} ${fmt(res.w / WHEEL_C, 4)} turns on the glass, ${fmt(res.w, 3)} cm.`, rule:`A = k·w = ${res.k} × ${fmt(Math.abs(res.w), 3)}`};
+  return {line:`The counters ${live ? "have summed" : "summed"} ${Math.round(Math.abs(res.A) / (res.s * res.s))} square counts of ${res.s} cm.`, rule:"A = Σ x·Δy"};
+}
+function writeReckon(kind, res, truth, bud){
+  const c = counterLine(kind, res, false), err = res.est - truth, pct = 100 * err / truth;
+  $("rd-" + kind).innerHTML = `${c.line}<span class="big">${fmt(res.est, 2)} cm²</span>${c.rule}.<br>
+    <span class="${Math.abs(pct) < 1 ? "ok" : ""}">True area ${fmt(truth, 2)} cm²; off by ${sg(err, 3)}, ${sg(pct, 2)}%.</span>
+    <span class="dim bud">Each error alone: ${bud.map(([l, e]) => `${l} ${isFinite(e) ? sg(e, 3) : "—"}`).join(" · ")} cm².</span>`;
+}
+function liveReckon(kind, s, o){
+  let est, c;
+  if(kind === "polar" || kind === "linear"){ const b = kind === "polar" ? o.b : o.lb; c = counterLine(kind, {w:s.w, b, extra:0}, true); est = b * s.w; }
+  else if(kind === "hatchet"){ c = counterLine(kind, {dth:s.th, L:o.L}, true); est = o.L * o.L * s.th; }
+  else if(kind === "radial"){ c = counterLine(kind, {w:s.w, k:o.k}, true); est = o.k * s.w; }
+  else { c = counterLine(kind, {A:s.A, s:o.res}, true); est = s.A; }
+  $("rd-" + kind).innerHTML = `${c.line}<span class="big">${fmt(Math.abs(est), 2)} cm²</span><span class="dim">so far, and still tracing.</span>`;
+}
+function result(kind, noise, log){
+  const truth = Math.abs(shoelace(curve)), o = params();
+  const res = simulate(kind, tracePath(noise.tremor, noise.seed + 7), o, noise, true);
+  if(!res.ok){ $("rd-" + kind).innerHTML = `<span style="color:var(--rubric)">${res.msg}</span>`; return res; }
+  const rows = [["intrinsic", {tremor:0, slip:0, q:0}], ["tremor", {tremor:noise.tremor, slip:0, q:0}], ["slip", {tremor:0, slip:noise.slip, q:0}]].concat(kind === "frame" ? [] : [["reading", {tremor:0, slip:0, q:noise.q}]]);
+  const bud = rows.map(([l, nz]) => { const r = simulate(kind, tracePath(nz.tremor, noise.seed + 7), o, Object.assign({seed:noise.seed}, nz), false); return [l, r.ok ? r.est - truth : NaN]; });
+  writeReckon(kind, res, truth, bud);
+  if(log){ runs.push({kind, pct:100 * (res.est - truth) / truth}); drawRuns(); }
+  return res;
+}
+
+/* ---------- the runs ---------- */
+const DOT = {polar:"fink", linear:"flap", hatchet:"frub", radial:"fver", frame:"fgold"};
+const NAME = {polar:"Polar", linear:"Linear", hatchet:"Hatchet", radial:"Radial", frame:"Frame"};
+function drawRuns(){
+  const g = $("runs"); g.innerHTML = "";
+  const m = Math.max(.5, ...runs.map(r => Math.abs(r.pct))), lim = m < 1 ? Math.ceil(m * 10) / 10 : Math.ceil(m), y = v => 52 - v / lim * 40;
+  E("path", {d:Folio.line([34, 52], [276, 52], 12, .5, 3), class:"ink2", "stroke-width":.8}, g);
+  E("line", {x1:34, x2:276, y1:12, y2:12, class:"faded", "stroke-width":.5, "stroke-dasharray":"2 3"}, g);
+  E("line", {x1:34, x2:276, y1:92, y2:92, class:"faded", "stroke-width":.5, "stroke-dasharray":"2 3"}, g);
+  T("+" + lim + "%", {x:30, y:16, "font-size":10, "text-anchor":"end", class:"fadedt"}, g);
+  T("0", {x:30, y:56, "font-size":10, "text-anchor":"end", class:"fadedt"}, g);
+  T("−" + lim + "%", {x:30, y:96, "font-size":10, "text-anchor":"end", class:"fadedt"}, g);
+  KINDS.forEach((k, i) => { const x0 = 40 + i * 48;
+    T(Folio.roman(i + 1), {x:x0 + 20, y:112, "font-size":12, "text-anchor":"middle", class:"sc" + (k === inst ? " rubt" : "")}, g);
+    const mine = runs.filter(r => r.kind === k); mine.forEach((r, j) => { const cx = x0 + 4 + (j % 9) * 4.5, cy = y(r.pct);
+      E("circle", {cx:f2(cx), cy:f2(cy), r:2.8, class:DOT[k]}, g); E("circle", {cx:f2(cx), cy:f2(cy), r:2.8, class:"ink", "stroke-width":.5}, g);
+      if(r === runs[runs.length - 1]) E("circle", {cx:f2(cx), cy:f2(cy), r:5.5, class:"rub", "stroke-width":.9}, g); }); });
+  const by = k => runs.filter(r => r.kind === k).map(r => r.pct);
+  $("runsum").innerHTML = KINDS.map((k, i) => { const v = by(k); if(!v.length) return ""; const mu = v.reduce((a, b) => a + b, 0) / v.length, sd = Math.sqrt(v.reduce((a, b) => a + (b - mu) ** 2, 0) / Math.max(1, v.length - 1));
+    return `${Folio.roman(i + 1)}. ${v.length} run${v.length > 1 ? "s" : ""}, mean ${sg(mu, 2)}%${v.length > 1 ? `, spread ${sd.toFixed(2)}%` : ""}`; }).filter(Boolean).join("; ") || "No runs yet. Each Trace or Measure adds a dot.";
+}
+
+/* ---------- putting it together ---------- */
+function drawInst(states, k, res){
+  gInst.innerHTML = ""; const o = params(), s = states ? states[k] : null;
+  if(states && k > 0 && inst !== "hatchet") E("path", {d:pathD(trailOf(states, k, "T")), class:"rub", "stroke-width":1.6, opacity:.9, "stroke-linejoin":"round"}, gInst);
+  if(states && inst === "hatchet" && k > 0) E("path", {d:pathD(trailOf(states, k, "T")), class:"rub", "stroke-width":1.6, opacity:.9}, gInst);
+  if(inst === "polar") drawPolar(gInst, s, o);
+  else if(inst === "linear") drawLinear(gInst, s, o);
+  else if(inst === "hatchet"){ if(states) drawHatchet(gInst, states, k, res); }
+  else if(inst === "radial") drawRadial(gInst, s, o);
+  else drawFrame(gInst, s, o);
+  drawDetail(inst, s, res, o);
+}
+function stopAnim(){ if(anim){ cancelAnimationFrame(anim); anim = 0; } }
+function refresh(log){
+  stopAnim(); placeHandles();
+  const res = result(inst, noiseNow(), log);
+  if(res.ok) drawInst(res.states, res.states.length - 1, res); else drawInst(null, 0, res);
+  shown = res;
+}
+function trace(){
+  stopAnim(); seed = Math.floor(Math.random() * 1e9); placeHandles();
+  const noise = noiseNow(), o = params(), res = simulate(inst, tracePath(noise.tremor, noise.seed + 7), o, noise, true);
+  if(!res.ok){ refresh(); return; }
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){ refresh(true); return; }
+  const S = res.states, N = S.length, t0 = performance.now(), dur = inst === "hatchet" ? 5500 : 4500, kind = inst;
+  const tick = now => { if(kind !== inst){ anim = 0; return; }
+    const f = Math.min(1, (now - t0) / dur), k = Math.max(1, Math.floor(f * (N - 1)));
+    drawInst(S, k, res); liveReckon(kind, S[k], o);
+    if(f < 1) anim = requestAnimationFrame(tick); else { anim = 0; refresh(true); } };
+  anim = requestAnimationFrame(tick);
+}
+
+/* ---------- drawing your own curve ---------- */
+const pad = E("rect", {x:OX, y:OY, width:WCM * PX, height:HCM * PX, fill:"transparent", style:"display:none;cursor:crosshair"}, svg);
+drag(pad, svg, p => { const q = cmOf(p), l = drawPts[drawPts.length - 1]; if(Math.hypot(q.x - l.x, q.y - l.y) > .08) drawPts.push(q);
+    gDraw.innerHTML = ""; E("path", {d:pathD(drawPts.map(sv)), class:"rub", "stroke-width":1.8, "stroke-linejoin":"round", "stroke-linecap":"round"}, gDraw); },
+  p => { stopAnim(); drawPts = [cmOf(p)]; },
+  () => { drawing = false; pad.style.display = "none"; $("draw").classList.remove("on"); gDraw.innerHTML = "";
+    if(drawPts.length > 20 && Math.abs(shoelace(drawPts)) > 1){ curve = drawPts; hstart = null; drawCurve(); refresh(); }
+    else { refresh(); $("rd-" + inst).insertAdjacentHTML("afterbegin", `<span style="color:var(--rubric)">That curve was too small; try again.</span><br>`); } });
+$("draw").onclick = () => { stopAnim(); drawing = !drawing; pad.style.display = drawing ? "" : "none"; $("draw").classList.toggle("on", drawing);
+  if(drawing) $("rd-" + inst).innerHTML = "Draw a closed curve on the sheet with one stroke. It is closed for you with a straight line back to its start."; else refresh(); };
+
+/* ---------- controls ---------- */
+$("preset").onchange = () => { curve = preset($("preset").value); hstart = null; drawCurve(); refresh(); };
+$("trace").onclick = trace;
+$("measure").onclick = () => { seed = Math.floor(Math.random() * 1e9); refresh(true); };
+$("perfect").onclick = () => { $("nt").value = 0; $("ns").value = 0; $("nq").value = "0"; outs(); refresh(); };
+$("clearruns").onclick = () => { runs = []; drawRuns(); };
+const UNITS = [["pa", " cm"], ["pb", " cm"], ["pc", " cm"], ["lb", " cm"], ["lc", " cm"], ["hl", " cm"], ["rk", " cm"], ["xr", " cm"], ["nt", " cm"], ["ns", "%"]];
+function outs(){ for(const [id, u] of UNITS) $(id + "o").value = $(id).value + u; }
+for(const [id] of UNITS) $(id).addEventListener("input", () => { outs(); refresh(); });
+$("nq").onchange = () => refresh();
+outs();
+
+// the shared table, bench, and margin pieces travel to whichever plate is open
+function onShow(id){
+  stopAnim(); inst = id;
+  const sec = $(id), dr = sec.querySelector(".drawing"), mg = sec.querySelector(".margin"), cap = dr.querySelector(".caption");
+  dr.insertBefore(svg, dr.firstChild); cap.after($("bench")); dr.appendChild($("noise"));
+  $("rd-" + id).after($("detail")); mg.appendChild($("runsbox"));
+  if(drawing){ drawing = false; pad.style.display = "none"; $("draw").classList.remove("on"); }
+  refresh(); drawRuns();
+}
+curve = preset("blob"); drawBoard(); drawCurve();
+Folio.plates(onShow); Folio.glosses();
 })();
 </script>
-
 </body>
 </html>

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#AD2119">
+<meta name="msapplication-config" content="/browserconfig.xml">
+<meta name="theme-color" content="#F9F4E5">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>First edition: Planimeter Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --panel:#F7F8F6; --ink:#1B2630; --muted:#586570; --line:#C5CDCB;
+  --a:#2F5DB8; --b:#B8622F; --c:#2C7A55; --hair:#C23B22; --brass:#A77E22; --soft:#DDE4E8;
+  --accent:#2F5DB8; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+    --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+    --accent:#8AA8FF; --accent-ink:#0E1620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10171C; --panel:#172129; --ink:#E4EAEE; --muted:#93A3AE; --line:#2C3B45;
+  --a:#8AA8FF; --b:#FF9A5C; --c:#5BC48E; --hair:#FF6F57; --brass:#D4A845; --soft:#22313C;
+  --accent:#8AA8FF; --accent-ink:#0E1620;
+}
+html,body{background:var(--bg);}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted);}
+.ctl input[type=range]{width:100%;}
+.ctl output{font-family:var(--mono);color:var(--ink);min-width:6ch;text-align:right;}
+.read{font-family:var(--mono);font-size:13.5px;line-height:1.7;word-break:break-word;}
+.big{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select,input[type=number],input[type=text]{font:14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+select{font-family:var(--sans);}
+.small{font-size:12px;color:var(--muted);}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--c);} .status.warn{color:var(--hair);}
+
+
+.tabs{display:flex;flex-wrap:wrap;gap:6px;}
+.tabs button{font:600 15px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;}
+canvas#cv{width:100%;height:auto;display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;touch-action:none;}
+table.bud{border-collapse:collapse;font-family:var(--mono);font-size:12.5px;width:100%;}
+table.bud td,table.bud th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:right;}
+table.bud th:first-child,table.bud td:first-child{text-align:left;}
+table.bud th{color:var(--muted);font-weight:500;}
+.pctl{display:none;} .pctl.on{display:grid;}
+
+body{margin:0}
+</style>
+<script src="/ga.js" async></script>
+</head>
+<body>
+
+<div class="wrap">
+<p style="margin:0 0 10px;font:13px system-ui,sans-serif;color:#586570">The first edition of this page, kept as it was. <a href="/planimeters/">The new folio edition is here.</a></p>
+
+  <header>
+    <h1>Planimeter <span>Bench</span></h1>
+    <p class="tag">Trace a closed curve with four instruments that measure area by rolling, sliding, or counting: the polar and linear planimeters, Prytz's hatchet, and an x–y encoder. Each reading comes with its error, split into where it comes from.</p>
+  </header>
+  <div class="tabs" id="tabs">
+    <button type="button" data-i="polar" class="on">Polar</button>
+    <button type="button" data-i="linear">Linear</button>
+    <button type="button" data-i="hatchet">Hatchet</button>
+    <button type="button" data-i="xy">X–Y encoder</button>
+  </div>
+  <div class="inst">
+    <div class="stage">
+      <div class="row">
+        <select id="preset" aria-label="Curve"><option value="blob">Blob</option><option value="circle">Circle, r = 3 cm</option><option value="square">Square, 5 cm</option><option value="ellipse">Ellipse 4 × 2.5 cm</option><option value="cardioid">Cardioid</option><option value="star">Star</option></select>
+        <button type="button" id="draw">Draw your own</button>
+        <span style="flex:1"></span>
+        <button type="button" id="trace" class="primary">Trace</button>
+        <button type="button" id="measure">Measure instantly</button>
+      </div>
+      <canvas id="cv" width="1000" height="700" aria-label="Tracing table"></canvas>
+      <div id="status" class="status"></div>
+      <div class="ctl pctl on" data-p="polar">
+        <label for="pa">Pole arm a</label><input id="pa" type="range" min="6" max="16" step="0.5" value="11"><output id="pao"></output>
+        <label for="pb">Tracer arm b</label><input id="pb" type="range" min="5" max="14" step="0.5" value="9"><output id="pbo"></output>
+        <label for="pc">Wheel at c</label><input id="pc" type="range" min="0" max="14" step="0.5" value="5"><output id="pco"></output>
+      </div>
+      <div class="ctl pctl" data-p="linear">
+        <label for="lb">Tracer arm b</label><input id="lb" type="range" min="5" max="14" step="0.5" value="9"><output id="lbo"></output>
+        <label for="lc">Wheel at c</label><input id="lc" type="range" min="0" max="14" step="0.5" value="5"><output id="lco"></output>
+      </div>
+      <div class="ctl pctl" data-p="hatchet">
+        <label for="hl">Rod length L</label><input id="hl" type="range" min="5" max="40" step="0.5" value="12"><output id="hlo"></output>
+      </div>
+      <div class="ctl pctl" data-p="xy">
+        <label for="xr">Encoder step</label><input id="xr" type="range" min="0.01" max="0.5" step="0.01" value="0.1"><output id="xro"></output>
+      </div>
+      <div class="ctl">
+        <label for="nt">Hand tremor</label><input id="nt" type="range" min="0" max="0.2" step="0.005" value="0.03"><output id="nto"></output>
+        <label for="ns">Wheel slip</label><input id="ns" type="range" min="0" max="5" step="0.1" value="0.5"><output id="nso"></output>
+        <label for="nq">Reading</label><select id="nq"><option value="1">vernier (fine)</option><option value="10">dial only (coarse)</option><option value="0">exact</option></select><span></span>
+      </div>
+    </div>
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card"><h2>Reading</h2><div id="read" class="read"></div></div>
+      <div class="card"><h2>Error budget</h2><div id="budget"></div><div class="small">Each row turns on one source of error by itself, using the same random draws, so you can see which one dominates.</div></div>
+      <div class="card"><h2>Runs</h2><svg id="runs" class="fig" viewBox="0 0 320 170" aria-label="Error by run"></svg><div id="runsum" class="read"></div><button type="button" id="clearruns">Clear runs</button></div>
+    </aside>
+  </div>
+  <section class="card note">
+    <h2>How each instrument works</h2>
+    <p><b>Polar planimeter (Amsler, 1854).</b> A pole is pinned down. An arm of length a runs to an elbow, and an arm of length b runs to the tracer. A wheel on the tracer arm rolls only across the arm. By Green's theorem the area is A = b·w, where w is the distance the wheel rolled. If the pole sits inside the curve, the elbow goes all the way around and you add π(a² + b² − 2bc), where c is the wheel's distance from the elbow.</p>
+    <p><b>Linear planimeter.</b> The elbow runs along a straight rail instead of a circle. The same Green's-theorem argument gives A = b·w exactly, with no correction term, and the curve can be as long as the rail.</p>
+    <p><b>Hatchet planimeter (Prytz, 1875).</b> A rod of length L has a knife edge at one end and a point at the other. The knife can only move along the rod, like a bicycle's back wheel. Start at a point near the middle, go out to the curve, trace it, and come back. The rod has turned by an angle θ, and A ≈ L²θ. That is only approximate: the error shrinks roughly like 1/L² and depends on where you start. The knife's path is a tractrix, and the leftover rotation is holonomy, the same effect as the rolling ball.</p>
+    <p><b>X–Y encoder.</b> Two wheels count steps in x and in y, and the area is the sum of x·Δy: Green's theorem done by counting. Its error is quantization: each count is ±½ step.</p>
+    <p><b>Where error comes from.</b> <em>Tremor</em> is the hand wobbling off the line. <em>Slip</em> is the wheel skidding by a random percentage at each step. <em>Reading</em> is the resolution of the dial or vernier. <em>Intrinsic</em> is what the instrument does wrong even with a perfect hand: sampling for the exact instruments, and the L²θ approximation for the hatchet.</p>
+    <p><b>Units.</b> The table is 25 cm × 17.5 cm with a 1 cm grid. The wheel has a 2 cm diameter, the vernier reads 1/1000 of a turn, and the dial alone reads 1/100.</p>
+  </section>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const cv=$("cv"), ctx=cv.getContext("2d"), PX=40, WCM=25, HCM=17.5;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888";
+let inst="polar", curve=[], drawing=false, drawPts=[], pole={x:3,y:3}, rail=9.5, hstart=null, runs=[], anim=null, dragWhat=null;
+const WHEEL_C=Math.PI*2; // 2 cm diameter
+// ---------- curves ----------
+function preset(name){const cx=13.5,cy=9.5,pts=[],n=720;
+  for(let i=0;i<n;i++){const t=2*Math.PI*i/n;let x,y;
+    if(name==="circle"){x=3*Math.cos(t);y=3*Math.sin(t);}
+    else if(name==="ellipse"){x=4*Math.cos(t);y=2.5*Math.sin(t);}
+    else if(name==="cardioid"){const r=2*(1-Math.cos(t));x=r*Math.cos(t)+2;y=r*Math.sin(t);}
+    else if(name==="star"){const r=3+1.2*Math.cos(5*t);x=r*Math.cos(t);y=r*Math.sin(t);}
+    else if(name==="square"){const s=i/n*4,k=Math.floor(s),f=s-k;const P=[[-2.5,-2.5],[2.5,-2.5],[2.5,2.5],[-2.5,2.5],[-2.5,-2.5]];x=P[k][0]+(P[k+1][0]-P[k][0])*f;y=P[k][1]+(P[k+1][1]-P[k][1])*f;}
+    else {const r=3+0.6*Math.cos(2*t)+0.4*Math.sin(3*t);x=1.2*r*Math.cos(t);y=r*Math.sin(t);}
+    pts.push({x:cx+x,y:cy+y});}
+  return pts;}
+function shoelace(P){let s=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];s+=a.x*b.y-b.x*a.y;}return s/2;}
+function centroid(P){let A=0,cx=0,cy=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],c=a.x*b.y-b.x*a.y;A+=c;cx+=(a.x+b.x)*c;cy+=(a.y+b.y)*c;}A/=2;return{x:cx/(6*A),y:cy/(6*A)};}
+function inside(p,P){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)c=!c;}return c;}
+function resample(P,n){const L=[0];for(let i=1;i<=P.length;i++){const a=P[i-1],b=P[i%P.length];L.push(L[i-1]+Math.hypot(b.x-a.x,b.y-a.y));}
+  const tot=L[L.length-1],out=[];let j=0;for(let k=0;k<=n;k++){const s=tot*k/n;while(j<P.length-1&&L[j+1]<s)j++;const a=P[j],b=P[(j+1)%P.length],f=(s-L[j])/((L[j+1]-L[j])||1);out.push({x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f});}return out;}
+// seeded random
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function tremorPath(P,sig,seed){ if(!sig) return P; const r=rng(seed); const K=6, comp=[];
+  for(let k=0;k<K;k++) comp.push({f:3+Math.floor(r()*40),px:r()*6.28,py:r()*6.28,a:sig*Math.sqrt(2/K)*(0.5+r())});
+  return P.map((p,i)=>{const t=2*Math.PI*i/(P.length-1);let dx=0,dy=0;for(const c of comp){dx+=c.a*Math.sin(c.f*t+c.px);dy+=c.a*Math.sin(c.f*t+c.py);}
+    // keep the curve closed: taper at the ends
+    return {x:p.x+dx,y:p.y+dy};});}
+// ---------- instruments ----------
+const P=()=>({a:+$("pa").value,b:+$("pb").value,c:+$("pc").value,lb:+$("lb").value,lc:+$("lc").value,L:+$("hl").value,res:+$("xr").value});
+function elbowPolar(T,a,b){const dx=T.x-pole.x,dy=T.y-pole.y,L=Math.hypot(dx,dy);if(L>a+b-1e-6||L<Math.abs(a-b)+1e-6)return null;
+  const x=(L*L+a*a-b*b)/(2*L),h=Math.sqrt(Math.max(a*a-x*x,0)),ex=dx/L,ey=dy/L;return{x:pole.x+x*ex-h*ey,y:pole.y+x*ey+h*ex};}
+function elbowLinear(T,b){const dy=T.y-rail;if(Math.abs(dy)>=b)return null;return{x:T.x-Math.sqrt(b*b-dy*dy),y:rail};}
+// simulate one instrument on a tracer path; returns {est, states(for drawing), counter, ok}
+function simulate(kind,path,o,noise,wantStates){
+  const r=rng(noise.seed), states=wantStates?[]:null;
+  if(kind==="polar"||kind==="linear"){
+    const b=kind==="polar"?o.b:o.lb, c=kind==="polar"?o.c:o.lc; let w=0,prevW=null;
+    for(let i=0;i<path.length;i++){const T=path[i];const J=kind==="polar"?elbowPolar(T,o.a,b):elbowLinear(T,b);if(!J)return{ok:false,msg:kind==="polar"?"The tracer is out of reach of the arms here. Move the pole or lengthen the arms.":"The tracer is too far from the rail. Lengthen the arm or drag the rail."};
+      const ux=(T.x-J.x)/b,uy=(T.y-J.y)/b,W={x:J.x+c*ux,y:J.y+c*uy};
+      if(prevW){let d=-uy*(W.x-prevW.x)+ux*(W.y-prevW.y);if(noise.slip)d*=1+noise.slip/100*gauss(r);w+=d;}
+      prevW=W; if(states)states.push({T,J,W,u:{x:ux,y:uy},w});}
+    let wr=w; if(noise.q){const step=WHEEL_C/(noise.q===1?1000:100);wr=Math.round(w/step)*step;}
+    let est=b*wr, extra=0; if(kind==="polar"&&inside(pole,curve)){extra=Math.PI*(o.a*o.a+b*b-2*b*c);est+=extra*Math.sign(w||1);}
+    return{ok:true,est:Math.abs(est),states,counter:`wheel rolled ${ (w/WHEEL_C).toFixed(4)} turns (${w.toFixed(3)} cm)`+(extra?`; pole inside, so add π(a²+b²−2bc) = ${extra.toFixed(2)} cm²`:""),formula:`A = b·w${extra?" + π(a²+b²−2bc)":""}`};}
+  if(kind==="hatchet"){
+    const L=o.L, S=hstart||centroid(curve), full=[];
+    const n1=200;for(let i=0;i<n1;i++)full.push({x:S.x+(path[0].x-S.x)*i/n1,y:S.y+(path[0].y-S.y)*i/n1});
+    for(const p of path)full.push(p);
+    for(let i=1;i<=n1;i++)full.push({x:path[0].x+(S.x-path[0].x)*i/n1,y:path[0].y+(S.y-path[0].y)*i/n1});
+    let T0=full[0],H={x:T0.x,y:T0.y-L},th=Math.atan2(T0.y-H.y,T0.x-H.x),th0=th,prev=th;
+    for(let i=1;i<full.length;i++){const T=full[i];const ux=(T0.x-H.x)/L,uy=(T0.y-H.y)/L,dx=T.x-T0.x,dy=T.y-T0.y,along=ux*dx+uy*dy;
+      H={x:H.x+along*ux,y:H.y+along*uy};
+      if(noise.slip){const side=noise.slip/100*gauss(r)*Math.hypot(dx,dy);H.x+=-uy*side;H.y+=ux*side;}
+      const vx=T.x-H.x,vy=T.y-H.y,l=Math.hypot(vx,vy);H={x:T.x-vx/l*L,y:T.y-vy/l*L};T0=T;
+      const ang=Math.atan2(vy,vx);let d=ang-prev;d=Math.atan2(Math.sin(d),Math.cos(d));th+=d;prev=ang;
+      if(states)states.push({T,H,th:th-th0});}
+    let dth=th-th0; if(noise.q){const step=(noise.q===1?0.1:1)*Math.PI/180;dth=Math.round(dth/step)*step;}
+    return{ok:true,est:Math.abs(L*L*dth),states,counter:`rod turned ${(dth*180/Math.PI).toFixed(3)}°`,formula:"A ≈ L²θ"};}
+  if(kind==="xy"){const s=o.res;let A=0,prev=null;const q=v=>Math.round(v/s)*s;
+    let px=0,py=0,started=false;
+    for(let i=0;i<path.length;i++){const T=path[i];let x=q(T.x),y=q(T.y);
+      if(noise.slip&&started){x=px+(x-px)*(1+noise.slip/100*gauss(r));y=py+(y-py)*(1+noise.slip/100*gauss(r));}
+      if(started)A+=0.5*(px+x)*(y-py);px=x;py=y;started=true;if(states)states.push({T,x,y,A});}
+    // close the loop
+    return{ok:true,est:Math.abs(A),states,counter:`${Math.round(Math.abs(A)/(s*s))} count² of ${s} cm`,formula:"A = Σ x·Δy (counted)"};}
+}
+function tracePath(noiseT,seed){return tremorPath(resample(curve,1600),noiseT,seed);}
+// ---------- drawing ----------
+function toPx(p){return[p.x*PX,cv.height-p.y*PX];}
+function fromEvt(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*cv.width/PX,y:(cv.height-(e.clientY-r.top)/r.height*cv.height)/PX};}
+function drawBase(){const c=ctx;c.clearRect(0,0,cv.width,cv.height);c.fillStyle=css("--panel");c.fillRect(0,0,cv.width,cv.height);
+  c.strokeStyle=css("--line");c.lineWidth=1;for(let x=0;x<=WCM;x++){c.beginPath();c.moveTo(x*PX,0);c.lineTo(x*PX,cv.height);c.stroke();}for(let y=0;y<=HCM;y++){c.beginPath();c.moveTo(0,cv.height-y*PX);c.lineTo(cv.width,cv.height-y*PX);c.stroke();}
+  if(curve.length){c.beginPath();curve.forEach((p,i)=>{const[x,y]=toPx(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.closePath();c.fillStyle=css("--soft");c.globalAlpha=.6;c.fill();c.globalAlpha=1;c.strokeStyle=css("--ink");c.lineWidth=2;c.stroke();}
+  if(drawing&&drawPts.length){c.beginPath();drawPts.forEach((p,i)=>{const[x,y]=toPx(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.strokeStyle=css("--hair");c.lineWidth=2;c.stroke();}
+  if(inst==="polar"){const[x,y]=toPx(pole);c.fillStyle=css("--hair");c.beginPath();c.arc(x,y,8,0,7);c.fill();c.fillStyle=css("--muted");c.font="14px IBM Plex Sans, sans-serif";c.fillText("pole (drag)",x+12,y+4);}
+  if(inst==="linear"){const y=cv.height-rail*PX;c.strokeStyle=css("--brass");c.lineWidth=4;c.beginPath();c.moveTo(0,y);c.lineTo(cv.width,y);c.stroke();c.fillStyle=css("--muted");c.font="14px IBM Plex Sans, sans-serif";c.fillText("rail (drag up or down)",8,y-8);}
+  if(inst==="hatchet"&&curve.length){const S=hstart||centroid(curve);const[x,y]=toPx(S);c.strokeStyle=css("--hair");c.lineWidth=2;c.beginPath();c.moveTo(x-8,y);c.lineTo(x+8,y);c.moveTo(x,y-8);c.lineTo(x,y+8);c.stroke();c.fillStyle=css("--muted");c.font="14px IBM Plex Sans, sans-serif";c.fillText("start (drag)",x+12,y-8);}
+}
+function drawState(s,trail){const c=ctx;const o=P();c.lineCap="round";
+  if(trail&&trail.length>1){c.beginPath();trail.forEach((p,i)=>{const[x,y]=toPx(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.strokeStyle=css("--a");c.lineWidth=2;c.stroke();}
+  if(inst==="polar"||inst==="linear"){const A=inst==="polar"?toPx(pole):null,J=toPx(s.J),T=toPx(s.T),W=toPx(s.W);
+    c.strokeStyle=css("--ink");c.lineWidth=5;c.beginPath();if(A){c.moveTo(...A);c.lineTo(...J);}c.moveTo(...J);c.lineTo(...T);c.stroke();
+    c.fillStyle=css("--brass");c.beginPath();c.arc(J[0],J[1],6,0,7);c.fill();
+    c.save();c.translate(W[0],W[1]);c.rotate(-Math.atan2(s.u.y,s.u.x));c.fillStyle=css("--c");c.fillRect(-4,-16,8,32);c.restore();
+    c.fillStyle=css("--hair");c.beginPath();c.arc(T[0],T[1],5,0,7);c.fill();}
+  if(inst==="hatchet"){const H=toPx(s.H),T=toPx(s.T);c.strokeStyle=css("--ink");c.lineWidth=5;c.beginPath();c.moveTo(...H);c.lineTo(...T);c.stroke();
+    const ang=Math.atan2(-(T[1]-H[1]),T[0]-H[0]);c.save();c.translate(H[0],H[1]);c.rotate(-ang);c.fillStyle=css("--c");c.beginPath();c.moveTo(0,-14);c.lineTo(10,0);c.lineTo(0,14);c.closePath();c.fill();c.restore();
+    c.fillStyle=css("--hair");c.beginPath();c.arc(T[0],T[1],5,0,7);c.fill();}
+  if(inst==="xy"){const T=toPx(s.T);c.strokeStyle=css("--c");c.setLineDash([5,5]);c.lineWidth=1.5;c.beginPath();c.moveTo(T[0],cv.height);c.lineTo(T[0],T[1]);c.lineTo(0,T[1]);c.stroke();c.setLineDash([]);
+    c.fillStyle=css("--hair");c.beginPath();c.arc(T[0],T[1],5,0,7);c.fill();c.fillStyle=css("--ink");c.font="13px IBM Plex Mono, monospace";c.fillText(`x=${s.x.toFixed(2)}`,T[0]+6,cv.height-6);c.fillText(`y=${s.y.toFixed(2)}`,4,T[1]-6);}
+}
+function noiseNow(seed){return{tremor:+$("nt").value,slip:+$("ns").value,q:+$("nq").value,seed};}
+function fmt(x,d=3){return x.toFixed(d);}
+function result(kind,noise,withRun){
+  const truth=Math.abs(shoelace(curve)), o=P();
+  const path=tracePath(noise.tremor,noise.seed+7);
+  const res=simulate(kind,path,o,noise,false); if(!res.ok){$("status").textContent=res.msg;$("status").className="status warn";return null;}
+  const err=res.est-truth;
+  $("read").innerHTML=`True area (shoelace): ${fmt(truth)} cm²<br>${res.counter}<br>${res.formula}<br><span class="big">${fmt(res.est)} cm²</span><br>error ${err>=0?"+":""}${fmt(err)} cm² (${err>=0?"+":""}${fmt(100*err/truth,2)}%)`;
+  // budget
+  const rows=[["Intrinsic only",{tremor:0,slip:0,q:0}],["+ reading only",{tremor:0,slip:0,q:noise.q}],["+ slip only",{tremor:0,slip:noise.slip,q:0}],["+ tremor only",{tremor:noise.tremor,slip:0,q:0}],["All together",{tremor:noise.tremor,slip:noise.slip,q:noise.q}]];
+  let h='<table class="bud"><tr><th>source</th><th>estimate</th><th>error</th><th>%</th></tr>';
+  for(const [lab,nz] of rows){const pth=tracePath(nz.tremor,noise.seed+7);const r=simulate(kind,pth,o,Object.assign({seed:noise.seed},nz),false);if(!r.ok)continue;const e=r.est-truth;h+=`<tr><td>${lab}</td><td>${fmt(r.est,2)}</td><td>${e>=0?"+":""}${fmt(e,3)}</td><td>${e>=0?"+":""}${fmt(100*e/truth,2)}</td></tr>`;}
+  $("budget").innerHTML=h+"</table>";
+  if(withRun){runs.push({kind,pct:100*err/truth});drawRuns();}
+  $("status").textContent="";$("status").className="status";
+  return res;}
+function drawRuns(){const svg=$("runs");const NS="http://www.w3.org/2000/svg";svg.innerHTML="";
+  const E=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e;};
+  const kinds=["polar","linear","hatchet","xy"],names={polar:"Polar",linear:"Linear",hatchet:"Hatchet",xy:"X–Y"},cols={polar:"var(--a)",linear:"var(--c)",hatchet:"var(--b)",xy:"var(--brass)"};
+  const m=Math.max(1,...runs.map(r=>Math.abs(r.pct)));const lim=Math.ceil(m);const y=v=>80-v/lim*62;
+  E("line",{x1:40,y1:80,x2:315,y2:80,stroke:"var(--muted)"});
+  const lt=(v,t)=>{const e=E("text",{x:34,y:y(v)+4,"text-anchor":"end","font-size":10,fill:"var(--muted)","font-family":"IBM Plex Mono, monospace"});e.textContent=t;};
+  lt(lim,"+"+lim+"%");lt(0,"0");lt(-lim,"−"+lim+"%");
+  kinds.forEach((k,i)=>{const x0=50+i*68;const t=E("text",{x:x0+25,y:162,"text-anchor":"middle","font-size":11,fill:"var(--muted)","font-family":"IBM Plex Sans, sans-serif"});t.textContent=names[k];
+    runs.filter(r=>r.kind===k).forEach((r,j)=>E("circle",{cx:x0+6+(j%8)*6,cy:y(r.pct),r:3.2,fill:cols[k]}));});
+  const by=k=>runs.filter(r=>r.kind===k).map(r=>r.pct);
+  $("runsum").innerHTML=kinds.map(k=>{const v=by(k);if(!v.length)return"";const mu=v.reduce((a,b)=>a+b,0)/v.length,sd=Math.sqrt(v.reduce((a,b)=>a+(b-mu)**2,0)/Math.max(1,v.length-1));return`${names[k]}: ${v.length} run${v.length>1?"s":""}, mean ${mu>=0?"+":""}${mu.toFixed(2)}%, sd ${sd.toFixed(2)}%`;}).filter(Boolean).join("<br>")||"No runs yet. Each Trace or Measure adds one.";}
+function measure(log){cancelAnimationFrame(anim);drawBase();const seed=Math.floor(Math.random()*1e9);const noise=noiseNow(seed);const res=result(inst,noise,log===true);
+  if(res){const path=tracePath(noise.tremor,seed+7);const r2=simulate(inst,path,P(),noise,true);if(r2.ok)drawState(r2.states[r2.states.length-1],inst==="hatchet"?r2.states.map(s=>s.H):null);}}
+function trace(){cancelAnimationFrame(anim);const seed=Math.floor(Math.random()*1e9);const noise=noiseNow(seed);const path=tracePath(noise.tremor,seed+7);
+  const r=simulate(inst,path,P(),noise,true);if(!r.ok){drawBase();$("status").textContent=r.msg;$("status").className="status warn";return;}
+  const S=r.states,N=S.length,start=performance.now(),dur=4500;
+  const tick=now=>{const f=Math.min(1,(now-start)/dur),k=Math.max(1,Math.floor(f*(N-1)));drawBase();
+    const trailT=S.slice(0,k+1).map(s=>s.T);ctx.beginPath();trailT.forEach((p,i)=>{const[x,y]=toPx(p);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.strokeStyle=css("--hair");ctx.lineWidth=1.5;ctx.stroke();
+    drawState(S[k],inst==="hatchet"?S.slice(0,k+1).map(s=>s.H):null);
+    const s=S[k];let live="";const o=P();
+    if(inst==="polar"||inst==="linear")live=`wheel: ${(s.w/WHEEL_C).toFixed(4)} turns → b·w = ${((inst==="polar"?o.b:o.lb)*s.w).toFixed(3)} cm²`;
+    if(inst==="hatchet")live=`rod angle: ${(s.th*180/Math.PI).toFixed(2)}° → L²θ = ${(o.L*o.L*s.th).toFixed(3)} cm²`;
+    if(inst==="xy")live=`running Σ x·Δy = ${s.A.toFixed(3)} cm²`;
+    $("status").textContent=live;$("status").className="status";
+    if(f<1)anim=requestAnimationFrame(tick);else{result(inst,noise,true);}};
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){measure(true);return;}
+  anim=requestAnimationFrame(tick);}
+// ---------- interaction ----------
+cv.addEventListener("pointerdown",e=>{const p=fromEvt(e);try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  if(drawing){drawPts=[p];dragWhat="draw";return;}
+  if(inst==="polar"&&Math.hypot(p.x-pole.x,p.y-pole.y)<0.8){dragWhat="pole";return;}
+  if(inst==="linear"&&Math.abs(p.y-rail)<0.6){dragWhat="rail";return;}
+  if(inst==="hatchet"){const S=hstart||centroid(curve);if(Math.hypot(p.x-S.x,p.y-S.y)<0.8){dragWhat="start";return;}}});
+cv.addEventListener("pointermove",e=>{if(!dragWhat)return;const p=fromEvt(e);
+  if(dragWhat==="draw"){const q=drawPts[drawPts.length-1];if(Math.hypot(p.x-q.x,p.y-q.y)>0.08)drawPts.push(p);}
+  if(dragWhat==="pole")pole=p; if(dragWhat==="rail")rail=Math.max(0.2,Math.min(HCM-0.2,p.y)); if(dragWhat==="start")hstart=p;
+  drawBase();});
+const endDrag=()=>{if(dragWhat==="draw"){drawing=false;$("draw").classList.remove("on");if(drawPts.length>20&&Math.abs(shoelace(drawPts))>1){curve=drawPts;hstart=null;$("status").textContent="Your curve is closed automatically with a straight segment back to the start.";}else $("status").textContent="That curve was too small. Try again with Draw your own.";drawBase();}
+  else if(dragWhat){measure();}dragWhat=null;};
+cv.addEventListener("pointerup",endDrag);cv.addEventListener("pointercancel",endDrag);
+$("draw").onclick=()=>{drawing=true;drawPts=[];$("draw").classList.add("on");$("status").textContent="Drag on the table to draw a closed curve.";$("status").className="status";};
+$("preset").onchange=()=>{curve=preset($("preset").value);hstart=null;measure();};
+$("trace").onclick=trace; $("measure").onclick=()=>measure(true); $("clearruns").onclick=()=>{runs=[];drawRuns();};
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{inst=b.dataset.i;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".pctl").forEach(d=>d.classList.toggle("on",d.dataset.p===inst));measure();});
+const outs=[["pa"," cm"],["pb"," cm"],["pc"," cm"],["lb"," cm"],["lc"," cm"],["hl"," cm"],["xr"," cm"],["nt"," cm"],["ns","%"]];
+for(const [id,u] of outs){const f=()=>{$(id+"o").value=$(id).value+u;};$(id).addEventListener("input",f);$(id).addEventListener("change",measure);f();}
+$("nq").onchange=measure;
+curve=preset("blob"); drawBase(); drawRuns(); measure();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Rule of Turns</title>
+<meta name="description" content="A folio of the Wending House: an SO(3) slide rule, after Hamilton. Rotations are composed by sliding arcs along great circles and reading the third side of a spherical triangle.">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ECDFC0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="/folio/folio.css?v=1">
+<script src="/folio/folio.js?v=1"></script>
+<script src="/ga.js" async></script>
+<style>
+/* page-only additions; colours come from the kit's variables */
+.subtitle{font:italic 400 clamp(18px,2.4vw,23px)/1.25 var(--fell);color:var(--ink2);margin:0 0 10px}
+.reckon{overflow-wrap:anywhere}
+.reckon .q4{white-space:nowrap}
+.reckon hr{border:none;border-top:1px dashed var(--rule);margin:7px 0}
+.drawing h3{margin-top:10px}
+</style>
+</head>
+<body>
+<main class="leaf">
+  <div class="runhead"><a href="/palace/">The Wending House</a><span>Of Instruments · Folio the Third</span><a href="/puzzles/">Puzzles &amp; Devices</a></div>
+  <h1>The Rule of <span class="rub">Turns</span></h1>
+  <p class="subtitle">A slide rule for SO(3), the group of rotations of space, after Hamilton.</p>
+  <p class="incipit">Every rotation of a sphere is a turn about some axis through some angle. Draw it as an arc of a great circle, half as long as the angle, on the circle whose pole is the axis, and let the arc slide freely along its circle. Then two rotations compose like two sides of a spherical triangle: slide the arcs until they meet head to tail, and the third side is the product, read off the globe as a slide rule is read.</p>
+
+  <nav class="platetabs" role="tablist" aria-label="Plates">
+    <button type="button" role="tab" data-plate="rule"><span class="no">I.</span>The Rule</button>
+    <button type="button" role="tab" data-plate="scale"><span class="no">II.</span>The Self-Generating Scale</button>
+    <button type="button" role="tab" data-plate="belt"><span class="no">III.</span>The Commutator and the Belt</button>
+  </nav>
+
+  <!-- PLATE I -->
+  <section class="plate" id="rule" role="tabpanel">
+    <div class="drawing">
+      <svg id="svRule" class="fig" viewBox="0 0 760 560" aria-label="An engraved globe carrying two graduated brass arcs, the turns a and b, on their great circles"></svg>
+      <p class="caption"><b>Plate I.</b> The globe, two slides, and the cursor that closes the triangle.</p>
+      <div class="dials">
+        <label for="angA">Turn a, the angle</label><input id="angA" type="range" min="0" max="360" step="1" value="110"><output id="angAo"></output>
+        <label for="angB">Turn b, the angle</label><input id="angB" type="range" min="0" max="360" step="1" value="140"><output id="angBo"></output>
+      </div>
+      <div class="row"><button type="button" class="q prime" id="join">Slide them together</button><button type="button" class="q" id="loose">Loosen the slides</button></div>
+      <div class="row"><button type="button" class="q on" id="ordAB" aria-pressed="true">a, then b</button><button type="button" class="q" id="ordBA" aria-pressed="false">b, then a</button><label class="chk"><input type="checkbox" id="ghost" checked> show the other order's triangle</label></div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdRule" aria-live="polite"></div>
+      <p class="gloss" data-g="globe"><span class="sig">a.</span>The <em>globe</em> is ruled every 15° of latitude and longitude, with N at the top. Drag anywhere on the plate that is not brass to turn it and look round the back.</p>
+      <p class="gloss" data-g="slides"><span class="sig">b.</span>Each <em>slide</em> is a turn: an arc of length θ/2 on the great circle whose pole is the axis. It is cut every 5° of arc and figured in the full angle θ, so the figure at the arrow is the rotation. Drag a slide along its circle: the rotation it stands for does not change.</p>
+      <p class="gloss" data-g="poles"><span class="sig">c.</span>The <em>poles</em> a and b are the axes. Drag one to tip the axis; the slide stays on the circle around it. Set the angle with the dial, or drag the arrowhead along the circle.</p>
+      <p class="gloss" data-g="cursor"><span class="sig">d.</span><em>Slide them together.</em> The head of a goes to a crossing of the two circles and the tail of b goes to the same crossing. The ink <em>cursor</em> runs from the tail of a to the head of b. It is the turn for “a, then b”, the quaternion q<sub>b</sub>q<sub>a</sub>.</p>
+      <p class="gloss" data-g="ghost"><span class="sig">e.</span>Reverse the order and the triangle swings to the other side of the crossing. The angle is the same and the axis is not: rotations do not commute. The far crossing gives the antipodal copy of the same triangle, and the same reading.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE II -->
+  <section class="plate" id="scale" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svScale" class="fig" viewBox="0 0 760 560" aria-label="A globe on which one small rotation, applied again and again, cuts a graduated ring"></svg>
+      <p class="caption"><b>Plate II.</b> One step, repeated, cuts its own scale: a ring for the point, and a ring for the turn.</p>
+      <div class="dials">
+        <label for="stp">The step</label><input id="stp" type="range" min="1" max="90" step="1" value="20"><output id="stpo"></output>
+        <label for="cnt">Steps taken</label><input id="cnt" type="range" min="0" max="36" step="1" value="9"><output id="cnto"></output>
+      </div>
+      <div class="row"><button type="button" class="q" id="step1">One step more</button><button type="button" class="q prime" id="cut">Cut the whole scale</button><button type="button" class="q" id="clr">Begin again</button></div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdScale" aria-live="polite"></div>
+      <p class="gloss" data-g="sAxis"><span class="sig">a.</span>Choose an <em>axis</em> by dragging its pole, and a <em>step</em>, a small rotation about it. The rotations by 0, 1, 2, … steps form a one-parameter subgroup, a straight line through the group.</p>
+      <p class="gloss" data-g="sRing"><span class="sig">b.</span>Mark a <em>point</em> (drag the gold pin) and step it round. Each step cuts a division on the circle of latitude through it. The divisions are equal because every step is the same rotation, just as the log rule's scale is cut by multiplying by the same number again and again.</p>
+      <p class="gloss" data-g="sTurn"><span class="sig">c.</span>The <em>turn</em> of k steps is an arc of kφ/2 on the equator of the axis. When the point has come home, after 360°, the turn has gone only half way round: q = −1, the same rotation on the other sheet. It closes at 720°.</p>
+      <p class="gloss"><span class="sig">d.</span>Choose a step that does not divide 360°, such as 7° or 25°, and the ring never quite closes: the point lands a little past where it began.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE III -->
+  <section class="plate" id="belt" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svComm" class="fig" viewBox="0 0 760 470" aria-label="The path of a pole under four small rotations, a small spherical quadrilateral"></svg>
+      <p class="caption"><b>Plate III, a.</b> The commutator a b a⁻¹ b⁻¹ of two small turns about perpendicular axes.</p>
+      <div class="dials">
+        <label for="eps">Each turn, ε</label><input id="eps" type="range" min="2" max="45" step="1" value="18"><output id="epso"></output>
+      </div>
+      <h3>The belt</h3>
+      <svg id="svBelt" class="fig" viewBox="0 0 760 430" aria-label="A globe tied to a fixed frame by a ribbon that twists as the globe turns"></svg>
+      <p class="caption"><b>Plate III, b.</b> A globe turned through 720°, and the ribbon that ties it to the frame.</p>
+      <div class="dials">
+        <label for="blt">The globe has turned</label><input id="blt" type="range" min="0" max="720" step="1" value="200"><output id="blto"></output>
+      </div>
+      <div class="row"><button type="button" class="q prime" id="bltRun">Turn it twice round</button><button type="button" class="q" id="blt360">Stop at 360°</button><button type="button" class="q" id="blt0">Back to 0°</button></div>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdComm" aria-live="polite"></div>
+      <p class="gloss" data-g="cQuad"><span class="sig">a.</span>Turn by b⁻¹, a⁻¹, b, a in that order (the commutator acts from the right), each through ε about the axes x and y. The <em>pole</em> z is carried round a small <em>quadrilateral</em> and comes home to within about ε³/√2.</p>
+      <p class="gloss" data-g="cWit"><span class="sig">b.</span>The four turns together are not nothing. They are a rotation through about ε² radians about an axis near the pole (it leans from z by about ε/√2), shown by the <em>witness</em> on the equator. The quadrilateral encloses about ε² steradians, and the rotation goes round the pole the opposite way to the path. Both agree with ε² to second order, and drift apart as ε grows.</p>
+      <div class="reckon" id="rdBelt" aria-live="polite"></div>
+      <p class="gloss" data-g="bArc"><span class="sig">c.</span>The <em>turn</em> of the globe grows by half the angle. At 360° the arc is a half circle and its ends are antipodal: q = −1. At 720° it is a whole circle and q = 1 again.</p>
+      <p class="gloss" data-g="bRib"><span class="sig">d.</span>The <em>ribbon</em> is tied to the globe and to the frame. Its underside is hatched, so each crossing of the hatching is half a twist. At 360° it carries one full twist, and no motion of the ribbon alone will remove it. At 720° it carries two, and those can be removed, by passing the ribbon once round the globe while both ends stay put.</p>
+    </aside>
+  </section>
+
+  <div class="fleuron" aria-hidden="true">❦ ❦ ❦</div>
+  <section class="commentary">
+    <h2><span class="no">¶</span>Commentary</h2>
+    <p><b>Rotations and quaternions.</b> A rotation of space about a unit axis n through an angle θ corresponds to the unit quaternion q = cos θ/2 + sin θ/2 (n₁i + n₂j + n₃k), and it acts on a vector v, written as a pure quaternion, by v ↦ q v q⁻¹. Composing rotations is multiplying quaternions: first q₁, then q₂, is q₂q₁. The unit quaternions form the group SU(2), a three-sphere, and q and −q give the same rotation. So SU(2) covers SO(3) twice.</p>
+    <p><b>Hamilton's arcs.</b> Hamilton called a unit quaternion a versor, and in his <i>Lectures on Quaternions</i> (1853) drew it as an arc of a great circle on the unit sphere, an arc that may be slid along its own circle without changing the versor. For unit vectors A and B the quotient B A⁻¹ is the versor whose arc runs from A to B. Then B P⁻¹ · P A⁻¹ = B A⁻¹: arcs that meet head to tail at P compose to the arc from the first tail to the last head. That one line is the whole instrument.</p>
+    <p><b>Why half the angle.</b> A reflection in the plane perpendicular to A, followed by a reflection in the plane perpendicular to B, is a rotation about A × B through twice the angle between A and B. So an arc of length θ/2 stands for a rotation through θ, and an arc of 180° stands for a full turn. Arcs longer than a half circle are allowed, and they are the other sheet of the cover: the arc of 360° − φ in one direction gives −q for the arc of φ in the other.</p>
+    <p><b>Rodrigues.</b> Euler had already written a rotation with four parameters, the components of q, and Olinde Rodrigues in 1840 found how the parameters of two rotations combine to give those of the product. His rule is Hamilton's product, three years before quaternions. The same paper's formula v cos θ + (n × v) sin θ + n (n·v)(1 − cos θ), for turning one vector, is what draws every arc on these plates.</p>
+    <p><b>Order matters.</b> The products q<sub>b</sub>q<sub>a</sub> and q<sub>a</sub>q<sub>b</sub> are conjugate, q<sub>a</sub>q<sub>b</sub> = q<sub>a</sub>(q<sub>b</sub>q<sub>a</sub>)q<sub>a</sub>⁻¹, so they turn through the same angle about different axes. On the rule this is the two triangles on either side of the crossing, mirror images in the plane through the two poles, with cursors of equal length on different circles.</p>
+    <p><b>Curvature.</b> On a flat rule, sides add. On the sphere the triangle's third side falls short of the sum, and the shortfall is the curvature at work. For small turns ε about perpendicular axes the commutator a b a⁻¹ b⁻¹ is a rotation through ε² + O(ε³) about the third axis, the bracket [X, Y] = Z of the Lie algebra. The pole it carries round encloses an area that agrees to the same order, as the area of a small loop agrees with the turning of a vector carried round it, by Gauss and Bonnet.</p>
+    <p><b>Two sheets.</b> A loop of rotations from the identity back to itself, once round about a fixed axis, cannot be shrunk to a point in SO(3); twice round, it can. The fundamental group π₁(SO(3)) is ℤ/2, and SU(2), being a three-sphere, is simply connected. The belt shows it with a ribbon instead of a loop: one twist is stuck, two can be undone. The demonstration is usually credited to Dirac, and the same sign change is the one an electron's wave function picks up under a single full turn.</p>
+    <p><b>Further.</b> W. R. Hamilton, <i>Lectures on Quaternions</i> (1853); S. L. Altmann, <i>Rotations, Quaternions, and Double Groups</i> (1986), which uses the turns throughout; J. Stillwell, <i>Naive Lie Theory</i> (2008), for SU(2), SO(3), and the bracket.</p>
+  </section>
+  <div class="colophon"><span>Drawn for the Wending House, 2026. Drag anything that looks like brass.</span><span>Older instruments: <a href="/turns/">Hamilton's Turns</a> and <a href="/stereonet/">the Stereonet</a>.</span></div>
+</main>
+
+<script>
+(function(){
+const {E, T, fmt} = Folio, $ = id => document.getElementById(id);
+Folio.defs();
+
+/*MATH-BEGIN*/
+const DEG = Math.PI / 180;
+const V3 = {
+  dot: (a, b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2],
+  cross: (a, b) => [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]],
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sc: (a, s) => [a[0]*s, a[1]*s, a[2]*s],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  unit: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0]/l, a[1]/l, a[2]/l]; },
+  // Rodrigues: turn v about the unit axis n through t, counterclockwise seen from the tip of n
+  rot: (n, t, v) => { const c = Math.cos(t), s = Math.sin(t), k = V3.dot(n, v) * (1 - c), x = V3.cross(n, v);
+    return [v[0]*c + x[0]*s + n[0]*k, v[1]*c + x[1]*s + n[1]*k, v[2]*c + x[2]*s + n[2]*k]; },
+  perp: n => V3.unit(Math.abs(n[0]) < .8 ? V3.cross(n, [1, 0, 0]) : V3.cross(n, [0, 1, 0])),
+  // the point of the great circle with pole n nearest to v
+  onCircle: (n, v) => { const w = V3.add(v, V3.sc(n, -V3.dot(n, v))); return V3.len(w) < 1e-9 ? V3.perp(n) : V3.unit(w); },
+  // signed angle from a to b, about n
+  ang: (n, a, b) => Math.atan2(V3.dot(n, V3.cross(a, b)), V3.dot(a, b)),
+  ll: (lat, lon) => [Math.cos(lat*DEG)*Math.cos(lon*DEG), Math.cos(lat*DEG)*Math.sin(lon*DEG), Math.sin(lat*DEG)]
+};
+// quaternions as [w, x, y, z]
+const H = {
+  mul: (p, q) => [p[0]*q[0] - p[1]*q[1] - p[2]*q[2] - p[3]*q[3],
+                  p[0]*q[1] + p[1]*q[0] + p[2]*q[3] - p[3]*q[2],
+                  p[0]*q[2] - p[1]*q[3] + p[2]*q[0] + p[3]*q[1],
+                  p[0]*q[3] + p[1]*q[2] - p[2]*q[1] + p[3]*q[0]],
+  inv: q => [q[0], -q[1], -q[2], -q[3]],
+  of: (n, t) => [Math.cos(t/2), Math.sin(t/2)*n[0], Math.sin(t/2)*n[1], Math.sin(t/2)*n[2]],
+  act: (q, v) => H.mul(H.mul(q, [0, v[0], v[1], v[2]]), H.inv(q)).slice(1),
+  // the versor B A⁻¹ whose arc runs from A to B (A, B unit vectors)
+  arc: (A, B) => { const c = V3.cross(A, B); return [V3.dot(A, B), c[0], c[1], c[2]]; },
+  // angle in [0°, 360°] and axis; at angle 0 or 360 the axis is any
+  aa: q => { const w = Math.max(-1, Math.min(1, q[0])), s = Math.hypot(q[1], q[2], q[3]);
+    return {t: 2 * Math.atan2(s, w), n: s > 1e-12 ? [q[1]/s, q[2]/s, q[3]/s] : [0, 0, 1]}; },
+  dist: (p, q) => Math.max(...p.map((x, i) => Math.abs(x - q[i])))
+};
+// a crossing of the great circles with poles na and nb (sign picks which of the two)
+function crossing(na, nb, sgn){ const c = V3.cross(na, nb); return V3.sc(V3.len(c) < 1e-9 ? V3.perp(na) : V3.unit(c), sgn); }
+// lay two turns a, b = {n, th} head to tail at the crossing; order "ab" means a first, then b
+function lay(a, b, order, sgn){
+  const P = crossing(a.n, b.n, sgn), qa = H.of(a.n, a.th), qb = H.of(b.n, b.th);
+  if(order === "ab"){ const tailA = V3.rot(a.n, -a.th/2, P), headB = V3.rot(b.n, b.th/2, P);
+    return {P, tailA, tailB:P, from:tailA, to:headB, q:H.mul(qb, qa)}; }
+  const tailB = V3.rot(b.n, -b.th/2, P), headA = V3.rot(a.n, a.th/2, P);
+  return {P, tailA:P, tailB, from:tailB, to:headA, q:H.mul(qa, qb)};
+}
+// signed solid angle of a spherical triangle
+const triArea = (a, b, c) => 2 * Math.atan2(V3.dot(a, V3.cross(b, c)), 1 + V3.dot(a, b) + V3.dot(b, c) + V3.dot(c, a));
+// the commutator a b a⁻¹ b⁻¹ of turns through e about x and y, and the path of the pole z
+function commutator(e){
+  const X = [1, 0, 0], Y = [0, 1, 0], Z = [0, 0, 1], qa = H.of(X, e), qb = H.of(Y, e);
+  const c = H.mul(H.mul(qa, qb), H.mul(H.inv(qa), H.inv(qb)));
+  const legs = [[Y, -e], [X, -e], [Y, e], [X, e]], path = [], verts = [Z]; let v = Z;
+  legs.forEach(([n, t]) => { for(let i = 0; i < 24; i++) path.push(V3.rot(n, t * i / 24, v)); v = V3.rot(n, t, v); verts.push(v); });
+  const m = V3.unit(path.reduce((s, p) => V3.add(s, p), [0, 0, 0])); let area = 0;
+  for(let i = 0; i < path.length; i++) area += triArea(m, path[i], path[(i + 1) % path.length]);
+  return {c, legs, path, verts, area};
+}
+/*MATH-END*/
+
+/* ---------- 3×3 matrices, for the view ---------- */
+const M3 = {
+  mv: (M, v) => [M[0][0]*v[0] + M[0][1]*v[1] + M[0][2]*v[2], M[1][0]*v[0] + M[1][1]*v[1] + M[1][2]*v[2], M[2][0]*v[0] + M[2][1]*v[1] + M[2][2]*v[2]],
+  mtv: (M, v) => [M[0][0]*v[0] + M[1][0]*v[1] + M[2][0]*v[2], M[0][1]*v[0] + M[1][1]*v[1] + M[2][1]*v[2], M[0][2]*v[0] + M[1][2]*v[1] + M[2][2]*v[2]],
+  mm: (A, B) => A.map(r => [0, 1, 2].map(j => r[0]*B[0][j] + r[1]*B[1][j] + r[2]*B[2][j])),
+  rx: a => { const c = Math.cos(a), s = Math.sin(a); return [[1,0,0],[0,c,-s],[0,s,c]]; },
+  ry: a => { const c = Math.cos(a), s = Math.sin(a); return [[c,0,s],[0,1,0],[-s,0,c]]; },
+  rz: a => { const c = Math.cos(a), s = Math.sin(a); return [[c,-s,0],[s,c,0],[0,0,1]]; },
+  axis: (n, t) => { const X = V3.rot(n, t, [1,0,0]), Y = V3.rot(n, t, [0,1,0]), Z = V3.rot(n, t, [0,0,1]); return [[X[0],Y[0],Z[0]],[X[1],Y[1],Z[1]],[X[2],Y[2],Z[2]]]; },
+  ortho: M => { const a = V3.unit(M[0]), b0 = V3.add(M[1], V3.sc(a, -V3.dot(a, M[1]))), b = V3.unit(b0); return [a, b, V3.cross(a, b)]; }
+};
+const f1 = x => x.toFixed(1);
+const dg = (t, d) => fmt(t / DEG, d == null ? 1 : d) + "°";
+const vec = (v, d) => "(" + v.map(x => fmt(Math.abs(x) < 5e-5 ? 0 : x, d || 3)).join(", ") + ")";
+const quat = (q, d) => `<span class="q4">(${fmt(q[0], d || 4)};</span> <span class="q4">${fmt(q[1], d || 4)}, ${fmt(q[2], d || 4)}, ${fmt(q[3], d || 4)})</span>`;
+const latlon = n => { const la = Math.asin(Math.max(-1, Math.min(1, n[2]))) / DEG, lo = Math.atan2(n[1], n[0]) / DEG;
+  return `${Math.abs(la).toFixed(1)}° ${la >= 0 ? "N" : "S"}, ${Math.abs(lo).toFixed(1)}° ${lo >= 0 ? "E" : "W"}`; };
+
+/* ---------- an engraved globe ---------- */
+function Globe(svg, o){
+  const G = {cx:o.cx, cy:o.cy, R:o.R, V:o.V};
+  G.base = E("g", {}, svg); G.grid = E("g", {}, svg); G.shade = E("g", {style:"pointer-events:none"}, svg); G.top = E("g", {}, svg);
+  G.vz = w => M3.mv(G.V, w)[2];
+  G.P = w => { const v = M3.mv(G.V, w); return [G.cx + G.R*v[0], G.cy - G.R*v[1], v[2]]; };
+  G.s = w => { const p = G.P(w); return f1(p[0]) + "," + f1(p[1]); };
+  G.un = (p, hemi) => { let x = (p.x - G.cx) / G.R, y = -(p.y - G.cy) / G.R, z; const r2 = x*x + y*y;
+    if(r2 >= 1){ const r = Math.sqrt(r2); x /= r; y /= r; z = 0; } else z = (hemi < 0 ? -1 : 1) * Math.sqrt(1 - r2); return M3.mtv(G.V, [x, y, z]); };
+  G.turn = (dx, dy) => { G.V = M3.ortho(M3.mm(M3.mm(M3.ry(dx / G.R), M3.rx(dy / G.R)), G.V)); };
+  G.clear = () => { G.grid.replaceChildren(); G.top.replaceChildren(); };
+  // a path through points on the sphere, split where it passes the limb: [front, back]
+  G.split = (W, closed) => { const pts = closed ? W.concat([W[0]]) : W, f = [], b = []; let cur = null;
+    const put = (side, s, m) => (side === "f" ? f : b).push((m ? "M" : "L") + s);
+    pts.forEach((w, i) => { const side = G.vz(w) > 0 ? "f" : "b";
+      if(i && side !== cur){ const zp = G.vz(pts[i-1]), z = G.vz(w), t = zp / (zp - z), m = G.s(V3.unit(V3.add(V3.sc(pts[i-1], 1 - t), V3.sc(w, t)))); put(cur, m); put(side, m, true); }
+      put(side, G.s(w), !i || side !== cur); cur = side; });
+    return [f.join(""), b.join("")]; };
+  G.circle = (n, from, len, step) => { const N = Math.max(2, Math.ceil(Math.abs(len) / (step || 3*DEG))), P = []; for(let i = 0; i <= N; i++) P.push(V3.rot(n, len * i / N, from)); return P; };
+  // the ruled graticule, front side only; M turns the globe's body
+  G.graticule = (M, label) => { const tw = v => M ? M3.mv(M, v) : v; let thin = "", bold = "";
+    for(let lon = 0; lon < 180; lon += 15){ const P = []; for(let la = -180; la <= 180; la += 5){ const c = Math.cos(la*DEG); P.push(tw([c*Math.cos(lon*DEG), c*Math.sin(lon*DEG), Math.sin(la*DEG)])); }
+      const d = G.split(P)[0]; if(lon === 0) bold += d; else thin += d; }
+    for(let la = -75; la <= 75; la += 15){ const P = []; for(let lo = 0; lo <= 360; lo += 5) P.push(tw(V3.ll(la, lo))); const d = G.split(P)[0]; if(la === 0) bold += d; else thin += d; }
+    const g = E("g", {"data-g":"globe"}, G.grid);
+    E("path", {d:thin, class:"faded", "stroke-width":.5}, g); E("path", {d:bold, class:"ink2", "stroke-width":.8}, g);
+    if(label !== false){ const N = tw([0,0,1]), pn = G.P(N); if(pn[2] > .05){ E("path", {d:`M${f1(pn[0]-4)},${f1(pn[1])}h8M${f1(pn[0])},${f1(pn[1]-4)}v8`, class:"ink", "stroke-width":.9}, g); T("N", {x:pn[0] + 5, y:pn[1] - 5, "font-size":12, class:"sc"}, g); } } };
+  // a crescent of parallel hatching: inside the disk, outside a lit circle
+  function crescent(ang, gap, off, rho, cls, w, op){ const R = G.R, ph = ang * DEG, d = [Math.cos(ph), Math.sin(ph)], m = [-Math.sin(ph), Math.cos(ph)];
+    const C = [off[0]*R, off[1]*R], cu = C[0]*m[0] + C[1]*m[1], cv = C[0]*d[0] + C[1]*d[1], r = rho * R; let s = "";
+    const seg = (v0, v1, u) => { if(v1 - v0 < 1.5) return; s += `M${f1(G.cx + u*m[0] + v0*d[0])},${f1(G.cy + u*m[1] + v0*d[1])}L${f1(G.cx + u*m[0] + v1*d[0])},${f1(G.cy + u*m[1] + v1*d[1])}`; };
+    for(let u = -R + gap/2; u < R; u += gap){ const h = Math.sqrt(R*R - u*u), du = u - cu;
+      if(Math.abs(du) < r){ const k = Math.sqrt(r*r - du*du); seg(-h, Math.min(h, cv - k), u); seg(Math.max(-h, cv + k), h, u); } else seg(-h, h, u); }
+    E("path", {d:s, class:cls, "stroke-width":w, opacity:op}, G.shade); }
+  G.frame = f => { const {cx, cy, R} = G; f = f || {};
+    if(f.stand){ const y0 = cy + R + 17, yb = cy + R + 50, sg = E("g", {}, G.base);
+      E("ellipse", {cx, cy:yb + 4, rx:R*.62, ry:13, fill:"url(#h45w)", class:"ink2", "stroke-width":.6}, sg);
+      E("path", {d:`M${cx - R*.62},${yb + 4} a${R*.62},13 0 0 0 ${R*1.24},0 v6 a${R*.62},13 0 0 1 ${-R*1.24},0 z`, fill:"url(#h135)", class:"ink", "stroke-width":1}, sg);
+      E("path", {d:`M${cx - 11},${y0} C${cx - 9},${y0 + 12} ${cx - 24},${y0 + 18} ${cx - 22},${yb} L${cx + 22},${yb} C${cx + 24},${y0 + 18} ${cx + 9},${y0 + 12} ${cx + 11},${y0} Z`, class:"fvel"}, sg);
+      E("path", {d:`M${cx - 11},${y0} C${cx - 9},${y0 + 12} ${cx - 24},${y0 + 18} ${cx - 22},${yb} L${cx + 22},${yb} C${cx + 24},${y0 + 18} ${cx + 9},${y0 + 12} ${cx + 11},${y0} Z`, fill:"url(#hv)", class:"ink", "stroke-width":1}, sg);
+      E("ellipse", {cx, cy:yb + 4, rx:R*.62, ry:13, class:"ink", "stroke-width":1.1}, sg); }
+    E("circle", {cx, cy, r:R, class:"fvel"}, G.base);
+    crescent(32, 3.2, [-.26, -.34], 1.0, "ink2", .55, .85);
+    crescent(-52, 3.6, [-.42, -.5], 1.22, "ink2", .5, .75);
+    crescent(8, 3.1, [-.5, -.58], 1.4, "ink", .4, .6);
+    [3, 6.5].forEach((dr, i) => E("circle", {cx, cy, r:R - dr, class:"faded", "stroke-width":.5, opacity:.6 - i*.2}, G.shade));
+    E("circle", {cx, cy, r:R, class:"ink", "stroke-width":1.7}, G.shade);
+    if(f.ring){ const rg = E("g", {}, G.shade), a = R + 5, b = R + 17;
+      E("path", {d:`M${cx - b},${cy}a${b},${b} 0 1 0 ${2*b},0a${b},${b} 0 1 0 ${-2*b},0M${cx - a},${cy}a${a},${a} 0 1 1 ${2*a},0a${a},${a} 0 1 1 ${-2*a},0Z`, class:"fgold", "fill-rule":"evenodd", opacity:.3}, rg);
+      E("circle", {cx, cy, r:a, class:"ink", "stroke-width":1}, rg); E("circle", {cx, cy, r:b, class:"ink", "stroke-width":1.3}, rg); E("circle", {cx, cy, r:b + 2.5, class:"ink2", "stroke-width":.5}, rg);
+      let d = ""; for(let k = 0; k < 360; k += 5){ const t = k * DEG, l = k % 30 === 0 ? a : k % 15 === 0 ? a + 5 : a + 8; d += `M${f1(cx + l*Math.cos(t))},${f1(cy + l*Math.sin(t))}L${f1(cx + b*Math.cos(t))},${f1(cy + b*Math.sin(t))}`; }
+      E("path", {d, class:"ink", "stroke-width":.6}, rg);
+      [[0, -1], [0, 1]].forEach(([, s]) => { E("rect", {x:cx - 5, y:cy + s*(b + 1) - 6, width:10, height:12, class:"fgold", style:"stroke:var(--ink);stroke-width:1"}, rg); E("circle", {cx, cy:cy + s*(b + 1), r:1.6, class:"fink"}, rg); }); }
+  };
+  // a graduated brass band of length len along the great circle with pole n, from tail T
+  G.band = (n, Tt, len, o) => { const del = o.w || .045, N = Math.max(2, Math.ceil(Math.abs(len) / (2.5*DEG))), C = [], up = [], dn = [];
+    for(let i = 0; i <= N; i++){ const c = V3.rot(n, len * i / N, Tt); C.push(c); up.push(V3.add(V3.sc(c, Math.cos(del)), V3.sc(n, Math.sin(del)))); dn.push(V3.add(V3.sc(c, Math.cos(del)), V3.sc(n, -Math.sin(del)))); }
+    const gf = E("g", {"data-g":o.g, "data-h":o.h}, G.top);
+    // back of the sphere: a dashed centre line
+    const sp = G.split(C); if(sp[1]) E("path", {d:sp[1], class:o.cls, "stroke-width":1.1, "stroke-dasharray":"3 3", opacity:.6, "data-g":o.g}, G.grid);
+    let run = []; const flush = () => { if(run.length > 1){ const d = "M" + run.map(i => G.s(up[i])).join("L") + "L" + run.slice().reverse().map(i => G.s(dn[i])).join("L") + "Z";
+        E("path", {d, class:"fvel"}, gf); E("path", {d, class:"fgold", opacity:.32}, gf); E("path", {d, class:o.cls, fill:o.hatch, "stroke-width":1.2}, gf); } run = []; };
+    C.forEach((c, i) => { if(G.vz(c) > 0) run.push(i); else flush(); }); flush();
+    // ticks every 5° of arc, figured in the full angle
+    const step = o.tick || 5*DEG; let d = "";
+    for(let t = 0; t <= Math.abs(len) + 1e-9; t += step){ const c = V3.rot(n, Math.sign(len) * t, Tt); if(G.vz(c) < .04) continue;
+      const k = Math.round(t / step), big = o.major ? k % o.major === 0 : k % 3 === 0;
+      const e1 = V3.add(V3.sc(c, Math.cos(del)), V3.sc(n, Math.sin(del))), e2 = V3.add(V3.sc(c, Math.cos(del)), V3.sc(n, big ? -Math.sin(del) : 0));
+      d += "M" + G.s(e1) + "L" + G.s(e2);
+      if(o.label && big){ const lp = V3.unit(V3.add(V3.sc(c, Math.cos(del*2.7)), V3.sc(n, Math.sin(del*2.7)))), p = G.P(lp);
+        if(p[2] > .3) T(o.label(t, k), {x:p[0], y:p[1] + 3.5, "text-anchor":"middle", "font-size":o.fs || 10.5, class:o.labcls || "fadedt"}, gf); } }
+    E("path", {d, class:"ink", "stroke-width":.7}, gf);
+    return {gf, C};
+  };
+  // a pole marker, with its axle drawn in from the centre
+  G.pole = (n, name, cls, fcls, h, g) => { const p = G.P(n), front = p[2] > 0, gg = E("g", {"data-g":g, "data-h":h, class:"grab"}, G.top);
+    E("path", {d:`M${G.cx},${G.cy}L${f1(p[0])},${f1(p[1])}`, class:cls, "stroke-width":.8, "stroke-dasharray":front ? "6 3" : "2 3", opacity:front ? .8 : .45}, front ? gg : G.grid);
+    E("circle", {cx:G.cx, cy:G.cy, r:1.8, class:"fink2"}, G.grid);
+    E("circle", {cx:p[0], cy:p[1], r:7, class:front ? "fvel" : "fvel", opacity:front ? 1 : .7}, gg);
+    E("circle", {cx:p[0], cy:p[1], r:7, class:cls, "stroke-width":front ? 1.6 : 1, "stroke-dasharray":front ? null : "2 2"}, gg);
+    E("circle", {cx:p[0], cy:p[1], r:2.2, class:fcls, opacity:front ? 1 : .5}, gg);
+    T(name, {x:p[0] + 10, y:p[1] - 8, "font-size":17, class:"sc " + (cls === "lap" ? "hand" : cls === "rub" ? "rubt" : ""), opacity:front ? 1 : .55, style:cls === "lap" ? "font-family:var(--fellsc)" : null}, gg);
+    E("circle", {cx:p[0], cy:p[1], r:18, fill:"transparent"}, gg);
+    return gg; };
+  // a gold knob: round at a tail, an arrowhead at a head pointing along the arc
+  G.knob = (w, kind, h, g, prev) => { const p = G.P(w), gg = E("g", {"data-h":h, "data-g":g, class:"grab"}, G.top), op = p[2] > 0 ? 1 : .45;
+    if(kind === "head" && prev){ const q = G.P(prev); let dx = p[0] - q[0], dy = p[1] - q[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+      E("path", {d:`M${f1(p[0] + dx*9)},${f1(p[1] + dy*9)}L${f1(p[0] - dx*5 - dy*7)},${f1(p[1] - dy*5 + dx*7)}L${f1(p[0] - dx*2)},${f1(p[1] - dy*2)}L${f1(p[0] - dx*5 + dy*7)},${f1(p[1] - dy*5 - dx*7)}Z`, class:"fgold", style:"stroke:var(--ink);stroke-width:1", opacity:op}, gg); }
+    else E("circle", {cx:p[0], cy:p[1], r:4.8, class:"fgold", style:"stroke:var(--ink);stroke-width:1", opacity:op}, gg);
+    E("circle", {cx:p[0], cy:p[1], r:16, fill:"transparent"}, gg); return gg; };
+  return G;
+}
+
+/* one handler per drawing: handles carry data-h; anything else turns the globe */
+function grab(svg, pick){
+  svg.addEventListener("pointerdown", ev => { if(ev.button > 0) return; const p = Folio.pt(svg, ev), h = ev.target.closest && ev.target.closest("[data-h]");
+    const op = pick(h ? h.getAttribute("data-h") : null, p, ev); if(!op) return; ev.preventDefault(); try{ svg.setPointerCapture(ev.pointerId); }catch(_){}
+    let last = p; const mv = e => { if(e.pointerId !== ev.pointerId) return; const q = Folio.pt(svg, e); op.move(q, last, p); last = q; };
+    const up = e => { if(e.pointerId !== ev.pointerId) return; svg.removeEventListener("pointermove", mv); svg.removeEventListener("pointerup", up); svg.removeEventListener("pointercancel", up); if(op.end) op.end(); };
+    svg.addEventListener("pointermove", mv); svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up); });
+}
+const viewDrag = (G, redraw) => ({move:(q, last) => { G.turn(q.x - last.x, q.y - last.y); redraw(); }});
+const ease = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+
+/* ================= PLATE I: THE RULE ================= */
+const svR = $("svRule");
+const B0 = [[0,1,0],[0,0,1],[1,0,0]];   // world x faces the reader, y to the right, z up
+const G1 = Globe(svR, {cx:380, cy:262, R:200, V:M3.mm(M3.rx(22*DEG), M3.mm(B0, M3.rz(-10*DEG)))});
+G1.frame({ring:true, stand:true});
+// legend in the corner of the plate
+{ const lg = E("g", {}, G1.base); T("TABVLA VERSORVM", {x:24, y:34, "font-size":15, class:"sc", "letter-spacing":"2"}, lg);
+  E("path", {d:"M24,42h150", class:"ink2", "stroke-width":.6}, lg);
+  [["lap", "url(#h45l)", "turn a"], ["rub", "url(#h45r)", "turn b"], ["ink", "url(#h45)", "the cursor"]].forEach(([c, h, s], i) => {
+    E("rect", {x:24, y:52 + i*20, width:30, height:8, class:"fvel"}, lg); E("rect", {x:24, y:52 + i*20, width:30, height:8, class:c, fill:h, "stroke-width":1}, lg);
+    T(s, {x:62, y:60 + i*20, "font-size":13.5, "font-style":"italic"}, lg); }); }
+const A = {n:V3.ll(48, -62), th:110*DEG, T:null}, Bt = {n:V3.ll(-5, 58), th:140*DEG, T:null};
+function looseSlides(){ const fr = M3.mtv(G1.V, [0, .1, 1]); A.T = V3.rot(A.n, -A.th/4 - .55, V3.onCircle(A.n, fr)); Bt.T = V3.rot(Bt.n, -Bt.th/4 + .55, V3.onCircle(Bt.n, fr)); }
+looseSlides();
+let order = "ab", joined = false, sgn = 1, anim = null, showGhost = true;
+function pickSign(){ const P = crossing(A.n, Bt.n, 1); sgn = G1.vz(P) >= 0 ? 1 : -1; }
+function snap(){ if(!joined) return; const L = lay(A, Bt, order, sgn); A.T = L.tailA; Bt.T = L.tailB; }
+const fig = t => String(Math.round(2 * t / DEG));
+function arcSide(n, a, b){ return G1.circle(n, a, V3.ang(n, a, b)); }
+function drawRule(){
+  snap(); G1.clear(); G1.graticule();
+  const g = G1.top, L = lay(A, Bt, order, sgn), done = joined && !anim;
+  // the other order's triangle, faintly
+  if(done && showGhost){ const O = lay(A, Bt, order === "ab" ? "ba" : "ab", sgn), gg = E("g", {"data-g":"ghost"}, g);
+    const sides = order === "ab" ? [arcSide(Bt.n, O.from, O.P), arcSide(A.n, O.P, O.to)] : [arcSide(A.n, O.from, O.P), arcSide(Bt.n, O.P, O.to)];
+    const nc = V3.unit(V3.cross(O.from, O.to)), cur = G1.circle(nc, O.from, Math.acos(Math.max(-1, Math.min(1, V3.dot(O.from, O.to)))), 2*DEG);
+    const all = sides[0].concat(sides[1], cur.slice().reverse());
+    if(all.every(p => G1.vz(p) > -.02)) E("path", {d:"M" + all.map(G1.s).join("L") + "Z", class:"flwash"}, gg);
+    [sides[0], sides[1], cur].forEach((P, i) => { const sp = G1.split(P); E("path", {d:sp[0], class:i === 2 ? "ink" : "ink2", "stroke-width":i === 2 ? 1.1 : .8, "stroke-dasharray":"1.5 3"}, gg); });
+    const pt = G1.P(O.to); if(pt[2] > 0) T("the other order", {x:pt[0] + 8, y:pt[1] + 16, "font-size":13, "font-style":"italic", class:"fadedt"}, gg); }
+  // the triangle of this order, washed
+  if(done){ const sA = order === "ab" ? arcSide(A.n, L.from, L.P) : arcSide(Bt.n, L.from, L.P), sB = order === "ab" ? arcSide(Bt.n, L.P, L.to) : arcSide(A.n, L.P, L.to);
+    const nc = V3.unit(V3.cross(L.from, L.to)), cur = G1.circle(nc, L.from, Math.acos(Math.max(-1, Math.min(1, V3.dot(L.from, L.to)))), 2*DEG), all = sA.concat(sB, cur.slice().reverse());
+    if(all.every(p => G1.vz(p) > -.02)) E("path", {d:"M" + all.map(G1.s).join("L") + "Z", class:"fwash", "data-g":"cursor"}, g); }
+  // the two great circles: the tracks the slides run in
+  [[A, "lap"], [Bt, "rub"]].forEach(([t, c]) => { const sp = G1.split(G1.circle(t.n, V3.perp(t.n), 2*Math.PI), false);
+    E("path", {d:sp[0], class:c, "stroke-width":.9, opacity:.75, "data-g":"slides"}, G1.grid); E("path", {d:sp[1], class:c, "stroke-width":.6, "stroke-dasharray":"2 4", opacity:.5}, G1.grid); });
+  // the slides
+  G1.band(A.n, A.T, A.th/2, {cls:"lap", hatch:"url(#h45l)", g:"slides", h:"aBody", label:fig, labcls:"hand"});
+  G1.band(Bt.n, Bt.T, Bt.th/2, {cls:"rub", hatch:"url(#h45r)", g:"slides", h:"bBody", label:fig, labcls:"rubt"});
+  // the cursor
+  if(done){ const ln = Math.acos(Math.max(-1, Math.min(1, V3.dot(L.from, L.to)))), nc = ln > 1e-6 ? V3.unit(V3.cross(L.from, L.to)) : A.n;
+    const cb = G1.band(nc, L.from, ln, {cls:"ink", hatch:"url(#h45)", g:"cursor", h:null, w:.034, label:fig, labcls:""});
+    G1.knob(L.from, "tail", null, "cursor"); G1.knob(L.to, "head", null, "cursor", V3.rot(nc, ln - .04, L.from));
+    if(ln > 1e-6){ const pc = G1.pole(nc, "c", "ink", "fink", null, "cursor"); pc.removeAttribute("class"); }
+    const pp = G1.P(L.P); if(pp[2] > 0){ E("circle", {cx:pp[0], cy:pp[1], r:9, class:"ink", "stroke-width":.8, "stroke-dasharray":"2 2"}, g); T("P", {x:pp[0] - 22, y:pp[1] + 4, "font-size":15, class:"sc"}, g); } }
+  // knobs and poles
+  [[A, "a", "lap", "flap"], [Bt, "b", "rub", "frub"]].forEach(([t, nm, c, fc]) => { const head = V3.rot(t.n, t.th/2, t.T);
+    G1.knob(t.T, "tail", nm + "Body", "slides"); G1.knob(head, "head", nm + "Head", "slides", V3.rot(t.n, t.th/2 - .05, t.T));
+    G1.pole(t.n, nm, c, fc, nm + "Pole", "poles"); });
+  // the reckoning
+  const qa = H.of(A.n, A.th), qb = H.of(Bt.n, Bt.th), q = L.q, r = H.aa(q), first = order === "ab" ? "a" : "b", second = order === "ab" ? "b" : "a";
+  let s = `Turn by ${first}, then by ${second}:`;
+  if(done){ const qc = H.arc(L.from, L.to), err = H.dist(qc, q), rc = H.aa(qc);
+    s += `<span class="big">${dg(rc.t)}</span>about the axis ${vec(rc.n)},<br>the pole c at ${latlon(rc.n)}.<hr>
+      The cursor reads B A⁻¹ = ${quat(qc)}<br>Hamilton's product q<sub>${second}</sub>q<sub>${first}</sub> = ${quat(q)}<br>
+      <span class="ok">They agree to ${err < 1e-12 ? "within 10⁻¹²" : fmt(err, 12)}.</span><br>
+      <span class="dim">Sides of the triangle: ${dg(A.th/2)}, ${dg(Bt.th/2)}, and ${dg(rc.t/2)}, half of ${fmt(A.th/DEG, 0)}°, ${fmt(Bt.th/DEG, 0)}°, and ${dg(rc.t)}.</span>`; }
+  else s += `<span class="big">${anim ? "sliding…" : "not yet laid"}</span><span class="dim">Slide them together to read the product off the cursor. By the quaternions alone it is a turn of ${dg(r.t)}.</span>`;
+  s += `<hr><span class="dim">a: ${fmt(A.th/DEG, 0)}° about ${vec(A.n, 2)}, pole at ${latlon(A.n)}; q<sub>a</sub> = ${quat(qa, 3)}<br>b: ${fmt(Bt.th/DEG, 0)}° about ${vec(Bt.n, 2)}, pole at ${latlon(Bt.n)}; q<sub>b</sub> = ${quat(qb, 3)}</span>`;
+  $("rdRule").innerHTML = s;
+  $("angAo").value = fmt(A.th/DEG, 0) + "°"; $("angBo").value = fmt(Bt.th/DEG, 0) + "°";
+}
+function slideTogether(){
+  if(anim) cancelAnimationFrame(anim.id);
+  if(!joined) pickSign();
+  const L = lay(A, Bt, order, sgn), a0 = A.T, b0 = Bt.T, da = V3.ang(A.n, a0, L.tailA), db = V3.ang(Bt.n, b0, L.tailB), t0 = performance.now(), dur = 1300;
+  // the turn of the view that brings the middle of the triangle to the front
+  const V0 = G1.V, mid = M3.mv(V0, V3.unit(V3.add(V3.add(L.from, L.to), V3.sc(L.P, 1.3)))), aim = V3.unit([0, .08, 1]), ax = V3.cross(mid, aim), vAng = Math.atan2(V3.len(ax), V3.dot(mid, aim)), vAx = V3.len(ax) > 1e-9 ? V3.unit(ax) : [0, 0, 1];
+  joined = false; anim = {};
+  const tick = now => { const k = ease(Math.min(1, (now - t0) / dur)); A.T = V3.rot(A.n, da*k, a0); Bt.T = V3.rot(Bt.n, db*k, b0); G1.V = M3.ortho(M3.mm(M3.axis(vAx, vAng*k), V0));
+    if(k >= 1){ anim = null; joined = true; } else anim.id = requestAnimationFrame(tick); drawRule(); };
+  anim.id = requestAnimationFrame(tick);
+}
+function setOrder(o){ order = o; $("ordAB").classList.toggle("on", o === "ab"); $("ordBA").classList.toggle("on", o === "ba");
+  $("ordAB").setAttribute("aria-pressed", o === "ab"); $("ordBA").setAttribute("aria-pressed", o === "ba");
+  if(joined || anim) slideTogether(); else drawRule(); }
+grab(svR, (h, p) => {
+  if(anim) return null;
+  if(!h) return viewDrag(G1, drawRule);
+  const t = h[0] === "a" ? A : Bt, part = h.slice(1);
+  if(part === "Pole"){ const hemi = G1.vz(t.n) >= 0 ? 1 : -1;
+    return {move:q => { t.n = G1.un(q, hemi); if(!joined) t.T = V3.onCircle(t.n, t.T); drawRule(); }}; }
+  const hemi = (q) => { const w = G1.un(q, 1); return w; };
+  let u0 = V3.onCircle(t.n, hemi(p));
+  if(part === "Body") return {move:q => { const u = V3.onCircle(t.n, hemi(q)), d = V3.ang(t.n, u0, u); u0 = u; joined = false; t.T = V3.rot(t.n, d, t.T); drawRule(); }};
+  if(part === "Head") return {move:q => { const u = V3.onCircle(t.n, hemi(q)), d = V3.ang(t.n, u0, u); u0 = u;
+    t.th = Math.max(0, Math.min(2*Math.PI, t.th + 2*d)); $(t === A ? "angA" : "angB").value = Math.round(t.th / DEG); drawRule(); }};
+  return null;
+});
+$("angA").oninput = e => { A.th = +e.target.value * DEG; drawRule(); };
+$("angB").oninput = e => { Bt.th = +e.target.value * DEG; drawRule(); };
+$("join").onclick = slideTogether;
+$("loose").onclick = () => { if(anim){ cancelAnimationFrame(anim.id); anim = null; } joined = false; looseSlides(); drawRule(); };
+$("ordAB").onclick = () => setOrder("ab"); $("ordBA").onclick = () => setOrder("ba");
+$("ghost").onchange = e => { showGhost = e.target.checked; drawRule(); };
+drawRule();
+
+/* ================= PLATE II: THE SELF-GENERATING SCALE ================= */
+const svS = $("svScale");
+const G2 = Globe(svS, {cx:380, cy:262, R:200, V:M3.mm(M3.rx(18*DEG), M3.mm(B0, M3.rz(-15*DEG)))});
+G2.frame({ring:true, stand:true});
+{ const lg = E("g", {}, G2.base); T("SCALA SPONTE NATA", {x:24, y:34, "font-size":15, class:"sc", "letter-spacing":"2"}, lg); E("path", {d:"M24,42h158", class:"ink2", "stroke-width":.6}, lg);
+  T("the point's ring: one division a step", {x:24, y:62, "font-size":13.5, "font-style":"italic", class:"rubt"}, lg);
+  T("the turn's ring: half a step a division", {x:24, y:80, "font-size":13.5, "font-style":"italic", class:"hand"}, lg); }
+let sN = V3.unit(M3.mtv(G2.V, [-.18, .82, .55])), sP = V3.unit(M3.mtv(G2.V, [-.62, .05, .78])), sStep = 20, sK = 9, sAnim = null;
+const kMax = () => Math.floor(720 / sStep + 1e-9);
+function drawScale(){
+  G2.clear(); G2.graticule(); const g = G2.top, phi = sStep * DEG;
+  const T0 = V3.onCircle(sN, sP), lat = Math.acos(Math.max(-1, Math.min(1, V3.dot(sN, sP))));
+  // the point's ring: the circle of latitude round the axis
+  const ring = G2.circle(sN, sP, 2*Math.PI, 2*DEG), sp = G2.split(ring);
+  const rg = E("g", {"data-g":"sRing"}, g);
+  E("path", {d:sp[0], class:"rub", "stroke-width":1.1}, rg); E("path", {d:sp[1], class:"rub", "stroke-width":.6, "stroke-dasharray":"2 3", opacity:.5}, G2.grid);
+  if(sp[0]){ const ring2 = ring.map(p => V3.unit(V3.add(V3.sc(p, Math.cos(.03)), V3.sc(V3.unit(V3.add(sN, V3.sc(p, -V3.dot(sN, p)))), -Math.sin(.03))))); E("path", {d:G2.split(ring2)[0], class:"rub", "stroke-width":.5}, rg); }
+  // its divisions, one per step
+  let d = ""; const n = Math.min(sK, 720), lab = Math.max(1, Math.ceil(n / 18)), toward = p => V3.unit(V3.add(sN, V3.sc(p, -V3.dot(sN, p))));
+  for(let j = 0; j <= n; j++){ const p = V3.rot(sN, j*phi, sP); if(G2.vz(p) < .03) continue; const m = toward(p), big = j % lab === 0 || j === n;
+    const a = V3.unit(V3.add(V3.sc(p, 1), V3.sc(m, -.03))), b = V3.unit(V3.add(p, V3.sc(m, big ? .05 : .025)));
+    d += "M" + G2.s(a) + "L" + G2.s(b);
+    if(big && j * sStep < 360 - 1e-9 && G2.vz(p) > .25){ const q = G2.P(V3.unit(V3.add(p, V3.sc(m, -.085)))); T(String(j), {x:q[0], y:q[1] + 4, "text-anchor":"middle", "font-size":11, class:"rubt"}, rg); } }
+  E("path", {d, class:"rub", "stroke-width":1}, rg);
+  // the turn's ring, on the equator of the axis: an arc of kφ/2
+  const tg = E("g", {"data-g":"sTurn"}, g), half = sK * phi / 2;
+  const eq = G2.split(G2.circle(sN, T0, 2*Math.PI, 2*DEG)); E("path", {d:eq[0], class:"lap", "stroke-width":.8, opacity:.7, "data-g":"sTurn"}, G2.grid); E("path", {d:eq[1], class:"lap", "stroke-width":.6, "stroke-dasharray":"2 4", opacity:.5}, G2.grid);
+  const per = Math.max(1, Math.ceil(sK / 24));
+  if(half > 0) G2.band(sN, T0, Math.min(half, 2*Math.PI - 1e-6), {cls:"lap", hatch:"url(#h45l)", g:"sTurn", h:null, tick:phi/2, major:per, label:(t, k) => { const a = Math.round(k * sStep); return a % 720 === 0 && a ? "+1" : a % 360 === 0 && a ? "−1" : String(a); }, labcls:"hand"});
+  // the sheet marks on the turn's ring: q = 1 at the start, q = −1 half way round
+  [[0, "q = 1"], [Math.PI, "q = −1"]].forEach(([t, s]) => { const w = V3.rot(sN, t, T0), p = G2.P(w); if(p[2] < .1) return;
+    E("path", {d:`M${f1(p[0])},${f1(p[1] - 6)}l5,6l-5,6l-5,-6z`, class:t ? "frub" : "fink", "data-g":"sTurn"}, tg);
+    const o = G2.P(V3.unit(V3.add(w, V3.sc(sN, -.14)))); T(s, {x:o[0], y:o[1] + 4, "text-anchor":"middle", "font-size":13, class:"sc" + (t ? " rubt" : "")}, tg); });
+  if(half > 0){ const hd = V3.rot(sN, Math.min(half, 2*Math.PI), T0); G2.knob(hd, "head", null, "sTurn", V3.rot(sN, Math.min(half, 2*Math.PI) - .05, T0)); }
+  // the point where it now stands, and the gold pin where it began
+  const pk = V3.rot(sN, sK*phi, sP), pp = G2.P(pk);
+  if(pp[2] > 0) E("circle", {cx:pp[0], cy:pp[1], r:5, class:"frub", style:"stroke:var(--ink);stroke-width:.8", "data-g":"sRing"}, g);
+  const pin = G2.P(sP), pg = E("g", {"data-h":"pt", "data-g":"sRing", class:"grab"}, g), op = pin[2] > 0 ? 1 : .45;
+  E("path", {d:`M${f1(pin[0])},${f1(pin[1] - 9)}l8,9l-8,9l-8,-9z`, class:"fgold", style:"stroke:var(--ink);stroke-width:1", opacity:op}, pg);
+  E("circle", {cx:pin[0], cy:pin[1], r:18, fill:"transparent"}, pg);
+  G2.pole(sN, "n", "ver", "fver", "sPole", "sAxis");
+  // the reckoning
+  const tot = sK * sStep, rounds = Math.floor(tot / 360 + 1e-9), rem = tot - 360 * rounds, q = H.of(sN, sK*phi), per360 = 360 / sStep, exact = Math.abs(per360 - Math.round(per360)) < 1e-9;
+  let s = `${sK} step${sK === 1 ? "" : "s"} of ${sStep}°<span class="big">${tot}°</span>`;
+  s += `The point has gone ${rounds ? `round ${rounds === 1 ? "once" : "twice"}${rem ? " and " + fmt(rem, 0) + "° more" : ""}` : fmt(rem, 0) + "° of the way round"}, on its circle ${fmt(lat/DEG, 1)}° from the pole.<br>`;
+  s += exact ? `It comes home after ${Math.round(per360)} steps, at 360°.<br>` : `${sStep}° does not divide 360°: after ${Math.ceil(per360)} steps it lands ${fmt(Math.ceil(per360)*sStep - 360, 0)}° past its start.<br>`;
+  s += `<hr>The turn is an arc of ${fmt(tot/2, 1)}°:<br>q<sup>${sK}</sup> = ${quat(q)}<br>`;
+  s += Math.abs(tot - 360) < 1e-9 ? `<span style="color:var(--rubric)">q = −1: the rotation is the identity, and the turn is on the other sheet.</span>` : Math.abs(tot - 720) < 1e-9 ? `<span class="ok">q = +1: the turn has come home too, at 720°.</span>` : tot > 360 ? `<span class="dim">Past 360°, on the second sheet: q is −1 times the turn of ${fmt(tot - 360, 0)}°.</span>` : `<span class="dim">The turn needs 720° to come home, twice the point's 360°.</span>`;
+  $("rdScale").innerHTML = s; $("stpo").value = sStep + "°"; $("cnto").value = String(sK);
+  const c = $("cnt"); c.max = kMax(); c.value = sK;
+}
+grab(svS, (h, p) => {
+  if(!h) return viewDrag(G2, drawScale);
+  if(h === "sPole"){ const hemi = G2.vz(sN) >= 0 ? 1 : -1; return {move:q => { sN = G2.un(q, hemi); drawScale(); }}; }
+  if(h === "pt"){ const hemi = G2.vz(sP) >= 0 ? 1 : -1; return {move:q => { sP = G2.un(q, hemi); drawScale(); }}; }
+  return null;
+});
+const stopS = () => { if(sAnim){ clearInterval(sAnim); sAnim = null; } };
+$("stp").oninput = e => { stopS(); sStep = +e.target.value; sK = Math.min(sK, kMax()); drawScale(); };
+$("cnt").oninput = e => { stopS(); sK = +e.target.value; drawScale(); };
+$("step1").onclick = () => { stopS(); if(sK < kMax()) sK++; drawScale(); };
+$("clr").onclick = () => { stopS(); sK = 0; drawScale(); };
+$("cut").onclick = () => { stopS(); sK = 0; drawScale(); const dt = Math.max(30, Math.min(260, 5000 / kMax()));
+  sAnim = setInterval(() => { if(sK >= kMax()){ stopS(); return; } sK++; drawScale(); }, dt); };
+drawScale();
+
+/* ================= PLATE III a: THE COMMUTATOR ================= */
+const svC = $("svComm");
+const G3 = Globe(svC, {cx:400, cy:238, R:190, V:M3.mm(M3.rx(-30*DEG), M3.rz(-28*DEG))});
+G3.frame({ring:true});
+{ const lg = E("g", {}, G3.base); T("COMMVTATOR", {x:22, y:32, "font-size":15, class:"sc", "letter-spacing":"2"}, lg); E("path", {d:"M22,40h118", class:"ink2", "stroke-width":.6}, lg);
+  [["rub", "1. b⁻¹, about y"], ["lap", "2. a⁻¹, about x"], ["rub", "3. b, about y"], ["lap", "4. a, about x"]].forEach(([c, s], i) => {
+    E("path", {d:`M22,${58 + i*19}h24`, class:c, "stroke-width":2, "stroke-dasharray":i < 2 ? "5 2" : null}, lg); T(s, {x:54, y:62 + i*19, "font-size":13.5, "font-style":"italic"}, lg); }); }
+let eps = 18 * DEG;
+function drawComm(){
+  G3.clear(); G3.graticule(null, false); const g = G3.top, K = commutator(eps), r = H.aa(K.c), Z = [0,0,1];
+  // axes x, y and the pole z
+  G3.pole([1,0,0], "x", "lap", "flap", null, "cQuad"); G3.pole([0,1,0], "y", "rub", "frub", null, "cQuad");
+  // the quadrilateral the pole is carried round
+  const qg = E("g", {"data-g":"cQuad"}, g);
+  E("path", {d:"M" + K.path.map(G3.s).join("L") + "Z", class:"fwash"}, qg);
+  E("path", {d:"M" + K.path.map(G3.s).join("L") + "Z", fill:"url(#h135w)", opacity:.5}, qg);
+  K.legs.forEach(([n, t], i) => { const pts = G3.circle(n, K.verts[i], t, 1*DEG), c = n[0] ? "lap" : "rub";
+    E("path", {d:G3.split(pts)[0], class:c, "stroke-width":2, "stroke-dasharray":i < 2 ? "6 2.5" : null}, qg);
+    // an arrow at the middle of each leg, and its number
+    const m = V3.rot(n, t/2, K.verts[i]), m2 = V3.rot(n, t/2 + Math.sign(t)*.01, K.verts[i]), p = G3.P(m), p2 = G3.P(m2); let dx = p2[0] - p[0], dy = p2[1] - p[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+    E("path", {d:`M${f1(p[0] + dx*6)},${f1(p[1] + dy*6)}L${f1(p[0] - dx*4 - dy*5)},${f1(p[1] - dy*4 + dx*5)}L${f1(p[0] - dx*4 + dy*5)},${f1(p[1] - dy*4 - dx*5)}Z`, class:n[0] ? "flap" : "frub"}, qg);
+    const ctr = G3.P(V3.unit(K.path.reduce((s, q) => V3.add(s, q), [0,0,0]))), ox = p[0] - ctr[0], oy = p[1] - ctr[1], ol = Math.hypot(ox, oy) || 1;
+    T(String(i + 1), {x:p[0] + ox/ol*13, y:p[1] + oy/ol*13 + 4, "text-anchor":"middle", "font-size":13, class:"sc"}, qg); });
+  K.verts.slice(0, 4).forEach((v, i) => { const p = G3.P(v); E("circle", {cx:p[0], cy:p[1], r:i ? 2.4 : 4, class:i ? "fink2" : "fink"}, qg); });
+  const pz = G3.P(Z); T("z", {x:pz[0] + 7, y:pz[1] + 17, "font-size":16, class:"sc"}, qg);
+  const p4 = G3.P(K.verts[4]); E("circle", {cx:p4[0], cy:p4[1], r:6, class:"ink", "stroke-width":.8}, qg);
+  // the commutator's own axis, very near z
+  const pc = G3.P(r.n); E("path", {d:`M${f1(pc[0] - 5)},${f1(pc[1] - 5)}l10,10m0,-10l-10,10`, class:"ink", "stroke-width":1.1, "data-g":"cWit"}, g); T("axis of c", {x:pc[0] + 9, y:pc[1] + 4, "font-size":12.5, "font-style":"italic", "data-g":"cWit"}, g);
+  // the witness on the equator: where c carries it
+  const fr = V3.onCircle(Z, M3.mtv(G3.V, [0, -.3, 1])), w0 = V3.rot(Z, -r.t/2, fr), w1 = H.act(K.c, w0), wg = E("g", {"data-g":"cWit"}, g);
+  const wpts = G3.circle(Z, w0, V3.ang(Z, w0, w1) || 1e-6, 1*DEG); E("path", {d:G3.split(wpts)[0], class:"ink", "stroke-width":2.6}, wg);
+  [[w0, "fvel"], [w1, "fink"]].forEach(([w, c]) => { const p = G3.P(w); E("circle", {cx:p[0], cy:p[1], r:4.2, class:c, style:"stroke:var(--ink);stroke-width:1"}, wg); });
+  const wl = G3.P(V3.unit(V3.add(V3.rot(Z, V3.ang(Z, w0, w1)/2, w0), [0, 0, -.16])));
+  T("the witness turns ≈ ε²", {x:wl[0], y:wl[1] + 4, "text-anchor":"middle", "font-size":13.5, "font-style":"italic"}, wg);
+  const tsign = V3.dot(r.n, Z) >= 0 ? 1 : -1, ang = r.t * tsign, ar = K.area;
+  $("rdComm").innerHTML = `With ε = ${fmt(eps/DEG, 0)}° = ${fmt(eps, 4)} rad:<span class="big">${fmt(ang, 4)} rad</span>the commutator turns about an axis ${dg(Math.acos(Math.min(1, Math.abs(V3.dot(r.n, Z)))), 2)} from z, ${ang >= 0 ? "counterclockwise" : "clockwise"} seen from above.<br>
+    The pole's path encloses <b style="font-weight:400">${fmt(Math.abs(ar), 4)} sr</b>, traced ${ar >= 0 ? "counterclockwise" : "clockwise"}.<br>ε² = ${fmt(eps*eps, 4)}.<br>
+    <span class="dim">Angle ÷ ε² = ${fmt(ang/(eps*eps), 3)}; area ÷ ε² = ${fmt(Math.abs(ar)/(eps*eps), 3)}. The pole misses home by ${fmt(Math.acos(Math.min(1, V3.dot(K.verts[4], Z)))/DEG, 3)}°.</span><br>
+    <span class="dim">c = ${quat(K.c)}</span>`;
+  $("epso").value = fmt(eps/DEG, 0) + "°";
+}
+grab(svC, h => h ? null : viewDrag(G3, drawComm));
+$("eps").oninput = e => { eps = +e.target.value * DEG; drawComm(); };
+drawComm();
+
+/* ================= PLATE III b: THE BELT ================= */
+const svB = $("svBelt");
+const G4 = Globe(svB, {cx:150, cy:178, R:108, V:M3.mm(M3.rx(26*DEG), M3.ry(-24*DEG))});
+G4.frame({});
+let bAng = 200 * DEG, bAnim = null;
+const X = [1, 0, 0], L4 = 4.9, Wd = .42, A0 = -25 * DEG;
+function drawBelt(){
+  G4.clear(); const Mb = M3.axis(X, bAng); G4.graticule(Mb, false); const g = G4.top;
+  // the turn of the globe: an arc of half the angle, on the circle round the belt's axis
+  const fr = V3.onCircle(X, M3.mtv(G4.V, [0, .55, 1])), T0 = V3.rot(X, -1.3, fr);
+  E("path", {d:G4.split(G4.circle(X, T0, 2*Math.PI, 3*DEG))[0], class:"lap", "stroke-width":.7, opacity:.6}, G4.grid);
+  if(bAng > 0) G4.band(X, T0, Math.min(bAng/2, 2*Math.PI - 1e-6), {cls:"lap", hatch:"url(#h45l)", g:"bArc", h:null, w:.055, major:9, label:t => String(Math.round(2*t/DEG)), labcls:"hand", fs:11});
+  const tail = G4.P(T0); E("path", {d:`M${f1(tail[0])},${f1(tail[1] - 6)}l5,6l-5,6l-5,-6z`, class:"fink", "data-g":"bArc"}, g);
+  if(bAng > 0) G4.knob(V3.rot(X, bAng/2, T0), "head", null, "bArc", V3.rot(X, bAng/2 - .05, T0));
+  const anti = G4.P(V3.sc(T0, -1)); if(anti[2] > 0){ E("path", {d:`M${f1(anti[0])},${f1(anti[1] - 6)}l5,6l-5,6l-5,-6z`, class:"frub", "data-g":"bArc"}, g); }
+  // a pin where the ribbon is fastened to the globe
+  // the frame: a plate perpendicular to the axis
+  const fx = L4, corner = (y, z) => G4.P([fx, y, z]), fc = [corner(-.85, -.75), corner(.85, -.75), corner(.85, .75), corner(-.85, .75)];
+  const fg = E("g", {"data-g":"bRib"}, g);
+  // ribbon: a strip whose width turns from the globe's angle to nothing at the frame
+  const N = 120, pts = [];
+  for(let i = 0; i <= N; i++){ const s = .985 + (fx - .985) * i / N, a = A0 + bAng * (1 - i / N), w = [0, Math.cos(a), Math.sin(a)];
+    const nrm = V3.cross(X, w); pts.push({e1:G4.P(V3.add([s, 0, 0], V3.sc(w, Wd/2))), e2:G4.P(V3.add([s, 0, 0], V3.sc(w, -Wd/2))), st:G4.P(V3.add([s, 0, 0], V3.sc(w, Wd*.3))), front:M3.mv(G4.V, nrm)[2] > 0}); }
+  const rb = E("g", {"data-g":"bRib"}, g); let fd = "", bd = "", stripe = "";
+  for(let i = 0; i < N; i++){ const p = pts[i], q = pts[i+1], d = `M${f1(p.e1[0])},${f1(p.e1[1])}L${f1(q.e1[0])},${f1(q.e1[1])}L${f1(q.e2[0])},${f1(q.e2[1])}L${f1(p.e2[0])},${f1(p.e2[1])}Z`;
+    if(p.front){ fd += d; stripe += `M${f1(p.st[0])},${f1(p.st[1])}L${f1(q.st[0])},${f1(q.st[1])}`; } else bd += d; }
+  E("path", {d:fd + bd, class:"fvel", style:"stroke:var(--vellum2);stroke-width:.6"}, rb);
+  E("path", {d:bd, fill:"url(#h45)", style:"stroke:none"}, rb);
+  E("path", {d:stripe, class:"rub", "stroke-width":1.4}, rb);
+  E("path", {d:"M" + pts.map(p => f1(p.e1[0]) + "," + f1(p.e1[1])).join("L"), class:"ink", "stroke-width":1.2}, rb);
+  E("path", {d:"M" + pts.map(p => f1(p.e2[0]) + "," + f1(p.e2[1])).join("L"), class:"ink", "stroke-width":1.2}, rb);
+  // the frame, drawn after so the ribbon goes into it
+  E("path", {d:"M" + fc.map(p => f1(p[0]) + "," + f1(p[1])).join("L") + "Z", class:"fvel"}, fg);
+  E("path", {d:"M" + fc.map(p => f1(p[0]) + "," + f1(p[1])).join("L") + "Z", fill:"url(#hx)", class:"ink", "stroke-width":1.4, opacity:.9}, fg);
+  const sl = [G4.P([fx, (Wd/2 + .06)*Math.cos(A0), (Wd/2 + .06)*Math.sin(A0)]), G4.P([fx, -(Wd/2 + .06)*Math.cos(A0), -(Wd/2 + .06)*Math.sin(A0)])]; E("path", {d:`M${f1(sl[0][0])},${f1(sl[0][1])}L${f1(sl[1][0])},${f1(sl[1][1])}`, class:"ink", "stroke-width":4}, fg);
+  T("the fixed frame", {x:fc[3][0] - 6, y:fc[3][1] - 10, "font-size":13.5, "font-style":"italic"}, fg);
+  // the clamp on the globe
+  const cl = [G4.P([1.0, Wd/2*Math.cos(A0 + bAng), Wd/2*Math.sin(A0 + bAng)]), G4.P([1.0, -Wd/2*Math.cos(A0 + bAng), -Wd/2*Math.sin(A0 + bAng)])];
+  E("path", {d:`M${f1(cl[0][0])},${f1(cl[0][1])}L${f1(cl[1][0])},${f1(cl[1][1])}`, class:"ink", "stroke-width":3.2, style:"stroke-linecap:round"}, rb);
+  T("TORTA", {x:20, y:28, "font-size":15, class:"sc", "letter-spacing":"2"}, G4.top);
+  // reckoning
+  const deg = Math.round(bAng / DEG), q = H.of(X, bAng), tw = deg / 360;
+  $("rdBelt").innerHTML = `The globe has turned<span class="big">${deg}°</span>q = ${quat(q)}<br>The turn is an arc of ${fmt(deg/2, 1)}°${deg === 360 ? ", a half circle with antipodal ends" : deg === 720 ? ", the whole circle" : ""}.<br>
+    The ribbon carries ${fmt(tw, 2)} full twist${tw === 1 ? "" : "s"}.<br>` + (deg === 360 ? `<span style="color:var(--rubric)">The same rotation as 0°, on the other sheet: one twist, and it cannot be shaken out.</span>` :
+    deg === 720 ? `<span class="ok">Back to q = 1. Two twists, and they can be undone by looping the ribbon round the globe.</span>` : deg === 0 ? `<span class="dim">Untwisted, q = 1.</span>` : deg > 360 ? `<span class="dim">The second sheet: q = −1 times the turn of ${deg - 360}°.</span>` : `<span class="dim">The first sheet.</span>`);
+  $("blto").value = deg + "°";
+}
+grab(svB, h => h ? null : viewDrag(G4, drawBelt));
+const stopB = () => { if(bAnim){ cancelAnimationFrame(bAnim); bAnim = null; } };
+const runBelt = (to, dur) => { stopB(); const a0 = bAng, t0 = performance.now(); dur = dur || Math.max(400, Math.abs(to - a0) / (720*DEG) * 7000);
+  const tick = now => { const k = ease(Math.min(1, (now - t0) / dur)); bAng = a0 + (to - a0) * k; $("blt").value = Math.round(bAng / DEG); drawBelt(); if(k < 1) bAnim = requestAnimationFrame(tick); else bAnim = null; };
+  bAnim = requestAnimationFrame(tick); };
+$("blt").oninput = e => { stopB(); bAng = +e.target.value * DEG; drawBelt(); };
+$("bltRun").onclick = () => { bAng = 0; runBelt(720*DEG, 8000); };
+$("blt360").onclick = () => runBelt(360*DEG);
+$("blt0").onclick = () => runBelt(0);
+drawBelt();
+
+Folio.plates(); Folio.glosses();
+})();
+</script>
+</body>
+</html>

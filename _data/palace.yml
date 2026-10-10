@@ -1191,6 +1191,9 @@ rooms:
     - {to: 0, wall: back, title: "back to the Entry"}
   objects:
     - {kind: device, icon: linkbook, mount: pedestal, wall: left, title: "A linking book: the Archive", action: link, to: 22, note: "A small book on a stand. Its panel shows the archive, moving faintly. Touch it to go there."}
+    - {kind: device, icon: turns, wall: front, title: "The Rule of Turns", href: "/so3-rule/", note: "A folio: a slide rule for SO(3). Hamilton's turns slid along a globe, the self-generating scale, the commutator, and the belt."}
+    - {kind: device, icon: cross, wall: front, title: "The Cross-Ratio Ruler", href: "/cross-ratio/", note: "A folio: read true distances off a picture. The road, the tiled floor, and the harmonic construction."}
+    - {kind: device, icon: planimeter, wall: front, title: "The Planimeter Bench", href: "/planimeters/", note: "A folio: five instruments that measure area by tracing, polar, linear, hatchet, radial, and counting, with their errors."}
     - {kind: device, mount: board, wall: back, icon: clock, title: "Office hours", action: officehours, info: "When the office is open, and where. The plate on the door outside says the same."}
     - {kind: unwritten, icon: lectern, wall: left, title: "The real office, measured", note: "A model of the actual office: the desk, the shelves, the whiteboard, the window."}
     - {kind: page, page: hourglass, icon: note, wall: left, title: "A loose page", info: "A page torn neatly from a Primer, about an hourglass. Someone has written in the margin: “turn it, and the house turns with it.”"}
