@@ -39,7 +39,7 @@ def export(d):
                "<style>body{font-family:system-ui,sans-serif;line-height:1.5;max-width:46rem;margin:2rem auto;padding:0 1rem;color:#18212b;background:#fff}"
                "h2{margin-top:2.2rem;border-bottom:2px solid #18212b}li{margin:.9rem 0}.by,.meta{color:#56616d;font-size:.9em}"
                "@media (prefers-color-scheme:dark){body{background:#11161c;color:#e3e8ee}h2{border-color:#e3e8ee}.by,.meta{color:#9aa6b2}a{color:#8db4ef}}</style>\n"
-               "</head>\n<body>\n<main>\n")
+               "<script src=\"/ga.js\" async></script>\n</head>\n<body>\n<main>\n")
     out.append(f"<h1>{e(d['meta']['title'])}</h1>\n<p>{e(d['meta']['owner'])}. Version {e(d['meta']['version'])}, updated {e(d['meta']['updated'])}. "
                "Free, vetted resources for quantitative work. Entries marked &#9733; are QRC picks.</p>\n")
     out.append("<nav><ul>\n")
