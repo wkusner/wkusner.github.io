@@ -1,0 +1,703 @@
+% MAT670 -- Interlude after Lecture 6: from Dynkin diagrams to Lie algebras and Lie groups.
+% Entirely new material (not in the handwritten notes). Labels prefixed LIE:.
+
+\chapter[Interlude: Lie algebras and Lie groups]{Interlude: From Dynkin diagrams to Lie algebras and Lie groups}
+\label{LIE:ch}
+
+\begin{addedblock}
+This interlude is new: it is not in the handwritten notes. It picks up the remark at the start of
+Lecture~4, that the classification of root systems is ``half of the classification of complex
+semisimple Lie algebras'', and follows it. To keep it readable it is set in black; all of it should be
+read as added material.
+\end{addedblock}
+
+In Lectures~4--6 we took the root system axioms as given, classified the possible Dynkin diagrams, and
+then built each root system by hand from lattices. Two questions were left hanging.
+\begin{itemize}
+\item Where do the axioms come from? Why should anyone care about a finite set of vectors closed under
+  reflections, with the integrality condition $n_{\beta\alpha}\in\Z$?
+\item The same root system $A_{n-1}$ appears twice in these notes, once as the vectors
+  $e_i-e_j$ in the hyperplane $\sum x_i=0$ (Lecture~6) and, later, once as the walls $x_i=x_j$ of
+  $\Conf(N,\R)$ (Lecture~8). Is there a single object behind both?
+\end{itemize}
+The answer to both is \emph{matrices}. In this interlude we find root systems inside matrix
+algebras, see that the crystallographic axioms are forced by a small piece of linear algebra, and
+then use the exponential map to pass from the algebra to groups of matrices. At the end the root
+lattice comes back, this time sitting inside a group.
+
+Throughout, $M_n$ denotes the $n\times n$ complex matrices and $E_{ij}$ the matrix with a $1$ in
+position $(i,j)$ and zeros elsewhere, so that
+\[
+  E_{ij}E_{kl}=\delta_{jk}E_{il}.
+\]
+
+%======================================================================
+\section{The roots of \texorpdfstring{$A_{n-1}$}{A(n-1)} inside matrices}
+\label{LIE:sec:sln}
+
+Let $h=\operatorname{diag}(h_1,\dots,h_n)$ be a diagonal matrix. Multiplying a matrix unit by $h$ on
+the left scales its row and on the right scales its column, so
+\[
+  hE_{ij}=h_iE_{ij},\qquad E_{ij}h=h_jE_{ij},
+  \qquad\text{hence}\qquad
+  hE_{ij}-E_{ij}h=(h_i-h_j)\,E_{ij}.
+\]
+In words: the linear map
+\[
+  \operatorname{ad}_h\colon M_n\to M_n,\qquad X\mapsto [h,X]:=hX-Xh
+\]
+is \emph{diagonal} in the basis $\{E_{ij}\}$, with eigenvalue $h_i-h_j$ on $E_{ij}$.
+
+Now regard the eigenvalue as a function of $h$. On $E_{ij}$ it is the linear functional
+$h\mapsto h_i-h_j$. If we identify functionals with vectors using the standard inner product, so that
+$h\mapsto h_i$ corresponds to $e_i$, then the eigenvalue on $E_{ij}$ is the vector $e_i-e_j$. So:
+\begin{center}
+\emph{the nonzero eigenvalues of $\operatorname{ad}_h$, as $h$ runs over diagonal matrices, are exactly
+the roots $e_i-e_j$ of $A_{n-1}$.}
+\end{center}
+The diagonal matrices themselves have eigenvalue $0$.
+
+Where is the hyperplane $\sum x_i=0$? Scalar matrices $h=cI$ commute with everything, so they tell us
+nothing, and it is natural to discard them. That leaves the \emph{traceless} matrices
+\[
+  \mathfrak{sl}_n=\{X\in M_n:\operatorname{tr}X=0\},
+\]
+whose diagonal part
+\[
+  \mathfrak h=\{\operatorname{diag}(h_1,\dots,h_n): h_1+\dots+h_n=0\}
+\]
+is exactly the hyperplane $\sum x_i=0$ of Lecture~6, of dimension $n-1$. We get a decomposition into
+eigenspaces
+\begin{equation}\label{LIE:eq:rootdecomp}
+  \mathfrak{sl}_n=\mathfrak h\ \oplus\ \bigoplus_{\alpha\in\Delta}\mathfrak g_\alpha,
+  \qquad
+  \mathfrak g_{e_i-e_j}=\C E_{ij},
+\end{equation}
+where $\Delta=\{e_i-e_j: i\neq j\}$ is the root system $A_{n-1}$. As a check on dimensions:
+$n^2-1=(n-1)+n(n-1)$, which is (rank) $+$ (number of roots), using the count
+$\abs{\Delta}=n(n-1)$ from Lecture~6.
+
+\begin{example}[$\mathfrak{sl}_3$]\label{LIE:ex:sl3}
+Here $\mathfrak h$ is two-dimensional and the six off-diagonal matrix units sit at the six roots of
+$A_2$. Placing each $E_{ij}$ at its root gives the familiar hexagon:
+\begin{center}
+\begin{tikzpicture}[scale=1.55]
+  \foreach \a/\lab/\pos in {0/E_{12}/right, 60/E_{13}/above right, 120/E_{23}/above left,
+                            180/E_{21}/left, 240/E_{31}/below left, 300/E_{32}/below right}
+    {\draw[-{Stealth}] (0,0)--(\a:1); \fill (\a:1) circle (0.03);
+     \node[\pos,font=\small] at (\a:1) {$\lab$};}
+  \fill (0,0) circle (0.045); \fill (0.09,0) circle (0.045);
+  \node[below,font=\small] at (0.05,-0.08) {$\mathfrak h$};
+  \draw[dashed,-{Stealth},addcol,thick] (120:1.05) to[bend left=35] node[above,font=\scriptsize]{$\operatorname{ad}_{E_{12}}$} (60:1.05);
+  \node[font=\scriptsize,gray] at (2.6,0.55) {$\alpha_1=e_1-e_2$};
+  \node[font=\scriptsize,gray] at (2.6,0.25) {$\alpha_2=e_2-e_3$};
+  \node[font=\scriptsize,gray] at (2.6,-0.05) {$\alpha_1+\alpha_2=e_1-e_3$};
+\end{tikzpicture}
+\end{center}
+The two dots at the centre stand for the two-dimensional zero eigenspace $\mathfrak h$. The dashed
+arrow anticipates Section~\ref{LIE:sec:bracket}: bracketing with $E_{12}$ moves $E_{23}$ to $E_{13}$,
+that is, it \emph{adds the root} $\alpha_1$.
+\end{example}
+
+The choices made in Lecture~4 also have matrix meanings. Take the direction $d=(n,n-1,\dots,1)$, so
+that $\ip{e_i-e_j}{d}=j-i$. Then:
+\begin{itemize}
+\item the positive roots $e_i-e_j$ with $i<j$ are the matrix units \emph{above} the diagonal, and
+  the negative roots are those below it;
+\item the simple roots $\alpha_i=e_i-e_{i+1}$ are the entries just above the diagonal,
+  $E_{12},E_{23},\dots,E_{n-1,n}$;
+\item every positive root is a sum of simple roots: $e_i-e_j=\alpha_i+\alpha_{i+1}+\dots+\alpha_{j-1}$.
+  On the matrix side this is the statement that $E_{ij}$ is an iterated product (indeed an iterated
+  commutator) of superdiagonal units.
+\end{itemize}
+The Weyl group, generated by the reflections $s_{e_i-e_j}$, acts on $\mathfrak h$ by swapping $h_i$ and
+$h_j$. It is the symmetric group $\Sigma_n$ permuting the diagonal entries, which is conjugation by
+permutation matrices. The Weyl chamber containing $d$ is $\{h_1>h_2>\dots>h_n\}$, one of the $n!$
+chambers of $\Conf(n,\R)$ from Lecture~8.
+
+%======================================================================
+\section{The bracket and the definition of a Lie algebra}
+\label{LIE:sec:bracket}
+
+What made the computation work was the operation $[X,Y]=XY-YX$, the \emph{commutator}. It has three
+properties that are easy to check:
+\begin{enumerate}[label=(\roman*)]
+\item it is bilinear;
+\item it is antisymmetric, $[X,Y]=-[Y,X]$;
+\item it satisfies the \emph{Jacobi identity}
+  \[
+    [X,[Y,Z]]=[[X,Y],Z]+[Y,[X,Z]],
+  \]
+  which says that $\operatorname{ad}_X=[X,\cdot\,]$ obeys the product rule (it is a derivation of the
+  bracket). Expanding both sides into products of three matrices proves it.
+\end{enumerate}
+
+\begin{definition}\label{LIE:def:liealg}
+A \emph{Lie algebra} over a field $k$ is a vector space $\mathfrak g$ with a bilinear map
+$[\cdot,\cdot]\colon\mathfrak g\times\mathfrak g\to\mathfrak g$ that is antisymmetric and satisfies the
+Jacobi identity. A \emph{subalgebra} is a subspace closed under the bracket; an \emph{ideal} is a
+subspace $I$ with $[\mathfrak g,I]\subseteq I$. A Lie algebra is \emph{simple} if it is not abelian and
+has no ideals other than $0$ and $\mathfrak g$. A \emph{representation} of $\mathfrak g$ on a vector space
+$V$ is a linear map $\rho\colon\mathfrak g\to\operatorname{End}(V)$ with
+$\rho([X,Y])=\rho(X)\rho(Y)-\rho(Y)\rho(X)$.
+\end{definition}
+
+\begin{example}\leavevmode
+\begin{enumerate}[nosep]
+\item $\mathfrak{gl}_n=M_n$ with the commutator.
+\item $\mathfrak{sl}_n$ is a subalgebra, since $\operatorname{tr}(XY-YX)=0$ for all $X,Y$. It is simple for
+  $n\ge2$.
+\item $\mathfrak{so}_n=\{X\in M_n: X^T=-X\}$ is a subalgebra: if $X,Y$ are antisymmetric, then
+  $[X,Y]^T=Y^TX^T-X^TY^T=YX-XY=-[X,Y]$.
+\item $\R^3$ with the cross product is a Lie algebra (Jacobi is the identity
+  $a\times(b\times c)=(a\times b)\times c+b\times(a\times c)$). Sending $\omega\in\R^3$ to the matrix
+  $X_\omega$ with $X_\omega v=\omega\times v$ gives an isomorphism $(\R^3,\times)\cong\mathfrak{so}_3(\R)$.
+\item By the Jacobi identity, $X\mapsto\operatorname{ad}_X$ is a representation of $\mathfrak g$ on itself,
+  the \emph{adjoint representation}. Section~\ref{LIE:sec:sln} was a study of the adjoint
+  representation of $\mathfrak{sl}_n$, restricted to $\mathfrak h$.
+\end{enumerate}
+\end{example}
+
+The Jacobi identity also explains the dashed arrow in Example~\ref{LIE:ex:sl3}. Suppose
+$[h,x]=\alpha(h)x$ and $[h,y]=\beta(h)y$ for all $h\in\mathfrak h$. Then
+\[
+  [h,[x,y]]=[[h,x],y]+[x,[h,y]]=\big(\alpha(h)+\beta(h)\big)[x,y].
+\]
+
+\begin{lemma}\label{LIE:lem:add}
+$[\mathfrak g_\alpha,\mathfrak g_\beta]\subseteq\mathfrak g_{\alpha+\beta}$, where
+$\mathfrak g_{\alpha+\beta}=0$ if $\alpha+\beta$ is neither a root nor $0$, and $\mathfrak g_0=\mathfrak h$.
+\end{lemma}
+
+So the bracket moves around the root diagram by \emph{adding roots}. In $\mathfrak{sl}_3$,
+$[E_{12},E_{23}]=E_{13}$ is the statement $\alpha_1+\alpha_2=e_1-e_3$, while $[E_{12},E_{13}]=0$
+because $2e_1-e_2-e_3$ is not a root.
+
+%======================================================================
+\section{The atom: \texorpdfstring{$\mathfrak{sl}_2$}{sl(2)}}
+\label{LIE:sec:sl2}
+
+Fix a root $\alpha=e_i-e_j$ of $A_{n-1}$ and put
+\[
+  e_\alpha=E_{ij},\qquad f_\alpha=E_{ji},\qquad h_\alpha=[e_\alpha,f_\alpha]=E_{ii}-E_{jj}\in\mathfrak h.
+\]
+A short computation gives
+\begin{equation}\label{LIE:eq:sl2rel}
+  [h_\alpha,e_\alpha]=2e_\alpha,\qquad [h_\alpha,f_\alpha]=-2f_\alpha,\qquad [e_\alpha,f_\alpha]=h_\alpha .
+\end{equation}
+For $n=2$ these three matrices
+\[
+  e=\begin{pmatrix}0&1\\0&0\end{pmatrix},\quad
+  f=\begin{pmatrix}0&0\\1&0\end{pmatrix},\quad
+  h=\begin{pmatrix}1&0\\0&-1\end{pmatrix}
+\]
+are a basis of $\mathfrak{sl}_2$. So every root $\alpha$ comes with a copy
+$\mathfrak s_\alpha=\operatorname{span}(e_\alpha,f_\alpha,h_\alpha)\cong\mathfrak{sl}_2$ sitting inside $\mathfrak{sl}_n$.
+
+Now look at how $h_\alpha$ acts on the other root spaces. For a root $\beta=e_k-e_l$,
+\[
+  \beta(h_\alpha)=(\delta_{ki}-\delta_{kj})-(\delta_{li}-\delta_{lj})=\ip{\beta}{\alpha}
+  =\frac{2\ip{\beta}{\alpha}}{\ip{\alpha}{\alpha}}=n_{\beta\alpha},
+\]
+since $\ip{\alpha}{\alpha}=2$. So \emph{the Cartan integer $n_{\beta\alpha}$ is the eigenvalue of
+$h_\alpha$ on $\mathfrak g_\beta$}. ($h_\alpha$ is called the \emph{coroot} of $\alpha$.) To see why these
+eigenvalues have to be integers, we need one theorem about $\mathfrak{sl}_2$.
+
+\begin{theorem}[Representations of $\mathfrak{sl}_2$]\label{LIE:thm:sl2}
+Let $V$ be a finite-dimensional complex representation of $\mathfrak{sl}_2$. Then $h$ acts
+diagonalizably on $V$, its eigenvalues are integers, and for every $k\in\Z$ the eigenspaces satisfy
+$\dim V_k=\dim V_{-k}$. If $V$ is irreducible of dimension $m+1$, then the eigenvalues of $h$ are
+$m,m-2,\dots,-m$, each with multiplicity one.
+\end{theorem}
+
+\begin{proof}[Proof for irreducible $V$]
+The key observation is that $e$ raises $h$-eigenvalues by $2$ and $f$ lowers them by $2$. If
+$hv=\lambda v$, then by \eqref{LIE:eq:sl2rel}
+\[
+  h(ev)=e(hv)+[h,e]v=(\lambda+2)\,ev,\qquad h(fv)=(\lambda-2)\,fv .
+\]
+Take any eigenvector of $h$ and apply $e$ repeatedly. The vectors obtained are eigenvectors for
+distinct eigenvalues while they are nonzero, and $V$ is finite-dimensional, so eventually we reach a
+\emph{highest weight vector}: $v\neq0$ with $hv=\lambda v$ and $ev=0$. Put $v_k=f^kv$. Then
+$hv_k=(\lambda-2k)v_k$, and induction on $k$ using $ef=fe+h$ gives
+\[
+  e\,v_k=k(\lambda-k+1)\,v_{k-1}.
+\]
+Let $m$ be the largest index with $v_m\neq0$. Then $0=e\,v_{m+1}=(m+1)(\lambda-m)\,v_m$, so
+$\lambda=m$. In particular $\lambda$ is a non-negative integer. The span of $v_0,\dots,v_m$ is closed
+under $e$, $f$ and $h$, so by irreducibility it is all of $V$. The eigenvalues are therefore
+$m,m-2,\dots,-m$, as claimed.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[xscale=1.7]
+  \foreach \x/\l in {0/{-m},1/{-m+2},2/{\cdots},3/{m-2},4/{m}} {\fill (\x,0) circle (0.05); \node[font=\small] at (\x,-0.62) {$\l$};}
+  \foreach \x in {0,1,2,3} {\draw[-{Stealth},addcol] (\x+0.1,0.1) to[bend left=40] (\x+0.9,0.1);
+                            \draw[-{Stealth},flagcol] (\x+0.9,-0.1) to[bend left=40] (\x+0.1,-0.1);}
+  \node[addcol,font=\small] at (2,0.7) {$e$ raises by $2$};
+  \node[flagcol,font=\small] at (2,-1.05) {$f$ lowers by $2$};
+\end{tikzpicture}
+\caption{The $(m+1)$-dimensional irreducible representation of $\mathfrak{sl}_2$: a string of
+$h$-eigenvalues, symmetric about $0$.}
+\end{figure}
+
+For a general finite-dimensional $V$ one uses \emph{Weyl's complete reducibility theorem}: $V$ is a
+direct sum of irreducible representations (see Humphreys, \emph{Introduction to Lie Algebras and
+Representation Theory}, \S6.3, or Hall, \emph{Lie Groups, Lie Algebras, and Representations}, Chs.~4 and~10).
+The statements about eigenvalues then follow from the irreducible case.
+
+%======================================================================
+\section{Why the root system axioms hold}
+\label{LIE:sec:axioms}
+
+Now apply Theorem~\ref{LIE:thm:sl2} to the copy $\mathfrak s_\alpha\cong\mathfrak{sl}_2$, acting by
+brackets. Fix roots $\beta\neq\pm\alpha$ and form the \emph{$\alpha$-string through $\beta$},
+\[
+  V=\bigoplus_{k\in\Z}\mathfrak g_{\beta+k\alpha}.
+\]
+By Lemma~\ref{LIE:lem:add}, bracketing with $e_\alpha$ or $f_\alpha$ shifts $k$ by $\pm1$, so $V$ is a
+representation of $\mathfrak s_\alpha$. On the summand $\mathfrak g_{\beta+k\alpha}$, $h_\alpha$ acts by the
+scalar
+\[
+  (\beta+k\alpha)(h_\alpha)=n_{\beta\alpha}+2k .
+\]
+
+\begin{itemize}
+\item \textbf{Axiom 4 (crystallographic).} $n_{\beta\alpha}$ is an eigenvalue of $h_\alpha$ on $V$
+  (take $k=0$), so by Theorem~\ref{LIE:thm:sl2} it is an integer.
+\item \textbf{Axiom 3 (reflections).} The eigenvalues are symmetric about $0$, so $-n_{\beta\alpha}$ is
+  also an eigenvalue: $n_{\beta\alpha}+2k=-n_{\beta\alpha}$ for some $k$ with
+  $\mathfrak g_{\beta+k\alpha}\neq0$. That is, $k=-n_{\beta\alpha}$, and
+  \[
+    \beta-n_{\beta\alpha}\,\alpha=s_\alpha(\beta)
+  \]
+  is a root. The reflection $s_\alpha$ maps $\Delta$ to itself.
+\item \textbf{Strings have no gaps.} Each irreducible piece of $V$ has eigenvalues forming an unbroken
+  string with step $2$. In fact $V$ is irreducible here, since the root spaces turn out to be
+  one-dimensional. So the roots $\beta+k\alpha$ form an unbroken string $\beta-p\alpha,\dots,\beta+q\alpha$
+  with $p-q=n_{\beta\alpha}$. This is the ``$\alpha-\beta$'' phenomenon behind Lemma~\ref{L04a:lem:diff} of Lecture~4.
+\end{itemize}
+
+For $\mathfrak{sl}_n$ all of this can of course be checked directly. The point is that the argument used
+only three ingredients: a commutative subalgebra $\mathfrak h$ acting diagonalizably, the copies of
+$\mathfrak{sl}_2$ attached to the roots, and finite-dimensionality. These are exactly what a
+\emph{complex semisimple Lie algebra} provides. In such an algebra a maximal commutative subalgebra of
+diagonalizable elements (a \emph{Cartan subalgebra}) always exists, and its nonzero eigenvalues form a
+reduced, crystallographic root system. (Reducedness, axiom~2, takes one more argument; see Humphreys
+\S8.4.) \emph{The root system axioms are the shadow of $\mathfrak{sl}_2$ representation theory.}
+
+%======================================================================
+\section{The other classical families}
+\label{LIE:sec:classical}
+
+The families $B_n$, $C_n$, $D_n$ from Lecture~6 come from the Lie algebras that preserve a bilinear
+form. Let $J$ be an invertible $N\times N$ matrix and put
+\[
+  \mathfrak g_J=\{X\in M_N: X^TJ+JX=0\}.
+\]
+This is a subalgebra (the same computation as for $\mathfrak{so}_n$), and in Section~\ref{LIE:sec:exp}
+we will see that it consists of the \emph{infinitesimal symmetries} of the form $\ip{v}{w}_J=v^TJw$.
+For $J=I$ this is $\mathfrak{so}_N$.
+
+The trick is to choose $J$ so that a large family of \emph{diagonal} matrices lies in $\mathfrak g_J$.
+Write $i'=N+1-i$ and let $J$ be the antidiagonal matrix with $J_{i,i'}=1$. For $X\in M_N$ one computes
+$(JX)_{ij}=X_{i'j}$ and $(X^TJ)_{ij}=X_{j'i}$, so
+\[
+  X\in\mathfrak g_J\iff X_{ij}=-X_{j'i'}\ \text{for all } i,j .
+\]
+(Over $\C$ any two nondegenerate symmetric forms are equivalent, so $\mathfrak g_J\cong\mathfrak{so}_N(\C)$.)
+\begin{itemize}
+\item The diagonal matrices in $\mathfrak g_J$ are
+  $h=\operatorname{diag}(h_1,\dots,h_n,[0],-h_n,\dots,-h_1)$, where the middle $0$ is present only when
+  $N=2n+1$ is odd. These form a commutative subalgebra $\mathfrak h$ of dimension $n$.
+\item The matrices $E_{ij}-E_{j'i'}$, for pairs with $i\neq j$ and $j\neq i'$, span the rest of
+  $\mathfrak g_J$ (for $j=i'$ the expression is $0$: the antidiagonal of $X$ vanishes). Each is
+  an eigenvector of $\operatorname{ad}_h$ with eigenvalue $\tilde h_i-\tilde h_j$, where $\tilde h$ is the
+  diagonal of $h$. (The two matrix units give the same eigenvalue, because $\tilde h_{k'}=-\tilde h_k$.)
+\item Reading off the eigenvalues: $i,j\le n$ gives $\pm(e_i-e_j)$; $i\le n<j$ gives
+  $\pm(e_i+e_k)$ with $j=k'$ and $k\neq i$ (the case $k=i$ is excluded since then $j=i'$); and when $N$
+  is odd the middle index gives $\pm e_i$.
+\end{itemize}
+So $\mathfrak{so}_{2n}$ has root system $\{\pm e_i\pm e_j\}=D_n$ and $\mathfrak{so}_{2n+1}$ has
+$\{\pm e_i\pm e_j\}\cup\{\pm e_i\}=B_n$. If instead
+$J=\left(\begin{smallmatrix}0&K\\-K&0\end{smallmatrix}\right)$, with $K$ the $n\times n$ antidiagonal
+matrix of ones, the form is \emph{symplectic}. Now signs enter: with $\varepsilon_i=1$ for $i\le n$
+and $\varepsilon_i=-1$ for $i>n$, the condition becomes $X_{ij}=-\varepsilon_i\varepsilon_jX_{j'i'}$, the
+diagonal part is the same $\mathfrak h$ as before, and the off-diagonal basis is
+$E_{ij}-\varepsilon_i\varepsilon_jE_{j'i'}$. The same bookkeeping gives the symplectic algebra
+$\mathfrak{sp}_{2n}$, whose root system is $\{\pm e_i\pm e_j\}\cup\{\pm 2e_i\}=C_n$: now the case $k=i$ is
+allowed, since for $j=i'$ the basis element is $2E_{ii'}\neq0$, and it produces the long roots $\pm2e_i$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{llllll}
+\toprule
+type & Lie algebra & condition & roots & rank $+\abs{\Delta}$ & $\dim\mathfrak g$\\
+\midrule
+$A_n$ & $\mathfrak{sl}_{n+1}$ & $\operatorname{tr}X=0$ & $e_i-e_j$ & $n+n(n+1)$ & $(n+1)^2-1$\\
+$B_n$ & $\mathfrak{so}_{2n+1}$ & $X^TJ+JX=0$ & $\pm e_i\pm e_j,\ \pm e_i$ & $n+2n^2$ & $n(2n+1)$\\
+$C_n$ & $\mathfrak{sp}_{2n}$ & $X^TJ+JX=0$ ($J$ skew) & $\pm e_i\pm e_j,\ \pm2e_i$ & $n+2n^2$ & $n(2n+1)$\\
+$D_n$ & $\mathfrak{so}_{2n}$ & $X^TJ+JX=0$ & $\pm e_i\pm e_j$ & $n+2n(n-1)$ & $n(2n-1)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+In every row, $\dim\mathfrak g=\operatorname{rank}+\abs{\Delta}$, as it must be by the root decomposition
+\eqref{LIE:eq:rootdecomp}. The root counts are the ones computed in Lecture~6.
+
+\begin{remark}[The ``repetitions'' in the classification]
+Theorem~\ref{L04a:thm:classification} restricted the ranges of $n$ ($B_n$ for $n\ge2$, $C_n$ for $n\ge3$, $D_n$ for $n\ge4$) to
+avoid repeating diagrams. Each coincidence of small diagrams is an isomorphism of Lie algebras:
+$B_1=C_1=A_1$ gives $\mathfrak{so}_3\cong\mathfrak{sp}_2=\mathfrak{sl}_2$; $B_2=C_2$ gives
+$\mathfrak{so}_5\cong\mathfrak{sp}_4$; $D_2=A_1\times A_1$ gives $\mathfrak{so}_4\cong\mathfrak{sl}_2\times\mathfrak{sl}_2$; and
+$D_3=A_3$ gives $\mathfrak{so}_6\cong\mathfrak{sl}_4$.
+\end{remark}
+
+%======================================================================
+\section{The classification of simple Lie algebras}
+\label{LIE:sec:classification}
+
+Everything so far points to a dictionary between Dynkin diagrams and Lie algebras. The result is
+due to Killing (1888--90) and \'E.~Cartan (thesis, 1894); the diagrams themselves are due to
+Dynkin (1946).
+
+\begin{theorem}[Killing--Cartan classification]\label{LIE:thm:KC}
+Let $\mathfrak g$ be a complex semisimple Lie algebra.
+\begin{enumerate}[nosep]
+\item $\mathfrak g$ has a Cartan subalgebra $\mathfrak h$, unique up to automorphisms of $\mathfrak g$, and the
+  nonzero eigenvalues of $\operatorname{ad}\mathfrak h$ form a root system $\Delta(\mathfrak g)$ in (the real
+  span of) $\mathfrak h^*$, with one-dimensional root spaces.
+\item $\mathfrak g$ is simple if and only if $\Delta(\mathfrak g)$ is irreducible.
+\item $\mathfrak g\cong\mathfrak g'$ if and only if $\Delta(\mathfrak g)\cong\Delta(\mathfrak g')$.
+\item (Existence; Serre's theorem) Every root system arises this way.
+\end{enumerate}
+Consequently the complex simple Lie algebras correspond exactly to the connected Dynkin diagrams
+$A_n$ ($n\ge1$), $B_n$ ($n\ge2$), $C_n$ ($n\ge3$), $D_n$ ($n\ge4$), $E_6$, $E_7$, $E_8$, $F_4$, $G_2$.
+\end{theorem}
+
+Serre's theorem even writes the algebra down from the diagram. Let $\alpha_1,\dots,\alpha_r$ be the
+simple roots and $a_{ij}=n_{\alpha_j\alpha_i}$ the \emph{Cartan matrix}. Then $\mathfrak g$ is generated by
+$e_i,f_i,h_i$ ($1\le i\le r$), which are exactly the $\mathfrak{sl}_2$-triples attached to the simple
+roots, subject to the relations
+\[
+  [h_i,h_j]=0,\quad [h_i,e_j]=a_{ij}e_j,\quad [h_i,f_j]=-a_{ij}f_j,\quad [e_i,f_j]=\delta_{ij}h_i,
+\]
+\[
+  (\operatorname{ad}e_i)^{1-a_{ij}}(e_j)=0,\qquad (\operatorname{ad}f_i)^{1-a_{ij}}(f_j)=0\qquad(i\neq j).
+\]
+The last two relations say that an $\alpha_i$-string through $\alpha_j$ has exactly the length the
+Cartan integer predicts. For $\mathfrak{sl}_n$ this recovers $e_i=E_{i,i+1}$, $f_i=E_{i+1,i}$ and
+$h_i=E_{ii}-E_{i+1,i+1}$.
+
+The dimension formula $\dim\mathfrak g=\operatorname{rank}+\abs{\Delta}$ and the root counts ($12$ for
+$G_2$ from Lecture~4; $48$, $126$, $240$ from Lecture~6; and $72$ for $E_6$, which one checks by counting
+the roots of $E_8$ orthogonal to an $A_2$) give the dimensions of the exceptional algebras:
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccccc}
+\toprule
+ & $G_2$ & $F_4$ & $E_6$ & $E_7$ & $E_8$\\
+\midrule
+rank & 2 & 4 & 6 & 7 & 8\\
+$\abs{\Delta}$ & 12 & 48 & 72 & 126 & 240\\
+$\dim\mathfrak g$ & 14 & 52 & 78 & 133 & 248\\
+\bottomrule
+\end{tabular}
+\end{center}
+In particular, the $240$ minimal vectors of the $E_8$ lattice, the kissing configuration in
+dimension $8$, \emph{literally} label the root spaces of the largest exceptional Lie algebra,
+$\mathfrak e_8=\mathfrak h\oplus\bigoplus_{\alpha\in E_8}\mathfrak g_\alpha$, $248=8+240$. The smallest one,
+$\mathfrak g_2$, is the algebra of derivations of the octonions (\'E.~Cartan).
+
+%======================================================================
+\section{From the algebra to the group: the exponential map}
+\label{LIE:sec:exp}
+
+The name ``Lie algebra'' comes from Sophus Lie's idea that a group of transformations is determined,
+near the identity, by its \emph{infinitesimal} transformations. For matrices this can be made
+completely explicit.
+
+\begin{definition}
+For $X\in M_n$ (real or complex) the \emph{matrix exponential} is
+\[
+  \exp X=e^X=\sum_{k=0}^\infty\frac{X^k}{k!}.
+\]
+The series converges absolutely, since $\norm{X^k}\le\norm{X}^k$ in the operator norm.
+\end{definition}
+
+\begin{proposition}\label{LIE:prop:exp}
+For $X,Y\in M_n$ and $g\in\GL_n$:
+\begin{enumerate}[nosep]
+\item if $XY=YX$, then $e^{X+Y}=e^Xe^Y$; in particular $e^{(s+t)X}=e^{sX}e^{tX}$ and $(e^X)^{-1}=e^{-X}$;
+\item $\frac{d}{dt}e^{tX}=Xe^{tX}=e^{tX}X$;
+\item $e^{gXg^{-1}}=g\,e^Xg^{-1}$ and $(e^X)^T=e^{X^T}$;
+\item $\det e^X=e^{\operatorname{tr}X}$;
+\item $\exp$ maps a neighbourhood of $0$ diffeomorphically onto a neighbourhood of $I$, with inverse
+  $\log(I+A)=\sum_{k\ge1}(-1)^{k+1}A^k/k$ for $\norm{A}<1$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Sketch]
+(1) For commuting $X$ and $Y$ the binomial theorem applies to $(X+Y)^k$, and the Cauchy product of the
+two series gives the result. (2) Differentiate the series term by term. (3) Apply the identities
+$(gXg^{-1})^k=gX^kg^{-1}$ and $(X^k)^T=(X^T)^k$ to each term. (4) Over $\C$, write $X=gTg^{-1}$ with
+$T$ upper triangular (Schur). Then $e^T$ is upper triangular with diagonal entries $e^{t_{ii}}$, so
+$\det e^X=\det e^T=e^{\sum t_{ii}}=e^{\operatorname{tr}X}$. (5) The derivative of $\exp$ at $0$ is the
+identity, so the inverse function theorem applies; the series for $\log$ inverts $\exp$ near $I$ as a
+formal identity of power series.
+\end{proof}
+
+By (1), $t\mapsto e^{tX}$ is a homomorphism $(\R,+)\to\GL_n$: a \emph{one-parameter subgroup}. This is
+the matrix version of the one-parameter groups of diffeomorphisms of Lecture~9. The linear vector field $v\mapsto Xv$ on $\R^n$ generates the
+one-parameter group of diffeomorphisms $\varphi_t(v)=e^{tX}v$, because $\frac{d}{dt}e^{tX}v=X(e^{tX}v)$
+by (2). So $X$ is the ``velocity'' of the subgroup at the identity.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.4]
+  \draw[thick] (0,0) circle (1);
+  \draw[addcol,thick] (1,-1.35)--(1,1.35) node[above,font=\small]{$T_I\SO(2)=\mathfrak{so}_2\cong\R$};
+  \fill (1,0) circle (0.03) node[right,font=\small]{$I$};
+  \foreach \t in {0.6,1.2} {\fill[addcol] (1,\t) circle (0.03); \fill ({cos(\t r)},{sin(\t r)}) circle (0.03);
+     \draw[-{Stealth},gray,dashed] (0.97,\t) to[bend right=20] ({0.97*cos(\t r)},{0.97*sin(\t r)});}
+  \node[font=\small] at (0,0) {$\SO(2)\cong\Sph^1$};
+  \node[font=\scriptsize,gray] at (2.45,0.45) {$\theta\mapsto\begin{pmatrix}\cos\theta&-\sin\theta\\ \sin\theta&\cos\theta\end{pmatrix}$};
+\end{tikzpicture}
+\caption{The exponential map wraps the tangent line $\mathfrak{so}_2$ around the circle $\SO(2)$.
+Its kernel is $2\pi\Z$, a lattice.}
+\label{LIE:fig:so2}
+\end{figure}
+
+\subsection*{Matrix groups and their Lie algebras}
+
+\begin{definition}
+A \emph{matrix group} is a closed subgroup $G\subseteq\GL_n(\R)$ or $\GL_n(\C)$. Its \emph{Lie algebra} is
+\[
+  \operatorname{Lie}(G)=\{X\in M_n: e^{tX}\in G\text{ for all }t\in\R\}.
+\]
+\end{definition}
+
+\begin{theorem}[von Neumann 1929; Cartan 1930]\label{LIE:thm:closed}
+Let $G$ be a matrix group. Then $\operatorname{Lie}(G)$ is a real vector space closed under the commutator,
+so it is a Lie algebra. Moreover $G$ is a smooth submanifold of $M_n$ (a \emph{Lie group}) with tangent
+space $T_IG=\operatorname{Lie}(G)$, and $\exp$ maps a neighbourhood of $0$ in $\operatorname{Lie}(G)$
+diffeomorphically onto a neighbourhood of $I$ in $G$.
+\end{theorem}
+
+We will not prove that $G$ is a manifold (see Hall, Ch.~3, or Stillwell, \emph{Naive Lie Theory}, Ch.~7), but it is worth seeing where the bracket comes from. Closure under addition follows from the
+\emph{Lie product formula} $e^{X+Y}=\lim_{k\to\infty}\big(e^{X/k}e^{Y/k}\big)^k$. For the bracket, take
+$X,Y\in\operatorname{Lie}(G)$. For each $t$ the matrix $e^{tX}Ye^{-tX}$ lies in $\operatorname{Lie}(G)$, because
+$\exp\!\big(s\,e^{tX}Ye^{-tX}\big)=e^{tX}e^{sY}e^{-tX}\in G$. Since $\operatorname{Lie}(G)$ is a closed
+subspace, it also contains the derivative
+\[
+  \frac{d}{dt}\Big|_{t=0}e^{tX}Ye^{-tX}=XY-YX=[X,Y].
+\]
+Equivalently, expanding the group commutator gives
+\[
+  e^{sX}e^{tY}e^{-sX}e^{-tY}=I+st\,[X,Y]+(\text{terms of total degree}\ge3\text{ in }s,t).
+\]
+\emph{The bracket is the infinitesimal shadow of the failure of the group to commute.}
+
+\begin{example}[The classical groups recover the classical algebras]\leavevmode
+\begin{itemize}[nosep]
+\item $\operatorname{Lie}(\GL_n)=M_n=\mathfrak{gl}_n$.
+\item $\operatorname{Lie}(\SL_n)=\mathfrak{sl}_n$. If $\operatorname{tr}X=0$ then $\det e^{tX}=1$ by
+  Proposition~\ref{LIE:prop:exp}(4); conversely, $\det e^{tX}=e^{t\operatorname{tr}X}=1$ for all $t$ forces
+  $\operatorname{tr}X=0$.
+\item $\operatorname{Lie}(G_J)=\mathfrak g_J$ for the isometry group $G_J=\{g: g^TJg=J\}$ of the form $J$. If
+  $X^TJ+JX=0$, then $X^T=-JXJ^{-1}$, so $(e^{X})^TJe^{X}=Je^{-X}J^{-1}Je^{X}=J$; applying this to $tX$ shows $\mathfrak g_J\subseteq
+  \operatorname{Lie}(G_J)$. Conversely, differentiating $(e^{tX})^TJe^{tX}=J$ at $t=0$ gives $X^TJ+JX=0$. Thus $\mathfrak{so}_N$
+  belongs to $\Orth(N)$ and $\SO(N)$, and $\mathfrak{sp}_{2n}$ to $\mathrm{Sp}_{2n}$. This is why $\mathfrak g_J$
+  deserves the name ``infinitesimal isometries''.
+\item The unitary group $\mathrm U(n)=\{g\in\GL_n(\C): g^*g=I\}$ has Lie algebra
+  $\mathfrak u(n)=\{X: X^*=-X\}$ (skew-Hermitian matrices), and $\mathrm{SU}(n)$ has
+  $\mathfrak{su}(n)=\mathfrak u(n)\cap\mathfrak{sl}_n$. Note that $\mathfrak{su}(n)\otimes\C=\mathfrak{sl}_n(\C)$: the
+  compact group $\mathrm{SU}(n)$ is a \emph{real form} of $\mathfrak{sl}_n(\C)$.
+\end{itemize}
+\end{example}
+
+\begin{example}[$\SO(2)$ and $\SO(3)$]\label{LIE:ex:so3}
+For $X=\theta\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$ we have $X^2=-\theta^2I$, and
+splitting the series into even and odd terms gives
+\[
+  e^X=\cos\theta\,I+\sin\theta\begin{pmatrix}0&-1\\1&0\end{pmatrix},
+\]
+which is rotation by $\theta$ (Figure~\ref{LIE:fig:so2}). In $\SO(3)$, write $X_\omega v=\omega\times v$
+with $\theta=\abs{\omega}$. Using $X_\omega^3=-\theta^2X_\omega$, the same splitting gives
+\emph{Rodrigues' formula}
+\[
+  e^{X_\omega}=I+\frac{\sin\theta}{\theta}X_\omega+\frac{1-\cos\theta}{\theta^2}X_\omega^2,
+\]
+which is rotation by angle $\theta$ about the axis $\omega$. Every rotation has an axis, so $\exp$ is
+onto $\SO(3)$. It maps the closed ball $\abs{\omega}\le\pi$ onto $\SO(3)$, identifying only antipodal
+points of the boundary sphere, so $\SO(3)\cong\R P^3$.
+\end{example}
+
+\begin{remark}[Same algebra, different groups]
+The group $\mathrm{SU}(2)$ of unit quaternions is a $3$-sphere. It acts on the purely imaginary
+quaternions $\cong\R^3$ by conjugation, and this gives a two-to-one homomorphism
+$\mathrm{SU}(2)\to\SO(3)$ with kernel $\{\pm I\}$. The two groups have isomorphic Lie algebras,
+$\mathfrak{su}(2)\cong\mathfrak{so}(3)\cong(\R^3,\times)$, but they are not isomorphic: one is simply connected,
+the other has $\pi_1=\Z/2$. The Lie algebra determines a connected group only up to coverings. The
+missing global information turns out to be a \emph{lattice}, as the next section shows.
+\end{remark}
+
+%======================================================================
+\section{Tori, Weyl groups, and the lattice inside the group}
+\label{LIE:sec:torus}
+
+Return to $A_{n-1}$, now in the compact group $\mathrm{SU}(n)$. The diagonal matrices in $\mathrm{SU}(n)$ form
+the \emph{maximal torus}
+\[
+  T=\big\{\operatorname{diag}(e^{i\theta_1},\dots,e^{i\theta_n}):\ \theta_1+\dots+\theta_n\equiv0\pmod{2\pi}\big\},
+\]
+with Lie algebra
+\[
+  \mathfrak t=\{\operatorname{diag}(i\theta_1,\dots,i\theta_n):\ \theta_1+\dots+\theta_n=0\}
+  \cong\{\theta\in\R^n:\textstyle\sum\theta_j=0\},
+\]
+which is again the hyperplane of Lecture~6. Since $\mathfrak t$ is commutative, $\exp\colon\mathfrak t\to T$ is a
+surjective homomorphism, and its kernel consists of the $\theta$ with every $\theta_j\in2\pi\Z$ and
+$\sum\theta_j=0$:
+\[
+  \ker\big(\exp|_{\mathfrak t}\big)=2\pi\cdot\{x\in\Z^n:\textstyle\sum x_j=0\}=2\pi\cdot A_{n-1},
+\]
+the $A_{n-1}$ root lattice from Lecture~6. So
+\[
+  T\;\cong\;\mathfrak t\,/\,2\pi A_{n-1}:
+\]
+\emph{the maximal torus of $\mathrm{SU}(n)$ is Euclidean space modulo the $A_{n-1}$ root lattice.} For
+$\mathrm{SU}(3)$ it is the plane modulo the hexagonal lattice, the lattice of the densest disk packing
+from Lecture~1.
+
+\paragraph{The Weyl group.} Permutation matrices (with one sign changed if necessary, to make the
+determinant $1$) normalize $T$ and permute the $\theta_j$. The resulting group
+\[
+  W=N(T)/T\cong\Sigma_n
+\]
+is the Weyl group of $A_{n-1}$, generated by the reflections $s_{e_i-e_j}$, which swap $\theta_i$ and
+$\theta_j$. By the spectral theorem every element of $\mathrm{SU}(n)$ is conjugate to an element of $T$,
+uniquely up to the action of $W$, so
+\[
+  \{\text{conjugacy classes of }\mathrm{SU}(n)\}\;\longleftrightarrow\;T/W
+  \;\longleftrightarrow\;\{\text{unordered $n$-tuples of eigenvalues on }\Sph^1\text{ with product }1\}.
+\]
+
+\begin{remark}[Back to configuration spaces]
+An element of $\mathrm{SU}(n)$ is \emph{regular} when its eigenvalues are distinct, that is, when its
+$n$ eigenvalues form a configuration of distinct points on the circle. Choose real eigenvalue angles with
+$\sum\theta_j=0$, ordered so that $\theta_1\ge\theta_2\ge\dots\ge\theta_n\ge\theta_1-2\pi$ (this is
+always possible, in exactly one way), and record the gaps
+\[
+  g_k=\theta_k-\theta_{k+1}\ (1\le k<n),\qquad g_n=2\pi-(\theta_1-\theta_n).
+\]
+The gaps are non-negative and sum to $2\pi$, and together with $\sum\theta_j=0$ they determine the
+$\theta_j$. So $T/W$ is a closed simplex of dimension $n-1$, the \emph{Weyl alcove}. Its interior, the
+regular classes, is identified through the gaps with the reduced configuration space of $n$ points on a
+circle in a fixed cyclic order (one of the open simplices of gaps in Lecture~7). For $n=3$ it is the same open triangle of gap coordinates $(x,y,1-x-y)$, up to the scale
+factor $2\pi$. Its boundary walls, where two eigenvalues collide, are the walls $\theta_i=\theta_j$ of
+$\Conf(n,\R)$ from Lecture~8, wrapped around the circle.
+\end{remark}
+
+All of this generalizes.
+
+\begin{theorem}[Maximal tori; Weyl, Cartan]\label{LIE:thm:torus}
+Let $G$ be a compact connected Lie group. Then $G$ has a maximal torus $T$, unique up to conjugacy,
+and every element of $G$ is conjugate into $T$. The Weyl group $W=N(T)/T$ is finite and is the Weyl
+group of the root system of $\mathfrak g\otimes\C$. The kernel of $\exp\colon\mathfrak t\to T$ is a lattice
+containing $2\pi$ times the coroot lattice (the coroots $h_\alpha$ placed in $\mathfrak t$ as $ih_\alpha$,
+as in the $\mathrm{SU}(n)$ example), with equality exactly when $G$ is simply connected; in general the
+quotient is $\pi_1(G)$. The
+compact simply connected simple Lie groups correspond to the connected Dynkin diagrams:
+\[
+  \mathrm{SU}(n+1)\ (A_n),\quad \mathrm{Spin}(2n+1)\ (B_n),\quad \mathrm{Sp}(n)\ (C_n),\quad
+  \mathrm{Spin}(2n)\ (D_n),\quad G_2,\ F_4,\ E_6,\ E_7,\ E_8 .
+\]
+\end{theorem}
+
+For example, $\mathrm{SU}(2)$ has $T=\{\operatorname{diag}(e^{i\theta},e^{-i\theta})\}$ and kernel
+$\theta\in2\pi\Z$, while $\SO(3)=\mathrm{SU}(2)/\{\pm I\}$ has the finer kernel $\theta\in\pi\Z$. The covering
+$\mathrm{SU}(2)\to\SO(3)$ of the previous section is recorded by an index-two inclusion of lattices.
+
+%======================================================================
+\section{Summary: a dictionary}
+\label{LIE:sec:dictionary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{0.42\textwidth}p{0.50\textwidth}}
+\toprule
+Packings and lattices (Lectures 4--8) & Lie theory\\
+\midrule
+root system $\Delta$ & nonzero eigenvalues of $\operatorname{ad}\mathfrak h$ on $\mathfrak g$\\
+Cartan integer $n_{\beta\alpha}\in\Z$ & eigenvalue of the coroot $h_\alpha$; integral by $\mathfrak{sl}_2$ theory\\
+reflection $s_\alpha$, Weyl group $W$ & symmetry of $\alpha$-strings; $W=N(T)/T$\\
+choice of $d$, positive roots, Weyl chamber & upper triangular matrices (a Borel subalgebra)\\
+simple roots, Dynkin diagram & generators $e_i,f_i,h_i$ and Serre relations\\
+rank $+\abs{\Delta}$ & $\dim\mathfrak g$\\
+root lattice $\Z\Delta$ (coroot lattice, in general) & $\tfrac1{2\pi}\,$kernel of $\exp$ on the maximal torus (simply connected, compact)\\
+$E_8$ kissing configuration ($240$ vectors) & root spaces of $\mathfrak e_8$, $248=8+240$\\
+walls $x_i=x_j$ of $\Conf(N,\R)$ & eigenvalue collisions; non-regular elements of $\mathrm{SU}(N)$\\
+one-parameter groups of diffeomorphisms (Lecture 9) & $t\mapsto e^{tX}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%======================================================================
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Write out the root decomposition of $\mathfrak{sl}_3$ explicitly. Check that $[E_{12},E_{23}]=E_{13}$,
+$[E_{13},E_{32}]=E_{12}$ and $[E_{12},E_{13}]=0$, and interpret each identity on the hexagon of
+Example~\ref{LIE:ex:sl3}.
+\end{exercise}
+
+\begin{exercise}
+Prove the Jacobi identity for the commutator, and show that $\omega\mapsto X_\omega$ is an isomorphism
+$(\R^3,\times)\to\mathfrak{so}_3(\R)$.
+\end{exercise}
+
+\begin{exercise}
+Expand $e^{sX}e^{tY}e^{-sX}e^{-tY}$ to second order and confirm that the result is $I+st[X,Y]$ plus
+higher-order terms.
+\end{exercise}
+
+\begin{exercise}
+Show that $\exp\colon\mathfrak{sl}_2(\R)\to\SL_2(\R)$ is not surjective: the matrix
+$\left(\begin{smallmatrix}-1&1\\0&-1\end{smallmatrix}\right)$ is not in the image. \emph{Hint:} a real
+traceless $2\times2$ matrix has eigenvalues $\pm\lambda$ or $\pm i\mu$. Compute the possible traces of
+$e^X$, and decide when the trace can equal $-2$.
+\end{exercise}
+
+\begin{exercise}
+Using the antidiagonal form $J$, find the roots of $\mathfrak{so}_6$ and check that they form a copy of
+$A_3$ (twelve roots, simply laced, rank $3$). Do the same for $\mathfrak{so}_4$ and $A_1\times A_1$, and for
+$\mathfrak{sp}_4$ and $\mathfrak{so}_5$ (show that $C_2$ and $B_2$ differ by a rotation of $45^\circ$ and a scaling).
+\end{exercise}
+
+\begin{exercise}
+Prove Rodrigues' formula, and show that $\exp$ maps the closed ball of radius $\pi$ in $\mathfrak{so}_3$
+onto $\SO(3)$, identifying exactly the antipodal points of the boundary.
+\end{exercise}
+
+\begin{exercise}
+Draw the kernel of $\exp$ on the maximal torus of $\mathrm{SU}(3)$ inside the plane
+$\theta_1+\theta_2+\theta_3=0$, together with the Weyl alcove. Check that the kernel is a hexagonal
+lattice and that the alcove is an equilateral triangle. How many alcoves fit into a fundamental domain
+of the lattice?
+\end{exercise}
+
+\section*{Further reading}
+\addcontentsline{toc}{section}{Further reading}
+\begin{itemize}[nosep]
+\item J.~Stillwell, \emph{Naive Lie Theory}, Springer UTM, 2008. Matrix groups first, with minimal prerequisites.
+\item B.~C.~Hall, \emph{Lie Groups, Lie Algebras, and Representations}, 2nd ed., Springer GTM 222, 2015.
+  Matrix groups, the exponential map, and a full treatment of the classification.
+\item J.~E.~Humphreys, \emph{Introduction to Lie Algebras and Representation Theory}, Springer GTM 9, 1972.
+  The algebraic route from $\mathfrak{sl}_2$ to root systems and Serre's theorem.
+\item W.~Fulton and J.~Harris, \emph{Representation Theory: A First Course}, Springer GTM 129, 1991.
+  Lectures 11--13 work through $\mathfrak{sl}_2$ and $\mathfrak{sl}_3$ by hand, and Lecture 21 does the classification.
+\item J.~H.~Conway and N.~J.~A.~Sloane, \emph{Sphere Packings, Lattices and Groups}, Ch.~4 and 8, for the
+  lattice side of $E_8$.
+\end{itemize}

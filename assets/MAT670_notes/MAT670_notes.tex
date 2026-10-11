@@ -1,0 +1,85 @@
+\input{preamble}
+
+\title{\textbf{Packings, Lattices and Configurations}\\[0.6em]
+\large Lecture notes for MAT670, TU Graz, Summer Term 2016\\[0.3em]
+\normalsize First typeset draft from the handwritten notes}
+\author{Woden Kusner}
+\date{Draft of \today}
+
+\begin{document}
+\frontmatter
+\maketitle
+
+\chapter*{About this draft}
+\addcontentsline{toc}{chapter}{About this draft}
+
+These notes are a first typeset pass at the handwritten notes for the course
+\emph{Packings, Lattices and Configurations} (MAT670), taught in eleven two-hour lectures at TU Graz
+in the summer term of 2016. The course description read:
+\begin{quote}
+This course will introduce a variety of different tools and models to explore some of the theory of
+geometric configuration spaces that underlie physical systems. \dots\ By the end of the course, you
+should have some familiarity with the geometry and topology of configuration spaces, Morse theory, the
+geometry of lattices, maximal density arrangements, random packings and statistical mechanics.
+\end{quote}
+
+The structure, order, examples and choice of proofs follow the handwritten notes. Telegraphic notes have
+been written out as prose, sketches have been redrawn, and gaps have been filled. The colour code is:
+
+\begin{itemize}
+\item Black text is a cleaned-up rendering of what is on the page.
+\item \added{Blue text} was \emph{not} in the handwritten notes. It covers completed definitions and
+  proofs, missing hypotheses, references, and remarks on results that appeared after 2016.
+  Longer insertions are marked \added{\textsf{\small[Added]}}.
+\item Orange margin notes \textbf{Fix:} mark places where the notes contained an error that has been
+  corrected, saying what changed. \textbf{?} marks a doubtful reading of the handwriting,
+  or a step that is still open.
+\item Grey margin notes describe the original page (crossed-out text, omitted doodles, and so on).
+\end{itemize}
+
+\paragraph{The interlude.} The chapter ``Interlude: From Dynkin diagrams to Lie algebras and Lie groups'',
+placed after Lecture~6, is entirely new. It is set in black for readability but is all added material.
+
+\paragraph{Sources.} The scans used are \texttt{MAT670\_1}, \texttt{\_2}, \texttt{\_3},
+\texttt{\_46}, \texttt{\_78}, \texttt{\_9X} and \texttt{\_XI} on the course web page.
+\texttt{MAT670\_emsemble} is a bundled copy of Lectures 1--3.
+\texttt{MAT670\_classification} is an earlier scan of Lectures 4--5, the first 31 pages of
+\texttt{MAT670\_46} minus one recap page. Both were transcribed independently and used only as a
+cross-check.
+
+\paragraph{Known open items in this draft.}
+\begin{itemize}
+\item Lecture 3: the ``improved'' radial Blichfeldt gauge is stated in the notes without proof. No proof
+  has been supplied here; a numerical search in low dimensions found no counterexample.
+\item Lecture 10: the deformation theorem for $0<\theta<\pi/N$ had no proof in the notes. The proof given
+  in blue is the editor's and should be checked. Pages 24--26 of the scan are mostly headings.
+  The notes themselves mark this lecture ``needs to be rewritten, out of order / missing pieces''.
+\item Lecture 11: the count of locally jammed configurations in the open-ended channel may be off at the
+  ends, giving $\binom{\ell-k-1}{k}$ rather than $\binom{\ell-k+1}{k}$. It is flagged but not changed.
+\end{itemize}
+
+\tableofcontents
+
+\mainmatter
+\part{Packing bounds}
+\input{chapters/L01}
+\input{chapters/L02}
+\input{chapters/L03}
+
+\part{Lattices and root systems}
+\input{chapters/L04a}
+\input{chapters/L04b}
+
+% Interlude (new material): numbered "I" so that lecture numbers stay aligned with chapter numbers
+\begingroup
+\renewcommand{\thechapter}{I}\renewcommand{\theHchapter}{interlude}
+\input{chapters/Lie}
+\endgroup
+\setcounter{chapter}{6}
+
+\part{Configuration spaces and Morse theory}
+\input{chapters/L07}
+\input{chapters/L09}
+\input{chapters/L11}
+
+\end{document}

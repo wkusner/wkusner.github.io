@@ -1,0 +1,72 @@
+% MAT670 -- Packings, Lattices and Configurations -- shared preamble
+\documentclass[11pt,openany]{book}
+\usepackage[margin=1.1in,marginparwidth=0.9in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows.meta,patterns,decorations.pathmorphing}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=green!40!black,urlcolor=blue!50!black]{hyperref}
+
+% ---------- theorem environments ----------
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{claim}[theorem]{Claim}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{problem}[theorem]{Problem}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ---------- editorial markup (first-pass) ----------
+% \added{...}   material NOT in the handwritten notes (gap filled by editor)
+% \fixed{...}   an error in the notes that was corrected; argument says what changed
+% \unclear{...} a reading of the handwriting that is uncertain, or a gap not resolved
+% \orig{...}    short note on what the original page said / showed (e.g. "sketch omitted")
+\definecolor{addcol}{RGB}{0,100,160}
+\definecolor{flagcol}{RGB}{190,60,0}
+\newcommand{\added}[1]{{\color{addcol}#1}}
+\newcommand{\fixed}[1]{\marginpar{\raggedright\scriptsize\color{flagcol}\textbf{Fix:} #1}}
+\newcommand{\unclear}[1]{\marginpar{\raggedright\scriptsize\color{flagcol}\textbf{?} #1}}
+\newcommand{\orig}[1]{\marginpar{\raggedright\scriptsize\color{gray}#1}}
+\newenvironment{addedblock}{\par\color{addcol}\noindent\textsf{\small[Added]}\ }{\par}
+
+% ---------- math macros ----------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\Sph}{\mathbb{S}}          % sphere S^{n-1}
+\newcommand{\Lat}{\Lambda}             % a lattice
+\newcommand{\vol}{\operatorname{vol}}
+\newcommand{\covol}{\operatorname{covol}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\conv}{\operatorname{conv}}
+\newcommand{\interior}{\operatorname{int}}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\SL}{\mathrm{SL}}
+\newcommand{\SO}{\mathrm{SO}}
+\newcommand{\Orth}{\mathrm{O}}
+\newcommand{\Conf}{\operatorname{Conf}}
+\newcommand{\Hess}{\operatorname{Hess}}
+\newcommand{\ind}{\operatorname{ind}}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\ip}[2]{\langle #1, #2\rangle}
+\newcommand{\dens}{\delta}             % packing density
+\newcommand{\cent}{\theta}             % center density
+\newcommand{\kiss}{\tau}               % kissing number
+\newcommand{\Ball}{B}                  % ball
