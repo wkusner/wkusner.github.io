@@ -1,0 +1,1026 @@
+% MAT670 -- Interlude G (placed after Interlude F): packings in the laboratory.
+% Entirely new material (not in the handwritten notes). Labels prefixed PHYS:.
+% Numerical claims checked with python3 (cell areas, Coxeter's count, Bragg spacings, Brillouin-zone
+% distances, the free-volume model, Letokhov's radius, the n=6 sticky-cluster partition functions).
+
+\newcommand{\PHYStag}[1]{\textsf{\scriptsize[#1]}}
+\tikzset{
+  PHYSth/.style={fill=black,draw=black},
+  PHYSball/.style={fill=addcol!25,draw=addcol,fill opacity=0.45},
+}
+\newcommand{\PHYSmth}[1]{\fill[black] #1 ++(-2.2pt,-2.2pt) rectangle ++(4.4pt,4.4pt);}
+\newcommand{\PHYSmsim}[1]{\filldraw[draw=black,fill=white,thick] #1 circle (2.3pt);}
+\newcommand{\PHYSmexp}[1]{\fill[flagcol] #1 ++(0pt,3.2pt) -- ++(-2.9pt,-5.2pt) -- ++(5.8pt,0pt) -- cycle;}
+\newcommand{\PHYSmcon}[1]{\fill[addcol] #1 ++(0pt,3pt) -- ++(3pt,-3pt) -- ++(-3pt,-3pt) -- ++(-3pt,3pt) -- cycle;}
+
+\chapter[Interlude G: Packings in the lab]{Interlude G: Packings in the laboratory}
+\label{PHYS:ch}
+
+\begin{addedblock}
+This interlude is new: it is not in the handwritten notes. It follows the aside at the end of
+Lecture~6 (``ellipsoid packings; polygon packings; honeycomb and bubble problems'') and the physical
+remarks scattered through Lectures~7--11 out of the mathematics and into the laboratory: squashed peas,
+foams, colloids, opals, lasers made of sand, sticky spheres and dice. To keep it readable it is set in
+black; all of it should be read as added material.
+\end{addedblock}
+
+Everything in these notes so far has been about ideal balls: exactly round, exactly hard, exactly
+equal. Physicists have been squeezing, shaking and photographing real ones for three centuries, and
+many of the objects of the course were met on a laboratory bench before they were met in a proof. The
+Voronoi cell was a squashed pea, the face-centred cubic lattice was an opal, and the contact graph was
+a pattern of paint marks on ball bearings.
+
+In physics one has to be careful about the status of a statement, more careful than in the rest of the
+course. Throughout, claims are tagged \PHYStag{theorem} (proved), \PHYStag{simulation} (seen on a
+computer), \PHYStag{experiment} (measured) or \PHYStag{model} (a calculation in an idealized model).
+Most of the famous numbers of the subject (the random close packing fraction $0.64$, the freezing
+point $0.494$ of hard spheres, the jamming exponents) are of the second and third kind; Figure~\ref{PHYS:fig:strip} sorts them. Interlude~E
+discussed the statistical mechanics behind several of them (hard spheres, random close packing, Maxwell
+counting, frustration, Edwards' entropy), and we refer to it rather than repeat it.
+
+%======================================================================
+\section{Squashed peas, lead shot and soap}
+\label{PHYS:sec:squash}
+
+\subsection*{The first Hales}
+Lecture~1 introduced the Voronoi cell (Definition~\ref{L1:def:voronoi}) as a bookkeeping device: it
+assigns to each ball the part of space that is closer to it than to any other ball. There is a much
+more physical way to see Voronoi cells. Take soft balls, and press them together until there is no
+space left. If every ball keeps its centre and grows at the same rate, each one ends up filling exactly
+its Voronoi cell.
+
+The first famous squashing experiment was made by a Hales, although not the one who proved the
+Kepler conjecture. Stephen Hales, a clergyman and physiologist, reported in his \emph{Vegetable
+Staticks} (1727):
+\begin{quote}\small
+I compressed several fresh parcels of Pease in the same Pot, with a force equal to 1600, 800, and 400
+pounds; \dots\ being thereby formed into pretty regular Dodecahedrons.
+\end{quote}
+(The peas swelled with water inside an iron pot, under a weighted lid.) What could ``pretty regular
+dodecahedrons'' have been? Not regular pentagonal dodecahedra, as a short argument shows.
+
+\begin{proposition}\label{PHYS:prop:dodec}
+Congruent regular dodecahedra do not tile $\R^3$.
+\end{proposition}
+
+\begin{proof}
+The dihedral angle of the regular dodecahedron is $\delta=\arccos(-1/\sqrt5)\approx116.57^\circ$.
+Suppose the dodecahedra tile, and let $e$ be an edge of one tile $T$. The edges and vertices of the
+other tiles meet the open segment $e$ in finitely many points or in subsegments of $e$, so we may pick
+a point $p\in e$ that is not a vertex of any tile and at which no edge of another tile crosses $e$
+transversally. Let $T'\ne T$ be a tile containing $p$. If $p$ lies in the relative interior of a face
+of $T'$, that face must contain the direction of $e$: otherwise the face plane would cross $e$ at $p$
+and the half-space bounded by it would overlap the interior of $T$ near $p$. If $p$ lies on an edge of
+$T'$, then that edge runs along $e$. So in a small disc perpendicular to $e$ at $p$, the tiles cut out
+sectors of angle $\delta$ (wedges along $e$) and $\pi$ (half-planes), with disjoint interiors, filling
+the disc. Hence $k\delta+m\pi=2\pi$ for integers $k\ge1$, $m\ge0$. Since $\pi/2<\delta<\pi$, the case
+$m=1$ is impossible, and so is $m=2$. For $m=0$ we would need $k\delta=2\pi$, but
+$3\delta\approx349.7^\circ$ and $4\delta\approx466.3^\circ$.
+\end{proof}
+
+So three regular dodecahedra around an edge leave a gap of about $10.3^\circ$. This is the
+dodecahedral counterpart of the $7.36^\circ$ gap left by five regular tetrahedra around an edge
+(Section~\ref{TET:sec}), and the two facts are dual to each other: a regular dodecahedron is the
+Voronoi cell of a ball surrounded by a regular icosahedron of twelve neighbours, whose Delaunay cells
+would be the twenty slightly flattened tetrahedra of Interlude~E. By the theorem of Hales and
+McLaughlin quoted there, no Voronoi cell of a unit ball packing is smaller than this dodecahedron, and
+by Proposition~\ref{PHYS:prop:dodec} not all of them can be equal to it. The peas must have been
+something else.
+
+\subsection*{Kepler's pomegranate}
+A century earlier, Kepler had already given the right answer. In \emph{Strena seu de nive sexangula}
+(1611), the little book on snowflakes that also contains his packing conjecture, he describes the
+seeds of a pomegranate, squeezed together as the fruit grows, and the rhombic shape they take: the
+rhombic dodecahedron. Here is the computation behind it.
+
+\begin{proposition}[The Voronoi cell of FCC]\label{PHYS:prop:rd}
+Let $D_3=\{x\in\Z^3:x_1+x_2+x_3\ \text{even}\}$ be the FCC lattice, with minimal distance $\sqrt2$. Its
+Voronoi cell at $0$ is
+\[
+  V=\{x\in\R^3:\ \abs{x_i}+\abs{x_j}\le1\ \text{for all }i\ne j\}.
+\]
+This is the rhombic dodecahedron: the cube $[-\frac12,\frac12]^3$ with a square pyramid of height
+$\frac12$ erected on each face. It has $12$ rhombic faces, one for each minimal vector $\pm e_i\pm e_j$, $6$
+vertices of degree four at $(\pm1,0,0),(0,\pm1,0),(0,0,\pm1)$, and $8$ vertices of degree three at
+$(\pm\frac12,\pm\frac12,\pm\frac12)$. Its volume is $2=\covol(D_3)$.
+\end{proposition}
+
+\begin{proof}
+The Voronoi cell is $\{x:\ip xv\le\frac12\abs v^2\ \forall v\in D_3\setminus0\}$. For the $12$ minimal
+vectors $v=\pm e_i\pm e_j$ the condition reads $\pm x_i\pm x_j\le1$, so $V$ contains the Voronoi cell. For
+the converse we show that every other $v\in D_3$ gives a redundant condition. Let $x\in V$ and put
+$a_i=\abs{x_i}$; then $a_i+a_j\le1$, so each $a_i\le1$ and at most one $a_i$ exceeds $\frac12$. With
+$m_i=\abs{v_i}\in\Z_{\ge0}$,
+\[
+  \tfrac12\abs v^2-\ip xv\ \ge\ \sum_i\Big(\tfrac12m_i^2-a_im_i\Big).
+\]
+A term with $m_i=0$ is $0$, and a term with $m_i\ge2$ is at least $\frac12m_i(m_i-2)\ge0$. A term with
+$m_i=1$ is $\frac12-a_i$, which is negative for at most one index $i_0$. If that happens, $v_{i_0}$ is odd,
+and since $v_1+v_2+v_3$ is even, some other coordinate $v_j$ is odd too. If $m_j=1$, the two terms add up
+to $1-a_{i_0}-a_j\ge0$; if $m_j\ge3$, the $j$-term is at least $\frac32$ and the $i_0$-term at least
+$-\frac12$. Either way the sum is $\ge0$. So $V$ is the Voronoi cell. (For every simply laced root lattice
+the same holds, with the roots in place of the $\pm e_i\pm e_j$; see Lemma~\ref{DYN:lem:relevant} of
+Interlude~H.)
+
+On the cube $\max\abs{x_i}\le\frac12$ all the inequalities hold. Over the face $x_3=\frac12$ of the cube,
+the inequalities $\abs{x_1}+x_3\le1$ and $\abs{x_2}+x_3\le1$ cut out the pyramid with apex $(0,0,1)$, and
+similarly for the other faces. The volume is $1+6\cdot\frac13\cdot1\cdot\frac12=2$. Each face
+$\{\pm x_i\pm x_j=1\}\cap V$ is a rhombus with two degree-three and two degree-four vertices, for instance
+$(1,0,0),(\frac12,\frac12,\pm\frac12),(0,1,0)$ on the face $x_1+x_2=1$.
+\end{proof}
+
+The two kinds of vertices are the two kinds of holes of FCC (Interlude~H, Section~\ref{DYN:sec:fcc}): the
+degree-four vertices, at distance $1$ from the centre, are octahedral holes, and the degree-three ones,
+at distance $\frac{\sqrt3}{2}$, are tetrahedral holes. The rhombic faces have diagonals $\sqrt2$ and $1$.
+In the hexagonal close packing (HCP) the layers above and below each ball are mirror images of each
+other, and the cell becomes the \emph{trapezo-rhombic dodecahedron}: the rhombic dodecahedron cut across a
+three-fold axis, with one half turned by $60^\circ$ (six rhombi and six trapezoids, the same volume). Both
+cells have twelve faces, one for each of the twelve kissing neighbours. Whatever Stephen Hales saw, the
+experiment below suggests that most of his peas were less regular than either.
+
+\begin{figure}[ht]
+\centering
+\begin{minipage}{0.47\textwidth}
+\centering
+\begin{tikzpicture}[x={(1.55cm,0cm)},y={(0.62cm,0.42cm)},z={(0cm,1.55cm)},line join=round]
+  \foreach \a in {0.5,-0.5} \foreach \b in {0.5,-0.5} {
+    \draw[dashed,gray] (-0.5,\a,\b)--(0.5,\a,\b);
+    \draw[dashed,gray] (\a,-0.5,\b)--(\a,0.5,\b);
+    \draw[dashed,gray] (\a,\b,-0.5)--(\a,\b,0.5);}
+  \foreach \h in {0.5,-0.5} \foreach \a in {0.5,-0.5} \foreach \b in {0.5,-0.5} {
+    \draw[thick] ({2*\h},0,0)--(\h,\a,\b);
+    \draw[thick] (0,{2*\h},0)--(\a,\h,\b);
+    \draw[thick] (0,0,{2*\h})--(\a,\b,\h);}
+  \fill[flagcol] (0,0,1) circle (2.2pt) node[above,font=\scriptsize,black] {$(0,0,1)$: octahedral hole};
+  \fill[addcol] (0.5,-0.5,0.5) circle (2.2pt) node[right,font=\scriptsize,black,xshift=2pt] {$\tfrac12(1,-1,1)$: tetrahedral hole};
+  \fill (0,0,0) circle (1.2pt);
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.5\textwidth}
+\centering\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lcc}
+\toprule
+cell & faces & $A/V^{2/3}$\\
+\midrule
+ball (does not tile) & -- & $4.836$\\
+rhombic dodecahedron (FCC) & $12$ & $5.345$\\
+truncated octahedron (BCC) & $14$ & $5.315$\\
+Kelvin (curved faces) & $14$ & $5.306$\\
+Weaire--Phelan (average) & $13.5$ & $5.288$\\
+cube & $6$ & $6$\\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\caption{Left: the Voronoi cell of FCC is a cube (dashed) with a pyramid on each face. Right: surface area
+per cell for cells of unit volume. The flat polyhedra were computed for this table; the Kelvin and
+Weaire--Phelan values are numerical minimizations (Surface Evolver), as quoted by Weaire and
+Phelan.}
+\label{PHYS:fig:rd}
+\end{figure}
+
+\subsection*{Lead shot: what disorder does}
+Hales' peas presumably went into the pot anyhow. In 1939 the botanist J.~W.~Marvin repeated the experiment with
+lead shot, compressed in a cylinder \PHYStag{experiment}. Shot that had been carefully stacked in a
+close-packed arrangement became rhombic dodecahedra. Shot that had simply been poured in became
+irregular polyhedra with on average $14.17$ faces, not twelve. So disorder costs faces: a randomly packed ball has
+more Voronoi neighbours than a crystalline one, even though it has fewer \emph{touching} neighbours.
+
+Bernal turned this into a programme around 1960. To model the structure of liquids he poured steel
+ball bearings into rubber balloons, kneaded them, ran black paint into the pile and let it set, and
+then took the pile apart ball by ball, recording which pairs had been in contact by the paint marks
+(Bernal, \emph{Nature} 183, 1959; Bernal and Mason, \emph{Nature} 188, 1960). Bernal and Mason counted
+about $6.4$ contacts per ball \PHYStag{experiment}, close to the isostatic value $2d=6$ of
+Corollary~\ref{SM:cor:maxwell}. Bernal also classified the holes of a random packing: besides the tetrahedra and octahedra of FCC there
+are three larger ``canonical holes'' bounded by equilateral triangles (\emph{Proc.\ R.\ Soc.\ A} 280, 1964). The density of these packings, about $0.64$, is the
+random close packing value of Interlude~E (Section~\ref{SM:sec:random}).
+
+\subsection*{Soap: the cell that minimizes its area}
+Squeeze the peas harder, or replace them by bubbles, and the cells choose their own shapes: a dry
+foam minimizes its total film area subject to fixed cell volumes. Plateau (\emph{Statique
+exp\'erimentale et th\'eorique des liquides}, 1873) found the rules empirically: films meet in threes, at
+$120^\circ$, along curves (the Plateau borders), and the borders meet in fours at points, at the
+tetrahedral angle $\arccos(-\frac13)\approx109.47^\circ$. This is the angle between two lines from the
+centre of a regular tetrahedron to its vertices, the Tammes angle for $N=4$ points of
+Lecture~11 (Section~\ref{L11:sec:examples}). Jean Taylor proved a century later that these are the only
+singularities a soap film can have (gallery, Theorem~\ref{PHYS:thm:taylor}).
+
+Which cell has the least area? Kelvin (1887) proposed a slightly curved truncated octahedron, the
+Voronoi cell of the body-centred cubic lattice, with $8$ hexagonal and $6$ square faces. For a century
+it was the best known. In 1994 Weaire and Phelan found a better foam by computer \PHYStag{simulation}:
+a periodic structure with two kinds of cells of equal volume, pentagonal dodecahedra and $14$-hedra
+with $12$ pentagons and $2$ hexagons, in the ratio $1:3$. Its area is about $0.3\%$ smaller
+(Figure~\ref{PHYS:fig:rd}). The Weaire--Phelan foam is the Voronoi diagram, relaxed, of the A15
+($\beta$-tungsten) structure, one of the \emph{Frank--Kasper} phases of metallurgy, whose Delaunay cells
+are all nearly regular tetrahedra. So the best known foam is Frank's frustrated tetrahedral packing of
+Interlude~E seen from the dual side. It took until 2012 to make it in the laboratory: monodisperse
+bubbles tend to crystallize into Kelvin's structure next to flat walls, and Gabbrielli, Meagher, Weaire, Brakke
+and Hutzler (\emph{Phil.\ Mag.\ Lett.} 92, 2012) obtained Weaire--Phelan foam in a container whose walls
+were shaped to fit it \PHYStag{experiment}. Whether Weaire--Phelan is optimal is open, and so is
+Kelvin's problem itself.
+
+Matzke (\emph{Amer.\ J.\ Botany} 33, 1946) blew a foam of about a thousand equal bubbles one at a time and
+examined the $600$ in its interior. He found on average $13.70$ faces per bubble and not a single Kelvin cell
+\PHYStag{experiment}. Euler's formula gives a feeling for where such numbers come from.
+
+\begin{proposition}[Coxeter's statistical honeycomb]\label{PHYS:prop:coxeter}
+Let $P$ be a convex polyhedron with exactly three faces at each vertex, and let $\bar n$ be the average
+number of sides of its faces. Then the number of faces is
+\[
+  F=\frac{12}{6-\bar n}.
+\]
+If every face of a foam had $\bar n=2\pi/\arccos\frac13\approx5.104$ sides, the number of regular
+tetrahedra that fit around an edge, every cell would have $F\approx13.40$ faces.
+\end{proposition}
+
+\begin{proof}
+With $V$ vertices and $E$ edges, $3V=2E$ (three edges at each vertex, two vertices on each edge) and $\bar
+nF=2E$. Euler's formula $V-E+F=2$ becomes $F-\frac E3=2$, that is $F(1-\frac{\bar n}6)=2$. For the second
+statement: by Plateau's rules every vertex of a dry foam is simple, and each face of a cell is dual to
+an edge of the Delaunay complex of the cell centres. The number of sides of the face is the number of
+Delaunay cells around that edge. If those cells were regular tetrahedra, the dihedral angle
+$\arccos\frac13$ would have to go $\bar n$ times around the edge.
+\end{proof}
+
+Coxeter (\emph{Illinois J.\ Math.} 2, 1958) called such idealized averages ``statistical honeycombs''. The
+formula is a dictionary: $\bar n=5$ gives the dodecahedron ($F=12$), Kelvin's cell has $\bar
+n=\frac{8\cdot6+6\cdot4}{14}=\frac{36}7$ ($F=14$), Weaire--Phelan has $F=13.5$, Matzke's bubbles $13.70$,
+and Marvin's shot $14.17$. (Voronoi cells of completely random points have on average
+$2+\frac{48\pi^2}{35}\approx15.54$ faces, a theorem of Meijering, \emph{Philips Res.\ Rep.} 8, 1953.) Five tetrahedra around every edge would give
+$\bar n=5$ exactly, and then all the cells would be the regular dodecahedra of
+Proposition~\ref{PHYS:prop:dodec}. This is impossible in flat space, but it is exactly what happens in the
+curved space of Section~\ref{SM:sec:curved}. The Voronoi cells of the $120$ vertices of the $600$-cell in
+$\Sph^3$ are the $120$ regular dodecahedra of the $120$-cell, spherical dodecahedra whose dihedral angle is exactly
+$120^\circ$, three around each edge. Stephen Hales' ``regular dodecahedrons'' are
+what the peas would have become in a pot shaped like the $3$-sphere.
+
+In the plane everything is settled: the hexagonal honeycomb is the least-perimeter way to divide the
+plane into equal areas (Hales, gallery, Theorem~\ref{PHYS:thm:honeycomb}). Bubble rafts on water were
+used by Bragg and Nye (\emph{Proc.\ R.\ Soc.\ A} 190, 1947) as models of two-dimensional crystals, complete with
+dislocations and grain boundaries.
+
+%======================================================================
+\section{Colloids: atoms you can watch}
+\label{PHYS:sec:colloids}
+
+\subsection*{The hard-sphere gas, made visible}
+Interlude~E (Section~\ref{SM:sec:hard}) treated hard spheres as a system with no energy at all, in which
+everything is entropy. Atoms are too soft for this, but colloids, particles between about
+$100$ nanometres and a few micrometres across, suspended in a liquid, come remarkably close. The standard
+hard-sphere colloid is a sphere of poly(methyl methacrylate) carrying a thin brush of polymer that
+stops the spheres from sticking, suspended in a liquid of nearly the same refractive index, which
+removes most of the van der Waals attraction and lets light through.
+
+Colloids are big enough to see in an optical microscope, and slow. By the Stokes--Einstein relation a sphere of radius $a$ in a liquid of viscosity $\eta$ diffuses
+with $D=k_BT/(6\pi\eta a)$. For $a=1\,\mu$m in water at room temperature,
+$D\approx2\times10^{-13}\,\mathrm m^2/\mathrm s$, and the time to diffuse its own radius is $a^2/D\approx5$
+seconds. An atom in a liquid does the same in picoseconds. So colloids are atoms that can be filmed, and since
+the only energy scale is $k_BT$, the phase behaviour depends only on the packing fraction $\varphi$.
+
+Pusey and van Megen (\emph{Nature} 320, 1986) prepared hard-sphere suspensions at a range of
+concentrations and watched them for days \PHYStag{experiment}. At low $\varphi$ the samples stayed fluid;
+in a window of concentrations they separated into a fluid and a crystal, with the crystal fraction
+growing across the window; above it they crystallized throughout; and above about $\varphi\approx0.58$ they
+did not crystallize at all, but stayed amorphous, a colloidal \emph{glass} (Pusey and van Megen,
+\emph{Phys.\ Rev.\ Lett.} 59, 1987). This is the sequence predicted by the computer for hard spheres, with coexistence between
+$0.494$ and $0.545$ (Interlude~E) \PHYStag{simulation}. (The volume fractions were in fact
+calibrated by identifying the onset of freezing with $0.494$, so the experiment tests the shape of the
+phase diagram rather than that number; on this scale melting came out near $0.535$. Polydispersity, a few
+percent in real colloids, also shifts the phase boundaries, and in simulations a size spread above about
+$7\%$ suppresses crystallization altogether.) Whether hard spheres crystallize at all is still not a theorem in any dimension
+$d\ge2$, as Interlude~E explained. In microgravity, on the Space Shuttle, dense samples that had stayed glassy on
+earth for more than a year crystallized completely within two weeks (Zhu et al., \emph{Nature} 387,
+1997), so part of the colloidal ``glass'' is gravity's doing.
+
+\subsection*{Why order wins: a free-volume calculation}
+That a system with no energy should \emph{order} when compressed seems paradoxical, since ordering
+sounds like a loss of entropy. The resolution is that the relevant entropy is the room each ball has to
+rattle. The following idealized model, the \emph{cell model}, makes this quantitative.
+
+\begin{proposition}[Cell model \PHYStag{model}]\label{PHYS:prop:cell}
+Suppose each of $N$ hard balls of diameter $1$ in $\R^d$ moves independently in a cage formed by its
+neighbours, frozen at the sites of a lattice packing scaled from its close-packed density $\rho_{\mathrm{cp}}$
+to density $\rho=N/V$, and suppose the volume of each cage is $c(a-1)^d$, where
+$a=(\rho_{\mathrm{cp}}/\rho)^{1/d}$ is the nearest-neighbour distance. Then the entropy per ball is
+$s=d\ln(a-1)+\ln c$ and the equation of state is
+\[
+  \frac{\beta P}{\rho}=\frac1{1-(\rho/\rho_{\mathrm{cp}})^{1/d}} .
+\]
+\end{proposition}
+
+\begin{proof}
+The partition function is $Z=(c(a-1)^d)^N$, so $S=\ln Z=Nd\ln(a-1)+N\ln c$. The volume is
+$V=Na^d/\rho_{\mathrm{cp}}$, so $dV/da=Nda^{d-1}/\rho_{\mathrm{cp}}$. With $\beta P=\partial S/\partial V$ as in
+Section~\ref{SM:sec:hard},
+\[
+  \beta P=\frac{\partial S/\partial a}{\partial V/\partial a}=\frac{Nd/(a-1)}{Nda^{d-1}/\rho_{\mathrm{cp}}}
+  =\frac{\rho_{\mathrm{cp}}}{a^{d-1}(a-1)},
+\]
+and dividing by $\rho=\rho_{\mathrm{cp}}/a^d$ gives $\beta P/\rho=a/(a-1)=1/(1-a^{-1})$.
+\end{proof}
+
+In dimension one this is \emph{exactly} the Tonks gas of Proposition~\ref{SM:prop:tonks}: with
+$\rho_{\mathrm{cp}}=1$ it reads $\beta P/\rho=1/(1-\rho)$. In one dimension the cell picture is not a
+model at all, since the gaps between consecutive rods really are free lengths. In three dimensions the
+cell model is crude, but not bad: for FCC at the melting density $\varphi=0.545$ it gives
+$\beta P/\rho\approx10.3$, against about $11$ in simulations.
+
+Now compare a crystal with an amorphous packing at the same density. The amorphous packing jams at
+$\varphi_J\approx0.64$ instead of $\pi/\sqrt{18}\approx0.7405$, so in the same model its cages have linear size
+$(\varphi_J/\varphi)^{1/3}-1$ instead of $(0.7405/\varphi)^{1/3}-1$. At $\varphi=0.55$ the ratio of the two cage sizes
+is $2.01$: each crystalline ball has twice the room to move in every direction. The vibrational entropy
+gained by crystallizing is therefore about $3\ln2\approx2.1\,k_B$ per ball. Against this the disordered
+state has its \emph{configurational} entropy, the logarithm of the number of distinct disordered
+arrangements, which wins at low density; roughly speaking, freezing is where the two balance. Order is the high-entropy state of a crowded system.
+
+\subsection*{FCC or HCP?}
+Every stacking of hexagonal layers (each layer in the hollows of the one below, the Barlow packings)
+has density $\pi/\sqrt{18}$, so Hales' theorem does not choose between them. Nor does counting: with $L$
+layers there are $3\cdot2^{L-1}$ stacking sequences, but each layer has $m$ balls, so the stacking entropy
+per ball is $(\ln3+(L-1)\ln2)/(Lm)\to0$ as $m\to\infty$. The choice is made by the vibrational entropy,
+which sees the difference between FCC and HCP only at the third shell of neighbours. Bolhuis, Frenkel,
+Mau and Huse (\emph{Nature} 388, 1997) computed that FCC is favoured, by about $10^{-3}k_BT$ per particle
+near melting \PHYStag{simulation}; Mau and Huse (\emph{Phys.\ Rev.~E} 59, 1999) found $0.00115(4)\,k_B$ per sphere at close
+packing, and that FCC has the highest entropy of all stackings. The difference is so small that colloidal
+crystals grown in the laboratory often stack \emph{randomly} (Pusey, van Megen, Bartlett, Ackerson,
+Rarity and Underwood, \emph{Phys.\ Rev.\ Lett.} 63, 1989) \PHYStag{experiment}.
+
+\paragraph{Looking inside.} Confocal microscopy locates every particle of a three-dimensional sample, in
+glasses and in growing crystal nuclei (Gasser et al., \emph{Science} 292, 2001). In two dimensions, colloidal hard spheres confined to a plane
+show the melting scenario that Bernard and Krauth found in simulations (Section~\ref{SM:sec:hard}): a
+first-order liquid--hexatic transition followed by a continuous hexatic--solid transition (Thorneywork,
+Abbott, Aarts and Dullens, \emph{Phys.\ Rev.\ Lett.} 118, 2017) \PHYStag{experiment}.
+
+%======================================================================
+\section{Opals and photonic crystals}
+\label{PHYS:sec:opal}
+
+\subsection*{A gemstone made of lattice planes}
+Precious opal flashes pure colours that change as the stone is turned. In 1964 J.~V.~Sanders and his
+colleagues at CSIRO looked at opal in the electron microscope and found a regular array of silica
+spheres, a few hundred nanometres across, stacked in hexagonal layers (Jones, Sanders and Segnit,
+\emph{Nature} 204, 1964; Sanders, \emph{Nature} 204, 1964). The colours are Bragg diffraction of light by the
+layers \PHYStag{experiment}. To see which layers and which colours, we need the planes of a lattice, and
+those are counted by the dual lattice $\Lat^*=\{y:\ip xy\in\Z\ \forall x\in\Lat\}$ of
+Interlude~B (Theorem~\ref{NT:thm:poisson}).
+
+\begin{proposition}[Lattice planes]\label{PHYS:prop:planes}
+Let $\Lat\subset\R^3$ be a lattice and $w\in\Lat^*$ a primitive vector (not a multiple $kw'$ of
+some $w'\in\Lat^*$ with $k\ge2$). Then $\Lat$ is the disjoint union of its intersections with the parallel planes
+$\{x:\ip xw=k\}$, $k\in\Z$, each of which is nonempty, and these planes are $1/\abs w$ apart. Conversely, every equally spaced family of parallel planes that covers $\Lat$, each plane containing a
+lattice point, arises this way, so the largest spacing between lattice planes is
+$1/\min\{\abs w:w\in\Lat^*\setminus0\}$.
+\end{proposition}
+
+\begin{proof}
+The values $\ip xw$, $x\in\Lat$, form a subgroup $g\Z$ of $\Z$ with $g\ge1$. Then $\ip x{w/g}\in\Z$ for all
+$x\in\Lat$, so $w/g\in\Lat^*$, and primitivity forces $g=1$. So every integer $k$ is a value, every lattice
+point lies on one of the planes, and the planes $\ip xw=k$ are $1/\abs w$ apart. Conversely, suppose $\Lat$ lies on the planes $\ip xu\in s\Z$, for a unit vector
+$u$ and some $s>0$, and each of these planes contains a lattice point. Then $w=u/s$ has $\ip xw\in\Z$ for all
+$x\in\Lat$, so $w\in\Lat^*$, and every integer is a value, so $w$ is not a multiple $kw'$ with $k\ge2$.
+\end{proof}
+
+\begin{example}[The colour of an opal]\label{PHYS:ex:opal}
+For $\Lat=D_3$ the dual is $D_3^*=\Z^3\cup(\Z^3+\frac12(1,1,1))$, the body-centred cubic lattice, whose
+shortest vectors are the eight vectors $\frac12(\pm1,\pm1,\pm1)$ of length $\frac{\sqrt3}2$. So the widest-spaced
+planes of FCC are perpendicular to the body diagonals, at distance $2/\sqrt3$: these are the hexagonal
+close-packed layers. Rescaling from minimal distance $\sqrt2$ to sphere diameter $D$, the layer spacing is
+\[
+  d=\frac{2}{\sqrt3}\cdot\frac{D}{\sqrt2}=D\sqrt{\tfrac23},
+\]
+which is also the height of a regular tetrahedron of edge $D$. The tetrahedron shows that the spacing
+is the same for every Barlow stacking, so the colour does not care about stacking faults. Bragg's law for
+light inside a medium of effective refractive index $n_{\mathrm{eff}}$ reflects the wavelength
+\[
+  \lambda=2n_{\mathrm{eff}}\,d\sin\theta,
+\]
+where $\theta$ is the glancing angle. At normal incidence, with $n_{\mathrm{eff}}\approx1.45$ for silica, $\lambda\approx2.37\,D$.
+The visible range $400$--$700$\,nm corresponds to $D$ between about $170$ and $300$\,nm. Turning the stone
+changes $\theta$, and the colour slides towards the blue.
+\end{example}
+
+
+\subsection*{Photonic band gaps}
+In 1987 Yablonovitch (\emph{Phys.\ Rev.\ Lett.} 58, 2059), who wanted to switch off spontaneous emission, and
+John (\emph{Phys.\ Rev.\ Lett.} 58, 2486), who wanted to localize light, independently proposed to do with
+photons what a crystal does with electrons. In a medium whose refractive index is periodic with lattice
+$\Lat$, Maxwell's equations separate into Bloch waves, and the frequencies form bands over the Brillouin
+zone, the Voronoi cell of $\Lat^*$ (up to the factor $2\pi$). A \emph{complete photonic band gap} is an
+interval of frequencies in which light cannot propagate in any direction.
+
+The Brillouin zone of an opal is the Voronoi cell of BCC: the truncated octahedron, that is,
+Kelvin's cell from Section~\ref{PHYS:sec:squash}. A gap opens on each face of the zone, at the frequency where
+the Bragg condition for the corresponding planes holds, and for a complete gap the gaps on all faces must
+overlap. With $D_3^*$ as above, the centres of the hexagonal faces (the points the physicists call $L$) are
+at distance $\frac{\sqrt3}4\approx0.433$, the centres of the square faces ($X$) at $\frac12$, and the
+vertices ($W$) at $\frac{\sqrt5}4\approx0.559$. The free-photon frequencies at $W$ and at $L$ differ by the factor
+$\sqrt{5/3}\approx1.29$, which is hard to bridge. In fact Ho, Chan and Soukoulis (\emph{Phys.\ Rev.\ Lett.} 65,
+1990) found that dielectric spheres on an FCC lattice have no complete gap in the lowest bands, because
+of a band degeneracy at $W$, while spheres on the \emph{diamond} structure have one, already at an
+index contrast of about $2$ \PHYStag{simulation}.
+
+The diamond structure is $D_3^+=D_3\cup(D_3+\frac12(1,1,1))$: FCC together with one of its two classes of
+tetrahedral holes (Interlude~H, Section~\ref{DYN:sec:fcc}). This is the $n=3$ case of the construction
+$D_n^+$ of Lecture~6 (Section~\ref{L04b:sec:rootdense}), which is a lattice only for even $n$
+(Exercise~\ref{NT:ex:D16}). As a packing of balls it is very loose: the nearest distance drops to
+$\frac{\sqrt3}2$, there is one ball per unit volume, and the density is
+$\frac43\pi(\frac{\sqrt3}4)^3=\frac{\pi\sqrt3}{16}\approx0.340$, less than half that of FCC. The best crystal
+for light is among the worst for packing. Weevils found it first: the iridescent scales of the beetle
+\emph{Lamprocyphus augustus} contain a diamond-structured photonic crystal of chitin (Galusha et al.,
+\emph{Phys.\ Rev.~E} 77, 2008) \PHYStag{experiment}.
+
+Opals can be made to work after all by inverting them. Let colloidal spheres crystallize into a synthetic
+opal, fill the gaps with a material of high refractive index, and dissolve the spheres. The result, an
+\emph{inverse opal} of air spheres, has a complete gap between its eighth and ninth bands once the index
+contrast exceeds about $2.8$ (Busch and John, \emph{Phys.\ Rev.~E} 58, 1998) \PHYStag{simulation}.
+Silicon, with index about $3.5$, qualifies, and silicon inverse opals with a complete gap near
+$1.5\,\mu$m, the wavelength of optical fibres, were made by Blanco et al.\ (\emph{Nature} 405, 2000; a gap of
+roughly $5\%$ of its centre frequency) and Vlasov, Bo, Sturm and Norris (\emph{Nature} 414, 2001) \PHYStag{experiment}.
+For a theorem guaranteeing gaps in a model of high-contrast media, see the gallery
+(Theorem~\ref{PHYS:thm:FK}).
+
+%======================================================================
+\section{From crystal to glass: random lasers and granular lasers}
+\label{PHYS:sec:laser}
+
+Take the same colloidal spheres and let them settle quickly, before they can crystallize, or add salt so
+that they stick on contact. The result is a \emph{photonic glass} (Garc\'ia, Sapienza, Blanco and L\'opez,
+\emph{Adv.\ Mater.} 19, 2007): a random packing of monodisperse spheres, the optical counterpart of Bernal's
+ball bearings. Light no longer diffracts; it scatters many times and performs a random walk, with steps
+of the order of the \emph{transport mean free path} $\ell$. Over distances much larger than $\ell$, the
+energy density $W$ of the light diffuses, $\partial_tW=D\Delta W$ with $D=v\ell/3$ ($v$ the speed of light in
+the medium), the continuum limit of the coin flips in the gas in a box of Lecture~7
+(Section~\ref{L07:subsec:gas}).
+
+Now soak the packing in a laser dye and pump it. Letokhov (\emph{Sov.\ Phys.\ JETP} 26, 1968) predicted
+that a scattering medium with gain will lase without any mirrors, once it is large enough: the
+scattering keeps the light inside long enough to be amplified. The threshold is a pretty piece of
+spectral theory.
+
+\begin{proposition}[Letokhov's critical radius \PHYStag{model}]\label{PHYS:prop:letokhov}
+Let $W(r,t)$ solve $\partial_tW=D\Delta W+\frac v{\ell_g}W$ in a ball of radius $R$ in $\R^3$, with $W=0$ on the
+boundary, where $D=v\ell/3$ and $\ell_g$ is the gain length (the distance over which the intensity grows
+by a factor $e$). Then every solution decays to $0$ if $R<R_{\mathrm{cr}}$ and generic solutions grow
+exponentially if $R>R_{\mathrm{cr}}$, where
+\[
+  R_{\mathrm{cr}}=\pi\sqrt{\frac{\ell\,\ell_g}3}.
+\]
+\end{proposition}
+
+\begin{proof}
+Expand in the Dirichlet eigenfunctions $-\Delta\phi_k=\lambda_k\phi_k$ of the ball:
+\[
+  W=\sum_kc_k\,e^{(v/\ell_g-D\lambda_k)t}\phi_k .
+\]
+Everything decays if and only if $v/\ell_g<D\lambda_1$. The first
+eigenvalue is simple, with a positive eigenfunction, which is therefore invariant under rotations. For
+radial $\phi$, the function $u=r\phi$ satisfies $u''=-\lambda u$ with $u(0)=u(R)=0$, so $u=\sin(\pi r/R)$ and
+$\lambda_1=\pi^2/R^2$. The threshold $v/\ell_g=\frac{v\ell}3\cdot\frac{\pi^2}{R^2}$ gives the formula.
+\end{proof}
+
+The threshold volume scales like $(\ell\ell_g)^{3/2}$: stronger scattering means a smaller random laser.
+And $\ell$ depends on the packing. For independent scatterers, $\ell\approx1/(n\sigma_{\mathrm{tr}})$, with
+number density $n=6\varphi/(\pi D^3)$ and transport cross-section $\sigma_{\mathrm{tr}}$ of order $D^2$ for grains
+much larger than the wavelength, so $\ell$ is of order $D/\varphi$ and $R_{\mathrm{cr}}\propto\varphi^{-1/2}$: compacting a
+granular gain medium lowers its threshold. (Near jamming, positional correlations between the grains
+reduce scattering, and the independent-scatterer estimate has to be corrected by the structure factor of
+the packing.)
+
+Lawandy, Balachandran, Gomes and Sauvain (\emph{Nature} 368, 1994) saw laser action in a dye solution
+with titania particles \PHYStag{experiment}, and Cao and coworkers (\emph{Phys.\ Rev.\ Lett.} 82, 1999) saw
+sharp lasing modes in zinc oxide powder, where the feedback comes from closed loops of multiply scattered
+light. In a photonic glass the Mie resonances of the equal spheres can be used to select the lasing
+wavelength (Gottardo et al., \emph{Nature Photonics} 2, 2008). Wiersma and Cavalieri (\emph{Nature} 414, 2001) built a random laser out
+of compressed glass powder whose pores were filled with a dye-doped liquid crystal. The alignment of the
+liquid crystal, and with it the strength of the scattering, depends on temperature, so the laser can be
+tuned by heating it, and it switches off at the phase transition of the liquid crystal near $42^\circ$C
+\PHYStag{experiment}. This was already a granular laser, tuned through the scattering of its grains.
+
+\paragraph{Granular lasers.} Then the packing itself was made to move. Folli, Puglisi, Leuzzi and Conti
+(\emph{Shaken granular lasers}, \emph{Phys.\ Rev.\ Lett.} 108, 2012) immersed about $1500$ millimetre-sized
+spheres in a dye solution, put the container on a vibrating plate and pumped it with a pulsed laser
+\PHYStag{experiment}. The random laser emission depends on whether and how the grains move: at strong
+shaking a second emission peak appeared, attributed to transient cavities formed by a few grains. In
+a sequel (Folli, Ghofraniha, Puglisi, Leuzzi and Conti, \emph{Sci.\ Rep.} 3, 2013) with $1$\,mm glass
+beads in a rhodamine solution, the laser light distinguished a solid-like regime, in which the grains keep
+their neighbours and the spectra are steady, from a fluidized regime in which the density fluctuations
+switch the system above and below threshold, so that the spectra alternate between fluorescence and lasing.
+The authors call the result a ``granular'' laser with a tunable emission spectrum: the configuration of
+the beads, and whether the packing is solid-like or fluidized, is part of the optical cavity.
+
+%======================================================================
+\section{Sticky spheres}
+\label{PHYS:sec:sticky}
+
+\subsection*{From hard to sticky}
+Add small polymer coils to a colloidal suspension and the spheres attract each other: when two spheres
+come closer than the size of a coil, the coils are excluded from the gap between them, and the osmotic
+pressure of the coils pushes the spheres together (Asakura and Oosawa, \emph{J.\ Chem.\ Phys.} 22, 1954).
+The range of this \emph{depletion} attraction is the size of the coil, which can be a few percent of the
+sphere diameter. In the limit of infinitely deep and narrow attraction, Baxter's \emph{sticky hard spheres}
+(\emph{J.\ Chem.\ Phys.} 49, 1968), the energy of a configuration is minus the number of contacts: it is
+read off the contact graph of Lectures~10--11 (Definition~\ref{L11:def:contact}), now for balls in $\R^3$.
+
+So the ground states of $n$ sticky spheres are the packings of $n$ unit balls with the most contacts.
+This \emph{contact number problem} is a cousin of the kissing problem, and it is hard. In the plane it is
+solved: $n$ unit discs have at most $\lfloor3n-\sqrt{12n-3}\rfloor$ contacts (Harborth, gallery), attained by
+hexagonal patches. In $\R^3$ only bounds are known (Bezdek and Reid, gallery). For small $n$ the answers
+come from enumeration.
+
+\subsection*{Rigidity and counting}
+A cluster that is held together only by its contacts should be rigid. The rigidity matrix $A$ of
+Interlude~E (Section~\ref{SM:sec:random}; see also Interlude~F, Section~\ref{COMP:sec:matrix}) has a row
+$(\dots,-u_{ij},\dots,u_{ij},\dots)$ for each contact. Now there is no box: a free cluster can be
+translated and rotated.
+
+\begin{proposition}[Maxwell count for clusters \PHYStag{theorem}]\label{PHYS:prop:cluster}
+Let $n\ge3$ unit balls in $\R^3$ have centres not all on a line. If the contact framework is
+infinitesimally rigid (every infinitesimal motion preserving all contact distances to first order is a
+rigid motion), then it has at least $3n-6$ contacts, and if moreover $n\ge4$, every ball has at least
+three contacts.
+\end{proposition}
+
+\begin{proof}
+The infinitesimal rigid motions $v_i=b+\omega\times x_i$ form a $6$-dimensional subspace of $\ker A$ when the
+centres are not collinear (a motion with $b+\omega\times x_i=0$ for three non-collinear $x_i$ is zero).
+Infinitesimal rigidity says this is all of $\ker A$, so $\operatorname{rank}A=3n-6$, and $A$ needs at least
+that many rows. For the second claim, suppose ball $i$ has at most two contacts. Pick $w\ne0$ orthogonal
+to its contact directions, and put $v_i=w$ and $v_l=0$ for $l\ne i$; this lies in $\ker A$. A rigid motion
+vanishing at three non-collinear centres is zero, so if this $v$ is a rigid motion, the other $n-1\ge3$
+centres lie on a line $L$, and $x_i\notin L$. Then the other balls form a straight chain along $L$, and an
+end ball of the chain touches only its neighbour in the chain and possibly ball $i$. The centres other
+than this end ball include $x_i$ and two points of $L$, so they are not collinear, and the same
+construction at the end ball gives an element of $\ker A$ that is not a rigid motion.
+\end{proof}
+
+\noindent For clusters that are rigid but not infinitesimally rigid the second claim can fail: a ball
+squeezed exactly between two balls at distance $2$ of an otherwise rigid cluster is pinned by its two
+contacts.
+
+Clusters with exactly $3n-6$ contacts that are rigid are called \emph{isostatic} (or minimally rigid),
+those with more \emph{hyperstatic}, and rigid ones with fewer \emph{hypostatic}. A rigid cluster that is
+not infinitesimally rigid is \emph{singular}. Arkus, Manoharan and Brenner (\emph{Phys.\ Rev.\ Lett.} 103, 2009;
+\emph{SIAM J.\ Discrete Math.} 25, 2011) enumerated the candidate contact graphs (adjacency matrices with
+at least $3n-6$ edges and minimum degree $3$, the two conditions suggested by Proposition~\ref{PHYS:prop:cluster}), and
+solved for the distances with geometric rules. Hoy, Harwayne-Gidansky and O'Hern (\emph{Phys.\ Rev.~E} 85,
+2012) went to $n=11$, and Holmes-Cerfon (\emph{SIAM Review} 58, 2016) to $n=14$ by a different method,
+walking from one rigid cluster to the next along the one-parameter families obtained by breaking a
+contact. Her counts:
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{lccccccccc}
+\toprule
+$n$ & $6$ & $7$ & $8$ & $9$ & $10$ & $11$ & $12$ & $13$ & $14$\\
+\midrule
+rigid clusters & $2$ & $5$ & $13$ & $52$ & $263$ & $1659$ & $11980$ & $98529$ & $895478$\\
+of which hypostatic & $0$ & $0$ & $0$ & $0$ & $1$ & $20$ & $159$ & $1308$ & $11245$\\
+of which hyperstatic & $0$ & $0$ & $0$ & $0$ & $3$ & $21$ & $183$ & $1411$ & $11241$\\
+most contacts & $12$ & $15$ & $18$ & $21$ & $25$ & $29$ & $33$ & $36$ & $40$\\
+\bottomrule
+\end{tabular}
+\end{center}
+These are numerical results \PHYStag{simulation}, believed complete apart possibly from a few highly
+singular clusters, but not proved complete. The first singular cluster appears at $n=9$, and the first
+clusters with more than $3n-6$ contacts at $n=10$: there the ground states stop being isostatic and become
+fragments of the hexagonal close packing. Even the statement that $3n-6$ is the maximal number of
+contacts for $6\le n\le9$ is, strictly speaking, a conjecture, conditional on the completeness of these
+lists (Bezdek and Khan, arXiv:1601.00145).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.75]
+  \begin{scope}
+    \coordinate (O0) at (0.637,0.126); \coordinate (O1) at (-0.637,-0.126);
+    \coordinate (O2) at (-0.308,0.260); \coordinate (O3) at (0.308,-0.260);
+    \coordinate (O4) at (0.000,0.645); \coordinate (O5) at (0.000,-0.645);
+    \foreach \i in {2,5,0,1,4,3} \filldraw[PHYSball] (O\i) circle (0.5);
+    \foreach \a/\b in {0/2,0/3,0/4,0/5,1/2,1/3,1/4,1/5,2/4,2/5,3/4,3/5} \draw[thick] (O\a)--(O\b);
+    \foreach \i in {0,...,5} \fill (O\i) circle (0.025);
+    \node[font=\small,align=center] at (0,-1.3) {octahedron\\ $12$ contacts, $\sigma=24$};
+  \end{scope}
+  \begin{scope}[xshift=3.1cm]
+    \coordinate (P0) at (0.661,-0.123); \coordinate (P1) at (-0.331,-0.254);
+    \coordinate (P2) at (0.052,0.670); \coordinate (P3) at (0.127,0.098);
+    \coordinate (P4) at (0.253,-0.856); \coordinate (P5) at (-0.762,0.466);
+    \foreach \i in {3,5,4,2,0,1} \filldraw[PHYSball] (P\i) circle (0.5);
+    \foreach \a/\b in {0/1,0/2,0/3,0/4,1/2,1/3,1/4,1/5,2/3,2/5,3/4,3/5} \draw[thick] (P\a)--(P\b);
+    \foreach \i in {0,...,5} \fill (P\i) circle (0.025);
+    \node[font=\small,align=center] at (0,-1.3) {polytetrahedron\\ $12$ contacts, $\sigma=2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The two rigid clusters of six sticky spheres, with their contact graphs. The octahedron is a
+piece of FCC (six balls around an octahedral hole). The polytetrahedron is three regular tetrahedra
+glued face to face; the view is along the normal of one face of the middle tetrahedron. Both have
+$3n-6=12$ contacts, so they have the same energy, but in the sticky-limit model the polytetrahedron is $24$
+times as likely (Example~\ref{PHYS:ex:six}).}
+\label{PHYS:fig:six}
+\end{figure}
+
+\subsection*{Six spheres: entropy chooses the less symmetric cluster}
+For $n=6$ there are two ground states, both with $12$ contacts (Figure~\ref{PHYS:fig:six}). They have the same
+energy, so which one forms is decided by entropy, and the entropy has three parts. Holmes-Cerfon,
+Gortler and Brenner (\emph{Proc.\ Natl.\ Acad.\ Sci.\ USA} 110, 2013) showed that in the sticky limit the
+partition function of a rigid, infinitesimally rigid cluster with $m$ contacts is, up to factors common
+to all clusters of the same size,
+\begin{equation}\label{PHYS:eq:sticky}
+  z=\kappa^m\cdot\frac{\sqrt{\det I}}{\sigma\,\sqrt{\det(AA^T)}}\qquad(m=3n-6),
+\end{equation}
+where $\kappa$ is a ``stickiness'' parameter that depends on the depth and range of the attraction, $I$ is the
+moment of inertia tensor of the centres (unit masses), $\sigma$ is the order of the rotation group of the
+cluster, and $A$ is the rigidity matrix. The three factors are rotational entropy (a cluster with more
+symmetry has fewer distinguishable orientations, and a more spread-out cluster has more), and vibrational
+entropy: $\det(AA^T)$ is the product of the nonzero eigenvalues of the stiffness matrix $A^TA$, and
+softer clusters wiggle more.
+
+\begin{example}[$n=6$ \PHYStag{model}]\label{PHYS:ex:six}
+For the octahedron, with centres $\pm\frac1{\sqrt2}e_i$, the rotation group is that of the cube,
+$\sigma=24$, and $I=2\cdot\mathrm{Id}$, so $\det I=8$. The $12\times12$ matrix $AA^T$ has entries
+$\ip{u_e}{u_{e'}}$ (with the signs of the shared endpoints) and $\det(AA^T)=864$. For the polytetrahedron,
+with centres
+\[
+  (0,0,0),\ (1,0,0),\ (\tfrac12,\tfrac{\sqrt3}2,0),\ (\tfrac12,\tfrac{\sqrt3}6,\tfrac{\sqrt6}3),\
+  (\tfrac12,-\tfrac{7\sqrt3}{18},\tfrac{2\sqrt6}9),\ (\tfrac43,\tfrac{4\sqrt3}9,\tfrac{2\sqrt6}9),
+\]
+only a half-turn survives, $\sigma=2$, and an exact computation gives $\det I=\frac{261569}{26244}\approx9.967$ and
+$\det(AA^T)=\frac{261569}{972}\approx269.1$. Hence
+\[
+  \frac{z_{\mathrm{poly}}}{z_{\mathrm{oct}}}
+  =\frac{24}2\cdot\sqrt{\frac{\det I_{\mathrm{poly}}}{\det I_{\mathrm{oct}}}\cdot\frac{\det(AA^T)_{\mathrm{oct}}}{\det(AA^T)_{\mathrm{poly}}}}
+  =12\cdot\sqrt{\frac{972}{26244}\cdot\frac{864}8}=12\cdot\sqrt{\frac{108}{27}}=24 .
+\]
+Symmetry contributes the factor $12$, and the moments of inertia and the vibrations together exactly $2$
+(about $1.12$ and $1.79$). So the model predicts that the octahedron forms with probability $\frac1{25}=4\%$.
+\end{example}
+
+Meng, Arkus, Brenner and Manoharan (\emph{Science} 327, 2010) assembled clusters of colloidal spheres with a
+short-range attraction in microscopic wells and counted them \PHYStag{experiment}: the polytetrahedron
+was observed more than $20$ times as often as the octahedron, so the octahedron made up only about
+$4$--$5\%$ of the six-particle clusters, in good agreement with the $4\%$ (a ratio of $24$) of
+Example~\ref{PHYS:ex:six}. For clusters of up to ten particles, highly symmetric clusters were strongly
+suppressed by rotational entropy. So the cluster that is a piece of
+the crystal loses, and the polytetrahedral one wins, as in Frank's picture of liquids (Section~\ref{SM:sec:frustration}),
+though here the cause is rotational entropy rather than energy. In sticky systems the crystal comes back at
+$n\ge10$, through the hyperstatic clusters, which gain a factor $\kappa$ for every extra contact. Kallus
+and Holmes-Cerfon (\emph{Phys.\ Rev.~E} 95, 2017) extended \eqref{PHYS:eq:sticky} to singular clusters,
+whose zero-frequency modes make the harmonic formula diverge, computed the partition functions of all
+known rigid clusters with $n\le19$, and found that the hyperstatic ones, which look like fragments of a
+close-packed lattice, dominate the landscape: this is how crystalline order emerges from sticky spheres,
+already at $n=10$.
+
+\paragraph{The configuration space is stratified.} The space of $n$ sticky spheres modulo rigid motions is
+a union of strata, one for each contact graph $G$, of dimension $3n-6-\abs{E(G)}$ when $G$ is regular. Rigid
+clusters are the $0$-dimensional strata, and breaking one contact of an isostatic cluster gives a
+$1$-dimensional stratum, a path to other clusters. This is the configuration space of Lectures~7--10 (and
+Interlude~D, Section~\ref{TOP:sec:conf}) cut up by contact graphs instead of by levels of the min-distance
+function; see Holmes-Cerfon's review (\emph{Annu.\ Rev.\ Condens.\ Matter Phys.} 8, 2017).
+
+%======================================================================
+\section{Minimal rigidity and random jamming}
+\label{PHYS:sec:jam}
+
+\subsection*{Near the jamming point}
+Interlude~E showed that a first-order jammed packing of frictionless spheres has at least $2d$ contacts
+per ball on average, and that jammed packings found in simulations have exactly this many: they are
+isostatic at the jamming threshold $\varphi_J\approx0.64$ (point~J of O'Hern, Silbert, Liu and Nagel). What
+happens just above $\varphi_J$? Make the spheres slightly soft, with a repulsion proportional to the overlap
+(harmonic spheres), and compress. Then (Figure~\ref{PHYS:fig:jam}) \PHYStag{simulation}
+\[
+  z-2d\ \propto\ (\varphi-\varphi_J)^{1/2},\qquad P\ \propto\ \varphi-\varphi_J ,
+\]
+found for a bubble model of foams by Durian (\emph{Phys.\ Rev.\ Lett.} 75, 1995) and in detail by O'Hern et
+al.\ (\emph{Phys.\ Rev.~E} 68, 2003). In the laboratory, Majmudar, Sperl, Luding and Behringer
+(\emph{Phys.\ Rev.\ Lett.} 98, 2007) measured the contact numbers of photoelastic discs, which light up under
+stress, and found a jump at $\varphi_J$ followed by growth with exponent about $0.5$, and pressure growing with
+exponent about $1.1$ \PHYStag{experiment}. The square root, rather than the linear growth one might expect, says
+that new contacts are cheap: the isostatic packing is marginal.
+
+There is a pretty counting argument behind the marginality, due to Wyart, Nagel and Witten
+(\emph{Europhys.\ Lett.} 72, 2005) \PHYStag{model}. Cut a cube of side $L$ (in units of the ball diameter)
+out of a packing with $z=2d+\Delta z$ and free its boundary. The contacts crossing the boundary, about
+$L^{d-1}$ of them, are lost, and in an isostatic packing each lost contact releases one floppy mode. The
+interior has about $\frac12\Delta z\,L^d$ redundant contacts to block them. So floppy modes exist in boxes
+of size up to
+\[
+  \ell^*\sim\frac1{\Delta z}\sim(\varphi-\varphi_J)^{-1/2},
+\]
+a length that diverges at the jamming point. Extended soft modes of this size explain the excess of
+low-frequency vibrations (the ``boson peak'') of jammed packings.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[x=55cm,y=0.48cm]
+  \draw[->] (0.595,0)--(0.705,0) node[below right,font=\small]{$\varphi$};
+  \draw[->] (0.6,0)--(0.6,10.5) node[left,font=\small]{$z$};
+  \foreach \v in {4,6} {\draw (0.6,\v)--(0.598,\v) node[left,font=\scriptsize]{$\v$};}
+  \draw (0.64,0)--(0.64,-0.25) node[below,font=\scriptsize]{$\varphi_J$};
+  \draw[very thick,addcol] (0.6,0)--(0.64,0);
+  \draw[very thick,addcol] plot[domain=0.64:0.70,samples=60] (\x,{6+14*sqrt(\x-0.64)});
+  \fill[addcol] (0.64,6) circle (1.6pt);
+  \draw[addcol,dashed] (0.64,0)--(0.64,6);
+  \draw[thick,flagcol,dashed] (0.64,0)--(0.70,6.6) node[right,font=\scriptsize,flagcol]{$P\propto\varphi-\varphi_J$};
+  \node[font=\scriptsize,addcol,anchor=west] at (0.70,9.45) {$z-6\propto(\varphi-\varphi_J)^{1/2}$};
+  \draw[gray,densely dotted] (0.6,4)--(0.635,4);
+  \node[font=\scriptsize,gray,anchor=west] at (0.6015,4.55) {friction: $z\ge4$};
+  \node[font=\scriptsize,anchor=west] at (0.603,8.8) {$d=3$, schematic};
+\end{tikzpicture}
+\caption{Schematic behaviour of soft frictionless spheres near the jamming point in $d=3$: below $\varphi_J$
+there are no contacts (after rattlers are removed); at $\varphi_J$ the mean contact number jumps to the
+isostatic value $2d$; above it the excess grows like a square root, while the pressure of harmonic spheres
+grows linearly. Frictional packings can be stable with fewer contacts.}
+\label{PHYS:fig:jam}
+\end{figure}
+
+\subsection*{Friction, and the loosest random packing}
+Real grains have friction, and friction lowers the number of contacts needed. The counting is the same as
+in Corollary~\ref{SM:cor:maxwell}, but with forces instead of motions \PHYStag{model}. A frictional contact
+carries a force \emph{vector} with $d$ components (normal and tangential), so a packing with mean
+coordination $z$ has $\frac{zN}2\cdot d$ unknown force components. Each ball must satisfy force balance
+($d$ equations) and torque balance ($\binom d2$ equations), $N\frac{d(d+1)}2$ in all. For generic packings
+to carry a load we need at least as many unknowns as equations, $z\ge d+1$. Without friction a contact
+carries only a normal force and there is no torque on a sphere, so $\frac{zN}2\ge dN$, which is $z\ge2d$
+again. On the other hand each contact is one equation on the positions, whether or not there is friction,
+so for generic sizes $\frac{zN}2\le dN$, as in Interlude~E. Hence
+\[
+  d+1\ \le\ z\ \le\ 2d,
+\]
+with $z=d+1$ approached for very rough grains and $z=2d$ for frictionless ones: $4\le z\le6$ in three
+dimensions.
+
+Fewer contacts allow looser packings. Onoda and Liniger (\emph{Phys.\ Rev.\ Lett.} 64, 1990) let glass
+spheres settle slowly through liquids of nearly the same density and extrapolated to zero effective
+gravity, finding a \emph{random loose packing} fraction $0.555\pm0.005$ \PHYStag{experiment}. Song, Wang and Makse
+(\emph{Nature} 453, 2008) proposed a mean-field theory of jammed packings in which the packing fraction is
+tied to the mean geometric coordination by $\varphi=z/(z+2\sqrt3)$ \PHYStag{model}. It gives
+$\varphi=6/(6+2\sqrt3)\approx0.634$ for $z=6$ (frictionless, random close packing) and
+$4/(4+2\sqrt3)\approx0.536$ for $z=4$ (infinite friction, random loose packing), and a phase diagram of
+jammed matter between these two lines. With adhesion the constraint count drops further, and simulations of
+small sticky grains give much looser stable packings; Liu, Li, Baule and Makse (\emph{Soft Matter} 11, 2015)
+conjecture a limiting loosest packing at $z=2$ with $\varphi=1/2^3$, which their simulations approach but
+do not reach \PHYStag{model}.
+
+\subsection*{How packings are made}
+Slow sedimentation gives loose packings; vibration, shearing and tapping compact them. Knight, Fandrich, Lau, Jaeger and Nagel (\emph{Phys.\ Rev.~E}
+51, 1995) tapped glass beads in a tall narrow tube and found that the density approaches its final value
+only logarithmically in the number of taps $t$ \PHYStag{experiment},
+\[
+  \varphi(t)=\varphi_\infty-\frac{\Delta\varphi_\infty}{1+B\ln(1+t/\tau)},
+\]
+with $\varphi_\infty$ between about $0.637$ and $0.647$ in the fits of Nowak, Knight, Ben-Naim, Jaeger and Nagel
+(\emph{Phys.\ Rev.~E} 57, 1998). So tapping creeps towards random close packing and essentially stops there. Once the beads are annealed,
+cycling the tapping intensity up and down retraces a reversible curve of density against intensity
+(Nowak et al.), a standard testing ground for Edwards' statistical mechanics of powders
+(Section~\ref{SM:sec:edwards}).
+
+%======================================================================
+\section{Dice, candies and Ulam's conjecture}
+\label{PHYS:sec:shapes}
+
+\subsection*{Counting for other shapes}
+Lecture~6 ended with an aside on packing ellipsoids and polygons (Section~\ref{L04b:sec:aside}). In the
+laboratory, non-spherical particles are the rule. The counting of Section~\ref{PHYS:sec:jam} goes through
+for frictionless convex particles with $f$ degrees of freedom each: an isostatic packing has $2f$
+constraints per particle on average. Spheres have $f=3$; spheroids (ellipsoids of revolution) $f=5$, since
+rotation about the axis does nothing; general ellipsoids and tetrahedra $f=6$.
+
+Donev, Cisse, Sachs, Variano, Stillinger, Connelly, Torquato and Chaikin (\emph{Science} 303, 2004) poured
+M\&M candies, which are oblate spheroids, into a flask and measured a random packing fraction of
+$0.685\pm0.01$, well above the $0.64$ of spheres \PHYStag{experiment}. Their simulations gave about $0.71$ for
+spheroids and up to $0.735$ for general ellipsoids with aspect ratio about $1.3$ \PHYStag{simulation}.
+The packing fraction has a cusp-like minimum at the sphere: any small deformation helps. The M\&Ms had
+$9.82$ contacts on average, close to $2f=10$, but jammed general ellipsoids in the simulations had at most
+about $11.4$, short of $2f=12$. Such \emph{hypostatic} packings are possible because the equivalence of jamming and first-order jamming,
+which Interlude~E noted is special to spheres, fails for ellipsoids: the curvature of the surfaces can
+block motions at second order, so a jammed packing of ellipsoids need not satisfy the first-order count.
+
+\subsection*{Tetrahedral dice}
+Aristotle believed that regular tetrahedra fill space, and Section~\ref{TET:sec} explained why they do not
+even fill the space around an edge. Jaoshvili, Esakia, Porrati and Chaikin (\emph{Phys.\ Rev.\ Lett.} 104,
+2010) poured tetrahedral dice, of the kind used in role-playing games, into containers and
+measured, by volume and by magnetic resonance imaging of the interior, a random packing fraction of
+$0.76\pm0.02$ \PHYStag{experiment}: denser than random spheres (by far) and even denser than the densest
+sphere packing. A die touches only about $6.3$ neighbours on average, far below $2f=12$. But contacts between
+polyhedra come in kinds: a face-to-face contact blocks one translation and two rotations, so counts as three
+constraints, an edge-to-face contact as two, and a vertex-to-face or edge-to-edge contact as one. With these
+weights the dice had about $12$ constraints per particle, isostatic again.
+
+The densest packings of regular tetrahedra were a race between 2006 and 2010 \PHYStag{simulation}. The densest
+lattice packing, of density $\frac{18}{49}\approx0.367$ (Hoylman 1970), is far from optimal; Conway and
+Torquato (2006) found $0.72$, Chen (2008) $0.7786$, and then Haji-Akbari, Engel, Keys, Zheng, Petschek, Palffy-Muhoray and
+Glotzer (\emph{Nature} 462, 2009), compressing tetrahedra on the computer, found that they
+spontaneously form a \emph{dodecagonal quasicrystal}, a cousin of the cut-and-project sets of Interlude~C
+(Section~\ref{ERG:sec:cutproject}), whose periodic approximant reaches $0.8503$. Within months the record
+passed to explicit periodic packings built from pairs of tetrahedra glued along a face: $\frac{100}{117}\approx0.8547$
+(Kallus, Elser and Gravel), $\frac{12250}{14319}\approx0.8555$ (Torquato and Jiao) and
+$\frac{4000}{4671}\approx0.8563$ (Chen, Engel and Glotzer, gallery), the densest known. These constructions are exact,
+but nobody knows whether $0.8563$ is optimal; the best upper bound is still astronomically close to $1$
+(Gravel, Elser and Kallus, gallery). Lagarias and Zong (\emph{Notices AMS} 59, 2012) tell the story.
+
+\subsection*{Is the ball the worst?}
+Every one of these shapes packs more densely than the ball. Ulam suspected that this is always so: among
+convex bodies in $\R^3$, the ball has the smallest optimal packing density (reported by Martin Gardner,
+1995). This is \emph{Ulam's packing conjecture}, and it is open. Numerical work has ruled out many
+candidates, including the regular tetrahedron. The best result is local: Kallus (gallery,
+Theorem~\ref{PHYS:thm:kallus}) proved that every origin-symmetric convex body sufficiently close to the
+ball, but not a ball, packs more densely than the ball, so the ball is a \emph{local pessimum}. In the plane
+the disc is not the worst: the regular heptagon is conjectured to be, and among centrally symmetric convex
+bodies Reinhardt (1934) conjectured that the worst is a smoothed octagon, of density
+$\frac{8-4\sqrt2-\ln2}{2\sqrt2-1}\approx0.9024<\frac{\pi}{\sqrt{12}}\approx0.9069$. For centrally symmetric
+bodies in the plane the densest packing is a lattice packing (the aside of Lecture~6), so Reinhardt's
+problem is a problem about lattices; it is open too.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{scope}[x=25cm,xshift=-8.25cm]
+  \draw[->] (0.33,0)--(0.885,0) node[right,font=\small]{$\varphi$};
+  \foreach \t in {0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85}
+    {\draw (\t,0)--(\t,-0.08) node[below,font=\scriptsize]{$\t$};}
+  % spheres row
+  \fill[gray!15] (0.33,1.25) rectangle (0.494,1.55);
+  \fill[addcol!35] (0.494,1.25) rectangle (0.545,1.55);
+  \fill[addcol!15] (0.545,1.25) rectangle (0.7405,1.55);
+  \node[font=\scriptsize] at (0.45,1.4) {fluid};
+  \node[font=\scriptsize] at (0.68,1.4) {crystal};
+  \node[font=\scriptsize,anchor=east] at (0.33,1.4) {spheres};
+  \PHYSmsim{(0.384,1.0)} \node[font=\scriptsize,below] at (0.384,0.92) {RSA};
+  \PHYSmsim{(0.494,1.0)} \PHYSmsim{(0.545,1.0)}
+  \node[font=\scriptsize,above] at (0.5195,1.55) {coexistence};
+  \PHYSmexp{(0.555,0.62)} \node[font=\scriptsize,below] at (0.555,0.55) {RLP};
+  \PHYSmexp{(0.58,1.0)} \node[font=\scriptsize,below] at (0.58,0.92) {glass};
+  \PHYSmexp{(0.64,1.0)} \PHYSmsim{(0.64,0.62)} \node[font=\scriptsize,below] at (0.64,0.55) {RCP, J};
+  \PHYSmth{(0.7405,1.0)} \node[font=\scriptsize,below] at (0.7405,0.92) {FCC};
+  % non-spherical row
+  \node[font=\scriptsize,anchor=east] at (0.33,2.35) {other};
+  \draw[gray!50] (0.33,2.35)--(0.885,2.35);
+  \PHYSmcon{(0.340,2.35)} \node[font=\scriptsize,above] at (0.340,2.45) {diamond};
+  \PHYSmth{(0.3673,2.35)} \node[font=\scriptsize,below] at (0.3673,2.25) {tetra.\ lattice};
+  \PHYSmexp{(0.685,2.35)} \node[font=\scriptsize,above] at (0.685,2.45) {M\&M};
+  \PHYSmsim{(0.735,2.35)} \node[font=\scriptsize,below] at (0.735,2.25) {ellipsoids};
+  \PHYSmexp{(0.76,2.35)} \node[font=\scriptsize,above] at (0.765,2.45) {dice};
+  \PHYSmsim{(0.8503,2.35)} \PHYSmcon{(0.8563,2.35)} \node[font=\scriptsize,above] at (0.853,2.45) {tetrahedra};
+  % legend
+  \PHYSmth{(0.36,3.2)} \node[font=\scriptsize,anchor=west] at (0.365,3.2) {theorem};
+  \PHYSmcon{(0.46,3.2)} \node[font=\scriptsize,anchor=west] at (0.465,3.2) {exact construction};
+  \PHYSmsim{(0.60,3.2)} \node[font=\scriptsize,anchor=west] at (0.605,3.2) {simulation};
+  \PHYSmexp{(0.72,3.2)} \node[font=\scriptsize,anchor=west] at (0.725,3.2) {experiment};
+\end{scope}
+\end{tikzpicture}
+\caption{Packing fractions of this interlude and of Interlude~E, by status. Spheres: random sequential
+adsorption ($0.384$), the fluid--crystal coexistence region ($0.494$--$0.545$), random loose packing ($0.555$), the
+colloidal glass (about $0.58$), random close packing and point~J (about $0.64$), and the Kepler bound
+$\pi/\sqrt{18}$. Other shapes: the diamond packing of balls ($\pi\sqrt3/16$), the densest lattice packing of
+regular tetrahedra ($18/49$), M\&M candies, simulated random ellipsoids, tetrahedral dice, the tetrahedral
+quasicrystal approximant ($0.8503$) and the densest known tetrahedron packing ($4000/4671$).}
+\label{PHYS:fig:strip}
+\end{figure}
+
+%======================================================================
+\section{Gallery of theorems}
+\label{PHYS:sec:gallery}
+
+Results quoted in Interludes~E and~F (Hales, Hales--McLaughlin, Connelly et al., Richthammer, Theil) are not
+repeated.
+
+\begin{theorem}[J.~E.~Taylor, Ann.\ of Math.\ 103 (1976)]\label{PHYS:thm:taylor}
+Every soap-film-like surface in $\R^3$, in the sense of Almgren's $(\mathbf M,\varepsilon,\delta)$-minimal sets, is
+locally either a smooth minimal surface, or three smooth sheets meeting at $120^\circ$ along a curve, or
+four such curves meeting at a point at angles $\arccos(-\frac13)$, with six sheets, in the shape of the cone over
+the edges of a regular tetrahedron.
+\end{theorem}
+\noindent Plateau's experimental laws (Section~\ref{PHYS:sec:squash}) as a theorem. The tetrahedral angle is the
+Tammes angle for $N=4$.
+
+\begin{theorem}[T.~C.~Hales, Discrete Comput.\ Geom.\ 25 (2001)]\label{PHYS:thm:honeycomb}
+Any partition of the plane into regions of equal area has perimeter at least that of the regular hexagonal
+honeycomb (in the sense of an averaged limit over large discs).
+\end{theorem}
+\noindent The two-dimensional Kelvin problem is solved; the three-dimensional one is open.
+
+\begin{question}[Kelvin's problem, 1887]
+Which partition of $\R^3$ into cells of unit volume has the least area per cell? Is it the Weaire--Phelan
+foam?
+\end{question}
+\noindent Kelvin's own candidate was beaten by $0.3\%$ in 1994, numerically but with a margin far beyond the
+numerical error. That Weaire--Phelan is optimal is open.
+
+\begin{theorem}[H.~Harborth, Elem.\ Math.\ 29 (1974)]\label{PHYS:thm:harborth}
+The maximal number of touching pairs among $n$ non-overlapping unit discs in the plane is
+$\lfloor3n-\sqrt{12n-3}\rfloor$.
+\end{theorem}
+\noindent The ground states of $n$ sticky discs. For $n=7$ (a hexagon around a disc) the formula gives
+$21-9=12$.
+
+\begin{theorem}[K.~Bezdek and S.~Reid, J.\ Geom.\ 104 (2013)]\label{PHYS:thm:bezdek}
+Every packing of $n>2$ unit balls in $\R^3$ has fewer than $6n-0.926\,n^{2/3}$ touching pairs.
+\end{theorem}
+\noindent A lower bound for the sticky-sphere energy, with a surface term of the right order $n^{2/3}$. Exact values
+are known only for $n\le5$ (Section~\ref{PHYS:sec:sticky}).
+
+\begin{theorem}[E.~R.~Chen, M.~Engel and S.~C.~Glotzer, Discrete Comput.\ Geom.\ 44 (2010)]\label{PHYS:thm:CEG}
+There is a periodic packing of regular tetrahedra of density $\frac{4000}{4671}\approx0.856347$, with four
+tetrahedra (two face-sharing dimers) per fundamental domain. It is optimal within a three-parameter family of
+dimer packings.
+\end{theorem}
+\noindent Found by numerical compression, then made exact; its global optimality is open. (Lattice packings,
+whose tetrahedra all point the same way, reach only $\frac{18}{49}$: Hoylman, \emph{Bull.\ Amer.\ Math.\ Soc.}
+76, 1970.)
+
+\begin{theorem}[S.~Gravel, V.~Elser and Y.~Kallus, Discrete Comput.\ Geom.\ 46 (2011)]\label{PHYS:thm:GEK}
+The packing density of regular tetrahedra is at most $1-2.6\cdots\times10^{-25}$.
+\end{theorem}
+\noindent A quantitative version of Section~\ref{TET:sec}; the gap between $0.856$ and $1-10^{-25}$ shows how
+hard upper bounds are.
+
+\begin{theorem}[Y.~Kallus, Adv.\ Math.\ 264 (2014)]\label{PHYS:thm:kallus}
+There is $\varepsilon>0$ such that every origin-symmetric convex body $K\subset\R^3$ that is not a ball, and whose
+asphericity is less than $\varepsilon$, has packing density greater than $\pi/\sqrt{18}$. In dimensions $4$ to $8$ and
+$24$ there are origin-symmetric bodies of arbitrarily small asphericity whose lattice packing density is
+smaller than that of the ball.
+\end{theorem}
+\noindent The best evidence for Ulam's conjecture. In dimensions $4$--$8$ and $24$ the best lattices for balls
+($D_4,\dots,E_8$ of Lectures~4--6, and Leech) are so good that deforming the ball can make things worse.
+
+\begin{theorem}[A.~Figotin and P.~Kuchment, SIAM J.\ Appl.\ Math.\ 56 (1996)]\label{PHYS:thm:FK}
+Consider the periodic medium in $\R^d$, $d=2,3$, made of cubes of air, $[\delta,1]^d+\Z^d$, separated by walls of
+width $\delta$ of a material with dielectric constant $\varepsilon>1$, and the operator $\nabla\cdot\varepsilon(x)^{-1}\nabla$. For any
+$N$, if $\delta$ is small enough and $\varepsilon$ large enough (suitably coupled), the spectrum in $[0,N]$ lies in small
+intervals around the Neumann eigenvalues of the cube. In particular the spectrum has gaps.
+\end{theorem}
+\noindent Band gaps for high contrast, as a theorem (for acoustic waves, or $2$-dimensional photonics); the
+Maxwell case of inverse opals rests on computation (Section~\ref{PHYS:sec:opal}).
+
+%======================================================================
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+(a) Show that the dihedral angle of the regular dodecahedron is $\arccos(-1/\sqrt5)$. (b) Show that the
+truncated octahedron is the Voronoi cell of the body-centred cubic lattice $\Z^3\cup(\Z^3+\frac12(1,1,1))$, and
+verify the values $5.345$ and $5.315$ of $A/V^{2/3}$ in Figure~\ref{PHYS:fig:rd} for it and for the rhombic
+dodecahedron.
+\end{exercise}
+
+\begin{exercise}
+(a) Use Proposition~\ref{PHYS:prop:coxeter} to find the average number of sides of a face for Kelvin's cell, for
+the Weaire--Phelan cells, and for Matzke's bubbles. (b) The rhombic dodecahedron is not simple. Find the
+analogue of the formula $F=12/(6-\bar n)$ for polyhedra in which every vertex has degree $3$ or $4$, and check it
+on the rhombic dodecahedron. (c) Show that a convex polyhedron with three faces at each vertex and only
+pentagonal and hexagonal faces has exactly $12$ pentagons.
+\end{exercise}
+
+\begin{exercise}
+In the cell model of Proposition~\ref{PHYS:prop:cell}, at $\varphi=0.60$, compare the cage sizes of FCC and of an amorphous packing jamming at $0.64$, and
+estimate the vibrational entropy difference per ball.
+\end{exercise}
+
+\begin{exercise}
+(a) Show that the number of Barlow stackings of $L$ labelled layers is $3\cdot2^{L-1}$. (b) Show that in every
+Barlow stacking each ball has $12$ touching neighbours, and that its Voronoi cell is either the rhombic or the
+trapezo-rhombic dodecahedron. (c) Using Proposition~\ref{PHYS:prop:planes}, find the second largest spacing of
+lattice planes in FCC, and the corresponding Bragg wavelength of an opal at normal incidence.
+\end{exercise}
+
+\begin{exercise}
+(a) Redo Proposition~\ref{PHYS:prop:letokhov} for a cube of side $L$ (Dirichlet conditions on its boundary),
+and show that the threshold is $L=\pi\sqrt{\ell\ell_g}$.
+(b) With $\ell=1/(n\sigma)$ and $n=6\varphi/(\pi D^3)$, how does the critical number of grains in a ball of
+radius $R_{\mathrm{cr}}$ depend on $\varphi$?
+\end{exercise}
+
+\begin{exercise}
+(a) Check that the six points listed in Example~\ref{PHYS:ex:six} form three regular tetrahedra glued face to face,
+and that they have exactly $12$ contacts. (b) Verify $\det I=8$ and $\det(AA^T)=864$ for the octahedron.
+(\emph{Hint:} $AA^T=2\,\mathrm{Id}+B$, where $B$ records the angles between contacts sharing a ball.) (c) For $n=5$
+show that a rigid cluster must be the triangular bipyramid, with $9$ contacts.
+\end{exercise}
+
+\begin{exercise}
+(a) Carry out the frictional counting of Section~\ref{PHYS:sec:jam} for discs in the plane: show that
+$3\le z\le4$. (b) For frictionless tetrahedra, explain why the
+isostatic count is $12$ constraints per particle, and check it against the contact weights of
+Section~\ref{PHYS:sec:shapes}.
+\end{exercise}
+
+\begin{exercise}
+Check Harborth's formula for the hexagonal patches $n=3k^2-3k+1$: show that such a patch has $3(3k^2-5k+2)$
+contacts and that this equals $\lfloor3n-\sqrt{12n-3}\rfloor$.
+\end{exercise}
+
+\section*{Further reading}
+\addcontentsline{toc}{section}{Further reading}
+\begin{itemize}[nosep]
+\item H.~S.~M.~Coxeter, \emph{Close-packing and froth}, Illinois J.\ Math.\ 2 (1958). The statistical honeycombs of
+  Proposition~\ref{PHYS:prop:coxeter}.
+\item D.~Weaire (ed.), \emph{The Kelvin Problem: Foam Structures of Minimal Surface Area}, Taylor and Francis, 1996;
+  D.~Weaire and S.~Hutzler, \emph{The Physics of Foams}, Oxford, 1999.
+\item P.~N.~Pusey et al., \emph{Hard spheres: crystallization and glass formation}, Phil.\ Trans.\ R.\ Soc.\ A 367
+  (2009), arXiv:0908.1663.
+\item J.~D.~Joannopoulos, S.~G.~Johnson, J.~N.~Winn and R.~D.~Meade, \emph{Photonic Crystals: Molding the Flow of
+  Light}, 2nd ed., Princeton, 2008.
+\item D.~S.~Wiersma, \emph{The physics and applications of random lasers}, Nature Physics 4 (2008).
+\item M.~Holmes-Cerfon, \emph{Sticky-sphere clusters}, Annu.\ Rev.\ Condens.\ Matter Phys.\ 8 (2017),
+  arXiv:1709.05138; and \emph{Enumerating rigid sphere packings}, SIAM Review 58 (2016).
+\item A.~J.~Liu and S.~R.~Nagel, \emph{Jamming is not just cool any more}, Nature 396 (1998).
+\item J.~C.~Lagarias and C.~Zong, \emph{Mysteries in packing regular tetrahedra}, Notices AMS 59 (2012).
+\end{itemize}

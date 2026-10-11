@@ -27,7 +27,7 @@ In the proof we left out the error analysis of the limits, etc.
 Rogers showed a density bound coming from the regular simplex.
 \added{Precisely (C.~A.~Rogers, 1958): the density of any packing of unit balls in $\R^n$ is at most the
 fraction of a regular simplex of edge length $2$ that is covered by the $n+1$ unit balls centred at its
-vertices. For $n=2$ this is exactly $\pi/\sqrt{12}$, so Rogers' bound generalizes Thue's theorem.}
+vertices. For $n=2$ this is exactly $\pi/\sqrt{12}$, so Rogers' bound generalizes Thue's theorem. See Section~\ref{L2:sec:rogers} for a sketch.}
 \end{remark}
 
 % ---------------------------------------------------------------------------
@@ -444,7 +444,115 @@ One can do this explicitly for balls too; we are also still missing a boundary t
 
 \begin{remark}
 \added{For $n=2$ the bound is the trivial $\dens\le1$; for $n=3$ it gives $5/(4\sqrt2)\approx0.884$, compared
-with $\pi/\sqrt{18}\approx0.7405$ for the FCC packing (Rogers' simplex bound gives $\approx0.7797$).
+with $\pi/\sqrt{18}\approx0.7405$ for the FCC packing (Rogers' simplex bound gives $\approx0.7796$).
 Blichfeldt's bound decays like $2^{-0.5n}$ up to polynomial factors; Rankin (1947) improved the constant,
 and Kabatiansky--Levenshtein (1978) improved the exponent to $2^{-0.599n}$.}
+\end{remark}
+
+%======================================================================
+\section{Extension: Rogers' simplex bound}
+\label{L2:sec:rogers}
+
+\begin{addedblock}
+This section is an added extension, not in the handwritten notes. It is set in black for readability.
+\end{addedblock}
+
+The remark in Section~\ref{L2:sec:thue} mentioned Rogers' bound. Here is what it says and why it is
+true, at the level of a sketch. It is the natural sequel to Blichfeldt: instead of spreading the mass of
+each ball over a larger region, we cut space into pieces adapted to the packing and bound the density
+in each piece.
+
+\paragraph{The tightest local cluster.} The densest possible arrangement of $n+1$ unit balls is a
+regular simplex of edge $2$ with a ball at each vertex: every pair touches. Let
+\[
+  \sigma_n=\frac{\vol\big(S\cap\bigcup_{v}\Ball(v,1)\big)}{\vol S}
+\]
+be the fraction of such a simplex $S$ that is covered by its $n+1$ vertex balls. If $\omega_n$ is the
+fraction of the unit ball lying in the cone at a vertex of $S$ (its normalized solid angle), then
+\[
+  \sigma_n=\frac{(n+1)\,\omega_n\vol\Ball^n}{\vol S},\qquad \vol S=\frac{2^{n/2}\sqrt{n+1}}{n!}.
+\]
+
+\begin{theorem}[Rogers 1958]\label{L2:thm:rogers}
+The upper density of any packing of unit balls in $\R^n$ is at most $\sigma_n$.
+\end{theorem}
+
+If regular simplices tiled space, Rogers' bound would be attained. They do for $n=2$, where
+$\sigma_2=\pi/\sqrt{12}$ and the theorem is Thue's. They do not for $n\ge3$: already in $\R^3$ the
+dihedral angle $\arccos\frac13$ does not divide $2\pi$, and twenty regular tetrahedra do not make an
+icosahedron (Interlude~E). So for $n\ge3$ the bound is not attained (and the remark below records
+better bounds).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{rcccc}
+\toprule
+$n$ & Blichfeldt $\frac{n+2}{2^{n/2+1}}$ & Rogers $\sigma_n$ & best known packing & ratio best$/\sigma_n$\\
+\midrule
+$2$ & $1.0000$ & $0.9069$ & $0.9069$ ($A_2$) & $1.000$\\
+$3$ & $0.8839$ & $0.7796$ & $0.7405$ ($A_3$) & $0.950$\\
+$4$ & $0.7500$ & $0.6478$ & $0.6169$ ($D_4$) & $0.952$\\
+$5$ & $0.6187$ & $0.5257$ & $0.4653$ ($D_5$) & $0.885$\\
+$6$ & $0.5000$ & $0.4192$ & $0.3729$ ($E_6$) & $0.890$\\
+$7$ & $0.3977$ & $0.3299$ & $0.2953$ ($E_7$) & $0.895$\\
+$8$ & $0.3125$ & $0.2568$ & $0.2537$ ($E_8$) & $0.988$\\
+\bottomrule
+\end{tabular}
+\end{center}
+(The values of $\sigma_n$ were computed from the formula above, with $\omega_n$ evaluated as a Gaussian
+orthant probability: $\omega_n$ is the probability that $n+1$ independent standard normals $Y_0,\dots,Y_n$
+satisfy $Y_i>\bar Y$ for $i=1,\dots,n$.) Note how close the root lattices come, especially $A_3$, $D_4$ and $E_8$; the end
+of Lecture~6 takes up why.
+
+\paragraph{Sketch of the proof.}
+\begin{enumerate}[label=(\arabic*)]
+\item \emph{Reduce to Voronoi cells.} As in Lecture~1, we may assume the packing is saturated, and the
+  density is (in the limit) an average of $\vol\Ball/\vol V(x)$ over the Voronoi cells $V(x)$. So it
+  is enough to cut each cell into pieces, each of which is covered by the ball $\Ball(x,1)$ in a
+  fraction at most $\sigma_n$.
+\item \emph{Cut each cell into orthoschemes.} Pick a flag of faces of $V(x)$,
+  $F_{n-1}\supset F_{n-2}\supset\dots\supset F_0$, with $\dim F_k=k$. Let $p_k$ be the foot of the
+  perpendicular from $x$ to the affine hull of $F_k$. The simplex $\conv(x,p_{n-1},\dots,p_0)$ is an
+  \emph{orthoscheme}: the steps $x\to p_{n-1}\to p_{n-2}\to\dots\to p_0$ are mutually orthogonal. Over all
+  flags these simplices tile $V(x)$, at least when each foot $p_k$ lies in its face. (In general some
+  pieces must be counted with signs, and handling this is part of Rogers' work.)
+\item \emph{Each step is long.} A $k$-face $F_k$ consists of points equidistant from $x$ and at least
+  $n-k$ further centres $y_1,\dots,y_{n-k}$, which can be chosen with $y_i-x$ linearly independent so
+  that $\operatorname{aff}F_k$ is exactly the set of points equidistant from $x,y_1,\dots,y_{n-k}$. The foot $p_k$ is the circumcentre of the
+  $(n-k)$-simplex $x,y_1,\dots,y_{n-k}$, so $\abs{x-p_k}$ is its circumradius. All its edges are at
+  least $2$, and this forces the circumradius to be large. If $j+1$ points $v_0,\dots,v_j$ lie on a
+  sphere of radius $r$ about the origin, then
+  $\sum_{a<b}\abs{v_a-v_b}^2=(j+1)\sum_a\abs{v_a}^2-\abs{\sum_av_a}^2\le(j+1)^2r^2$. There are $j(j+1)/2$
+  pairs, so some distance satisfies $\abs{v_a-v_b}^2\le 2(j+1)r^2/j$. Since every distance is at least $2$,
+  \[
+    \abs{x-p_k}\ \ge\ R_{n-k},\qquad R_j=\sqrt{\frac{2j}{j+1}},
+  \]
+  with equality for the regular simplex. Here $R_j$ is the circumradius of the regular $j$-simplex of edge $2$. In particular $R_1=1$, since a facet is at
+  distance at least $1$, half the minimum distance $2$.
+\item \emph{Monotonicity (the heart of the matter).} Among all orthoschemes with
+  $\abs{x-p_k}\ge R_{n-k}$ for every $k$, the fraction covered by $\Ball(x,1)$ is largest when all of these
+  are equalities. That extremal orthoscheme is one of the $(n+1)!$ congruent pieces of the barycentric
+  subdivision of the regular simplex of edge $2$, so its covered fraction is exactly $\sigma_n$.
+  Pushing a vertex of the orthoscheme outward adds volume that is farther from $x$, where the ball is
+  thinner. Making this precise is Rogers' lemma, the technical core of his paper.
+\end{enumerate}
+
+For $n=2$ the picture is Thue's proof from Lecture~1, cut more finely. The faces are an edge at
+distance $\ge1$ and a vertex at distance $\ge2/\sqrt3$, the extremal orthoscheme is the $30$--$60$--$90$
+triangle that is one sixth of the equilateral triangle, and its covered fraction is $\pi/\sqrt{12}$.
+
+\begin{remark}
+\begin{enumerate}[nosep]
+\item Asymptotically $\sigma_n\sim\frac{n}{e}\,2^{-n/2}$ (Rogers; Daniels). This beats Blichfeldt's
+  $\frac{n+2}{2}2^{-n/2}$ only by the constant factor $2/e$. The Kabatiansky--Levenshtein bound of
+  Lecture~3 is exponentially better in high dimensions.
+\item The Fejes T\'oth inequality of Section~\ref{L2:sec:FT} is the same idea on the sphere $\Sph^2$.
+  B\"or\"oczky (Acta Math.\ Acad.\ Sci.\ Hungar.\ 32 (1978)) extended the simplex bound to spheres and
+  hyperbolic spaces of every dimension.
+\item The Cohn--Elkies linear programming bound (Interlude~B) was, when it appeared (2003), the best known
+  bound in dimensions $4$ through $36$, so in particular it improves on Rogers there. In dimensions $8$
+  and $24$ it is sharp (Viazovska; Cohn--Kumar--Miller--Radchenko--Viazovska).
+\item References: C.~A.~Rogers, \emph{The packing of equal spheres}, Proc.\ London Math.\ Soc.\ (3) 8
+  (1958) 609--620; Conway--Sloane, \emph{Sphere Packings, Lattices and Groups}, Ch.~1.
+\end{enumerate}
 \end{remark}

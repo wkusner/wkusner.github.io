@@ -674,6 +674,108 @@ On the same page there is a computation: with $a^2b=1$,
 \unclear{purpose unclear; maybe an ellipsoid-packing example}
 
 % ------------------------------------------------------------
+%======================================================================
+\section{Extension: why root lattices pack well (in small dimensions)}
+\label{L04b:sec:rootdense}
+
+\begin{addedblock}
+This section is an added extension, not in the handwritten notes. It is set in black for readability.
+\end{addedblock}
+
+Lecture~4 opened with two motivations: root lattices give good packings in low dimensions, and such
+simple constructions do not extend to high dimensions. Here are some reasons for both.
+
+\paragraph{1. The density is written in the diagram.} Normalize the roots to have norm $2$. Then the
+Gram matrix of the simple roots is the Cartan matrix $C$, the shortest vectors are the roots, and
+\[
+  \dens(\text{root lattice})=\frac{\vol\Ball^n\big(1/\sqrt2\big)}{\sqrt{\det C}}
+\]
+(Interlude~A, Section~\ref{LIE:sec:readoff}). A dense lattice needs a large minimum and a small
+covolume. Root lattices have both: the minimum is fixed at $\sqrt2$, and $\det C$ is tiny, namely
+$n+1$ for $A_n$, $4$ for $D_n$, and $3,2,1$ for $E_6,E_7,E_8$. Against Rogers' simplex bound
+(Section~\ref{L2:sec:rogers}):
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{clcccc}
+\toprule
+$n$ & lattice & $\det C$ & kissing number $\abs{\Delta}$ & density & density$/\sigma_n$\\
+\midrule
+$2$ & $A_2$ & $3$ & $6$ & $0.9069$ & $1.000$\\
+$3$ & $A_3$ & $4$ & $12$ & $0.7405$ & $0.950$\\
+$4$ & $D_4$ & $4$ & $24$ & $0.6169$ & $0.952$\\
+$5$ & $D_5$ & $4$ & $40$ & $0.4653$ & $0.885$\\
+$6$ & $E_6$ & $3$ & $72$ & $0.3729$ & $0.890$\\
+$7$ & $E_7$ & $2$ & $126$ & $0.2953$ & $0.895$\\
+$8$ & $E_8$ & $1$ & $240$ & $0.2537$ & $0.988$\\
+\bottomrule
+\end{tabular}
+\end{center}
+These are the densest lattices in their dimensions, and their kissing numbers $\abs{\Delta}$ are the
+largest possible for lattices there. Among all arrangements of touching balls, $6,12,24,240$ are known to
+be optimal in dimensions $2,3,4,8$; for $n=5,6,7$ the values $40,72,126$ are only the best known.
+
+\paragraph{2. The roots are balanced: eutaxy from symmetry.} Let
+$S=\sum_{\alpha\in\Delta}\alpha\alpha^T$. For any $w$ in the Weyl group, $w$ permutes $\Delta$, so
+$wSw^{-1}=S$. For an irreducible root system the Weyl group acts irreducibly on $\R^n$, so each
+eigenspace of the symmetric matrix $S$ is a nonzero $W$-invariant subspace and hence all of $\R^n$.
+Thus $S=cI$, and taking traces gives $c=2\abs{\Delta}/n$:
+\[
+  \sum_{\alpha\in\Delta}\ip{\alpha}{x}^2=\frac{2\abs{\Delta}}{n}\,\abs{x}^2\qquad\text{for all }x.
+\]
+The minimal vectors pull equally in every direction (they form a \emph{spherical $2$-design}). In
+Voronoi's language the lattice is \emph{strongly eutactic}.
+
+\paragraph{3. The roots are plentiful: perfection.} A lattice is \emph{perfect} if its minimal vectors
+determine its Gram matrix: the quadratic forms $x\mapsto\ip{\alpha}{x}^2$, $\alpha$ minimal, span the whole
+$\frac{n(n+1)}2$-dimensional space of quadratic forms. For $A_n$, inside the hyperplane $\sum x_i=0$ of
+$\R^{n+1}$, this is a pleasant exercise in graph Laplacians. A quadratic form on the hyperplane is the
+same thing as a symmetric $(n+1)\times(n+1)$ matrix $Q$ with zero row sums, and every such matrix is a
+weighted Laplacian,
+\[
+  Q=\sum_{i<j}(-q_{ij})\,(e_i-e_j)(e_i-e_j)^T,
+\]
+that is, a combination of the forms $(x_i-x_j)^2=\ip{e_i-e_j}{x}^2$ attached to the positive roots. So
+$A_n$ is perfect, with exactly as many positive roots, $\frac{n(n+1)}2$, as the dimension requires.
+$D_n$ ($n\ge4$), $E_6$, $E_7$ and $E_8$ are perfect too (Coxeter, \emph{Extreme forms}, 1951).
+
+\begin{theorem}[Voronoi 1908]\label{L04b:thm:voronoi}
+A lattice is \emph{extreme}, that is, a local maximum of the packing density among lattices, if and
+only if it is perfect and eutactic. (The maximum is then strict up to similarity, since perfect lattices
+are isolated.)
+\end{theorem}
+
+\noindent So \emph{every irreducible root lattice is a local optimum for lattice packing}. Symmetry
+(irreducibility of $W$) gives eutaxy, and abundance of roots gives perfection. Voronoi also showed that
+each dimension has only finitely many perfect forms up to similarity. There are $1,1,1,2,3,7,33,10916$ of
+them in dimensions $1,\dots,8$ (the last count is due to Dutour Sikiri\'c, Sch\"urmann and Vallentin,
+2007), so in principle the densest lattice can be found by a finite search. In dimension $2$ the only
+perfect form is the hexagonal $A_2$, which recovers Lagrange's theorem from Lecture~1.
+
+\paragraph{4. Why it stops working.} Two numbers are pinned down by the classification, and both are
+fatal in high dimension.
+\begin{itemize}
+\item \emph{Too few roots.} Root lattices have $O(n^2)$ minimal vectors ($D_n$ has $2n(n-1)$), but
+  the best kissing numbers grow exponentially in $n$. There is only a finite list of exceptional
+  diagrams, so there is only a finite budget of exceptional symmetry.
+\item \emph{An integral lattice cannot spread out.} The minimum stays at $\sqrt2$ while $\det C$ stays
+  bounded, so Hermite's invariant $\min^2/\det^{1/n}=2/(\det C)^{1/n}$ stays near $2$. The best
+  lattices have Hermite invariant growing linearly in $n$ (Minkowski--Hlawka; Interlude~B). Concretely,
+  $\dens(D_n)=\vol\Ball^n(1/\sqrt2)/2$ decays like $(\pi e/n)^{n/2}$, up to polynomial factors. From $n=28$ on it is below even the trivial
+  $2^{-n}$ of Lecture~1.
+\end{itemize}
+
+\paragraph{5. Filling the holes.} The first repair is to fill the deep holes, as in the construction of
+$E_8$. The deep holes of $D_n$ include $h=(\frac12,\dots,\frac12)$, at distance $\sqrt n/2$ from the
+lattice. For even $n\ge8$, $D_n^+=D_n\cup(D_n+h)$ is again a lattice with minimum $\sqrt2$, now of
+covolume $1$, so
+\[
+  \dens(D_n^+)=\vol\Ball^n\big(1/\sqrt2\big)\qquad(n\ge8\text{ even}).
+\]
+At $n=8$ this is $E_8$, and the added balls exactly touch the old ones. Gluing (and its cousin,
+lamination) is how many of the best known lattices up to dimension $24$ are built, culminating in the Leech
+lattice. But it only postpones the decay: $\dens(D_{10}^+)\approx0.0797$, while the best known lattice in
+dimension $10$, the laminated lattice $\Lambda_{10}$, has density about $0.0920$.
+
 \section*{Projects and quiz}
 \orig{admin (date, room) omitted}
 Ideas for projects:

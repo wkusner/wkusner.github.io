@@ -1,0 +1,1138 @@
+% MAT670 -- Interlude F (placed last, after Interlude E): computation and certified proof.
+% Entirely new material (not in the handwritten notes). Labels prefixed COMP:.
+% Scripts referred to in the text live in /home/claude/mat670/code/.
+
+\chapter[Interlude F: Computation and proof]{Interlude F: Computation and certified proof}
+\label{COMP:ch}
+
+\begin{addedblock}
+This interlude is new: it is not in the handwritten notes. It collects the computational ideas that
+sit behind several results quoted in the course (the Kepler conjecture, the Tammes problem for $13$
+and $14$ points, the kissing numbers in dimensions $4$, $8$ and $24$) and tries them out on small
+problems that the notes already contain. To keep it readable it is set in black; all of it should be
+read as added material. The short Python programs mentioned below are in the directory
+\texttt{code/} next to these notes.
+\end{addedblock}
+
+Look again at the proof of Thue's theorem in Lecture~1. It begins with an infinite object, a
+saturated packing of the plane, and it ends with a statement about a single triangle
+(Lemma~\ref{L1:lem:triangle-density}, in the form its proof actually uses): a triangle with sides at
+least $2$ and circumradius less than $2$ has area at least $\sqrt3$. Everything in between is bookkeeping: a Delaunay triangulation cuts the
+packing into pieces, a weighted average reduces the density of the whole to the density of the pieces,
+and the boundary terms disappear in the limit. The Fejes T\'oth inequality of Lecture~2 has the same
+shape. A triangulation of the sphere is cut into $2n-4$ spherical triangles, Euler's formula counts
+them, and one inequality about spherical triangles finishes the job.
+
+This is the shape of almost every sharp result in the subject.
+\begin{enumerate}[label=(\arabic*)]
+\item \emph{Reduce} a continuum of configurations to finitely many combinatorial \emph{cases}, indexed by
+  a geometric object: a triangulation, a contact graph, a Delaunay star, a perfect form.
+\item \emph{Prune} the cases by cheap necessary conditions: angle sums, areas, Euler's formula, planarity.
+\item \emph{Settle} each surviving case by an inequality (it cannot occur, or it is worse than the
+  candidate) or by solving equations (it is the candidate).
+\item \emph{Certify} every step, so that the proof can be checked by somebody who does not trust the
+  person, or the program, that found it.
+\end{enumerate}
+In Lecture~1 there was one case and the inequality took two lines. In Hales's proof of the Kepler
+conjecture there are thousands of cases and tens of thousands of inequalities. This interlude is about
+what happens in between: how cases are indexed and enumerated (Section~\ref{COMP:sec:index}), how
+searches are organized (Section~\ref{COMP:sec:bb}), which pieces of linear algebra and optimization do
+the work (Sections~\ref{COMP:sec:matrix}--\ref{COMP:sec:kkt}), what algebra can and cannot decide
+(Section~\ref{COMP:sec:poly}), and how a computer can produce a \emph{proof} rather than a number
+(Section~\ref{COMP:sec:verify}). In Section~\ref{COMP:sec:thue} we put the pieces together and prove
+Thue's triangle lemma by a certified computer search.
+
+%======================================================================
+\section{The shape of a computer-assisted proof}
+\label{COMP:sec:shape}
+
+Here are the problems from the course, arranged by the four steps above.
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{tabular}{p{0.19\textwidth}p{0.23\textwidth}p{0.27\textwidth}p{0.18\textwidth}}
+\toprule
+problem & cases indexed by & each case settled by & reference\\
+\midrule
+disks in $\R^2$ & Delaunay triangles & area $\ge\sqrt3$ & Lecture~1\\
+$N$ caps on $\Sph^2$ & triangulations, Euler & spherical area inequality & Lecture~2\\
+critical points of $\rho$ & balanced contact graphs & force balance (an LP) & Lectures~10--11\\
+Tammes, $N{=}13,14$ & irreducible graphs & LP and inequalities & Musin--Tarasov\\
+kissing, $n=8,24$ & --- (one case) & one polynomial & Section~\ref{COMP:sec:matrix}\\
+Kepler, $\R^3$ & tame plane graphs & nonlinear inequalities, LPs & Hales\\
+lattices in $\R^n$ & perfect forms & Voronoi's algorithm & Lect.~6, Int.~B\\
+\bottomrule
+\end{tabular}
+\end{center}
+Two remarks before we start. First, the line between ``by hand'' and ``by computer'' is not where one
+might think. The kissing number $240$ in dimension $8$ is proved by a single polynomial, which a
+computer found but which anyone can check with pencil and paper (Example~\ref{COMP:ex:240}). On the
+other hand, the enumeration of all tame graphs for the Kepler conjecture cannot be checked by hand at
+all. Second, what matters in the end is not whether a computer was used but whether every step
+produced a \emph{certificate}: a finite object (a list of graphs, a polynomial with rational
+coefficients, a collection of boxes, a vector of weights) together with a simple procedure that checks
+it. Most of this interlude is about which certificates are available and how to produce them.
+
+%======================================================================
+\section{Indexing cases by geometric objects}
+\label{COMP:sec:index}
+
+\subsection{Contact graphs}
+Lectures~10 and~11 attached to a configuration $X=(x_1,\dots,x_N)$ on $\Sph^2$ with minimal distance
+$\theta=\rho(X)$ its \emph{contact graph} (Definition~\ref{L11:def:contact}), with edges the geodesic arcs of
+length $\theta$. Two simple lemmas turn this graph into a good index for case analysis.
+
+\begin{lemma}[Contact graphs are planar]\label{COMP:lem:planar}
+Let $0<\theta<\pi$ and let $X\subset\Sph^2$ have all pairwise distances $\ge\theta$. Then two contact
+edges (arcs of length $\theta$ between points of $X$) can meet only at a common endpoint.
+\end{lemma}
+
+\begin{proof}
+Two minor arcs from a common endpoint $a$ lie on great circles through $a$, which meet again only at
+$-a$, so they meet only at $a$. Suppose the arcs $[a,b]$ and $[c,d]$ have four distinct endpoints and
+cross at a point $p$. By the triangle inequality,
+\[
+  d(a,c)+d(b,d)\le d(a,p)+d(p,c)+d(b,p)+d(p,d)=d(a,b)+d(c,d)=2\theta .
+\]
+Both terms on the left are $\ge\theta$, so both equal $\theta$ and both triangle inequalities are
+equalities. Since $d(a,c)=\theta<\pi$, equality in $d(a,c)\le d(a,p)+d(p,c)$ means that $p$ lies on the
+minor arc from $a$ to $c$. That arc and $[a,b]$ leave $a$ in the same direction (towards $p$) and both
+have length $\theta$, so $c=b$, a contradiction.
+\end{proof}
+
+\begin{lemma}[Angle lemma]\label{COMP:lem:angle}
+Let $u,v,w\in\Sph^2$ with $d(u,v)=d(v,w)=\theta\in(0,\pi)$ and $d(u,w)\ge\theta$. Then the angle
+$\varphi$ at $v$ between the arcs $vu$ and $vw$ satisfies $\varphi\ge\alpha(\theta)$, where
+\[
+  \cos\alpha(\theta)=\frac{\cos\theta}{1+\cos\theta}
+\]
+is the angle of the equilateral spherical triangle of side $\theta$. Consequently a point of $X$ with
+$k\ge2$ contacts has $k\,\alpha(\theta)\le2\pi$.
+\end{lemma}
+
+\begin{proof}
+By the spherical law of cosines, $\cos d(u,w)=\cos^2\theta+\sin^2\theta\cos\varphi$. The hypothesis
+$\cos d(u,w)\le\cos\theta$ gives
+$\cos\varphi\le(\cos\theta-\cos^2\theta)/\sin^2\theta=\cos\theta/(1+\cos\theta)$. The $k$ angles between
+consecutive contact arcs at a point add up to $2\pi$.
+\end{proof}
+
+For $\theta=\pi/3$ this gives $\cos\alpha=\frac13$: \emph{at most five contacts}, because
+$5\arccos\frac13<2\pi<6\arccos\frac13$. This is the same number $\arccos\frac13\approx70.53^\circ$ as the
+dihedral angle of the regular tetrahedron in Section~\ref{TET:sec}, and for the same reason. For
+$\theta=\pi/2$ we get $\alpha=\pi/2$ and at most four contacts.
+
+\subsection{A worked example: the critical configurations of five points}
+Exercise~\ref{L10:ex:classify} of Lecture~10 asked for the classification of balanced configurations,
+and the notes did $N=3$ and $N=4$ by hand. Let us do $N=5$ the way a computer would.
+
+Let $X$ be a critical configuration of $\rho$ on $\Conf(5,\Sph^2)$, with balancing weights $w\ge0$, not
+all zero, as in Theorem~\ref{L11:thm:forcebalance}. Let $S$ be the \emph{stressed graph}: the edges with
+$w_e>0$, together with all five points (points without stressed edges are isolated vertices of $S$;
+they feel no force). We look for all graphs that can occur as $S$, using four rules.
+\begin{enumerate}[label=\textbf{R\arabic*},leftmargin=*]
+\item $S$ is planar. (Lemma~\ref{COMP:lem:planar}, since $\theta\le\max\rho<\pi$.)
+\item No vertex has degree $1$. (A single positive force cannot balance.)
+\item No vertex of degree $2$ lies in a triangle of $S$. (If $v$ has exactly two stressed edges, the two
+  forces are opposite, so the neighbours $u,w$ lie on a great circle on either side of $v$ and
+  $d(u,w)=\min(2\theta,2\pi-2\theta)$. If also $d(u,w)=\theta$, then $\theta=2\pi/3$. But four unit vectors
+  with pairwise inner products $\le-\frac12$ would have $\abs{x_1+\dots+x_4}^2\le4-12\cdot\frac12<0$.)
+\item If two vertices $a,b$ have three common neighbours, then $a,b$ are not adjacent, and their
+  common neighbours span no triangle. (The circles of radius $\theta$ about $a$ and $b$ meet in at most two
+  points unless they coincide, which forces $b=-a$ and $\theta=\pi/2$. Then $d(a,b)=\pi\ne\theta$, and the
+  common neighbours lie on the equator between $a$ and $b$, where three points cannot be pairwise
+  $\pi/2$ apart.)
+\end{enumerate}
+The program \texttt{code/contact5.py} runs through the $34$ graphs on five vertices (from the
+\emph{Atlas of Graphs} built into the \texttt{networkx} library). One is empty; R1 removes $K_5$; R2 removes $18$;
+R3 removes $7$ and R4 removes one more. Six graphs survive (Figure~\ref{COMP:fig:N5}).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95,
+  v/.style={circle,fill,inner sep=1.15pt}, f/.style={circle,draw,fill=white,inner sep=1.15pt},
+  lab/.style={font=\scriptsize,align=center}]
+  % row 1
+  \begin{scope}[shift={(0,0)}]
+    \node[v] (a) at (0,0.6) {}; \node[v] (b) at (-0.55,-0.35) {}; \node[v] (c) at (0.55,-0.35) {};
+    \draw (a)--(b)--(c)--(a); \node[f] at (-0.7,0.55) {}; \node[f] at (0.7,0.55) {};
+    \node[lab] at (0,-0.95) {$C_3$\\ R3};
+  \end{scope}
+  \begin{scope}[shift={(2.1,0)}]
+    \node[v] (a) at (-0.45,0.45) {}; \node[v] (b) at (0.45,0.45) {}; \node[v] (c) at (0.45,-0.45) {}; \node[v] (d) at (-0.45,-0.45) {};
+    \draw[addcol,thick] (a)--(b)--(c)--(d)--(a); \node[f] at (0,0) {};
+    \node[lab] at (0,-0.95) {$C_4$\\ \textbf{realized}, $\pi/2$};
+  \end{scope}
+  \begin{scope}[shift={(4.2,0)}]
+    \node[v] (a) at (0,0.6) {}; \node[v] (b) at (-0.45,0) {}; \node[v] (c) at (0.45,0) {}; \node[v] (d) at (0,-0.6) {};
+    \draw (a)--(b)--(d)--(c)--(a) (b)--(c); \node[f] at (0.75,0.55) {};
+    \node[lab] at (0,-0.95) {diamond\\ R3};
+  \end{scope}
+  \begin{scope}[shift={(6.3,0)}]
+    \foreach \k in {0,...,4} \node[v] (p\k) at (90+72*\k:0.6) {};
+    \draw[addcol,thick] (p0)--(p1)--(p2)--(p3)--(p4)--(p0);
+    \node[lab] at (0,-0.95) {$C_5$\\ \textbf{realized}, $2\pi/5$};
+  \end{scope}
+  \begin{scope}[shift={(8.4,0)}]
+    \node[v] (a) at (0,0.62) {}; \node[v] (b) at (-0.58,-0.38) {}; \node[v] (c) at (0.58,-0.38) {}; \node[v] (d) at (0,0) {};
+    \draw (a)--(b)--(c)--(a) (d)--(a) (d)--(b) (d)--(c); \node[f] at (0.72,0.55) {};
+    \node[lab] at (0,-0.95) {$K_4$\\ free point};
+  \end{scope}
+  \begin{scope}[shift={(10.5,0)}]
+    \node[v] (o) at (0,0) {}; \node[v] (a) at (-0.6,0.42) {}; \node[v] (b) at (-0.6,-0.42) {};
+    \node[v] (c) at (0.6,0.42) {}; \node[v] (d) at (0.6,-0.42) {};
+    \draw (o)--(a)--(b)--(o)--(c)--(d)--(o);
+    \node[lab] at (0,-0.95) {bowtie\\ R3};
+  \end{scope}
+  \begin{scope}[shift={(12.6,0)}]
+    \node[v] (a) at (-0.4,-0.5) {}; \node[v] (b) at (0.4,-0.5) {}; \node[v] (c) at (0.4,0.12) {}; \node[v] (d) at (-0.4,0.12) {};
+    \node[v] (e) at (0,0.62) {};
+    \draw (a)--(b)--(c)--(d)--(a) (c)--(e)--(d);
+    \node[lab] at (0,-0.95) {house\\ R3};
+  \end{scope}
+  % row 2
+  \begin{scope}[shift={(0,-2.5)}]
+    \node[v] (n) at (0,0.6) {}; \node[v] (s) at (0,-0.6) {};
+    \node[v] (a) at (-0.6,0) {}; \node[v] (b) at (0,0) {}; \node[v] (c) at (0.6,0) {};
+    \draw[addcol,thick] (n)--(a)--(s) (n)--(b)--(s) (n)--(c)--(s);
+    \node[lab] at (0,-0.95) {$K_{2,3}$\\ \textbf{realized}, $\pi/2$};
+  \end{scope}
+  \begin{scope}[shift={(2.1,-2.5)}]
+    \node[v] (n) at (0,0.6) {}; \node[v] (s) at (0,-0.6) {};
+    \node[v] (a) at (-0.6,0) {}; \node[v] (b) at (0.28,0) {}; \node[v] (c) at (0.72,0) {};
+    \draw (n)--(a)--(s) (n)--(b)--(s) (n)--(c)--(s) (n)--(s);
+    \node[lab] at (0,-0.95) {$K_{1,1,3}$\\ R3};
+  \end{scope}
+  \begin{scope}[shift={(4.2,-2.5)}]
+    \node[v] (t) at (0,0.6) {}; \node[v] (a) at (-0.72,-0.3) {}; \node[v] (b) at (-0.25,-0.45) {};
+    \node[v] (c) at (0.25,-0.45) {}; \node[v] (d) at (0.72,-0.3) {};
+    \draw (a)--(b)--(c)--(d) (t)--(a) (t)--(b) (t)--(c) (t)--(d);
+    \node[lab] at (0,-0.95) {gem\\ R3};
+  \end{scope}
+  \begin{scope}[shift={(6.3,-2.5)}]
+    \node[v] (n) at (0,0.6) {}; \node[v] (s) at (0,-0.6) {};
+    \node[v] (a) at (-0.6,0) {}; \node[v] (b) at (0,0) {}; \node[v] (c) at (0.6,0) {};
+    \draw (n)--(a)--(s) (n)--(b)--(s) (n)--(c)--(s) (a)--(b);
+    \node[lab] at (0,-0.95) {$K_{2,3}+e$\\ weights};
+  \end{scope}
+  \begin{scope}[shift={(8.4,-2.5)}]
+    \node[v] (a) at (0,0.62) {}; \node[v] (b) at (-0.55,-0.3) {}; \node[v] (c) at (0.55,-0.3) {}; \node[v] (d) at (0,0.02) {};
+    \node[v] (e) at (0,-0.68) {};
+    \draw (a)--(b)--(c)--(a) (d)--(a) (d)--(b) (d)--(c) (e)--(b) (e)--(c);
+    \node[lab] at (0,-0.95) {$K_4$ + ear\\ R3};
+  \end{scope}
+  \begin{scope}[shift={(10.5,-2.5)}]
+    \node[v] (a) at (-0.45,0.45) {}; \node[v] (b) at (0.45,0.45) {}; \node[v] (c) at (0.45,-0.45) {}; \node[v] (d) at (-0.45,-0.45) {};
+    \node[v] (o) at (0,0) {};
+    \draw (a)--(b)--(c)--(d)--(a) (o)--(a) (o)--(b) (o)--(c) (o)--(d);
+    \node[lab] at (0,-0.95) {$W_4$\\ weights};
+  \end{scope}
+  \begin{scope}[shift={(12.6,-2.5)}]
+    \node[v] (a) at (-0.62,-0.4) {}; \node[v] (b) at (0.62,-0.4) {}; \node[v] (c) at (0,0.62) {};
+    \node[v] (o) at (0,0) {}; \node[v] (e) at (0,-0.75) {};
+    \draw (a)--(b)--(c)--(a) (o)--(a) (o)--(b) (o)--(c) (e)--(a) (e)--(b);
+    \draw (e) .. controls (1.15,-0.8) and (0.95,0.6) .. (c);
+    \node[lab] at (0,-0.95) {$K_5-e$\\ R4};
+  \end{scope}
+\end{tikzpicture}
+\caption{The $14$ graphs on five vertices that pass R1 and R2 (hollow: a point without stressed
+contacts). R3 and R4 remove eight of them. Of the six that remain, three are removed by a one-line
+geometric argument and three (blue) are realized by critical configurations.}
+\label{COMP:fig:N5}
+\end{figure}
+
+Now the last, geometric, step, which here is easy enough to do by hand.
+\begin{itemize}
+\item $K_4$ plus a point: four pairwise equidistant points form a regular tetrahedron, so
+  $x_1+x_2+x_3+x_4=0$. For any fifth point $y$ the four numbers $\ip y{x_i}$ add up to $0$, so one of them is
+  $\ge0$ and $d(y,x_i)\le\pi/2<\theta$.
+\item $W_4$: by R4 applied to the two pairs of opposite rim vertices, $\theta=\pi/2$, the rim is a square on a
+  great circle and the hub is its pole. At a rim vertex the two rim forces are opposite and the force
+  towards the hub is perpendicular to both, so its weight must vanish.
+\item $K_{2,3}+e$: the same argument at an endpoint of the extra edge (north and south forces opposite, the
+  extra force along the equator).
+\item The survivors are realized: $C_5$ by the regular pentagon on a great circle ($\theta=2\pi/5$); $C_4$
+  by a square on a great circle with the fifth point at a pole ($\theta=\pi/2$); $K_{2,3}$ by the two
+  poles and three points on the equator with all gaps in $[\pi/2,\pi)$, as in Figure~\ref{TOP:fig:N5} of
+  Interlude~D. For $C_5$ and $C_4$ equal weights balance. For $K_{2,3}$ put the same weight $w_k$ on both
+  edges at the $k$-th equatorial point (so the equatorial points balance); since all gaps are less than
+  $\pi$, the three directions at a pole are not in a closed half-plane, so there are $w_1,w_2,w_3>0$
+  balancing the poles. (Equal weights work only for gaps $2\pi/3$.)
+\end{itemize}
+
+\begin{proposition}\label{COMP:prop:N5}
+The critical values of $\rho$ on $\Conf(5,\Sph^2)$ are $2\pi/5$ and $\pi/2$. At $2\pi/5$ the critical
+configurations are the regular pentagons on great circles; at $\pi/2$ they are the configurations with
+two antipodal points and three points on the equator between them, with all gaps $\ge\pi/2$.
+\end{proposition}
+
+Together with Lecture~11 this is the complete list for $N\le5$. The lowest critical value is $2\pi/N$,
+as predicted by the Kusner--Kusner--Lagarias--Shlosman theorem quoted there. For $N=6$ the same rules
+leave many more graphs, and the geometric step needs actual computation: one has to solve, for each
+graph, the equations ``all edges have length $\theta$, all non-edges are longer, the forces balance''
+(Section~\ref{COMP:sec:poly}). That is the general pattern.
+
+\subsection{The same idea at full scale}
+\paragraph{Tammes for $N=13,14$.} The Tammes problem asks for $\max\rho$. Musin and Tarasov call a
+contact graph \emph{irreducible} (or jammed) if no single point can be shifted so as to increase its
+distance to all its neighbours and no ``Danzer flip'' is possible, and they show that for $N>6$ the
+contact graph of an optimal configuration is irreducible. The
+contact graph of an irreducible configuration is planar, every vertex has degree $0$, $3$, $4$ or $5$
+(the upper bound is Lemma~\ref{COMP:lem:angle}), every face is a convex spherical polygon with sides $\theta$ and at most
+$\lfloor2\pi/\theta\rfloor$ vertices, and isolated vertices lie in faces with at least six vertices.
+These are the analogues of R1--R4. They enumerate the planar graphs with these properties by computer,
+discard most of them by area and angle inequalities (in the spirit of the proof of the Fejes T\'oth
+inequality: the face areas add up to $4\pi$, and each face has a minimal area depending on its
+shape), and treat the few survivors by optimization. This gives the optimal $13$- and $14$-point
+configurations (Section~\ref{COMP:sec:gallery}). Generating planar graphs with prescribed degrees and face
+sizes is itself a well-developed subject; the standard tool is \texttt{plantri} (Brinkmann and McKay).
+
+\paragraph{Kepler.} In Hales's proof the cases are indexed by \emph{tame plane graphs}. Around each ball
+one draws, on a sphere about its centre, the planar graph whose vertices are (the radial projections of)
+the neighbouring centres within a fixed distance ($2.51$ in the original proof, $2.52$ in the revised and formal
+one) and whose edges join neighbours that are close to each other. The local density (the \emph{score} of a
+\emph{decomposition star}, later replaced by \emph{Marchal cells}) is then bounded case by case.
+``Tame'' is a list of combinatorial conditions of the R1--R4 type (degree bounds, face sizes, a weight
+inequality), designed so that a non-tame graph is excluded by an easy argument. Hales's original archive
+had $5128$ tame graphs. When Nipkow, Bauer and Schultz re-did the enumeration inside the proof assistant
+Isabelle (2006), they confirmed that the archive was complete and found it redundant, reducing it to
+$2771$ graphs. The revised proof uses a larger archive of $18\,762$ graphs.
+
+\paragraph{Lattices.} For lattice packings the index is a \emph{perfect form}
+(Theorem~\ref{NT:gal:voronoi} of Interlude~B). Voronoi's algorithm walks from one perfect form to its
+neighbours across the facets of a polyhedral cone, so the enumeration is a graph search. Its cost is
+dominated by symmetry: one must decide whether a new form is equivalent to one already found. In
+dimension $8$ there are $10\,916$ perfect forms (Dutour Sikiri\'c, Sch\"urmann and Vallentin, 2007).
+
+%======================================================================
+\section{Branch and bound, and meet in the middle}
+\label{COMP:sec:bb}
+
+\subsection{Branch and bound}
+Suppose we want to show that a function $F$ on a compact set $K$ satisfies $F\ge0$, or to find
+$\max_KF$. \emph{Branch and bound} keeps a list of pieces of $K$ (boxes, cells, partial assignments).
+For each piece $B$ it computes a cheap \emph{bound}: a number $\underline F(B)\le\inf_BF$ (for the
+inequality) or $\overline F(B)\ge\sup_BF$ (for the maximum). If the bound settles the piece, the
+piece is discarded; otherwise it is \emph{branched}, that is, split into smaller pieces. Two
+properties make it work: the bounds must be \emph{valid} (never wrong), and they must become
+\emph{sharp} as the pieces shrink.
+
+\paragraph{Max-min problems.} The min-type function $\rho$ of Lecture~10 is well suited to this. Let
+$B_1,\dots,B_N\subset\Sph^2$ be small cells and suppose $x_i\in B_i$. Then
+\[
+  \rho(x_1,\dots,x_N)\ \le\ \overline\rho(B_1,\dots,B_N):=\min_{i<j}\ \max_{y\in B_i,\,z\in B_j}d(y,z),
+\]
+and the right side is a minimum of $\binom N2$ numbers that are easy to compute. If
+$\overline\rho<\rho(X_0)$ for a known configuration $X_0$, no configuration with $x_i\in B_i$ can be
+optimal. The difficulty is the number of pieces: with cells of size $\varepsilon$ there are about
+$(4\pi/\varepsilon^2)^N$ choices, and symmetry multiplies the work by $\abs{\SO(3)\times\Sigma_N}$-many
+copies of the same configuration. For the analogous problem of $n$ equal circles in a square,
+Mark\'ot and Csendes made this approach work with interval arithmetic and a clever elimination of
+regions (the ``method of active areas''), proving the optimal packings for $n=28,29,30$
+(about $50$, $50$ and $20$ hours of computing in 2005); Mark\'ot later did $n=31,32,33$ (2021). For
+the Tammes problem with $13$ points, the graph enumeration of Section~\ref{COMP:sec:index} is used
+instead: fixing the combinatorics first removes both the symmetry and most of the dimension.
+
+\paragraph{Branch and bound on integer points.} The same idea finds short vectors in a lattice. Let $G$ be
+a positive definite Gram matrix and $C>0$; we want all $x\in\Z^n$ with $x^TGx\le C$. Completing squares
+(the $LDL^T$ decomposition, in exact rational arithmetic) writes
+\[
+  x^TGx=\sum_{i=1}^nq_{ii}\Big(x_i+\sum_{j>i}q_{ij}x_j\Big)^2,\qquad q_{ii}>0 .
+\]
+Choose $x_n$ first: the $i=n$ term alone must be $\le C$, which leaves finitely many integers. Given
+$x_n$, the remaining budget bounds $x_{n-1}$, and so on. This is the algorithm of Fincke and Pohst
+(1985), a branch and bound whose pieces are the partial vectors $(x_k,\dots,x_n)$. Run on the Cartan
+matrix of $E_8$ (\texttt{code/fincke\_pohst.py}), it visits $739$ nodes and finds the $240$ roots; with
+$C=4$ it visits $5477$ nodes and finds the $2400$ nonzero vectors of norm at most $4$. The size of the
+tree depends heavily on the basis: a basis with long, nearly parallel vectors gives a very unbalanced
+tree. The LLL algorithm of Lenstra, Lenstra and Lov\'asz (1982) computes, in polynomial time, a reduced
+basis whose first vector is within a factor $2^{(n-1)/2}$ of the shortest, and in practice LLL followed by
+Fincke--Pohst enumeration is how minimal vectors are found. Voronoi's algorithm needs exactly this at
+every step: the minimal vectors of each new form.
+
+\subsection{Meet in the middle}
+The idea of \emph{meet in the middle} is to split a search over pairs $(u,v)$ into two half-searches and
+match the halves through a table. The classic example is \emph{subset sum}: given $n$ integers, is there
+a subset with sum $T$? Split the integers into two halves, list the $2^{n/2}$ subset sums of each half, sort
+one list, and look up $T-s$ for every $s$ in the other. This takes about $2^{n/2}$ steps instead of $2^n$
+(Horowitz and Sahni, 1974), and Schroeppel and Shamir (1981) reduced the memory to about $2^{n/4}$.
+
+Here is the same idea counting vectors of $E_8$, as defined in Lecture~6
+(Definition~\ref{L04b:def:E8}). Write $x=(u,v)$ with $u,v\in\R^4$. Then $x\in E_8$ exactly when $u,v$ are
+both integral or both in $(\Z+\frac12)^4$, and the coordinate sum is even. So it suffices to tabulate the
+half-vectors $u$ by the pair $\big(\abs u^2,\ \text{sum of $u$ modulo }2\big)$, separately for the two
+cosets, and to multiply the counts of matching classes. The program \texttt{code/e8\_mitm.py} lists only
+$625$ half-vectors and recovers
+\[
+  240,\quad 2160,\quad 6720,\quad 17520\qquad\text{vectors of norm }2,4,6,8,
+\]
+which is $240\,\sigma_3(m)$ as predicted by the theta series (equation~\eqref{NT:eq:E8theta} in
+Interlude~B), whereas the full list has $26\,641$ vectors. In lattice language: $E_8$ is a union of four cosets of
+$D_4\oplus D_4$, and the theta series of an orthogonal sum is the product of the theta series. This
+``gluing'' is how Conway and Sloane describe many lattices.
+
+To be honest about where meet in the middle is used: as an \emph{algorithm} it is central in coding
+theory and cryptography. Stern's method (1989) for finding low-weight codewords splits an information set
+in two halves and looks for collisions, and Howgrave-Graham (2007) combined lattice reduction with a
+meet-in-the-middle search to attack the NTRU cryptosystem. In the proofs about packings quoted in this
+course it appears mainly in the gluing form above, as a way to count or list vectors without listing the
+whole space.
+
+%======================================================================
+\section{Matrix techniques}
+\label{COMP:sec:matrix}
+
+\subsection{Gram matrices}
+A configuration of $N$ unit vectors is determined, up to an orthogonal transformation, by its Gram
+matrix $G_{ij}=\ip{x_i}{x_j}$.
+
+\begin{proposition}\label{COMP:prop:gram}
+A real symmetric $N\times N$ matrix $G$ is the Gram matrix of $N$ vectors in $\R^d$ if and only if $G$ is
+positive semidefinite of rank at most $d$. The vectors are then unique up to $\Orth(d)$.
+\end{proposition}
+
+\begin{proof}
+If $G=V^TV$ with $V$ a $d\times N$ matrix, then $y^TGy=\abs{Vy}^2\ge0$ and $\operatorname{rank}G\le d$.
+Conversely, diagonalize $G=Q\Lambda Q^T$ with $\Lambda\ge0$ having at most $d$ nonzero entries, and take
+$V$ to be the nonzero rows of $\Lambda^{1/2}Q^T$. If $V^TV=W^TW$, the map $Vy\mapsto Wy$ is a well defined
+isometry between the column spaces, and it extends to an element of $\Orth(d)$.
+\end{proof}
+
+So ``is there a configuration of $N$ points on $\Sph^{d-1}$ with all angles at least $\theta$?'' becomes ``is
+there a positive semidefinite matrix with ones on the diagonal, off-diagonal entries $\le\cos\theta$, and
+rank at most $d$?'' Without the rank condition this is a \emph{semidefinite program}. The rank condition
+is what makes the problem hard, and dropping it is what makes bounds computable. Sometimes, however, the
+sign pattern alone settles everything.
+
+\begin{proposition}[Rankin 1955]\label{COMP:prop:rankin}
+Let $x_1,\dots,x_N\in\R^d$ be nonzero.
+\begin{enumerate}[label=(\alph*),nosep]
+\item If $\ip{x_i}{x_j}<0$ for all $i\ne j$, then $N\le d+1$.
+\item If $\ip{x_i}{x_j}\le0$ for all $i\ne j$, then $N\le2d$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\emph{Claim:} vectors with pairwise non-positive inner products that lie in an open half-space
+$\{\ip ye>0\}$ are linearly independent. Indeed, a linear relation can be written
+$u=\sum_{i\in P}a_ix_i=\sum_{j\in Q}b_jx_j$ with $a,b\ge0$ and $P\cap Q=\emptyset$. Then
+$\abs u^2=\sum a_ib_j\ip{x_i}{x_j}\le0$, so $u=0$, and $0=\ip ue=\sum a_i\ip{x_i}e$ forces $a=0$; similarly
+$b=0$. For (a), apply the claim to $x_1,\dots,x_{N-1}$ and $e=-x_N$. For (b), choose $e$ with
+$\ip{x_i}e\ne0$ for all $i$ and apply the claim to the vectors on each side.
+\end{proof}
+
+Since $d(x,y)\ge\pi/2$ on $\Sph^2$ means $\ip xy\le0$, this settles two cases of the Tammes problem at
+once and bounds a third: five or six points cannot all be more than $\pi/2$ apart (by (a), $N\le4$), and
+the triangular bipyramid and the octahedron show that $\pi/2$ is attained for $N=5,6$; seven points cannot
+all be $\pi/2$ apart (by (b), $N\le6$), so the Tammes distance for $N=7$ is less than $\pi/2$ (its actual
+value, $\approx77.87^\circ$, needs much more work).
+
+\subsection{Positive definite kernels and the linear programming bound}
+The proof of Proposition~\ref{COMP:prop:rankin} used one positive semidefinite matrix. The linear
+programming bound uses infinitely many at once. For $S^{n-1}\subset\R^n$ let $G_k$ be the Gegenbauer
+polynomial $C_k^{(n-2)/2}$, normalized by $G_k(1)=1$. By the addition theorem for spherical harmonics,
+$G_k(\ip xy)$ is a positive multiple of $\sum_mY_m(x)Y_m(y)$, summed over an orthonormal basis of the
+harmonic polynomials of degree $k$. Hence for every finite $C\subset S^{n-1}$
+\begin{equation}\label{COMP:eq:posdef}
+  \sum_{x,y\in C}G_k(\ip xy)\ \ge\ 0,
+\end{equation}
+that is, the matrix $\big(G_k(\ip xy)\big)_{x,y\in C}$ is positive semidefinite (Schoenberg, 1942).
+
+\begin{theorem}[Delsarte--Goethals--Seidel 1977; Kabatiansky--Levenshtein 1978]\label{COMP:thm:LP}
+Let $f(t)=\sum_{k=0}^Dc_kG_k(t)$ with $c_0>0$ and $c_k\ge0$ for all $k$, and suppose $f(t)\le0$ for
+$-1\le t\le\cos\theta$. Then every $C\subset S^{n-1}$ with all angles at least $\theta$ has
+$\abs C\le f(1)/c_0$.
+\end{theorem}
+
+\begin{proof}
+Sum $f(\ip xy)$ over all pairs. The off-diagonal terms are $\le0$, so the sum is at most $\abs Cf(1)$. By
+\eqref{COMP:eq:posdef} every $k\ge1$ contributes $\ge0$ and $k=0$ contributes $c_0\abs C^2$. Hence
+$c_0\abs C^2\le\abs Cf(1)$.
+\end{proof}
+
+This is the third time in these notes that a bound comes from \emph{throwing away squares}: Blichfeldt
+dropped $\abs{\sum x_i}^2$ (Lemma~\ref{L2:lem:f0}), Cohn and Elkies dropped one square for each
+frequency (Remark~\ref{NT:rem:blichfeldt-vs-CE}), and here each $G_k$ hides a sum of squares.
+
+\begin{example}[The kissing number in dimension $8$]\label{COMP:ex:240}
+Take $n=8$, $\theta=\pi/3$, and the polynomial of Odlyzko--Sloane and Levenshtein,
+\[
+  f(t)=(t+1)\Big(t+\frac12\Big)^2t^2\Big(t-\frac12\Big).
+\]
+Clearly $f\le0$ on $[-1,\frac12]$. Expanding in the $G_k$ for $n=8$ (exact rational arithmetic; a few lines of
+\texttt{sympy}) gives
+\[
+  (c_0,\dots,c_6)=\Big(\frac3{320},\ \frac3{40},\ \frac{15}{64},\ \frac{39}{80},\ \frac{399}{640},\ \frac9{16},\
+  \frac{33}{128}\Big),
+\]
+all positive, and $f(1)/c_0=\frac94\cdot\frac{320}3=240$. So $\kiss_8\le240$, and $E_8$ gives equality.
+The same computation with
+$f(t)=(t+1)(t+\frac12)^2(t+\frac14)^2t^2(t-\frac14)^2(t-\frac12)$ (degree $10$) in dimension $24$ gives
+$196\,560$, with all eleven coefficients $c_0,\dots,c_{10}$ positive. Note the roots: they are the inner products $-1,-\frac12,0,\frac12$
+occurring in the $E_8$ kissing configuration, and $-1,\pm\frac12,\pm\frac14,0$ in the Leech one. Equality in
+the proof forces $f(\ip xy)=0$ for $x\ne y$, which is how one guesses $f$, and how Bannai and Sloane
+(1981) proved that both kissing configurations are unique.
+\end{example}
+
+The polynomial was found by solving a linear program (maximize $c_0$ subject to $f(1)=1$ and to
+sampled constraints $f(t_\ell)\le0$), but the \emph{certificate} is the polynomial: rational coefficients,
+checked exactly. In dimensions $3$ and $4$ the LP bound is not sharp (it gives $13$ and $25$). Musin
+proved $\kiss_4=24$ (2008) by a modification of the method. Replacing pairs by triples of points gives
+\emph{semidefinite} programming bounds (Bachoc and Vallentin, 2008), which improved the upper bounds in
+dimensions $5,6,7,9,10$; Leijenhorst and de Laat (2024) improved them in dimensions $11$ to $23$. For
+packings in $\R^n$ the continuous analogue is the Cohn--Elkies bound (Theorem~\ref{NT:thm:CE}), and its
+three-point refinement (Cohn, de Laat and Salmon, 2022) improves the density bounds in dimensions $4$--$7$
+and $9$--$16$.
+
+\subsection{Rigidity matrices and stresses}
+The other matrix in this subject is the \emph{rigidity matrix} $A$ of a contact graph: the linear map that
+sends a motion $v=(v_1,\dots,v_N)$ to the rates of change of the contact distances (Lecture~11, and
+Interlude~E, Proposition~\ref{SM:prop:jam}). Its kernel is the space of infinitesimal motions, and the
+kernel of $A^T$ is the space of \emph{stresses}, systems of edge weights that balance at every vertex.
+Theorem~\ref{L11:thm:forcebalance} says that a configuration is critical when $\ker A^T$ meets the
+non-negative orthant. Two computational remarks. First, if the configuration has algebraic coordinates,
+ranks and kernels can be computed exactly over a number field, and a positive stress, once found
+numerically, can be checked exactly. Second, deciding whether $\ker A^T$ contains a non-negative nonzero
+vector is a linear program: maximize nothing subject to $A^Tw=0$, $w\ge0$, $\sum w_e=1$. Its feasibility
+is exactly Gordan's alternative from Lecture~10. The next section explains why this is no accident.
+
+%======================================================================
+\section{KKT: forces are Lagrange multipliers}
+\label{COMP:sec:kkt}
+
+The Tammes problem $\max\rho$ is a nonsmooth optimization problem, since $\rho$ is a minimum of smooth
+functions. The standard trick is to add a variable. Write $s$ for the cosine of the minimal distance and
+consider
+\begin{equation}\label{COMP:eq:tammes}
+  \text{minimize } s\quad\text{subject to}\quad \ip{x_i}{x_j}\le s\ \ (i<j),\qquad \abs{x_i}^2=1\ \ (1\le i\le N).
+\end{equation}
+Now everything is smooth (indeed polynomial), and a configuration $X$ is a local maximum of $\rho$ if and
+only if $(X,\cos\rho(X))$ is a local minimum of \eqref{COMP:eq:tammes}. The basic necessary condition for
+smooth constrained problems is due to F.~John (1948) for inequality constraints, and to Mangasarian and
+Fromovitz (1967) with equality constraints.
+
+\begin{theorem}[Fritz John conditions]
+Let $p$ be a local minimum of $f$ subject to $g_k\le0$ and $h_l=0$, all $C^1$. Then there are
+$\lambda_0\ge0$, $\lambda_k\ge0$ and $\mu_l\in\R$, not all zero, with
+\[
+  \lambda_0\nabla f(p)+\sum_k\lambda_k\nabla g_k(p)+\sum_l\mu_l\nabla h_l(p)=0,\qquad \lambda_kg_k(p)=0\ \text{for all }k.
+\]
+If $\lambda_0>0$ one may take $\lambda_0=1$; these are the \emph{Karush--Kuhn--Tucker (KKT)} conditions.
+\end{theorem}
+
+Usually one needs a \emph{constraint qualification} (for instance, linear independence of the gradients of
+the active constraints) to guarantee $\lambda_0>0$. For the Tammes problem it comes for free, and the
+multipliers turn out to be the forces of Lecture~11.
+
+\begin{proposition}\label{COMP:prop:kkt}
+A configuration $X$ with $\rho(X)=\theta\in(0,\pi)$ satisfies the KKT conditions for
+\eqref{COMP:eq:tammes} (with $s=\cos\theta$) if and only if it is critical in the sense of
+Theorem~\ref{L11:thm:forcebalance}. The multipliers of the constraints $\ip{x_i}{x_j}\le s$ are balancing
+weights on the contact graph. In particular every local maximum of $\rho$ is critical.
+\end{proposition}
+
+\begin{proof}
+With $g_{ij}=\ip{x_i}{x_j}-s$ and $h_i=\abs{x_i}^2-1$, the derivative of the Lagrangian in $s$ and in $x_i$
+gives
+\[
+  \lambda_0=\sum_{i<j}\lambda_{ij},\qquad \sum_{j\ne i}\lambda_{ij}x_j+2\mu_ix_i=0\quad(1\le i\le N),
+\]
+with $\lambda_{ij}=\lambda_{ji}$, and $\lambda_{ij}=0$ unless $\ip{x_i}{x_j}=s$, that is, unless $ij$ is a
+contact. For a contact, $x_j=\cos\theta\,x_i+\sin\theta\,u_{ij}$, with $u_{ij}$ the unit tangent vector at
+$x_i$ pointing to $x_j$. The tangential part of the second equation is therefore
+$\sin\theta\sum_j\lambda_{ij}u_{ij}=0$: the $\lambda_{ij}$ balance the contact graph. If all
+$\lambda_{ij}$ vanished, then $\lambda_0=0$ and $2\mu_ix_i=0$, so all multipliers would vanish; hence the
+weights are not all zero and $\lambda_0=\sum\lambda_{ij}>0$. Conversely, balancing weights $w_{ij}$, scaled
+so that $\sum w_{ij}=1$, give KKT multipliers $\lambda_{ij}=w_{ij}$, $\lambda_0=1$ and
+$\mu_i=-\frac12\cos\theta\sum_jw_{ij}$ (the normal part of the second equation). The last sentence follows
+from the Fritz John theorem.
+\end{proof}
+
+So the dictionary is: \emph{multipliers are forces}, \emph{complementary slackness says that only contacts
+carry force}, and \emph{Gordan's alternative is LP duality}. The weights are found by a linear program,
+and the forces at each vertex close up into a polygon (Figure~\ref{COMP:fig:forces}); that polygon is the
+first step of the Maxwell--Cremona correspondence between stresses and reciprocal diagrams.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.5]
+  \begin{scope}
+    \fill (0,0) circle (1.6pt) node[above left,font=\small] {$x_i$};
+    \foreach \a/\w/\l in {80/0.684/1,190/1/2,330/1/3} {
+      \draw[gray] (0,0)--(\a:1.35); \fill (\a:1.35) circle (1.3pt) node[font=\scriptsize,shift={(\a:0.22)}] {$x_{\l}$};
+      \draw[-{Stealth},flagcol,very thick] (0,0)--(\a:\w);}
+    \draw[gray,dashed] (0,0)--(265:1.35); \fill (265:1.35) circle (1.3pt) node[font=\scriptsize,below] {$x_4$};
+    \node[font=\scriptsize,align=center] at (0,-1.85) {weights $0.68,\ 1,\ 1$ on the solid contacts;\\ the dashed contact carries no force};
+  \end{scope}
+  \begin{scope}[xshift=3.6cm,yshift=-0.2cm]
+    \coordinate (P0) at (0,0); \coordinate (P1) at (0.119,0.674); \coordinate (P2) at (-0.866,0.5);
+    \draw[-{Stealth},flagcol,very thick] (P0)--(P1); \draw[-{Stealth},flagcol,very thick] (P1)--(P2);
+    \draw[-{Stealth},flagcol,very thick] (P2)--(P0);
+    \fill (P0) circle (1pt);
+    \node[font=\scriptsize,align=center] at (-0.3,-1.65) {the three forces, head to tail,\\ close up: $\sum_jw_{ij}u_{ij}=0$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Force balance at one vertex of a critical configuration, seen in the tangent plane at $x_i$. The
+multipliers of Proposition~\ref{COMP:prop:kkt} are the lengths of the arrows. A fourth contact with zero
+weight is allowed: the weights are $\ge0$, not necessarily $>0$.}
+\label{COMP:fig:forces}
+\end{figure}
+
+\begin{remark}[Necessary, not sufficient]
+KKT points need not be maxima: the square of Lecture~11 is critical but not a local maximum of $\rho$. A
+sufficient condition comes from Interlude~E. If $X$ is \emph{first-order jammed} (every nontrivial
+infinitesimal motion strictly shortens some contact, which by Proposition~\ref{SM:prop:jam} means a positive
+stress on every contact plus infinitesimal rigidity modulo rotations), then a compactness argument on the
+unit sphere of motions shows that $X$ is a strict local maximum of $\rho$ up to rotation. The
+$\rho$-evolution algorithm of Lecture~11 is, in this language, an \emph{active set method}: it moves in a
+direction that increases all active constraints until a new constraint becomes active, and it stops at a
+KKT point.
+\end{remark}
+
+%======================================================================
+\section{Polynomial methods}
+\label{COMP:sec:poly}
+
+\subsection{Equations for balanced configurations}
+Once a contact graph is fixed, a critical configuration is a solution of polynomial equations:
+$\abs{x_i}^2=1$, $\ip{x_i}{x_j}=c$ on the edges, and the balance equations
+$\sum_jw_{ij}(x_j-c\,x_i)=0$, modulo rotations, together with the inequalities $\ip{x_i}{x_j}<c$ off the
+edges and $w\ge0$. Polynomial algebra solves the equations exactly.
+
+\begin{example}[The square antiprism, $N=8$]
+The Tammes configuration for $8$ points (Sch\"utte and van der Waerden, 1951) is a square antiprism with
+all $16$ edges equal. Put the two squares at heights $\pm h$ on circles of radius $r$, rotated by
+$45^\circ$ against each other. A side of a square has squared length $2r^2$ and a slanted edge has
+$(2-\sqrt2)r^2+4h^2$, and $\cos\theta=1-r^2$. With $s=\sqrt2$ and $r_2=r^2$, the equations are
+\[
+  r_2+h^2-1=0,\qquad s^2-2=0,\qquad s\,r_2-4h^2=0,\qquad c-1+r_2=0 .
+\]
+A Gr\"obner basis in the lexicographic order $r_2>h>s>c$ (Buchberger's algorithm, one line in
+\texttt{sympy}) is
+\[
+  \{\,r_2+c-1,\ \ h^2-c,\ \ 2s-7c-1,\ \ 7c^2+2c-1\,\}.
+\]
+It is triangular, like the result of Gaussian elimination, and its last element is a polynomial in $c$
+alone. So $c=\cos\theta$ satisfies $7c^2+2c-1=0$, that is $\cos\theta=(2\sqrt2-1)/7$ and
+$\theta\approx74.8585^\circ$.
+\end{example}
+
+For larger systems one needs to decide how many real roots a univariate polynomial has in an
+interval. \emph{Sturm's theorem} (1829) does it exactly: with $p_0=p$, $p_1=p'$ and
+$p_{k+1}=-\operatorname{rem}(p_{k-1},p_k)$, the number of roots in $(a,b]$ is the drop in the number of sign
+changes of $(p_0,p_1,\dots)$ from $a$ to $b$. For $p=7c^2+2c-1$ the sequence is $(7c^2+2c-1,\,14c+2,\,\frac87)$,
+with signs $(-,+,+)$ at $0$ and $(+,+,+)$ at $1$: exactly one root in $(0,1]$. Descartes' rule of signs
+and its refinements (Vincent; Collins and Akritas, 1976) give faster \emph{real root isolation}.
+\emph{Resultants} eliminate one variable at a time, and \emph{homotopy continuation} (as in the programs
+Bertini and PHCpack) follows the solutions of an easy system along a path to all isolated complex solutions
+of the given one, numerically. Numerical solutions can be certified afterwards: by Smale's
+\emph{$\alpha$-theory}, if $\alpha(f,x)=\beta(f,x)\gamma(f,x)<(13-3\sqrt{17})/4\approx0.1577$, where
+$\beta=\norm{Df(x)^{-1}f(x)}$ is the Newton step and
+$\gamma=\sup_{k\ge2}\norm{Df(x)^{-1}D^kf(x)/k!}^{1/(k-1)}$, then Newton's method started at $x$ converges
+quadratically to a true zero. The program \texttt{alphaCertified} (Hauenstein and Sottile, 2012) checks
+these conditions in exact or interval arithmetic.
+
+\subsection{Tarski--Seidenberg: everything is decidable}
+A \emph{first-order formula over $\R$} is built from polynomial equations and inequalities with rational
+coefficients, using $\wedge,\vee,\neg$ and quantifiers $\exists x,\forall x$ over real numbers. For example,
+``there are $13$ points on $\Sph^2$ with pairwise distances at least $\pi/3$'' is
+\[
+  \exists x_1,\dots,x_{13}\in\R^3:\ \bigwedge_i\abs{x_i}^2=1\ \wedge\ \bigwedge_{i<j}\ip{x_i}{x_j}\le\tfrac12 .
+\]
+
+\begin{theorem}[Tarski 1948/1951; Seidenberg 1954]
+Every first-order formula over $\R$ is equivalent to a quantifier-free one, and the equivalent formula can
+be computed. In particular the truth of every first-order sentence over $\R$ is decidable.
+\end{theorem}
+
+So $\kiss_3\le12$ could, \emph{in principle}, be decided by running an algorithm. There is also a
+nice theoretical consequence. Apply quantifier elimination to the formula in one free variable
+$c$: ``there are $N$ unit vectors with $\ip{x_i}{x_j}\le c$''. The result defines a finite union of
+points and intervals with real algebraic endpoints, and its least element is the cosine of the Tammes
+distance. \emph{Hence every Tammes value $\cos d_N$ is an algebraic number}, as are the optimal
+values of all the finite configuration problems of the course, without anyone having to find them.
+
+Why not just do it? Collins's \emph{cylindrical algebraic decomposition} (1975), the first practical
+algorithm, has running time roughly $(sd)^{2^{O(k)}}$ for $s$ polynomials of degree $d$ in $k$ variables,
+\emph{doubly} exponential in $k$, and Davenport and Heintz (1988) showed that quantifier elimination
+can be inherently doubly exponential. For a single block of existential quantifiers there are better
+algorithms (Grigoriev--Vorobjov, Renegar, Basu--Pollack--Roy) with running time of the order
+$s^{k+1}d^{O(k)}$, singly exponential. For the $13$-sphere sentence above, $k=39$ and $s=91$; that is far
+beyond any computer. In practice, cylindrical algebraic decomposition handles problems with a handful of
+variables. Tarski's theorem decides everything in principle and nothing big in practice. The art of
+the subject is to reduce a big problem to many small ones, each with few variables, and then to treat
+those by the methods of the next section.
+
+%======================================================================
+\section{Verification}
+\label{COMP:sec:verify}
+
+\subsection{Interval arithmetic}
+\emph{Interval arithmetic} (R.~E.~Moore, 1966) computes with closed intervals $X=[\underline x,\overline x]$
+instead of numbers:
+\[
+  X+Y=[\underline x+\underline y,\ \overline x+\overline y],\qquad
+  X\cdot Y=[\min P,\max P],\quad P=\{\underline x\underline y,\underline x\overline y,\overline x\underline y,\overline x\overline y\},
+\]
+and so on. On a computer each lower endpoint is rounded down and each upper endpoint up (the IEEE~754
+standard provides these \emph{directed rounding} modes), or one uses exact rational endpoints, as we will.
+By induction on the length of an expression one gets the \emph{fundamental theorem}: if an expression $F$ is
+evaluated on intervals, the result contains $F(x)$ for every choice of $x$ in the intervals. So a single
+evaluation on a box gives a \emph{proved} enclosure of the range of $F$ on the box.
+
+The price is overestimation, the \emph{dependency problem}: each occurrence of a variable is treated as
+independent. For $f(x)=x-x^2$ on $X=[0,1]$, the natural evaluation $X-X\cdot X=[0,1]-[0,1]=[-1,1]$, while the
+true range is $[0,\frac14]$. Rewriting $f=\frac14-(x-\frac12)^2$ gives the exact range. The \emph{centred
+form} $f(m)+f'(X)(X-m)$, here $\frac14+[-1,1]\cdot[-\frac12,\frac12]=[-\frac14,\frac34]$, is still not exact,
+but its overestimation is $O(w^2)$ in the width $w$ of the box, against $O(w)$ for the natural evaluation.
+This is why bounds become sharp as boxes shrink, which is what branch and bound needs.
+
+\paragraph{Certified zeros.} Interval arithmetic also proves that solutions exist.
+
+\begin{proposition}[Interval Newton]\label{COMP:prop:newton}
+Let $f\in C^1[a,b]$, $X=[a,b]$, $m\in X$, and suppose that the interval $f'(X)$ (any enclosure of $f'$ on
+$X$) does not contain $0$. Put $N(X)=m-f(m)/f'(X)$. If $N(X)\subseteq X$, then $f$ has exactly one zero in $X$,
+and it lies in $N(X)$.
+\end{proposition}
+
+\begin{proof}
+Since $f'\ne0$ on $X$, $f$ is strictly monotone, so there is at most one zero. Say $f'>0$ and $f(m)\ge0$ (the
+other cases are symmetric). By the mean value theorem $f(a)=f(m)-f'(\xi)(m-a)$ for some $\xi\in X$, and
+$m-f(m)/f'(\xi)\in N(X)\subseteq X$ gives $f(m)/f'(\xi)\le m-a$, so $f(a)\le0$. By the intermediate value
+theorem there is a zero $x^*$ in $[a,m]$. Finally $x^*=m-f(m)/f'(\eta)$ for some $\eta$ between $x^*$ and $m$,
+so $x^*\in N(X)$.
+\end{proof}
+
+For the antiprism, take $f(c)=7c^2+2c-1$, $X=[0.26,0.27]$ and $m=0.265$. Then $f(m)=0.021575$,
+$f'(X)=[5.64,5.78]$, and $N(X)=[0.26117\ldots,0.26126\ldots]\subset X$, so the Tammes cosine for $8$ points
+lies in $N(X)$. One more step shrinks the interval to width $4\cdot10^{-9}$: Newton's quadratic convergence,
+now with a proof attached. In several variables the same role is played by the \emph{Krawczyk operator}
+$K(X)=m-Yf(m)+(I-Yf'(X))(X-m)$, with $Y$ an approximate inverse of $f'(m)$: if $K(X)$ lies in the interior of
+$X$, then $f$ has a unique zero in $X$ (Krawczyk 1969; Moore 1977). This is how a numerically computed
+balanced configuration is turned into a theorem.
+
+\subsection{Dual numbers and jets}
+To use centred forms or interval Newton one needs enclosures of derivatives on boxes. They come almost for
+free from \emph{dual numbers}: compute in $\R[\varepsilon]/(\varepsilon^2)$. For a polynomial,
+\[
+  f(a+b\varepsilon)=f(a)+f'(a)\,b\,\varepsilon,
+\]
+because $\varepsilon^2=0$ kills everything else. So evaluating $f$ at $x+\varepsilon$ with the ordinary rules
+$(a+a'\varepsilon)(b+b'\varepsilon)=ab+(ab'+a'b)\varepsilon$ produces $f(x)$ and $f'(x)$ together. This is
+\emph{forward-mode automatic differentiation}. With $k$ variables one carries a gradient
+$(a,a_1',\dots,a_k')$ instead; with $\R[\varepsilon]/(\varepsilon^{r+1})$ one carries the Taylor coefficients
+up to order $r$, a \emph{jet}. Now let the entries be intervals. Evaluating on a box $B$ then gives, in one
+pass, enclosures of $f(B)$ and of $\nabla f(B)$, by the fundamental theorem. We use exactly this in
+Section~\ref{COMP:sec:thue}.
+
+Going one step further, a \emph{Taylor model} (Berz and Makino, 1998) represents a function on a box by a
+polynomial of degree $r$ together with an interval bounding the remainder. Arithmetic on Taylor models
+keeps the dependency in the polynomial part, so the overestimation is $O(w^{r+1})$. The nonlinear inequalities
+of the Kepler conjecture were proved with second-order versions of this idea (``Taylor intervals''), and
+Solovyev and Hales (2013) implemented them inside the proof assistant HOL Light.
+
+\subsection{Sums of squares}
+A polynomial $p$ that is a sum of squares of polynomials is visibly nonnegative, and the squares are a
+certificate. Write $p=m^TQm$ with $m$ the vector of monomials of degree at most $\frac12\deg p$. Then $p$ is
+a sum of squares if and only if this holds for some positive semidefinite $Q$, since $Q=L^TL$ gives
+$p=\abs{Lm}^2$. The conditions on $Q$ are linear equations (matching coefficients) plus $Q\succeq0$:
+\emph{finding a sum-of-squares certificate is a semidefinite program} (Parrilo, 2000/2003; Lasserre, 2001).
+
+Not every nonnegative polynomial is a sum of squares (Hilbert, 1888). Motzkin's
+$x^4y^2+x^2y^4-3x^2y^2+1$ is nonnegative by the inequality between arithmetic and geometric means applied
+to $x^4y^2,x^2y^4,1$, but it is not a sum of squares. To prove $p\ge0$ only on a set
+$K=\{g_1\ge0,\dots,g_r\ge0\}$ one looks for certificates of the form
+\[
+  p=\sigma_0+\sum_i\sigma_ig_i\qquad(\text{Putinar, 1993}),\qquad\text{or}\qquad
+  p=\sum_{I\subseteq\{1,\dots,r\}}\sigma_I\prod_{i\in I}g_i\qquad(\text{Schm\"udgen, 1991}),
+\]
+with sums of squares $\sigma$. Schm\"udgen showed that a polynomial strictly positive on a compact $K$ always
+has the second kind of certificate, and Putinar that, under an extra hypothesis on $K$ (Archimedean), it has the
+first. The Positivstellensatz of Krivine (1964) and Stengle (1974) gives certificates for the
+\emph{emptiness} of a semialgebraic set, and so for nonnegativity in general, at the price of denominators.
+Compare: the $\sigma_i$ are polynomial versions of the KKT multipliers of Section~\ref{COMP:sec:kkt}, and the
+multiplier $\lambda(z)$ of Section~\ref{COMP:sec:thue} is an example.
+
+The semidefinite program is solved numerically, so the matrix $Q$ it returns is only approximately positive
+semidefinite and only approximately satisfies the linear equations. Peyrl and Parrilo (2008) showed how to
+round it to an \emph{exact} rational certificate when $p$ is strictly inside the cone: project the rounded $Q$
+onto the affine space of exact solutions and check $Q\succeq0$ exactly, for example by an exact Cholesky
+factorization. The same rounding idea turns the numerical solutions of the LP and SDP bounds of
+Section~\ref{COMP:sec:matrix} into rigorous bounds.
+
+\subsection{Formal proof}
+A certificate still has to be checked by \emph{some} program, and programs have bugs. A \emph{proof
+assistant} (HOL Light, Isabelle, Coq, Lean) reduces this risk to a small trusted kernel that checks every
+logical step.
+\begin{itemize}
+\item \emph{Kepler.} Hales's proof was published in 2005 (with a joint paper of Hales and Ferguson). The
+  refereeing could not certify all of the computer code, and Hales started the Flyspeck project to produce a
+  formal proof. It was completed on 10 August 2014, in HOL Light and
+  Isabelle. The formal proof checks more than $23\,000$ nonlinear inequalities (after subdividing domains),
+  which took about $5000$ processor hours on the Microsoft Azure cloud, together with $43\,078$ linear
+  programs and the tame graph enumeration of Nipkow, Bauer and Schultz.
+\item \emph{Dimension $8$.} Viazovska's proof (Interlude~B) relies on two inequalities between
+  modular forms. In her paper they were checked with computer help: the functions were replaced by truncated
+  expansions at the two ends of the interval, the truncation errors were bounded rigorously, and the
+  inequalities for the truncations were checked by a finite calculation. Romik (2023) later gave a proof
+  without computer calculations. A Lean formalization of the whole dimension-$8$ theorem, begun by Hariharan
+  and Viazovska in 2024, was completed in February 2026; its final stages were produced by the
+  autoformalization system Gauss of Math, Inc.\ (Hariharan, Birkbeck, Lee, Ma, Mehta, Poiroux and
+  Viazovska, arXiv:2604.23468). According to EPFL's announcement (March 2026) the dimension-$24$ case followed.
+\item \emph{Outside this course.} The four colour theorem (Appel and Haken, 1976--77; a simpler proof by
+  Robertson, Sanders, Seymour and Thomas, 1997) was formalized in Coq by Gonthier (2005, published 2008).
+  Tucker's proof (1999, 2002) that the Lorenz equations have a strange attractor, Smale's 14th problem,
+  is a classic of interval analysis: it combines rigorous integration of the flow with a normal form near
+  the origin.
+\end{itemize}
+
+%======================================================================
+\section{A certified proof of Thue's triangle lemma}
+\label{COMP:sec:thue}
+
+We now prove the inequality of Lemma~\ref{L1:lem:triangle-density} by computer, using branch and bound, exact interval
+arithmetic, dual numbers and a KKT multiplier. Of course Lecture~1 proves it in two lines. The point is to
+watch every piece of the machinery work on an example where we know the answer.
+
+\paragraph{The polynomial form.} Let a triangle have sides $a,b,c\ge2$ and circumradius $R\le2$, and let
+$c$ be the longest side. Put $x=a^2$, $y=b^2$, $z=c^2$. Heron's formula says
+\[
+  16\operatorname{Area}^2=H(x,y,z):=2xy+2yz+2zx-x^2-y^2-z^2,
+\]
+and $R=abc/(4\operatorname{Area})$ gives $R^2=xyz/H$, so $R\le2$ means $g:=4H-xyz\ge0$. Since $c\le2R\le4$,
+the domain is
+\[
+  D=\{4\le x\le z,\ 4\le y\le z,\ z\le16,\ g\ge0\},
+\]
+and the inequality of Lemma~\ref{L1:lem:triangle-density} (area $\ge\sqrt3$, i.e.\ density
+$\le\pi/\sqrt{12}$) follows from $H\ge48$ on $D$. (We allow $R=2$; this only makes the claim stronger.) All transcendental functions are gone: this is
+the first rule of thumb.
+
+\paragraph{Where it is tight.} $H=48$ at the equilateral triangle $(4,4,4)$, a corner of $D$. It is also
+$48$ at $(4,4,12)$, the triangle with sides $2,2,2\sqrt3$ and largest angle $2\pi/3$, which has $R=2$
+exactly. (It is excluded by the strict inequality $R<2$ in Lecture~1, but it lies in the closure, so the
+inequality on $D$ is sharp at two points.) Tight points are the enemy of branch and bound: near them no bound
+of the form ``$H\ge48$ on this box'' can be proved with any slack, and a naive search never ends.
+
+\paragraph{The KKT multiplier.} At $(4,4,12)$ the constraint $g\ge0$ is active. Solving the KKT
+equations $\nabla H=\mu_x e_x+\mu_ye_y+\lambda\nabla g$ there gives $\nabla H=(24,24,-8)$,
+$\nabla g=(48,48,-48)$, hence $\lambda=\frac16$ and $\mu_x=\mu_y=16$. At $(4,4,4)$ the constraint $g$ is not
+active ($g=128$) and its multiplier is $0$. On the edge $x=y=4$ that joins the two tight points,
+\[
+  H-48=(z-4)(12-z),\qquad g=4z(12-z),\qquad\text{so}\qquad H-48=\frac{z-4}{4z}\,g .
+\]
+This suggests the variable multiplier $\lambda(z)=\frac{z-4}{4z}$, which is $0$ at $z=4$ and $\frac16$ at
+$z=12$. A two-line computation (checked symbolically in the script) gives the identity
+\begin{equation}\label{COMP:eq:cert}
+  H-48=\frac{P}{z}+\frac{z-4}{4z}\,g,\qquad
+  P=\frac{xy-16}4\,z^2+\big(16-(x-8)(y-8)\big)z-4(x-y)^2 .
+\end{equation}
+We write $P=Az^2+Bz+C$ with $A=\frac{xy-16}4$, $B=16-(x-8)(y-8)$, $C=-4(x-y)^2$. Since $\lambda(z)\ge0$ and
+$g\ge0$ on $D$, it suffices to prove
+\begin{equation}\label{COMP:eq:Pclaim}
+  P(x,y,z)\ge0\qquad\text{on the polyhedron } \{4\le x\le z,\ 4\le y\le z\le16\}.
+\end{equation}
+The curved constraint has disappeared. The price: $P$ vanishes on the whole edge $x=y=4$.
+
+\paragraph{The search.} We prove \eqref{COMP:eq:Pclaim} by branch and bound over boxes, starting from
+$[4,16]^3$ and bisecting the longest side. A box is \emph{settled} if one of three tests succeeds:
+\begin{enumerate}[label=(\roman*),nosep]
+\item it misses the region ($z<x$ or $z<y$ everywhere on the box);
+\item \emph{value test:} the interval evaluation of $P$ on the box has lower end $\ge0$;
+\item \emph{derivative test:} interval enclosures of $\partial P/\partial x$ and $\partial P/\partial y$
+  (from dual numbers) have lower ends $\ge0$, so $P$ is smallest on the face $x=\underline x$, $y=\underline y$,
+  and the interval evaluation of $P$ on that face has lower end $\ge0$.
+\end{enumerate}
+Test (iii) is what handles the tight edge: on it, $A=B=C=0$ exactly, so the evaluation on the face gives
+the interval $[0,0]$. All arithmetic is in exact rationals (Python's
+\texttt{fractions.Fraction}), so there is no rounding at all. Here is the heart of
+\texttt{code/thue\_bb.py}, slightly abridged:
+{\footnotesize
+\begin{verbatim}
+from fractions import Fraction as Fr
+class I:                                   # closed interval, rational endpoints
+    def __init__(s, lo, hi=None): s.lo, s.hi = Fr(lo), Fr(lo if hi is None else hi)
+    def __add__(s, t): t = lift(t); return I(s.lo + t.lo, s.hi + t.hi)
+    def __neg__(s): return I(-s.hi, -s.lo)
+    def __mul__(s, t):
+        t = lift(t); p = [s.lo*t.lo, s.lo*t.hi, s.hi*t.lo, s.hi*t.hi]
+        return I(min(p), max(p))
+    def sq(s):                             # a square is >= 0
+        lo, hi = sorted([abs(s.lo), abs(s.hi)])
+        return I(0 if s.lo <= 0 <= s.hi else lo*lo, hi*hi)
+class D:                                   # dual number: value and gradient, all intervals
+    def __init__(s, v, g): s.v, s.g = v, g
+    def __add__(s, t): t = liftD(t); return D(s.v + t.v, [a + b for a, b in zip(s.g, t.g)])
+    def __mul__(s, t):                     # Leibniz rule
+        t = liftD(t); return D(s.v*t.v, [s.v*b + t.v*a for a, b in zip(s.g, t.g)])
+    def sq(s): return s*s
+def P(x, y, z):
+    A = Fr(1, 4)*(x*y - 16); B = 16 - (x - 8)*(y - 8); C = -4*(x - y).sq()
+    return A*z.sq() + B*z + C
+def grad(X, Y, Z):
+    e = lambda k: [I(1) if j == k else I(0) for j in range(3)]
+    return P(D(X, e(0)), D(Y, e(1)), D(Z, e(2))).g
+def check(X, Y, Z):
+    if Z.hi < X.lo or Z.hi < Y.lo: return True             # (i)   outside the region
+    if P(X, Y, Z).lo >= 0: return True                      # (ii)  value test
+    gx, gy, _ = grad(X, Y, Z)                               # (iii) derivative test
+    return gx.lo >= 0 and gy.lo >= 0 and P(I(X.lo), I(Y.lo), Z).lo >= 0
+def bb(box):                    # returns only if P >= 0 is proved on the box
+    if check(*box): return
+    k = max(range(3), key=lambda j: box[j].hi - box[j].lo)
+    m = (box[k].lo + box[k].hi) / 2
+    for half in (I(box[k].lo, m), I(m, box[k].hi)):
+        b = list(box); b[k] = half; bb(tuple(b))
+bb((I(4, 16), I(4, 16), I(4, 16)))
+\end{verbatim}
+}
+\noindent (Here \texttt{lift} and \texttt{liftD} turn numbers into point intervals and constant dual
+numbers; subtraction and the reversed operations are defined in the same way.)
+
+\paragraph{The result.} The program terminates in under a second. It examines $53$ boxes; the $27$ leaves
+are settled by test (i) in $9$ cases, by test (ii) in $15$ and by test (iii) in $3$; the deepest box is at
+depth $8$. Since every leaf passed a valid test and the leaves cover $[4,16]^3$, this proves
+\eqref{COMP:eq:Pclaim}, hence $H\ge48$ on $D$, hence the inequality of
+Lemma~\ref{L1:lem:triangle-density}. (The equality case is not addressed by the search.)
+
+Without test (iii) the search never ends. With the depth capped at $3k$, the number of unsettled boxes
+is $8,16,32,64,128,256$ for $k=3,\dots,8$, all of them strung along the edge $x=y=4$: each halving of the
+box size doubles the work. Figure~\ref{COMP:fig:bb} shows both runs on the slice $z=6$.
+
+\colorlet{COMPcolval}{addcol!25}\colorlet{COMPcolmono}{green!45!black!35}
+\colorlet{COMPcolout}{gray!18}\colorlet{COMPcolopen}{flagcol!70}
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+  % panel A: certified run, slice z=6, coordinates (x,y) in [4,16]^2, 0.36 cm per unit
+  \begin{scope}[x=0.36cm,y=0.36cm,shift={(-4,-4)}]
+    \foreach \t/\a/\b/\c/\d in {
+      mono/4/5.5/4/7, val/5.5/7/4/7, val/4/5.5/7/8.5, out/4/5.5/8.5/10, val/5.5/7/7/10, val/7/8.5/4/7,
+      out/8.5/10/4/7, val/7/10/7/10, out/4/7/10/13, out/4/7/13/16, val/7/10/10/13, out/7/10/13/16,
+      out/10/13/4/7, val/10/13/7/10, out/13/16/4/10, val/10/13/10/13, out/10/13/13/16, out/13/16/10/16} {
+      \draw[thin,fill=COMPcol\t] (\a,\c) rectangle (\b,\d);
+    }
+    \draw[thick,dashed] (6,4)--(6,6)--(4,6);
+    \fill[black] (4,4) circle (2.2pt);
+    \draw[thick] (4,4) rectangle (16,16);
+    \node[font=\scriptsize,below] at (4,4) {$4$}; \node[font=\scriptsize,below] at (16,4) {$16$};
+    \node[font=\scriptsize,left] at (4,16) {$16$};
+    \node[font=\small,below] at (10,3.3) {$x$}; \node[font=\small,left] at (3.2,10) {$y$};
+    \node[font=\small,align=center] at (10,18) {certified run (all tests)};
+  \end{scope}
+  % panel B: no derivative test, depth cap 18, zoom on [4,7]^2, 1.45 cm per unit
+  \begin{scope}[x=1.45cm,y=1.45cm,xshift=6.6cm,shift={(-4,-4)}]
+    \clip (3.98,3.98) rectangle (7.02,7.02);
+    \foreach \t/\a/\b/\c/\d in {
+      open/4.0/4.1875/4.0/4.1875, val/4.0/4.1875/4.1875/4.375, val/4.1875/4.375/4.0/4.375,
+      val/4.0/4.375/4.375/4.75, val/4.375/4.75/4.0/4.75, val/4.0/4.75/4.75/5.5, val/4.75/5.5/4.0/5.5,
+      val/4.0/5.5/5.5/7.0, val/5.5/7.0/4.0/7.0, val/5.5/7.0/7.0/10.0, val/4.0/5.5/7.0/8.5} {
+      \draw[thin,fill=COMPcol\t] (\a,\c) rectangle (\b,\d);
+    }
+    \draw[thick,dashed] (6,4)--(6,6)--(4,6);
+    \fill[black] (4,4) circle (2.2pt);
+  \end{scope}
+  \begin{scope}[x=1.45cm,y=1.45cm,xshift=6.6cm,shift={(-4,-4)}]
+    \draw[thick] (4,4) rectangle (7,7);
+    \node[font=\scriptsize,below] at (4,4) {$4$}; \node[font=\scriptsize,below] at (7,4) {$7$};
+    \node[font=\scriptsize,left] at (4,7) {$7$};
+    \node[font=\small,below] at (5.5,3.83) {$x$}; \node[font=\small,left] at (3.8,5.5) {$y$};
+    \node[font=\small,align=center] at (5.5,7.45) {without (iii), depth $18$ (zoom)};
+  \end{scope}
+\end{tikzpicture}
+\\[4pt]
+{\small
+\tikz\draw[fill=COMPcolval] (0,0) rectangle (0.3,0.2); value test \quad
+\tikz\draw[fill=COMPcolmono] (0,0) rectangle (0.3,0.2); derivative test \quad
+\tikz\draw[fill=COMPcolout] (0,0) rectangle (0.3,0.2); outside the region \quad
+\tikz\draw[fill=COMPcolopen] (0,0) rectangle (0.3,0.2); unsettled}
+\caption{Branch and bound for \eqref{COMP:eq:Pclaim}, shown on the slice $z=6$ (the boxes are
+three-dimensional; we draw their intersections with this plane). The dashed square is the region
+$x,y\le z=6$, and the dot is the tight edge $x=y=4$. Left: the certified run, with $18$ boxes on this
+slice. Right: without the derivative test the boxes pile up geometrically towards the tight edge, and the
+corner box is never settled.}
+\label{COMP:fig:bb}
+\end{figure}
+
+\begin{remark}[What was learned]
+(1) The tight points dictated the method: a strict inequality would have been proved by test (ii)
+alone, and the multiplier would not have been needed. Every sharp inequality in Hales's proof needed a
+local argument near its equality case of exactly this kind. (2) The multiplier $\lambda(z)$ is a
+Positivstellensatz-type certificate in the sense of Section~\ref{COMP:sec:verify}: \eqref{COMP:eq:cert} reads
+$z(H-48)=P+\frac{z-4}4\,g$, and only the nonnegativity of $P$ on a polyhedron is left to the computer. A
+semidefinite program could look for a sum-of-squares certificate for $P$ too (Exercise~\ref{COMP:exc:sos}).
+(3) The derivative test is the monotonicity argument of Lecture~1 in disguise: there the area
+$\frac12ac\sin B$ is increased by lengthening $a$ and $c$.
+\end{remark}
+
+%======================================================================
+\section{Gallery of theorems}
+\label{COMP:sec:gallery}
+
+The theorems below were proved with essential help from computers, or are certified by finite objects
+that were found by computer. Each comes with a sentence on how it fits the course.
+
+\begin{theorem}[Hales, Ann.\ of Math.\ 162 (2005); Hales--Ferguson, Discrete Comput.\ Geom.\ 36 (2006)]
+No packing of congruent balls in $\R^3$ has density greater than $\pi/\sqrt{18}$.
+\end{theorem}
+\noindent The formal proof is T.~Hales et al., \emph{A formal proof of the Kepler conjecture}, Forum Math.\ Pi 5
+(2017), e2. Cases are indexed by tame plane graphs (Section~\ref{COMP:sec:index}) and settled by linear programs
+and interval arithmetic; the whole of this interlude is a miniature of it.
+
+\begin{theorem}[Hales--McLaughlin, J.\ Amer.\ Math.\ Soc.\ 23 (2010)]
+Every Voronoi cell of a packing of unit balls in $\R^3$ has volume at least that of the regular dodecahedron
+of inradius $1$.
+\end{theorem}
+\noindent Fejes T\'oth's dodecahedral conjecture (Interlude~E, Section~\ref{SM:sec:frustration}), proved by the
+same computer-assisted methodology as the Kepler conjecture.
+
+\begin{theorem}[Musin--Tarasov, Discrete Comput.\ Geom.\ 48 (2012); Experiment.\ Math.\ 24 (2015)]
+The optimal Tammes configurations for $N=13$ and $N=14$ are unique up to isometry, with minimal angular
+distances $\approx57.1367^\circ$ and $\approx55.6706^\circ$.
+\end{theorem}
+\noindent The proofs enumerate irreducible contact graphs: the full-scale version of the five-point example of
+Section~\ref{COMP:sec:index}. The case $N=13$ is the ``strong thirteen spheres problem'': how large can $13$ equal balls touching a unit ball
+be? Since $57.1367^\circ<60^\circ$, it contains a new proof of $\kiss_3=12$.
+
+\begin{theorem}[Odlyzko--Sloane, J.\ Combin.\ Theory Ser.~A 26 (1979); Levenshtein, Soviet Math.\ Dokl.\ 20 (1979)]
+$\kiss_8=240$ and $\kiss_{24}=196\,560$.
+\end{theorem}
+\noindent Example~\ref{COMP:ex:240}. The computer found the polynomials; the proof is checkable by hand.
+Bannai and Sloane (Canad.\ J.\ Math.\ 33, 1981) proved uniqueness of the configurations.
+
+\begin{theorem}[Musin, Ann.\ of Math.\ 168 (2008)]
+$\kiss_4=24$.
+\end{theorem}
+\noindent The plain LP bound gives only $25$. Musin modifies Delsarte's method so that the auxiliary polynomial
+may be positive on part of the range, and controls that part by a separate geometric argument.
+
+\begin{theorem}[Bachoc--Vallentin, J.\ Amer.\ Math.\ Soc.\ 21 (2008)]
+$\kiss_5\le45$, $\kiss_6\le78$, $\kiss_7\le135$, $\kiss_9\le366$, $\kiss_{10}\le567$.
+\end{theorem}
+\noindent Three-point semidefinite bounds, a matrix version of Theorem~\ref{COMP:thm:LP}. N.~Leijenhorst and
+D.~de Laat (Math.\ Program.\ Comput., 2024) improved the bounds in dimensions $11$--$23$, and
+H.~Cohn, D.~de Laat and A.~Salmon (\emph{Three-point bounds for sphere packing}, arXiv:2206.15373) gave the
+analogous improvement of the Cohn--Elkies bound for packings in dimensions $4$--$7$ and $9$--$16$.
+
+\begin{theorem}[Mark\'ot--Csendes, SIAM J.\ Optim.\ 16 (2005); Mark\'ot, J.\ Global Optim.\ 81 (2021)]
+The best known packings of $n$ equal circles in a square are optimal for $n=28,\dots,33$.
+\end{theorem}
+\noindent Interval branch and bound in configuration space, the method of Section~\ref{COMP:sec:bb} with a
+great deal of engineering.
+
+\begin{theorem}[Brakensiek--Heule--Mackey--Narv\'aez, IJCAR 2020; J.\ Automat.\ Reason.\ 66 (2022)]
+Every tiling of $\R^7$ by unit cubes contains two cubes sharing a full face (Keller's conjecture holds in
+dimension $7$).
+\end{theorem}
+\noindent Keller's conjecture was known for $n\le6$ (Perron) and false for $n\ge8$ (Lagarias--Shor for $n\ge10$, Mackey
+for $n=8$). The case $n=7$ was reduced to the non-existence of a clique of size $128$ in certain graphs and settled by
+a SAT solver; the proofs of unsatisfiability (about $200$ gigabytes) were checked by an independent, formally
+verified checker. A packing problem for cubes, settled by a certificate of non-existence.
+
+\begin{theorem}[Appel--Haken 1977; Robertson--Sanders--Seymour--Thomas, J.\ Combin.\ Theory Ser.~B 70 (1997); Gonthier, Notices AMS 55 (2008)]
+Every planar graph is $4$-colourable.
+\end{theorem}
+\noindent The model case of ``cases indexed by planar graphs'': an unavoidable set of configurations ($633$ in the
+1997 proof), each shown reducible by computer. Gonthier's Coq proof removed the doubts about the code.
+
+\begin{theorem}[Tucker, C.~R.\ Acad.\ Sci.\ Paris 328 (1999); Found.\ Comput.\ Math.\ 2 (2002)]
+The Lorenz equations, with the classical parameters, have a robust strange attractor.
+\end{theorem}
+\noindent Smale's 14th problem, solved by interval arithmetic: an example far from geometry of the methods of
+Section~\ref{COMP:sec:verify}.
+
+\begin{theorem}[Lower bounds by construction, 2025]
+$\kiss_{11}\ge593$ (AlphaEvolve, Google DeepMind, arXiv:2506.13131); $\kiss_{10}\ge510$, $\kiss_{14}\ge1932$
+(M.~Ganzhinov, \emph{Highly symmetric lines}, Linear Algebra Appl.\ 722 (2025); arXiv:2207.08266).
+\end{theorem}
+\noindent A lower bound is certified by a list of vectors and an exact check of all pairwise inner products.
+Finding the list is the hard part; checking it is easy. This is the opposite situation to the upper bounds above.
+
+%======================================================================
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Using Lemma~\ref{COMP:lem:angle}, show that in a configuration with $\rho\ge\pi/3$ every point has at most five
+contacts, and that the bound is still five for the Tammes configuration of $13$ points
+($\theta\approx57.14^\circ$). Show that the bound drops to four exactly when $\theta>\arctan2$, the edge of the
+regular icosahedron.
+\end{exercise}
+
+\begin{exercise}
+Modify the program \texttt{code/contact5.py} to run the rules R1--R4 on the $156$ graphs on six vertices.
+Which graphs survive?
+Find the critical configurations whose stressed graphs are the octahedron, the hexagon $C_6$, and $C_5$ plus an
+isolated point. Are there others?
+\end{exercise}
+
+\begin{exercise}
+Prove the equality case of Proposition~\ref{COMP:prop:rankin}(b): if $2d$ nonzero vectors in $\R^d$ have pairwise
+non-positive inner products, they are $\pm$ an orthogonal basis up to positive scaling. Deduce that the octahedron
+is the unique optimal configuration for $N=6$, while for $N=5$ the optimum is not unique.
+\end{exercise}
+
+\begin{exercise}
+Verify Example~\ref{COMP:ex:240}: expand $f$ in Gegenbauer polynomials for $n=8$ and compute $f(1)/c_0$. Then
+use the same polynomial in dimension $3$. Show that its coefficients are still non-negative, and that it only
+proves $\kiss_3\le1890/127\approx14.9$. Why should one expect a polynomial with roots at $-\frac12,0,\frac12$ to
+be good in dimension $8$ but not in dimension $3$?
+\end{exercise}
+
+\begin{exercise}\label{COMP:exc:kkt}
+For $N=4$, compute the KKT multipliers of Proposition~\ref{COMP:prop:kkt} at the regular tetrahedron and at the
+square on a great circle. Show that the square is not first-order jammed: find a nontrivial infinitesimal motion $v$ with $Av=0$, and
+check that along the corresponding curve all four contact distances increase to second order. Relate this to
+Example~\ref{TOP:ex:N4pass} of Interlude~D.
+\end{exercise}
+
+\begin{exercise}
+(a) Compute the natural interval extension of $f(x)=x^2-2x$ on $[0,2]$, and of the equivalent forms $x(x-2)$ and
+$(x-1)^2-1$. (b) Use Proposition~\ref{COMP:prop:newton} with exact rational arithmetic to enclose $\sqrt2$ in an
+interval of width less than $10^{-20}$, starting from $[1,2]$.
+\end{exercise}
+
+\begin{exercise}\label{COMP:exc:sos}
+(a) Check that the three coefficients $A,B,C$ of $P$ vanish on the edge $x=y=4$.
+Compute $\partial P/\partial x$ and $\partial P/\partial y$, and show by interval arithmetic that both are
+$\ge0$ on the box $[4,5.5]\times[4,7]\times[4,7]$, one of the three boxes settled by test (iii). (b) Using an SDP solver,
+look for a certificate $P=\sigma_0+\sum_i\sigma_ig_i$ on the polyhedron of \eqref{COMP:eq:Pclaim} with
+$g\in\{x-4,\,y-4,\,z-x,\,z-y,\,16-z\}$, and round it to exact rationals.
+\end{exercise}
+
+\begin{exercise}
+Write the statement ``there are $5$ points on $\Sph^2$ with pairwise distances greater than $\pi/2$'' as a
+first-order sentence. How many variables and polynomials does it have? Using
+Proposition~\ref{COMP:prop:rankin}, decide it by hand. Why does the existence of a decision procedure imply that
+$\cos d_N$ is algebraic for every $N$?
+\end{exercise}
+
+\begin{exercise}
+Modify \texttt{code/e8\_mitm.py} to count the vectors of norm $2$ and $4$ in $D_4$ (split $2+2$) and in $E_7$
+(take $E_7$ to be the vectors of $E_8$ orthogonal to the root $e_1-e_2$, and keep the first two coordinates in the
+same half). You should find $24,24$ and $126,756$.
+\end{exercise}
+
+%======================================================================
+\section*{Further reading}
+\addcontentsline{toc}{section}{Further reading}
+\begin{itemize}[nosep]
+\item R.~E.~Moore, R.~B.~Kearfott, M.~J.~Cloud, \emph{Introduction to Interval Analysis}, SIAM, 2009. Interval
+  arithmetic, interval Newton and Krawczyk, with code.
+\item W.~Tucker, \emph{Validated Numerics: A Short Introduction to Rigorous Computations}, Princeton University
+  Press, 2011. Includes automatic differentiation and the Lorenz attractor.
+\item G.~Blekherman, P.~A.~Parrilo, R.~R.~Thomas (eds.), \emph{Semidefinite Optimization and Convex Algebraic
+  Geometry}, MOS--SIAM Series on Optimization, 2013. Sums of squares, Positivstellens\"atze, SDP.
+\item S.~Basu, R.~Pollack, M.-F.~Roy, \emph{Algorithms in Real Algebraic Geometry}, 2nd ed., Springer, 2006.
+  Sturm sequences, cylindrical algebraic decomposition, complexity.
+\item D.~Cox, J.~Little, D.~O'Shea, \emph{Ideals, Varieties, and Algorithms}, Springer UTM. Gr\"obner bases.
+\item J.~H.~Conway, N.~J.~A.~Sloane, \emph{Sphere Packings, Lattices and Groups}, Springer; Ch.~9 (bounds for
+  codes and sphere packings), Ch.~13 (Odlyzko--Sloane, bounds on kissing numbers) and Ch.~14 (Bannai--Sloane,
+  uniqueness).
+\item T.~C.~Hales et al., \emph{A formal proof of the Kepler conjecture}, Forum Math.\ Pi 5 (2017), e2; and
+  T.~C.~Hales, \emph{Dense Sphere Packings: A Blueprint for Formal Proofs}, LMS Lecture Note Series 400, Cambridge,
+  2012.
+\item J.~C.~Lagarias (ed.), \emph{The Kepler Conjecture: The Hales--Ferguson Proof}, Springer, 2011.
+\item H.~Cohn, \emph{Packing, coding, and ground states}, PCMI lecture notes, arXiv:1603.05202. LP and SDP bounds
+  from the point of view of these notes.
+\end{itemize}

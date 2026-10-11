@@ -37,15 +37,21 @@ been written out as prose, sketches have been redrawn, and gaps have been filled
 \item Grey margin notes describe the original page (crossed-out text, omitted doodles, and so on).
 \end{itemize}
 
-\paragraph{The interludes.} Five chapters are entirely new and are set in black for readability, but
+\paragraph{The interludes.} Several chapters are entirely new and are set in black for readability, but
 all of them are added material:
 \begin{itemize}
 \item[A] From Dynkin diagrams to Lie algebras and Lie groups (after Lecture 6);
 \item[B] Lattices, quadratic forms and the geometry of numbers (after A);
 \item[C] The torus, Diophantine approximation and aperiodic order (after B);
 \item[D] Min-max, configuration spaces and braids (after Lecture 11);
-\item[E] Random packings, entropy and information (after D).
+\item[E] Random packings, entropy and information (after D);
+\item[F] Computation and certified proof (after E);
+\item[G] Packings in the laboratory (after F);
+\item[H] Dynkin diagrams everywhere (at the end).
 \end{itemize}
+
+\paragraph{Extensions.} Sections titled ``Extension'' inside the lectures are also new material set in
+black: Rogers' simplex bound (end of Lecture~2) and why root lattices pack well (end of Lecture~6).
 
 \paragraph{Sources.} The scans used are \texttt{MAT670\_1}, \texttt{\_2}, \texttt{\_3},
 \texttt{\_46}, \texttt{\_78}, \texttt{\_9X} and \texttt{\_XI} on the course web page.
@@ -100,6 +106,17 @@ cross-check.
 \endgroup
 \begingroup\renewcommand{\thechapter}{E}\renewcommand{\theHchapter}{interludeE}
 \input{chapters/SM}
+\endgroup
+\begingroup\renewcommand{\thechapter}{F}\renewcommand{\theHchapter}{interludeF}
+\input{chapters/COMP}
+\endgroup
+\begingroup\renewcommand{\thechapter}{G}\renewcommand{\theHchapter}{interludeG}
+\input{chapters/PHYS}
+\endgroup
+
+\part*{Coda}\addcontentsline{toc}{part}{Coda}
+\begingroup\renewcommand{\thechapter}{H}\renewcommand{\theHchapter}{interludeH}
+\input{chapters/DYN}
 \endgroup
 
 \end{document}
