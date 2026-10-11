@@ -102,12 +102,12 @@ function createEngine(ac, dest, onNote){
     flute: (f, t, d, v, p) => { const P = pan(p), g = gain(0, P); env(g, t, .12, v*.2, .3, .8, .25, t + d); const o = osc("sine", f, t, t + d + .5, g); const tri = gain(.15, g); osc("triangle", f*2, t, t + d + .5, tri);
       const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 5; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(f*.006, t + .6); lfo.connect(lg); lg.connect(o.frequency); lfo.start(t); lfo.stop(t + d + .5);
       const n = ac.createBufferSource(); n.buffer = noiseBuf; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fq(f*2); bp.Q.value = 4; const ng = gain(0, P); env(ng, t, .05, v*.05, .2, .3, .2, t + d); n.connect(bp); bp.connect(ng); n.start(t, Math.random()); n.stop(t + d + .5); },
-    shakuhachi: (f, t, d, v, p) => { INST.flute(f*.985, t, d, v*1.1, p); },   // a breathy, slightly flat attack is scheduled inside flute; the bend is the meri
-    bowed: (f, t, d, v, p) => { const P = pan(p), g = ac.createGain(); env(g, t, .25, v*.1, .5, .85, .4, t + d); [[700, 6], [1200, 7], [2600, 9]].forEach(([fc, q]) => { const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fc; bp.Q.value = q; g.connect(bp); bp.connect(P); });
+    shakuhachi: (f, t, d, v, p) => { INST.flute(f, t, d, v*1.1, p); },   // redefined below on the flute model, with the meri as a bend up into the note
+    bowed: (f, t, d, v, p) => { const P = pan(p), g = ac.createGain(); env(g, t, .25, v*.25, .5, .85, .4, t + d); [[700, 6], [1200, 7], [2600, 9]].forEach(([fc, q]) => { const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fc; bp.Q.value = q; g.connect(bp); bp.connect(P); });
       const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 3000; g.connect(lp); const lg = gain(.4, P); lp.connect(lg); const o = osc("sawtooth", f, t, t + d + 1, g); const vib = ac.createOscillator(), vg = ac.createGain(); vib.frequency.value = 5.5; vg.gain.value = f*.004; vib.connect(vg); vg.connect(o.frequency); vib.start(t); vib.stop(t + d + 1); },
-    metal: (f, t, d, v, p) => { const P = pan(p); [[1, 1, 3], [2.76, .4, 1.6], [5.4, .2, .8], [8.93, .1, .4]].forEach(([k, a, dd]) => { [0, 6].forEach(beat => { const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.18, t + .004); g.gain.setTargetAtTime(0, t + .004, dd/3); osc("sine", f*k + beat, t, t + dd + .5, g); }); }); },
+    metal: (f, t, d, v, p) => { const P = pan(p); [[1, 1, 3], [2.76, .4, 1.6], [5.4, .2, .8], [8.93, .1, .4]].forEach(([k, a, dd]) => { [-1, 1].forEach(sg => { const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.18, t + .004); g.gain.setTargetAtTime(0, t + .004, dd/3); osc("sine", f*k*(1 + sg*.0035), t, t + dd + .5, g); }); }); },
     gong: (f, t, d, v, p) => { const P = pan(p); [[1, 1, 7], [1.48, .5, 5], [2.13, .4, 4], [2.92, .2, 3], [3.6, .15, 2]].forEach(([k, a, dd]) => { const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.25, t + .03); g.gain.setTargetAtTime(0, t + .03, dd/3); const o = osc("sine", f*k, t, t + dd + 1, g); o.frequency.setValueAtTime(f*k*1.01, t); o.frequency.exponentialRampToValueAtTime(f*k, t + 1.5); }); },
-    tanpura: (f, t, d, v, p) => { const P = pan(p), g = ac.createGain(); env(g, t, .05, v*.1, 1.5, .5, 1, t + d); const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 6; bp.frequency.setValueAtTime(fq(f*4), t); bp.frequency.exponentialRampToValueAtTime(fq(f*14), t + d*.8); g.connect(bp); bp.connect(P); const lg = gain(.5, P); g.connect(lg); osc("sawtooth", f, t, t + d + 2, g); },
+    tanpura: (f, t, d, v, p) => { const P = pan(p), g = ac.createGain(); env(g, t, .05, v*.2, 1.5, .5, 1, t + d); const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 6; bp.frequency.setValueAtTime(fq(f*4), t); bp.frequency.exponentialRampToValueAtTime(fq(f*14), t + d*.8); g.connect(bp); bp.connect(P); const lg = gain(.5, P); g.connect(lg); osc("sawtooth", f, t, t + d + 2, g); },
     marimba: (f, t, d, v, p) => { const P = pan(p); [[1, 1, .9], [4, .25, .15], [9.9, .08, .05]].forEach(([k, a, dd]) => { const g = gain(0, P); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*a*.35, t + .002); g.gain.setTargetAtTime(0, t + .002, dd/3); osc("sine", f*k, t, t + dd + .3, g); }); },
     epiano: (f, t, d, v, p) => { const P = pan(p), g = gain(0, P), m = ac.createOscillator(), mg = ac.createGain(); m.frequency.value = f; mg.gain.setValueAtTime(f*1.5*v, t); mg.gain.setTargetAtTime(f*.2, t, .3); m.connect(mg); const c = osc("sine", f, t, t + d + 1.5, g); mg.connect(c.frequency); m.start(t); m.stop(t + d + 1.5); env(g, t, .003, v*.22, 1.2, .3, .4, t + d); },
     bass: (f, t, d, v, p) => { const P = pan(p*.3), lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 600; lp.connect(P); const g = ac.createGain(); g.connect(lp); env(g, t, .01, v*.3, .4, .6, .1, t + d); osc("sine", f, t, t + d + .3, g); const sg = gain(.3, g); osc("sawtooth", f, t, t + d + .3, sg); },
@@ -164,17 +164,40 @@ function createEngine(ac, dest, onNote){
   const breath = (dst, centre, t, end, amt, v, q = 1.5) => { if(!amt) return; const n = ac.createBufferSource(); n.buffer = noiseBuf; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fq(centre); bp.Q.value = q; const g = ac.createGain(); g.gain.value = 0;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*amt*.09, t + .05); g.gain.setTargetAtTime(v*amt*.04, t + .05, .15); g.gain.setTargetAtTime(0, Math.max(t + .06, end - .12), .06); n.connect(bp); bp.connect(g); g.connect(dst); n.start(t, Math.random()); n.stop(end + .1); };
   const K = (o, k, dflt) => o[k] == null ? dflt : o[k];
-  // one plucked string: Karplus–Strong for low and middle notes (a loop with no gain above 1), decaying partials above about 330 Hz,
-  // where a Web Audio feedback loop can't be made short enough
-  function string1(f, t, dur, v, o, dst){ const bright = K(o, "bright", .5), sus = K(o, "sustain", .5), fade = t + Math.max(.4, dur);
-    if(f > 330){ const n = 2 + Math.round(bright*7); for(let k = 1; k <= n; k++){ const g = ac.createGain(), dec = (.25 + sus*2.2)/(1 + (k - 1)*(1.4 - bright)); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v*.22/Math.pow(k, 1.25 - bright*.6), t + .003); g.gain.setTargetAtTime(0, t + .003, dec); g.connect(dst); osc(k === 1 ? "triangle" : "sine", f*k*(1 + .0004*k*k), t, t + dec*5 + .2, g); } return; }
-    const src = ac.createBufferSource(); src.buffer = noiseBuf; const burst = ac.createGain(), soft = ac.createBiquadFilter(); soft.type = "lowpass"; soft.frequency.value = fq(f*(2 + bright*16)); soft.Q.value = -6;
-    burst.gain.setValueAtTime(v*.55, t); burst.gain.setValueAtTime(0, t + 1/f*1.2);
-    const dl = ac.createDelay(1); dl.delayTime.value = 1/f; const fb = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = fq(Math.min(9000, f*(3 + bright*10))); lp.Q.value = -6;
-    const g = Math.min(.985, .955 + sus*.03); fb.gain.setValueAtTime(g, t); fb.gain.setTargetAtTime(0, fade + .3, .25);
-    const o2 = ac.createGain(); o2.gain.value = 1; o2.gain.setTargetAtTime(0, fade, .35); o2.connect(dst);
-    src.connect(soft); soft.connect(burst); burst.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(o2); src.start(t); src.stop(t + .05);
-    setTimeout(() => { try { fb.disconnect(); o2.disconnect(); lp.disconnect(); } catch(e){} }, (fade - ac.currentTime + 2)*1000); }
+  // one plucked string. The string is computed in script, sample by sample (Karplus–Strong with a fractional-delay allpass,
+  // so it is in tune at every pitch, and a pluck-position comb in the excitation), then played as a buffer. A Web Audio
+  // feedback loop can't be shorter than 128 samples, so above about 340 Hz it went flat or had to be faked with sine partials,
+  // which sounded like a piano. Buffers are cached by pitch and settings.
+  const KS = new Map();
+  function ksBuffer(f, o){
+    const sr = ac.sampleRate, bright = K(o, "bright", .5), sus = K(o, "sustain", .5), pos = K(o, "pos", .1 + (1 - bright)*.12), damp = K(o, "damp", 0);
+    const key = [f.toFixed(2), bright, sus, pos, damp].join("|"); if(KS.has(key)) return KS.get(key);
+    const T60 = Math.max(.25, Math.min(9, (.5 + sus*5.5)*Math.pow(220/f, .5)*(1 - damp*.7)));
+    const S = Math.max(.06, .5 - bright*.44);              // loop lowpass: x(1−S) + x₋₁S; S = ½ is darkest, small S is bright
+    const P = sr/f - S;                                     // the period, less the filter's delay of S samples
+    // the delay line holds Ni + 1 samples; the allpass makes up the fraction fr
+    let Ni = Math.floor(P - 1.1), fr = P - 1 - Ni; if(Ni < 2){ Ni = 2; fr = Math.max(.1, P - 3); }
+    const C = (1 - fr)/(1 + fr);                            // first-order allpass for the fractional part of the period
+    const rho = Math.pow(10, -3/(f*T60));                   // loss per period for the chosen ring time
+    const L = Math.min(Math.ceil(sr*Math.min(T60*1.1, 7)), sr*7), buf = ac.createBuffer(1, L, sr), y = buf.getChannelData(0);
+    // the excitation: a period of noise, softened by brightness, minus itself delayed by the pluck position (a comb)
+    const ex = new Float32Array(Ni + 1); let lp = 0; const a1 = .15 + bright*.8;
+    for(let i = 0; i <= Ni; i++){ lp += a1*((Math.random()*2 - 1) - lp); ex[i] = lp; }
+    const pk = Math.max(1, Math.round(pos*(Ni + 1))); const exc = new Float32Array(Ni + 1); for(let i = 0; i <= Ni; i++) exc[i] = ex[i] - (i >= pk ? ex[i - pk] : 0);
+    let m = 0; for(let i = 0; i <= Ni; i++) m += exc[i]; m /= (Ni + 1); for(let i = 0; i <= Ni; i++) exc[i] -= m;   // no DC in the loop
+    const D = new Float32Array(Ni + 1); let w = 0, prev = 0, apx = 0, apy = 0;
+    for(let n = 0; n < L; n++){
+      const d = D[w];                                       // the sample one period ago
+      const fl = rho*((1 - S)*d + S*prev); prev = d;        // loss and lowpass
+      const ap = C*fl + apx - C*apy; apx = fl; apy = ap;    // fractional delay
+      const v = ap + (n <= Ni ? exc[n] : 0);
+      D[w] = v; w = w === Ni ? 0 : w + 1; y[n] = v; }
+    let pkv = 1e-9; for(let n = 0; n < Math.min(L, sr*.2); n++) pkv = Math.max(pkv, Math.abs(y[n])); const nrm = .5/pkv; for(let n = 0; n < L; n++) y[n] *= nrm;
+    const fadeN = Math.min(L, Math.round(sr*.05)); for(let n = 0; n < fadeN; n++) y[L - 1 - n] *= n/fadeN;
+    if(KS.size > 600) KS.delete(KS.keys().next().value); KS.set(key, buf); return buf; }
+  function string1(f, t, dur, v, o, dst){ const buf = ksBuffer(f, o), src = ac.createBufferSource(); src.buffer = buf;
+    const g = ac.createGain(), ring = Math.max(.5, dur*1.15); g.gain.setValueAtTime(v*1.6, t); g.gain.setTargetAtTime(0, t + ring, .12 + K(o, "sustain", .5)*.35);
+    src.connect(g); g.connect(dst); src.start(t); src.stop(t + Math.min(buf.duration, ring + 2)); }
   const MODELS = {
     plucked(f, t, d, v, p, o){ const P = pan(p), level = gain(K(o, "level", 1)/(1 + K(o, "buzz", 0)*4), P);
       let dst = level; if(K(o, "buzz", 0) > 0){ const sh = shaper(o.buzz), hi = ac.createBiquadFilter(); hi.type = "peaking"; hi.frequency.value = fq(K(o, "body", 400)*6); hi.gain.value = 6*o.buzz; hi.Q.value = 1; sh.connect(hi); hi.connect(level); dst = sh; }
@@ -201,7 +224,8 @@ function createEngine(ac, dest, onNote){
       breath(body, f*3, t, end, K(o, "buzz", .3), v, 1.2); },
     flute(f, t, d, v, p, o){ const P = pan(p), end = t + d, g = gain(0, gain(K(o, "level", 1), P)), bright = K(o, "bright", .3);
       env(g, t, .04 + K(o, "attack", .3)*.25, v*.2, .3, .8, .2 + K(o, "sustain", .3)*.3, end);
-      const s = osc("sine", f, t, end + .6, g); const h2 = gain(bright*.3, g), h3 = gain(bright*.12, g); osc("sine", f*2, t, end + .6, h2); osc("sine", f*3, t, end + .6, h3);
+      const s = osc("sine", f, t, end + .6, g); const h2 = gain(bright*.7, g), h3 = gain(bright*bright*.45, g), h4 = gain(bright*bright*.2, g); const s2 = osc("sine", f*2, t, end + .6, h2), s3 = osc("sine", f*3, t, end + .6, h3); osc("sine", f*4, t, end + .6, h4);
+      const bend = K(o, "bend", 0); if(bend){ [[s, 1], [s2, 2], [s3, 3]].forEach(([os, k]) => { os.frequency.setValueAtTime(f*k*(1 - bend), t); os.frequency.exponentialRampToValueAtTime(f*k, t + .12 + bend*4); }); }
       vibrato(s.frequency, f, t, end + .5, K(o, "vib", .4)*.009, K(o, "vibRate", 5), .35);
       breath(g.gain ? P : P, f*2.2, t, end, K(o, "buzz", .4)*1.4, v, 3);
       if(K(o, "chiff", 0)){ const c = gain(0, P); c.gain.setValueAtTime(v*o.chiff*.12, t); c.gain.setTargetAtTime(0, t + .01, .02); osc("sine", f*4, t, t + .1, c); } },
@@ -224,14 +248,14 @@ function createEngine(ac, dest, onNote){
   // the instruments: [key, name, family, model, settings]
   const ORCH = [
     // plucked
-    ["guitar", "Steel-string guitar", "Plucked strings", "plucked", {bright:.6, sustain:.75, body:105, peaks:[[105,4,.5],[230,3,.3],[2700,1.5,.12]]}],
-    ["nylon", "Classical guitar", "Plucked strings", "plucked", {bright:.35, sustain:.7, body:98, peaks:[[98,4,.55],[205,3,.3],[1900,1.5,.08]]}],
+    ["guitar", "Steel-string guitar", "Plucked strings", "plucked", {bright:.68, sustain:.75, pos:.12, body:105, peaks:[[105,4,.5],[230,3,.3],[2700,1.5,.12]]}],
+    ["nylon", "Classical guitar", "Plucked strings", "plucked", {bright:.32, sustain:.62, pos:.2, body:98, peaks:[[98,4,.55],[205,3,.3],[1900,1.5,.08]]}],
     ["lute", "Lute (eleven courses)", "Plucked strings", "plucked", {bright:.42, sustain:.55, detune:4, body:130, peaks:[[130,4,.5],[390,3,.32],[1500,2,.1]]}],
     ["theorbo", "Theorbo (bass lute)", "Plucked strings", "plucked", {bright:.35, sustain:.85, body:85, peaks:[[85,4,.6],[260,3,.3]]}],
     ["mandolin", "Mandolin", "Plucked strings", "plucked", {bright:.75, sustain:.35, detune:6, trem:11, body:300, peaks:[[300,3,.4],[1400,2,.2]]}],
-    ["banjo", "Banjo", "Plucked strings", "plucked", {bright:.9, sustain:.2, body:420, peaks:[[420,6,.6],[1250,4,.3]], click:.4}],
-    ["harp", "Harp", "Plucked strings", "plucked", {bright:.3, sustain:.95, body:180}],
-    ["harpsichord", "Harpsichord (8′ and 4′)", "Plucked strings", "plucked", {bright:.95, sustain:.7, octave:true, body:220, click:.35}],
+    ["banjo", "Banjo", "Plucked strings", "plucked", {bright:.9, sustain:.2, pos:.08, body:420, peaks:[[420,6,.6],[1250,4,.3]], click:.4}],
+    ["harp", "Harp", "Plucked strings", "plucked", {bright:.25, sustain:.95, pos:.3, body:180}],
+    ["harpsichord", "Harpsichord (8′ and 4′)", "Plucked strings", "plucked", {bright:.95, sustain:.7, pos:.07, octave:true, body:220, click:.35}],
     ["shamisen", "Shamisen", "Plucked strings", "plucked", {bright:.8, sustain:.3, buzz:.55, body:340, peaks:[[340,5,.55],[2200,3,.3]], click:.6}],
     ["sanshin", "Sanshin (Okinawa)", "Plucked strings", "plucked", {bright:.6, sustain:.4, buzz:.2, body:300, click:.3}],
     ["pipa", "Pipa (tremolo)", "Plucked strings", "plucked", {bright:.75, sustain:.45, trem:14, buzz:.1, body:380}],
@@ -248,11 +272,11 @@ function createEngine(ac, dest, onNote){
     ["erhu", "Erhu", "Bowed strings", "bowed", {bright:.6, attack:.2, vib:.85, vibRate:6.2, peaks:[[900,3,.7],[2400,3,.4]], buzz:.3}],
     ["strings", "String section", "Bowed strings", "bowed", {bright:.4, attack:.6, vib:.35, detune:14, peaks:[[350,2,.5],[1000,2,.5],[2600,2,.3]]}],
     // flutes
-    ["recorder", "Recorder", "Flutes", "flute", {bright:.25, vib:.05, buzz:.35, chiff:.6}],
-    ["ney", "Ney (end-blown reed flute)", "Flutes", "flute", {bright:.15, vib:.5, buzz:1, attack:.5}],
-    ["bansuri", "Bansuri", "Flutes", "flute", {bright:.25, vib:.6, buzz:.6}],
-    ["panpipes", "Panpipes", "Flutes", "flute", {bright:.1, vib:.1, buzz:.8, chiff:.9}],
-    ["ocarina", "Ocarina", "Flutes", "flute", {bright:.05, vib:.25, buzz:.15}],
+    ["recorder", "Recorder", "Flutes", "flute", {bright:.6, vib:.05, buzz:.3, chiff:.7, attack:.1}],
+    ["ney", "Ney (end-blown reed flute)", "Flutes", "flute", {bright:.35, vib:.5, buzz:1.4, attack:.6, bend:.02}],
+    ["bansuri", "Bansuri", "Flutes", "flute", {bright:.4, vib:.6, buzz:.7, bend:.015}],
+    ["panpipes", "Panpipes", "Flutes", "flute", {bright:.12, vib:.1, buzz:1.1, chiff:1, attack:.15}],
+    ["ocarina", "Ocarina", "Flutes", "flute", {bright:0, vib:.2, buzz:.1, attack:.2}],
     // double reeds, the duduk's family among them
     ["oboe", "Oboe", "Double reeds", "reed", {bright:.75, vib:.35, body:1150, peaks:[[1150,3,.6],[2900,3,.35]], buzz:.15}],
     ["englishhorn", "Cor anglais", "Double reeds", "reed", {bright:.55, vib:.35, body:900, peaks:[[900,3,.6],[2300,3,.3]], buzz:.15}],
@@ -278,7 +302,7 @@ function createEngine(ac, dest, onNote){
     // free reeds
     ["accordion", "Accordion (musette)", "Free reeds", "freereed", {bright:.6, detune:14, body:1400}],
     ["bandoneon", "Bandoneon", "Free reeds", "freereed", {bright:.45, detune:3, body:1100, voices:[0, 1200]}],
-    ["harmonica", "Harmonica", "Free reeds", "freereed", {bright:.7, detune:4, voices:[-4, 4], body:1800, buzz:.3, trem:5.5}],
+    ["harmonica", "Harmonica", "Free reeds", "freereed", {level:1.6, bright:.7, detune:4, voices:[-4, 4], body:1800, buzz:.3, trem:5.5}],
     ["sheng", "Sheng", "Free reeds", "freereed", {bright:.4, detune:2, voices:[0, 702], body:1200}],
     // struck
     ["vibraphone", "Vibraphone (motor on)", "Struck", "struck", {sustain:.7, trem:5.5, partials:[[1,1,3],[4,.28,1],[10,.05,.35]]}],
@@ -297,6 +321,11 @@ function createEngine(ac, dest, onNote){
     pad:{name:"Pad", family:"Synths"}, bass:{name:"Synth bass", family:"Synths"}});
   function define(key, name, family, model, settings){ if(!MODELS[model]) return false; const o = Object.assign({}, settings); INST[key] = (f, t, d, v, p) => MODELS[model](f, t, d, v, p, o); META[key] = {name, family, model, settings: o}; return true; }
   ORCH.forEach(([k, n, fam, m, o]) => define(k, n, fam, m, o));
+  // the house's first plucked strings, now on the same model
+  define("shakuhachi", "Shakuhachi", "Flutes", "flute", {bright:.2, vib:.45, vibRate:4.5, buzz:1.1, attack:.5, bend:.03});
+  define("pluck", "Plucked string (plain)", "Plucked strings", "plucked", {bright:.55, sustain:.55});
+  define("koto", "Koto", "Plucked strings", "plucked", {bright:.6, sustain:.8, pos:.08, body:210, peaks:[[210,3,.45],[620,3,.3],[1700,2,.12]], click:.25});
+  define("oud", "Oud", "Plucked strings", "plucked", {bright:.45, sustain:.5, detune:5, pos:.12, body:140, peaks:[[140,4,.55],[330,3,.35],[1300,2,.12]], click:.2});
   INST.none = () => {}; META.none = {name:"(silent)", family:"—"};
   const INSTRUMENTS = Object.keys(INST);
 
@@ -438,7 +467,7 @@ function createEngine(ac, dest, onNote){
   function stop(){ running = false; clearInterval(timer); timer = null; out.gain.setTargetAtTime(0, ac.currentTime, .3); setTimeout(() => { if(!running) out.gain.value = .9; }, 1500); }
   function set(o){ const g0 = st.genre; Object.assign(st, o); if(o.genre && o.genre !== g0){ mem = {}; } if("tape" in o) setTape(!!o.tape); }
   function useGenreDefaults(k){ const g = GENRES[k]; st.genre = k; st.bpm = g.bpm; st.roles = Object.assign({}, g.roles); if(g.scale) st.scale = g.scale; st.tuning = g.tuning || "12tet"; st.swing = g.swing || 0; st.tape = !!g.tape; setTape(st.tape); st.ambience = g.ambience || null; mem = {}; return st; }
-  function preview(inst, f){ (INST[inst] || INST.comb)(f || st.root*2, ac.currentTime + .02, .8, .7, 0); }
+  function preview(inst, f, at, dur){ (INST[inst] || INST.comb)(f || st.root*2, at == null ? ac.currentTime + .02 : at, dur || 1.4, .7, 0); }
 
   /* ---------- ambiences ---------- */
   let ambNodes = [], ambTimers = [];
