@@ -3,7 +3,8 @@
 
    Four screens, chosen by the address hash:
      (none)              home: a "talk to a person" line, search, and topic buttons (data.home)
-     #<section id>       one topic: its top picks, with everything else folded under "More options"
+     #<section id>       one topic: its start-here guide, its top picks, and everything else folded under "More options"
+     #guide-<id>         one short guide (data.guides)
      #all, #student, #tutor, #faculty, #staff   browse: every section in that audience view (data.views)
    Typing in the search box shows matching entries from anywhere. */
 (function () {
@@ -31,6 +32,73 @@
   D.entries.forEach(function (e) {
     e._h = norm([e.lu ? "used at lawrence" : "", e.title, e.by, e.note, e.start, e.type, e.level, (e.courses || []).join(" "), e.cost, SECT[e.section] ? SECT[e.section].short : ""].join(" "));
   });
+  /* ---------- guides: short QRC-written on-ramps ---------- */
+  var GUIDE = {}, ENTRY = {};
+  D.entries.forEach(function (e) { ENTRY[e.id] = e; });
+  (D.guides || []).forEach(function (g) { GUIDE[g.id] = g; });
+  var TOKEN = /\[\[([^\]]+)\]\]/g;
+  function resolve(tok) {
+    var bar = tok.indexOf("|"), target = bar < 0 ? tok : tok.slice(0, bar), label = bar < 0 ? "" : tok.slice(bar + 1);
+    if (target.indexOf("guide:") === 0) { var g = GUIDE[target.slice(6)]; return g ? { href: "#guide-" + g.id, text: label || g.title, cls: "qd-glink" } : null; }
+    if (target.charAt(0) === "#") { var s = SECT[target.slice(1)]; return s ? { href: target, text: label || s.short, cls: "qd-glink" } : null; }
+    var e = ENTRY[target]; return e ? { href: e.url, text: label || e.title, cls: e.internal ? "qd-glink" : "qd-rlink", ext: !e.internal } : null;
+  }
+  function rich(text) {
+    var out = [], last = 0, m;
+    text = text || "";
+    TOKEN.lastIndex = 0;
+    while ((m = TOKEN.exec(text))) {
+      if (m.index > last) out.push(text.slice(last, m.index));
+      var r = resolve(m[1]);
+      if (r) out.push(el("a", r.ext ? { href: r.href, class: r.cls, target: "_blank", rel: "noopener" } : { href: r.href, class: r.cls }, [r.text]));
+      else out.push(m[1]);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) out.push(text.slice(last));
+    return out;
+  }
+  function plain(text) { return (text || "").replace(TOKEN, function (all, tok) { var r = resolve(tok); return " " + (r ? r.text : tok) + " "; }); }
+  (D.guides || []).forEach(function (g) {
+    var bits = [g.title, g.intro, g.tip, g.box];
+    (g.parts || []).forEach(function (p) { bits.push(p.h, p.p, (p.ol || []).join(" ")); });
+    g._h = norm(plain(bits.join(" ")) + " guide");
+  });
+  function guideCard(g) {
+    return el("li", null, [el("a", { href: "#guide-" + g.id }, [
+      el("b", { text: g.title }), el("span", { text: g.intro || "" }), el("em", { text: g.minutes + " min read" })])]);
+  }
+  function guideBody(g) {
+    var topicKind = g.kind === "topic";
+    var kids = [el("div", { class: "qd-guide-label", text: "QRC guide · " + g.minutes + " min read" })];
+    kids.push(el(topicKind ? "h3" : "h2", { class: "qd-guide-title", text: g.title }));
+    if (g.intro) kids.push(el("p", { class: "qd-guide-intro" }, rich(g.intro)));
+    (g.parts || []).forEach(function (p) {
+      if (topicKind) {
+        var hp = p.h.split(" · ");
+        kids.push(el("div", { class: "qd-step" }, [el("div", { class: "qd-when" }, [hp[0], hp[1] ? el("small", { text: hp[1] }) : null]), el("p", null, rich(p.p))]));
+      } else {
+        kids.push(el("h3", { class: "qd-guide-h", text: p.h }));
+        if (p.p) kids.push(el("p", null, rich(p.p)));
+        if (p.ol) { var ol = el("ol", { class: "qd-guide-ol" }); p.ol.forEach(function (t) { ol.appendChild(el("li", null, rich(t))); }); kids.push(ol); }
+      }
+    });
+    if (g.box) {
+      var pre = el("pre", { class: "qd-box", text: g.box });
+      var btn = el("button", { type: "button", class: "qd-copy", text: "Copy text" });
+      btn.addEventListener("click", function () {
+        function done() { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy text"; }, 1600); }
+        function fallback() { var r = document.createRange(); r.selectNodeContents(pre); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); btn.textContent = "Selected: press Ctrl+C or Cmd+C"; }
+        try { navigator.clipboard.writeText(g.box).then(done, fallback); } catch (e) { fallback(); }
+      });
+      kids.push(el("div", { class: "qd-boxwrap" }, [pre, btn]));
+    }
+    if (g.tip) kids.push(el("p", { class: "qd-tip" }, [el("b", { text: "Tip " })].concat(rich(g.tip))));
+    return el("article", { class: "qd-guide" + (topicKind ? " is-topic" : "") }, kids);
+  }
+  function homeGuides() {
+    return (D.guides || []).filter(function (g) { return g.home; }).sort(function (a, b) { return a.home - b.home; });
+  }
+
   function inSection(id) {
     return D.entries.filter(function (e) { return e.section === id || (e.also || []).indexOf(id) >= 0; })
       .sort(function (a, b) { return rank(b, id) - rank(a, id); });
@@ -48,7 +116,7 @@
     if (e.cost) tags.appendChild(el("span", { class: "qd-tag", text: e.cost }));
     if (!compact) (e.courses || []).forEach(function (c) { tags.appendChild(el("span", { class: "qd-tag", text: c })); });
     var kids = [
-      el("div", { class: "qd-title" }, [el("a", { href: e.url, target: "_blank", rel: "noopener" }, [e.title])]),
+      el("div", { class: "qd-title" }, [el("a", e.internal ? { href: e.url } : { href: e.url, target: "_blank", rel: "noopener" }, [e.title])]),
       el("div", { class: "qd-by", text: e.by }),
       tags,
       el("p", { class: "qd-note", text: e.note })
@@ -78,7 +146,16 @@
       el("a", { href: "#staff", text: "For staff" }), " · ",
       el("a", { href: "#all", text: "Browse all " + D.entries.length + " resources" })
     ]);
-    return [personLine(), el("h2", { class: "qd-ask", text: "What are you working on?" }), grid, others];
+    var hg = homeGuides(), first = el("ul", { class: "qd-guides" }), more = el("ul", { class: "qd-guides is-more" });
+    hg.forEach(function (g, i) { (i < 4 ? first : more).appendChild(guideCard(g)); });
+    var out = [personLine()];
+    if (hg.length) out.push(el("h2", { class: "qd-ask", text: "New here? Start with a short guide" }), first);
+    var sc = D.meta.selfcheck;
+    if (sc) out.push(el("a", { class: "qd-cta", href: sc.link }, [el("span", { class: "qd-guide-label", text: "Self-check · MATH 102, 103, 140, 155" }), el("b", { text: sc.text }), el("span", { class: "qd-cta-go", text: "Start the self-check →" })]));
+    out.push(el("h2", { class: "qd-ask", text: "What are you working on?" }), grid);
+    if (hg.length > 4) out.push(el("h2", { class: "qd-ask is-small", text: "More short guides" }), more);
+    out.push(others);
+    return out;
   }
 
   function topic(id) {
@@ -88,7 +165,9 @@
     var rest = items.filter(function (e) { return picks.indexOf(e) < 0; });
     var out = [backLink(), el("header", { class: "qd-topichead" }, [
       el("h2", { text: s.title }), el("p", { class: "qd-need", text: s.need }), el("p", { class: "qd-blurb", text: s.blurb })])];
-    out.push(el("h3", { class: "qd-sub", text: picks.length > 1 ? "Try these first" : "Try this first" }));
+    var tg = (D.guides || []).filter(function (g) { return g.kind === "topic" && g.section === id; })[0];
+    if (tg) out.push(guideBody(tg));
+    out.push(el("h3", { class: "qd-sub", text: tg ? "The QRC's picks" : (picks.length > 1 ? "Try these first" : "Try this first") }));
     var ul = el("ul", { class: "qd-list" });
     picks.forEach(function (e) { ul.appendChild(entryNode(e, false, id)); });
     out.push(ul);
@@ -115,6 +194,12 @@
     var toc = el("ul", { class: "qd-toc" });
     ids.forEach(function (id) { toc.appendChild(el("li", null, [el("a", { href: "#" + id, text: SECT[id].short })])); });
     out.push(el("nav", { "aria-label": "Topics in this view" }, [toc]));
+    var vg = (D.guides || []).filter(function (g) { return g.kind !== "topic" && (v.id === "all" || (g.audience || []).indexOf(v.id) >= 0); });
+    if (vg.length) {
+      var gl = el("ul", { class: "qd-guides" });
+      vg.forEach(function (g) { gl.appendChild(guideCard(g)); });
+      out.push(el("h3", { class: "qd-sub", text: "Short guides" }), gl);
+    }
     ids.forEach(function (id) {
       var items = inSection(id).filter(function (e) { return v.id === "all" || (e.audience || []).indexOf(v.id) >= 0; });
       if (!items.length) return;
@@ -126,11 +211,33 @@
     return out;
   }
 
+  function guidePage(g) {
+    var out = [backLink(), guideBody(g)];
+    if (g.section && SECT[g.section]) out.push(el("p", { class: "qd-others" }, [el("a", { href: "#" + g.section, text: "See every resource for " + SECT[g.section].short.toLowerCase() + " →" })]));
+    var others = homeGuides().filter(function (x) { return x !== g; });
+    if (g.home && others.length) {
+      var gl = el("ul", { class: "qd-guides is-more" });
+      others.forEach(function (x) { gl.appendChild(guideCard(x)); });
+      out.push(el("h3", { class: "qd-sub", text: "Other short guides" }), gl);
+    }
+    if (g.id !== "first-visit") out.push(personLine());
+    out.push(backLink());
+    return out;
+  }
+
   function results(q) {
     var terms = norm(q).split(/\s+/).filter(Boolean);
     var hits = D.entries.filter(function (e) { return terms.every(function (t) { return e._h.indexOf(t) >= 0; }); })
       .sort(function (a, b) { return rank(b, b.section) - rank(a, a.section); });
-    var out = [el("p", { class: "qd-count", "aria-live": "polite", text: hits.length + (hits.length === 1 ? " result" : " results") + " for “" + q + "”" })];
+    var ghits = (D.guides || []).filter(function (g) { return terms.every(function (t) { return g._h.indexOf(t) >= 0; }); });
+    var n = hits.length + ghits.length;
+    var out = [el("p", { class: "qd-count", "aria-live": "polite", text: n + (n === 1 ? " result" : " results") + " for “" + q + "”" })];
+    if (ghits.length) {
+      var gl = el("ul", { class: "qd-guides" });
+      ghits.forEach(function (g) { gl.appendChild(guideCard(g)); });
+      out.push(gl);
+    }
+    if (!hits.length && ghits.length) return out;
     if (!hits.length) {
       out.push(el("p", { class: "qd-blurb" }, ["Nothing matched. Try a course number like MATH 140, a tool like Excel, or ", el("a", { href: "#", text: "pick a topic" }), "."]));
       out.push(personLine());
@@ -161,7 +268,8 @@
     var q = search.value.trim();
     if (q) { draw(results(q)); return; }
     var h = (location.hash || "").replace("#", "");
-    if (SECT[h]) draw(topic(h));
+    if (h.indexOf("guide-") === 0 && GUIDE[h.slice(6)]) draw(guidePage(GUIDE[h.slice(6)]));
+    else if (SECT[h]) draw(topic(h));
     else if (VIEW[h]) draw(browse(h));
     else draw(home());
     if (scroll && (h || window.scrollY > root.offsetTop)) root.scrollIntoView({ block: "start" });

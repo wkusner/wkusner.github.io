@@ -13,6 +13,7 @@ Live (once pushed): `https://wkusner.github.io/qrc/resources/`
 | `directory.css` | Styles. Colors and fonts are tokens at the top. |
 | `directory.js` | Renders the data. No libraries. |
 | `static.html`, `resources.csv` | Generated plain versions (no JavaScript). Rebuild with the export command below. |
+| `diagnostic.html`, `diagnostic.js`, `diagnostic-data.js` | The course self-check for MATH 102, 103, 140, and 155. Questions and recommendations live in `diagnostic-data.js`. |
 | `tools/qrc_directory.py` | `export` (rebuild static.html and the CSV) and `check` (test every link). Python 3, standard library only. |
 
 ## Add or edit an entry
@@ -29,10 +30,36 @@ Copy an existing entry in `resources.js` and change its fields. Keep it valid JS
 
 Then run `python3 tools/qrc_directory.py export` so the plain version matches.
 
-## How visitors move through it (v0.2)
+## Short guides (v0.4)
 
-- **Home** shows the "talk to a person" line, a search box, and one button per topic in plain student language. The `home` list in `resources.js` sets which topics appear and in what order. `meta.person` sets the drop-in line.
-- **A topic page** (`#calculus`, `#stats`, …) shows at most three entries marked `pick` under "Try these first". Picks that are also `lu` (used at Lawrence) come first. Everything else in the topic is folded under "More options".
+Guides are short pieces the QRC writes itself (one to four minutes of reading) that route people into the resources. They live in the `guides` list in `resources.js`.
+
+- `kind: "topic"` guides sit at the top of a topic page, with `section` naming the topic. They use three time horizons: stuck right now (10 minutes), behind on a topic (an evening), and rebuilding a skill (a few weeks).
+- `kind: "how"` guides are standalone: first visit, the 10-minute stuck routine, a 10-day exam plan, ALEKS prep, learning from a free textbook, using videos, emailing a professor, a tutor's first shift, and sending students to the QRC. `home` sets their order on the home page; the first four appear above the topic grid. Guides without `home` show up in the audience views that match their `audience`.
+- Each guide has an address, `#guide-<id>`, that you can link to directly. The faculty guide is `#guide-faculty-refer`.
+- Inside guide text, `[[entry-id]]` becomes a link to that resource, `[[guide:id]]` links another guide, and `[[#section]]` links a topic. Add `|label` to change the link text, like `[[guide:stuck|the 10-minute routine]]`.
+- `box` holds text to copy, such as the email template or a syllabus blurb. It gets a Copy button.
+
+To write a new guide, copy one of the same kind and keep it short. A guide should send people to a resource within its first few lines.
+
+## Course self-check (v0.5)
+
+`diagnostic.html` is a 16- to 18-question self-check for each of MATH 102, 103, 140, and 155: eight or nine skill areas with two questions each. It isn't a placement test, and nothing is saved or sent anywhere. Students get the areas to work on, in order, each with QRC worksheets and free resources, plus a review of every question and a summary they can copy for a tutor. `diagnostic.html#140` opens a course's check directly.
+
+- Course names, prerequisites, and summaries come from the department's course descriptions (inside.lawrence.edu/academics/college/mathematics/course-descriptions). Skill areas and section numbers follow the syllabi: MATH 102 W26 (OpenStax *Intermediate Algebra 2e*), MATH 103 F26 (OpenStax *Precalculus 2e*), MATH 140 S27 (OpenStax *Calculus* Vol. 1, worksheets A0–E5), and MATH 155 W26 (Heaton; Lang's *Calculus of Several Variables*, with OpenStax Vol. 3 as the free stand-in). Update the `where` lines when a syllabus changes.
+- Edit questions and recommendations in `diagnostic-data.js`. The first option is always the correct one; the page shuffles them. Write fractions as `{{numerator|denominator}}`.
+- Areas marked `"ready": true` are prerequisites the course expects, listed as "Coming in". If one of those is a gap, the results point to the previous course's check.
+- `worksheets` lists QRC's own worksheets (the MATH 102 guides and the MATH 103 problem sheets). With `"file": null` they show "ask for a printed copy at the QRC desk"; put a PDF path or URL in `file` once you post one.
+- The directory home page links here, as does an entry under "Start here" and the ALEKS, basics, precalculus, and calculus guides.
+
+## Going further (v0.6)
+
+Some topics deliberately reach past Lawrence's syllabi: **Geometry and further trig** (MATH 103 rushes trig and skips most geometry), **Multivariable and vector calculus** (past MATH 155: path independence, Green's, Stokes', and the divergence theorem), **Matrices and linear algebra** (matrix algebra isn't covered in 155), and **Calculus for data science**. In the self-check, each course's `further` list adds a "Going further" box to the results.
+
+## How visitors move through it (v0.5)
+
+- **Home** shows the "talk to a person" line, a search box, four short guides, and one button per topic in plain student language. The `home` list in `resources.js` sets which topics appear and in what order. `meta.person` sets the drop-in line.
+- **A topic page** (`#calculus`, `#stats`, …) opens with its start-here guide, then shows at most three entries marked `pick` under "The QRC's picks". Picks that are also `lu` (used at Lawrence) come first. Everything else in the topic is folded under "More options".
 - **Browse views** (`#all`, `#tutor`, `#faculty`, `#staff`) list whole sections for people who want everything. Each view's sections and their order come from the `views` list. Faculty sees teaching resources first; Staff hides course help.
 - **Search** looks across everything from any screen.
 
