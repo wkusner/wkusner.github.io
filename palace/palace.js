@@ -917,7 +917,7 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js?v=20261011e").then(m => {
+  import("./palace3d.js?v=20261012a").then(m => {
     VIEW3D = m.create($("stage"), {
       turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, transitions: () => S.trans || "zoom", refine: () => S.refine !== false, calm: () => S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),

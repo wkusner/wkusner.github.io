@@ -140,7 +140,7 @@ uniform sampler2D tColor; uniform sampler2D tDepth; uniform sampler2D tPT; unifo
 uniform sampler2D tRlo;
 vec4 TCOL(vec2 u){ vec4 r = texture2D(tColor,u); if(ptMix <= 0.) return r; vec3 lo = texture2D(tRlo,u).rgb, pl = texture2D(tPT,u).rgb*ptGain; vec3 k = pow(clamp((pl + .002)/(lo + .002), vec3(.12), vec3(5.)), vec3(.75)); return vec4(mix(r.rgb, r.rgb*k, ptMix), r.a); }
 uniform vec2 res; uniform float dpr, night, time, cnear, cfar, spacing, aoK, exposure, stageK, focusZ, focusR;
-uniform mat4 projInv; uniform mat4 proj; uniform vec3 paper, ink, paperN, inkN;
+uniform mat4 projInv; uniform mat4 proj; uniform vec3 paper, ink, paperN, inkN; uniform vec3 upV;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(hash(i),hash(i+vec2(1,0)),f.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x), f.y); }
@@ -148,6 +148,9 @@ vec3 viewPos(vec2 uv){ float d = texture2D(tDepth, uv).x; vec4 p = projInv * vec
 float linz(vec2 uv){ return -viewPos(uv).z; }
 float lineSet(vec2 px, vec2 dir, float s, float w, float wob){
   float t = dot(px, vec2(-dir.y, dir.x))/s + wob;
+  float id = floor(t + .5), along = dot(px, dir)/s;
+  w *= mix(.72, 1.22, hash(vec2(id, 3.7))) * (.9 + .2*noise(vec2(along*.08, id*1.7)));
+  t += .1*(hash(vec2(id, 9.1)) - .5);
   float v = abs(fract(t) - .5);
   float aa = 0.9/s;
   return 1. - smoothstep(w*.5 - aa, w*.5 + aa, v);
@@ -161,47 +164,83 @@ void main(){
   // so the engraver darkens, and hatches, where a real room is dim
   float ao = 1.;
   if(aoK > 0. && dep < .9999){
-    float rad = .34, occ = 0., ang = hash(floor(px/2.))*6.2831;
+    float rad = .55, occ = 0., ang = hash(floor(px/2.))*6.2831;
     for(int i=0;i<12;i++){ float fi = float(i), r = (fi+.5)/12., a = ang + fi*2.39996;
       vec2 off = vec2(cos(a), sin(a)) * r * rad * proj[0][0] / max(-P.z, .1) * .5;
       vec3 Q = viewPos(vUv + off*vec2(1., res.x/res.y)), v = Q - P; float d = length(v);
       occ += max(dot(N, v/max(d,1e-4)) - .1, 0.) * (1. - smoothstep(rad*.6, rad*2., d)); }
-    ao = clamp(1. - aoK*occ/12.*2.2, .35, 1.);
+    ao = clamp(1. - aoK*occ/12.*2.6, .25, 1.);
   }
   vec3 col = pow(max(TCOL( vUv).rgb*exposure*ao, 0.), vec3(1./2.2));
   float lum0 = dot(col, vec3(.299,.587,.114));
   float lum = smoothstep(.04, .80, lum0);
+  lum = clamp(.52 + (lum - .52)*1.35, 0., 1.);
+  lum = mix(lum, lum*lum*(3. - 2.*lum), .55);   // the engraver's chiaroscuro: more contrast, lights kept open, darks pushed down
   if(night > .5) lum = 1. - lum;
-  // hatching follows the surface: floors run across, walls run up, curved things follow their form
-  vec2 dir = vec2(-N.y, N.x);
-  if(length(dir) < .35) dir = vec2(0., 1.);
-  dir = normalize(dir);
+  // ---- the engraver's lines ----
+  // Lines follow the form, as a burin does. Every surface gets two tangent directions in the room: on a wall, the horizontal
+  // that runs along it (so its lines run to the vanishing point) and the vertical; on a floor or a table, the horizontal across
+  // the picture and the one that runs away from you. Each is projected to the picture, so lines converge in perspective.
+  vec3 U = normalize(upV);
+  float flat_ = abs(dot(N, U));
+  vec3 T = flat_ < .8 ? cross(N, U) : cross(N, cross(vec3(0., 0., -1.), N));
+  if(length(T) < 1e-3) T = vec3(1., 0., 0.); T = normalize(T);
+  vec3 B = normalize(cross(N, T));
+  vec2 dirT, dirB;
+  { vec4 a = proj*vec4(P, 1.), b = proj*vec4(P + T*.05, 1.), c2 = proj*vec4(P + B*.05, 1.);
+    vec2 sa = a.xy/a.w, sb = b.xy/b.w, sc = c2.xy/c2.w;
+    dirT = (sb - sa)*res; dirB = (sc - sa)*res;
+    dirT = length(dirT) > 1e-4 ? normalize(dirT) : vec2(1., 0.); dirB = length(dirB) > 1e-4 ? normalize(dirB) : vec2(0., 1.); }
   float s = spacing*dpr;
-  float wob = .18*(noise(px*.012) - .5) + .05*sin(px.y*.07 + px.x*.013);
-  float dark = 1. - lum;
-  float ink1 = lineSet(px, dir, s, clamp((dark - .36)*1.45, 0., .9), wob);
-  float ink2 = lum < .40 ? lineSet(px, vec2(dir.y, -dir.x), s*1.07, clamp((.40-lum)*1.9, 0., .85), wob*1.3) : 0.;
-  float ink3 = lum < .16 ? lineSet(px, normalize(dir + vec2(dir.y,-dir.x)), s*.92, clamp((.16-lum)*3.5, 0., .85), wob) : 0.;
-  float hatch = max(ink1, max(ink2, ink3));
+  // farther things are cut finer and lighter, as engravers do for air between you and them
+  float far = smoothstep(3.5, 16., -P.z);
+  float sp = s*mix(1., .8, far);
+  float wob = .16*(noise(px*.011) - .5) + .04*sin(px.y*.05 + px.x*.017);
+  float dark = (1. - lum)*mix(1., .78, far);
+  // the burin's line swells as the tone deepens and thins to a point as it leaves the shadow
+  float swell = .85 + .3*noise(px*.045 + 7.);
+  // first set: along the surface's main direction
+  float ink1 = lineSet(px, dirT, sp, clamp((dark - .30)*1.35*swell, 0., .92), wob);
+  // second set: across the form, for the half-shadows
+  float ink2 = dark > .55 ? lineSet(px, dirB, sp*1.06, clamp((dark - .55)*1.9*swell, 0., .85), wob*1.3) : 0.;
+  // third set, on the diagonal: the deep shadows
+  float ink3 = dark > .80 ? lineSet(px, normalize(dirT + dirB), sp*.94, clamp((dark - .80)*3.4, 0., .85), wob) : 0.;
+  // dots in the lozenges between crossed lines (the engraver's flick-work), in the middle darks
+  vec2 cell = vec2(dot(px, vec2(-dirT.y, dirT.x)), dot(px, vec2(-dirB.y, dirB.x)))/sp;
+  float lozenge = (dark > .62 && dark < .9) ? (1. - smoothstep(.10, .17, length(fract(cell) - .5)))*smoothstep(.62, .72, dark) : 0.;
+  // stipple, for the lightest tones on rounded things, where a line would be too heavy
+  float curved = clamp(length(fwidth(N))*28., 0., 1.);
+  float stip = (dark > .12 && dark < .42) ? step(hash(floor(px/1.6)), (dark - .12)*.55*curved) : 0.;
+  float hatch = max(max(ink1, ink2), max(max(ink3, lozenge*.9), stip*.85));
   if(dep >= .9999) hatch = 0.;
-  // ink outlines where depth or orientation jumps
+  // ink outlines: a heavy line where one thing stands in front of another, a fine one where the surface folds or changes tone
   vec2 e = vec2(1.2*dpr)/res;
   float zc = linz(vUv), zx = linz(vUv+vec2(e.x,0.)), zX = linz(vUv-vec2(e.x,0.)), zy = linz(vUv+vec2(0.,e.y)), zY = linz(vUv-vec2(0.,e.y));
   float dz = (abs(zx - zX) + abs(zy - zY)) / max(zc, .5);
-  float edge = smoothstep(.035, .09, dz);
+  float edge = smoothstep(.035, .09, dz)*mix(1., .7, far);
   float l1 = pow(dot(TCOL( vUv+vec2(e.x,0.)).rgb, vec3(.333)),.4545), l2 = pow(dot(TCOL( vUv-vec2(e.x,0.)).rgb, vec3(.333)),.4545);
   float l3 = pow(dot(TCOL( vUv+vec2(0.,e.y)).rgb, vec3(.333)),.4545), l4 = pow(dot(TCOL( vUv-vec2(0.,e.y)).rgb, vec3(.333)),.4545);
-  edge = max(edge, smoothstep(.30, .55, abs(l1-l2) + abs(l3-l4)));
-  float inkAmt = clamp(max(hatch, edge*.9), 0., 1.);
+  float crease = smoothstep(.30, .55, abs(l1-l2) + abs(l3-l4))*.65;
+  // the outline itself is broken here and there, as a hand-cut line is
+  float brk = .78 + .22*smoothstep(.25, .6, noise(px*.06 + 31.));
+  float inkAmt = clamp(max(hatch, max(edge*.95, crease)*brk), 0., 1.);
   vec3 pap = mix(paper, paperN, night), ik = mix(ink, inkN, night);
   // a little of each material's own color survives, muted
   vec3 sat = mix(vec3(lum0), col, .72);
   vec3 hue = clamp(sat / max(lum0, .18), 0., 2.2);
-  vec3 tint = mix(pap, pap*hue, .58*(1.-night*.45));
+  vec3 tint = mix(pap, pap*hue, .42*(1.-night*.45));
   vec3 c = mix(tint, ik, inkAmt);
-  c *= .965 + .035*hash(floor(px/1.7));
+  // the paper: a fine fibre and a faint plate tone where the wiping left a film of ink, heavier toward the darks
+  float fib = .55*noise(px*vec2(.9, .22)) + .45*noise(px*.35 + 13.);
+  c *= .968 + .045*fib;
+  float film = .05*(noise(px*.004 + 3.) - .3)*(.4 + dark);
+  c = mix(c, ik, clamp(film*(1. - inkAmt), 0., .08));
   float vig = smoothstep(1.25, .45, length(vUv - .5)*1.4);
-  c = mix(c*.86, c, vig);
+  c = mix(c*.88, c, vig);
+  // the plate mark: the bevelled edge of the copper pressed into the paper, a few millimetres inside the picture's border
+  vec2 pm = min(px, res - px) - 9.*dpr;
+  float plate = min(pm.x, pm.y);
+  c *= 1. - .12*(1. - smoothstep(0., 1.6*dpr, abs(plate))) + .05*smoothstep(-3.*dpr, 0., -plate)*(1. - step(0., plate));
   if(stageK > 0.){ float z = dep < .9999 ? zc : 1e3, away = smoothstep(focusR, focusR*2.8, abs(z - focusZ)), rim = 1. - smoothstep(.98, .42, length((vUv - .5)*vec2(1.25, 1.))*1.45);
     float m = stageK*clamp(max(away*.85, rim), 0., 1.); vec3 dim = mix(vec3(dot(c, vec3(.333))), c, .35)*mix(vec3(.42,.37,.31), vec3(.3,.28,.26), night);
     c = mix(c, dim, m*.8); }
@@ -264,7 +303,7 @@ export function create(container, hooks){
     tColor:{value:null}, tDepth:{value:null}, tPT:{value:null}, tRlo:{value:null}, ptMix:{value:0}, ptGain:{value:1}, res:{value:new THREE.Vector2()}, dpr:{value:dpr}, night:{value:0}, time:{value:0},
     cnear:{value:camera.near}, cfar:{value:camera.far}, spacing:{value:Q.hatch}, projInv:{value:new THREE.Matrix4()},
     aoK:{value: Q.ss > 1 ? .85 : 0}, exposure:{value:1}, proj:{value:new THREE.Matrix4()}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6},
-    paper:{value:new THREE.Color("#EEE4CF")}, ink:{value:new THREE.Color("#2a1f17")}, paperN:{value:new THREE.Color("#14110d")}, inkN:{value:new THREE.Color("#e9ddc4")} }});
+    paper:{value:new THREE.Color("#EEE4CF")}, ink:{value:new THREE.Color("#2a1f17")}, paperN:{value:new THREE.Color("#14110d")}, inkN:{value:new THREE.Color("#e9ddc4")}, upV:{value:new THREE.Vector3(0,1,0)} }});
   post.extensions = {derivatives:true};
   const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
   const tri = new THREE.BufferGeometry(); tri.setAttribute("position", new THREE.Float32BufferAttribute([-1,-1,0, 3,-1,0, -1,3,0],3)); tri.setAttribute("uv", new THREE.Float32BufferAttribute([0,0, 2,0, 0,2],2));
@@ -540,7 +579,7 @@ export function create(container, hooks){
       camera.layers.set(0);
       renderer.setRenderTarget(rt); renderer.render(scene, camera);
       post.uniforms.tColor.value = rt.texture; post.uniforms.tDepth.value = rt.depthTexture;
-      post.uniforms.projInv.value.copy(camera.projectionMatrixInverse); post.uniforms.proj.value.copy(camera.projectionMatrix); post.uniforms.time.value = t/1000;
+      post.uniforms.projInv.value.copy(camera.projectionMatrixInverse); post.uniforms.proj.value.copy(camera.projectionMatrix); post.uniforms.time.value = t/1000; post.uniforms.upV.value.set(0, 1, 0).transformDirection(camera.matrixWorldInverse);
       if(hooks.autoExposure ? hooks.autoExposure() : true){ if(meter.reset || ++meter.n % (moving ? 20 : 60) === 0){ meterRead(); if(meter.reset){ meter.ev = meter.target; meter.reset = false; } }
         meter.ev += (meter.target - meter.ev)*(1 - Math.exp(-dt*2.2)); if(Math.abs(meter.target - meter.ev) > .004) dirty = Math.max(dirty, 1); }
       else meter.ev = 1;
@@ -2558,7 +2597,7 @@ export function create(container, hooks){
     let lastT = 0;
     const loop = (t) => { if(!alive || !cv.isConnected){ t2.dispose(); pm.dispose(); sc.traverse(x => { if(x.geometry) x.geometry.dispose(); }); r2.dispose(); try { r2.forceContextLoss(); } catch(e){} return; } const dtt = lastT ? Math.min(.05, (t - lastT)/1000) : 0; lastT = t;
       if(!held && performance.now() - idle > 2500) spin += dtt*.42; turn.rotation.y = spin;
-      c2.position.set(0, .2 + Math.sin(.42 + tilt)*1.05*dist, Math.cos(.42 + tilt)*1.05*dist); c2.lookAt(0,.2,0); r2.setRenderTarget(t2); r2.render(sc, c2); pm.uniforms.tColor.value = t2.texture; pm.uniforms.tDepth.value = t2.depthTexture; pm.uniforms.projInv.value.copy(c2.projectionMatrixInverse); r2.setRenderTarget(null); r2.render(ps, postCam); requestAnimationFrame(loop); };
+      c2.position.set(0, .2 + Math.sin(.42 + tilt)*1.05*dist, Math.cos(.42 + tilt)*1.05*dist); c2.lookAt(0,.2,0); c2.updateMatrixWorld(); pm.uniforms.upV.value.set(0, 1, 0).transformDirection(c2.matrixWorldInverse); r2.setRenderTarget(t2); r2.render(sc, c2); pm.uniforms.tColor.value = t2.texture; pm.uniforms.tDepth.value = t2.depthTexture; pm.uniforms.projInv.value.copy(c2.projectionMatrixInverse); r2.setRenderTarget(null); r2.render(ps, postCam); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
     return () => { alive = false; };
   }
