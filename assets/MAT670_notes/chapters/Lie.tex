@@ -1,7 +1,7 @@
 % MAT670 -- Interlude after Lecture 6: from Dynkin diagrams to Lie algebras and Lie groups.
 % Entirely new material (not in the handwritten notes). Labels prefixed LIE:.
 
-\chapter[Interlude: Lie algebras and Lie groups]{Interlude: From Dynkin diagrams to Lie algebras and Lie groups}
+\chapter[Interlude A: Lie algebras and Lie groups]{Interlude A: From Dynkin diagrams to Lie algebras and Lie groups}
 \label{LIE:ch}
 
 \begin{addedblock}
@@ -25,29 +25,102 @@ algebras, see that the crystallographic axioms are forced by a small piece of li
 then use the exponential map to pass from the algebra to groups of matrices. At the end the root
 lattice comes back, this time sitting inside a group.
 
-Throughout, $M_n$ denotes the $n\times n$ complex matrices and $E_{ij}$ the matrix with a $1$ in
-position $(i,j)$ and zeros elsewhere, so that
-\[
-  E_{ij}E_{kl}=\delta_{jk}E_{il}.
-\]
+Throughout, $M_n$ denotes the $n\times n$ complex matrices.
 
 %======================================================================
 \section{The roots of \texorpdfstring{$A_{n-1}$}{A(n-1)} inside matrices}
 \label{LIE:sec:sln}
 
-Let $h=\operatorname{diag}(h_1,\dots,h_n)$ be a diagonal matrix. Multiplying a matrix unit by $h$ on
-the left scales its row and on the right scales its column, so
+\subsection*{Matrix units}
+Let $E_{ij}$ be the matrix with a $1$ in position $(i,j)$ and zeros elsewhere. For $3\times3$ matrices,
+for instance,
 \[
-  hE_{ij}=h_iE_{ij},\qquad E_{ij}h=h_jE_{ij},
-  \qquad\text{hence}\qquad
-  hE_{ij}-E_{ij}h=(h_i-h_j)\,E_{ij}.
+  E_{12}=\begin{pmatrix}0&1&0\\0&0&0\\0&0&0\end{pmatrix},\qquad
+  E_{23}=\begin{pmatrix}0&0&0\\0&0&1\\0&0&0\end{pmatrix},
 \]
-In words: the linear map
+and multiplying them out,
 \[
-  \operatorname{ad}_h\colon M_n\to M_n,\qquad X\mapsto [h,X]:=hX-Xh
+  E_{12}E_{23}=\begin{pmatrix}0&0&1\\0&0&0\\0&0&0\end{pmatrix}=E_{13},\qquad
+  E_{23}E_{12}=0 .
 \]
-is \emph{diagonal} in the basis $\{E_{ij}\}$, with eigenvalue $h_i-h_j$ on $E_{ij}$.
+The pattern is easiest to see by watching what $E_{ij}$ does to the standard basis: it sends $e_j$ to
+$e_i$ and kills every other $e_m$. Think of $E_{ij}$ as an \emph{arrow from $j$ to $i$}. A product
+$E_{ij}E_{kl}$ first follows the arrow $l\to k$ and then the arrow $j\to i$. The arrows compose when
+the head of the first meets the tail of the second ($k=j$), and otherwise the product is zero:
+\begin{equation}\label{LIE:eq:units}
+  E_{ij}E_{kl}=\delta_{jk}\,E_{il}.
+\end{equation}
+A diagonal matrix is a combination of the ``loops'' $E_{kk}$:
+$h=\operatorname{diag}(h_1,\dots,h_n)=\sum_kh_kE_{kk}$. By \eqref{LIE:eq:units},
+\[
+  hE_{ij}=\sum_kh_kE_{kk}E_{ij}=h_iE_{ij},\qquad E_{ij}h=\sum_kh_kE_{ij}E_{kk}=h_jE_{ij}:
+\]
+multiplying by $h$ on the left scales row $i$, and on the right scales column $j$. With
+$h=\operatorname{diag}(a,b,c)$:
+\[
+  hE_{12}=\begin{pmatrix}0&a&0\\0&0&0\\0&0&0\end{pmatrix},\qquad
+  E_{12}h=\begin{pmatrix}0&b&0\\0&0&0\\0&0&0\end{pmatrix}.
+\]
 
+\subsection*{Symmetry first: conjugating by diagonal matrices}
+What are the symmetries of the matrix algebra $M_n$? Any invertible $g$ gives a map
+\[
+  \operatorname{Ad}_g\colon M_n\to M_n,\qquad X\mapsto gXg^{-1},
+\]
+which respects both sums and products, since $g(XY)g^{-1}=(gXg^{-1})(gYg^{-1})$. This is the
+\emph{adjoint action} of the group $\GL_n$ on its own matrices. (``Adjoint'' is used in the old sense
+of ``attached'': the group acts on the space it lives in.) Each $\operatorname{Ad}_g$ is a linear map on
+the $n^2$-dimensional vector space $M_n$. For a general $g$ it is hard to describe, but for a
+\emph{diagonal} $t=\operatorname{diag}(t_1,\dots,t_n)$ it is as simple as possible. Using the two
+formulas above (with $t$ and $t^{-1}=\operatorname{diag}(t_1^{-1},\dots,t_n^{-1})$ in place of $h$),
+\[
+  tE_{ij}t^{-1}=t_i\,t_j^{-1}\,E_{ij}.
+\]
+For example, with $t=\operatorname{diag}(t_1,t_2,t_3)$,
+\[
+  tE_{12}t^{-1}=
+  \begin{pmatrix}t_1&&\\&t_2&\\&&t_3\end{pmatrix}
+  \begin{pmatrix}0&1&0\\0&0&0\\0&0&0\end{pmatrix}
+  \begin{pmatrix}t_1^{-1}&&\\&t_2^{-1}&\\&&t_3^{-1}\end{pmatrix}
+  =\begin{pmatrix}0&t_1/t_2&0\\0&0&0\\0&0&0\end{pmatrix}=\frac{t_1}{t_2}\,E_{12}.
+\]
+So \emph{$\operatorname{Ad}_t$ is a diagonal linear map in the basis $\{E_{ij}\}$}, with eigenvalue
+$t_i/t_j$ on $E_{ij}$. Better still, the same basis diagonalizes $\operatorname{Ad}_t$ for \emph{every}
+diagonal $t$ at once. Writing the eigenvalue on $E_{ij}$ in position $(i,j)$, for $n=3$:
+\[
+  \operatorname{Ad}_t\ \text{has eigenvalues}\quad
+  \begin{pmatrix}1&t_1/t_2&t_1/t_3\\ t_2/t_1&1&t_2/t_3\\ t_3/t_1&t_3/t_2&1\end{pmatrix}.
+\]
+The diagonal matrices themselves are fixed (eigenvalue $1$), since diagonal matrices commute.
+
+\subsection*{Differentiating: the bracket appears}
+Multiplicative eigenvalues like $t_1/t_2$ are awkward, so take logarithms. Put
+\[
+  t(s)=\operatorname{diag}(e^{sh_1},\dots,e^{sh_n}),
+\]
+a curve of diagonal matrices with $t(0)=I$ and velocity $t'(0)=h=\operatorname{diag}(h_1,\dots,h_n)$. Then
+\[
+  \operatorname{Ad}_{t(s)}E_{ij}=e^{s(h_i-h_j)}E_{ij}.
+\]
+Differentiate at $s=0$. On the right we get $(h_i-h_j)E_{ij}$. On the left, the product rule applied
+to $t(s)Xt(s)^{-1}$, with $\frac{d}{ds}\big|_0t(s)^{-1}=-h$, gives for any matrix $X$
+\[
+  \frac{d}{ds}\Big|_{s=0}t(s)\,X\,t(s)^{-1}=hX-Xh .
+\]
+This is where the \emph{bracket} comes from. Define
+\[
+  \operatorname{ad}_h\colon M_n\to M_n,\qquad \operatorname{ad}_h(X)=[h,X]:=hX-Xh .
+\]
+Lower-case $\operatorname{ad}$ is the \emph{derivative} of upper-case $\operatorname{Ad}$: conjugation
+seen infinitesimally. We did not invent the commutator; differentiating the symmetry produced it. (In
+Section~\ref{LIE:sec:exp} we will integrate this back up: $\operatorname{Ad}_{e^X}=e^{\operatorname{ad}_X}$.)
+Since $\operatorname{Ad}_{t(s)}$ is diagonal on each $E_{ij}$, so is its derivative:
+\[
+  \operatorname{ad}_h(E_{ij})=hE_{ij}-E_{ij}h=(h_i-h_j)\,E_{ij},
+\]
+which you can also read off the two $3\times3$ matrices above: $hE_{12}-E_{12}h=(a-b)E_{12}$.
+
+\subsection*{The eigenvalues are the roots}
 Now regard the eigenvalue as a function of $h$. On $E_{ij}$ it is the linear functional
 $h\mapsto h_i-h_j$. If we identify functionals with vectors using the standard inner product, so that
 $h\mapsto h_i$ corresponds to $e_i$, then the eigenvalue on $E_{ij}$ is the vector $e_i-e_j$. So:
@@ -55,7 +128,13 @@ $h\mapsto h_i$ corresponds to $e_i$, then the eigenvalue on $E_{ij}$ is the vect
 \emph{the nonzero eigenvalues of $\operatorname{ad}_h$, as $h$ runs over diagonal matrices, are exactly
 the roots $e_i-e_j$ of $A_{n-1}$.}
 \end{center}
-The diagonal matrices themselves have eigenvalue $0$.
+For $n=3$, with $\alpha_1=e_1-e_2$ and $\alpha_2=e_2-e_3$, write the eigenvalue of $E_{ij}$ in position
+$(i,j)$. The root system $A_2$ appears in the shape of a $3\times 3$ matrix, with positive roots above the
+diagonal and negative roots below:
+\[
+  \begin{pmatrix}0&e_1-e_2&e_1-e_3\\ e_2-e_1&0&e_2-e_3\\ e_3-e_1&e_3-e_2&0\end{pmatrix}
+  =\begin{pmatrix}0&\alpha_1&\alpha_1+\alpha_2\\ -\alpha_1&0&\alpha_2\\ -\alpha_1-\alpha_2&-\alpha_2&0\end{pmatrix}.
+\]
 
 Where is the hyperplane $\sum x_i=0$? Scalar matrices $h=cI$ commute with everything, so they tell us
 nothing, and it is natural to discard them. That leaves the \emph{traceless} matrices
@@ -66,14 +145,28 @@ whose diagonal part
 \[
   \mathfrak h=\{\operatorname{diag}(h_1,\dots,h_n): h_1+\dots+h_n=0\}
 \]
-is exactly the hyperplane $\sum x_i=0$ of Lecture~6, of dimension $n-1$. We get a decomposition into
-eigenspaces
+is exactly the hyperplane $\sum x_i=0$ of Lecture~6, of dimension $n-1$. Every traceless matrix splits
+into its diagonal part and its off-diagonal entries. For $n=3$:
+\[
+  \begin{pmatrix}a&x_{12}&x_{13}\\x_{21}&b&x_{23}\\x_{31}&x_{32}&c\end{pmatrix}
+  =\underbrace{\operatorname{diag}(a,b,c)}_{\in\,\mathfrak h,\ a+b+c=0}
+  +\,x_{12}E_{12}+x_{23}E_{23}+x_{13}E_{13}+x_{21}E_{21}+x_{32}E_{32}+x_{31}E_{31},
+\]
+that is,
+\[
+  \mathfrak{sl}_3=\mathfrak h\oplus\underbrace{\C E_{12}}_{\alpha_1}\oplus\underbrace{\C E_{23}}_{\alpha_2}
+  \oplus\underbrace{\C E_{13}}_{\alpha_1+\alpha_2}\oplus\underbrace{\C E_{21}}_{-\alpha_1}
+  \oplus\underbrace{\C E_{32}}_{-\alpha_2}\oplus\underbrace{\C E_{31}}_{-\alpha_1-\alpha_2},
+  \qquad 8=2+6.
+\]
+In general we get the decomposition into eigenspaces of $\operatorname{ad}\mathfrak h$,
 \begin{equation}\label{LIE:eq:rootdecomp}
   \mathfrak{sl}_n=\mathfrak h\ \oplus\ \bigoplus_{\alpha\in\Delta}\mathfrak g_\alpha,
   \qquad
   \mathfrak g_{e_i-e_j}=\C E_{ij},
 \end{equation}
-where $\Delta=\{e_i-e_j: i\neq j\}$ is the root system $A_{n-1}$. As a check on dimensions:
+where $\Delta=\{e_i-e_j: i\neq j\}$ is the root system $A_{n-1}$ and $\mathfrak g_\alpha$ is the space on
+which every $\operatorname{ad}_h$ acts by the scalar $\alpha(h)$. As a check on dimensions:
 $n^2-1=(n-1)+n(n-1)$, which is (rank) $+$ (number of roots), using the count
 $\abs{\Delta}=n(n-1)$ from Lecture~6.
 
@@ -119,8 +212,19 @@ chambers of $\Conf(n,\R)$ from Lecture~8.
 \section{The bracket and the definition of a Lie algebra}
 \label{LIE:sec:bracket}
 
-What made the computation work was the operation $[X,Y]=XY-YX$, the \emph{commutator}. It has three
-properties that are easy to check:
+In Section~\ref{LIE:sec:sln} the bracket appeared as the derivative of conjugation by diagonal
+matrices. Nothing there needed $h$ to be diagonal: if $g(s)$ is any curve of invertible matrices with
+$g(0)=I$ and velocity $g'(0)=X$, the same product-rule computation gives
+\[
+  \frac{d}{ds}\Big|_{s=0}g(s)\,Y\,g(s)^{-1}=XY-YX=[X,Y]=\operatorname{ad}_X(Y).
+\]
+So every matrix $X$ has its linear map $\operatorname{ad}_X\colon M_n\to M_n$, the infinitesimal
+conjugation in the direction $X$. Diagonal $X$ gave diagonal $\operatorname{ad}_X$; for a matrix unit,
+for instance, $\operatorname{ad}_{E_{12}}$ is nilpotent and moves matrix units around, as in
+$\operatorname{ad}_{E_{12}}(E_{23})=E_{12}E_{23}-E_{23}E_{12}=E_{13}$ by \eqref{LIE:eq:units}.
+
+The operation $[X,Y]=XY-YX$ is the \emph{commutator}. It has three properties that are easy to
+check:
 \begin{enumerate}[label=(\roman*)]
 \item it is bilinear;
 \item it is antisymmetric, $[X,Y]=-[Y,X]$;
@@ -181,17 +285,24 @@ Fix a root $\alpha=e_i-e_j$ of $A_{n-1}$ and put
 \[
   e_\alpha=E_{ij},\qquad f_\alpha=E_{ji},\qquad h_\alpha=[e_\alpha,f_\alpha]=E_{ii}-E_{jj}\in\mathfrak h.
 \]
-A short computation gives
-\begin{equation}\label{LIE:eq:sl2rel}
-  [h_\alpha,e_\alpha]=2e_\alpha,\qquad [h_\alpha,f_\alpha]=-2f_\alpha,\qquad [e_\alpha,f_\alpha]=h_\alpha .
-\end{equation}
-For $n=2$ these three matrices
+(The middle equality is \eqref{LIE:eq:units}: $E_{ij}E_{ji}-E_{ji}E_{ij}=E_{ii}-E_{jj}$.) The smallest
+case is $n=2$, where
 \[
   e=\begin{pmatrix}0&1\\0&0\end{pmatrix},\quad
   f=\begin{pmatrix}0&0\\1&0\end{pmatrix},\quad
   h=\begin{pmatrix}1&0\\0&-1\end{pmatrix}
 \]
-are a basis of $\mathfrak{sl}_2$. So every root $\alpha$ comes with a copy
+are a basis of $\mathfrak{sl}_2$. Multiplying out,
+\[
+  he=\begin{pmatrix}0&1\\0&0\end{pmatrix},\quad eh=\begin{pmatrix}0&-1\\0&0\end{pmatrix},\quad
+  ef=\begin{pmatrix}1&0\\0&0\end{pmatrix},\quad fe=\begin{pmatrix}0&0\\0&1\end{pmatrix},
+\]
+so $[h,e]=2e$, $[e,f]=h$, and similarly $[h,f]=-2f$. The same computation with
+\eqref{LIE:eq:units} works for any root:
+\begin{equation}\label{LIE:eq:sl2rel}
+  [h_\alpha,e_\alpha]=2e_\alpha,\qquad [h_\alpha,f_\alpha]=-2f_\alpha,\qquad [e_\alpha,f_\alpha]=h_\alpha .
+\end{equation}
+(The first is $\operatorname{ad}_{h_\alpha}(E_{ij})=(h_i-h_j)E_{ij}$ with $h_i=1$, $h_j=-1$.) So every root $\alpha$ comes with a copy
 $\mathfrak s_\alpha=\operatorname{span}(e_\alpha,f_\alpha,h_\alpha)\cong\mathfrak{sl}_2$ sitting inside $\mathfrak{sl}_n$.
 
 Now look at how $h_\alpha$ acts on the other root spaces. For a root $\beta=e_k-e_l$,
@@ -246,6 +357,21 @@ For a general finite-dimensional $V$ one uses \emph{Weyl's complete reducibility
 direct sum of irreducible representations (see Humphreys, \emph{Introduction to Lie Algebras and
 Representation Theory}, \S6.3, or Hall, \emph{Lie Groups, Lie Algebras, and Representations}, Chs.~4 and~10).
 The statements about eigenvalues then follow from the irreducible case.
+
+\begin{example}[An $\mathfrak{sl}_2$ inside $\mathfrak{sl}_3$]\label{LIE:ex:string}
+Take $\alpha=\alpha_1=e_1-e_2$ in $\mathfrak{sl}_3$, so $e_\alpha=E_{12}$, $f_\alpha=E_{21}$ and
+$h_\alpha=\operatorname{diag}(1,-1,0)$. Let it act by brackets on the two matrix units $E_{23}$ (root
+$\alpha_2$) and $E_{13}$ (root $\alpha_1+\alpha_2$). By \eqref{LIE:eq:units},
+\[
+  [E_{12},E_{23}]=E_{13},\quad [E_{12},E_{13}]=0,\quad [E_{21},E_{13}]=E_{23},\quad [E_{21},E_{23}]=0,
+\]
+and $h_\alpha$ acts on $E_{23}$ by $h_2-h_3=-1$ and on $E_{13}$ by $h_1-h_3=+1$. So
+$\operatorname{span}(E_{23},E_{13})$ is the two-dimensional irreducible representation of $\mathfrak{sl}_2$
+($m=1$): a string of eigenvalues $-1,+1$, with $E_{13}$ the highest weight vector. The eigenvalue $-1$
+on $E_{23}$ is the Cartan integer $n_{\alpha_2\alpha_1}=2\ip{\alpha_2}{\alpha_1}/\ip{\alpha_1}{\alpha_1}=-1$,
+and the string $\alpha_2,\ \alpha_2+\alpha_1$ runs from $\alpha_2$ to its mirror image
+$s_{\alpha_1}(\alpha_2)=\alpha_2+\alpha_1$. That is the reflection axiom happening in front of us.
+\end{example}
 
 %======================================================================
 \section{Why the root system axioms hold}
@@ -452,6 +578,25 @@ the matrix version of the one-parameter groups of diffeomorphisms of Lecture~9. 
 one-parameter group of diffeomorphisms $\varphi_t(v)=e^{tX}v$, because $\frac{d}{dt}e^{tX}v=X(e^{tX}v)$
 by (2). So $X$ is the ``velocity'' of the subgroup at the identity.
 
+This also closes the loop on the names $\operatorname{Ad}$ and $\operatorname{ad}$ from
+Section~\ref{LIE:sec:sln}.
+
+\begin{proposition}\label{LIE:prop:Adad}
+For all $X,Y\in M_n$, \ $e^{X}Ye^{-X}=e^{\operatorname{ad}_X}(Y)=Y+[X,Y]+\tfrac1{2!}[X,[X,Y]]+\cdots$,
+that is, $\operatorname{Ad}_{e^X}=e^{\operatorname{ad}_X}$.
+\end{proposition}
+
+\begin{proof}
+Both $A(t)=\operatorname{Ad}_{e^{tX}}$ and $B(t)=e^{t\operatorname{ad}_X}$ are curves of linear maps on $M_n$
+with value $\mathrm{id}$ at $t=0$. Both satisfy $\frac{d}{dt}C(t)=C(t)\circ\operatorname{ad}_X$: for $A$,
+$\frac{d}{dt}e^{tX}Ye^{-tX}=e^{tX}(XY-YX)e^{-tX}$ (because $X$ commutes with $e^{tX}$), and for $B$ this
+is property (2) of Proposition~\ref{LIE:prop:exp}, applied to the linear map $\operatorname{ad}_X$ of the
+$n^2$-dimensional space $M_n$. By uniqueness of solutions of linear ODEs, $A=B$; now put $t=1$.
+\end{proof}
+
+For diagonal $X=h$ this is the formula we started from: $\operatorname{ad}_h$ has eigenvalue $h_i-h_j$
+on $E_{ij}$, so $e^{\operatorname{ad}_h}$ has eigenvalue $e^{h_i-h_j}=t_i/t_j$, where $t=e^h$.
+
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[scale=1.4]
@@ -580,7 +725,8 @@ $\theta_j$. By the spectral theorem every element of $\mathrm{SU}(n)$ is conjuga
 uniquely up to the action of $W$, so
 \[
   \{\text{conjugacy classes of }\mathrm{SU}(n)\}\;\longleftrightarrow\;T/W
-  \;\longleftrightarrow\;\{\text{unordered $n$-tuples of eigenvalues on }\Sph^1\text{ with product }1\}.
+  \;\longleftrightarrow\;\Big\{\begin{array}{@{}c@{}}\text{unordered $n$-tuples of points}\\
+  \text{on }\Sph^1\text{ with product }1\end{array}\Big\}.
 \]
 
 \begin{remark}[Back to configuration spaces]
@@ -620,6 +766,141 @@ $\theta\in2\pi\Z$, while $\SO(3)=\mathrm{SU}(2)/\{\pm I\}$ has the finer kernel 
 $\mathrm{SU}(2)\to\SO(3)$ of the previous section is recorded by an index-two inclusion of lattices.
 
 %======================================================================
+\section{What else a Dynkin diagram knows}
+\label{LIE:sec:readoff}
+
+A Dynkin diagram is a tiny picture: a few dots, some single, double or triple edges, and a few arrows.
+It is remarkable how much can be read off from it. We collect the main items, with the
+$\mathfrak{sl}_n$ case as the running check.
+
+\paragraph{1. The Cartan matrix.} Number the nodes $1,\dots,r$. The Cartan matrix
+$a_{ij}=n_{\alpha_j\alpha_i}=2\ip{\alpha_j}{\alpha_i}/\ip{\alpha_i}{\alpha_i}$ has $2$ on the diagonal,
+$0$ for non-adjacent nodes, and $-1,-1$ for a single edge. For a double (triple) edge the entry in the
+row of the \emph{short} root is $-2$ ($-3$) and the other is $-1$. For example, with $\alpha_1$ long and
+$\alpha_2$ short (for $B_2$: $\alpha_1=e_1-e_2$, $\alpha_2=e_2$, so $a_{21}=2\ip{\alpha_1}{\alpha_2}/\ip{\alpha_2}{\alpha_2}=-2$),
+\[
+  A_2:\ \begin{pmatrix}2&-1\\-1&2\end{pmatrix},\qquad
+  B_2:\ \begin{pmatrix}2&-1\\-2&2\end{pmatrix},\qquad
+  G_2:\ \begin{pmatrix}2&-1\\-3&2\end{pmatrix}.
+\]
+This is the convention that makes the Serre relations read $[h_i,e_j]=a_{ij}e_j$ (it is Kac's);
+Humphreys and Bourbaki use the transpose, so their $B_2$ matrix has the $-2$ in the first row. From
+the Cartan matrix the whole root system, and by Serre's theorem the whole Lie algebra, can be
+rebuilt (Section~\ref{LIE:sec:classification}).
+
+\paragraph{2. The Weyl group, by generators and relations.} The Coxeter graph gives a presentation
+\[
+  W=\big\langle s_1,\dots,s_r\ \big|\ s_i^2=1,\ (s_is_j)^{m_{ij}}=1\big\rangle,\qquad
+  m_{ij}=2,3,4,6\ \text{for}\ 0,1,2,3\ \text{edges}.
+\]
+For $A_{n-1}$ this is the classical presentation of $\Sigma_n$ by adjacent transpositions:
+$s_is_j=s_js_i$ for $\abs{i-j}\ge2$ and $s_is_{i+1}s_i=s_{i+1}s_is_{i+1}$. Dropping the relations
+$s_i^2=1$ gives Artin's \emph{braid group} (Interlude~D, Section~\ref{TOP:sec:braids}).
+
+\paragraph{3. Counting: roots, Coxeter number, exponents, $\abs{W}$.} Let $c=s_1s_2\cdots s_r$ be the
+product of all the simple reflections (a \emph{Coxeter element}). Its order $h$ is the \emph{Coxeter
+number}, and its eigenvalues are $e^{2\pi im_j/h}$ for integers $1=m_1\le\dots\le m_r=h-1$, the
+\emph{exponents}. Then
+\[
+  \abs{\Delta}=rh,\qquad \#\{\text{positive roots}\}=m_1+\dots+m_r,\qquad
+  \abs{W}=\prod_{j=1}^r(m_j+1).
+\]
+The numbers $d_j=m_j+1$ are the degrees of the basic $W$-invariant polynomials (Chevalley). For
+$A_{n-1}$ the invariants of $\Sigma_n$ are the elementary symmetric polynomials of degrees $2,\dots,n$
+(degree $1$ vanishes on the hyperplane), so $\abs{W}=2\cdot3\cdots n=n!$, and $h=n$. Moreover $c$
+permutes the roots in $r$ orbits of size $h$. Projecting onto the plane where $c$ acts as a rotation
+by $2\pi/h$ (the \emph{Coxeter plane}), the roots land on $r$ concentric regular $h$-gons. For $E_8$
+these are the famous eight rings of $30$ points.
+
+\paragraph{4. The determinant: the density of the root lattice.} For the simply laced diagrams
+($A$, $D$, $E$), normalize all roots to have $\ip{\alpha}{\alpha}=2$. Then the Gram matrix of the simple
+roots \emph{is} the Cartan matrix, so the root lattice has covolume $\sqrt{\det C}$. Its shortest
+vectors are the roots, of length $\sqrt2$, so the lattice packing has balls of radius $1/\sqrt2$ and
+\[
+  \dens(\text{root lattice})=\frac{\vol\Ball^r\big(1/\sqrt2\big)}{\sqrt{\det C}}.
+\]
+The packing density of Lectures~1, 4 and 6 \emph{can be read off the diagram}: $\det C=3,4,4,3,2,1$ for
+$A_2,A_3,D_4,E_6,E_7,E_8$ gives
+\[
+  \frac{\pi}{\sqrt{12}},\quad \frac{\pi}{\sqrt{18}},\quad \frac{\pi^2}{16},\quad
+  \frac{\pi^3}{48\sqrt3},\quad \frac{\pi^3}{105},\quad \frac{\pi^4}{384}.
+\]
+The same determinant has a Lie-theoretic meaning. It is the index of the root lattice in the weight
+lattice, which equals the order of the centre of the simply connected compact group, or equivalently
+$\abs{\pi_1}$ of the adjoint group. For $\mathrm{SU}(n)$ ($A_{n-1}$, $\det C=n$) the centre is the $n$-th
+roots of unity times $I$. For $E_8$ ($\det C=1$) the root lattice is unimodular and the group is
+simultaneously simply connected and adjoint.
+
+\paragraph{5. Symmetries of the diagram: outer automorphisms.} Automorphisms of the diagram give the
+automorphisms of $\mathfrak g$ that are not conjugations. $A_n$ ($n\ge2$), $D_n$ ($n\ge5$) and $E_6$
+have a flip; $D_4$ has the symmetry group $\Sigma_3$ permuting its three outer nodes, whose elements of
+order three are called \emph{triality}. For $\mathfrak{sl}_n$ the flip is, up to an inner automorphism,
+$X\mapsto-X^T$.
+
+\paragraph{6. Folding.} Fold a diagram along a symmetry, identifying the nodes in each orbit, and you
+get a non-simply-laced diagram. The corresponding Lie algebra is the subalgebra fixed by the symmetry:
+\[
+  A_{2n-1}\rightsquigarrow C_n,\qquad D_{n+1}\rightsquigarrow B_n,\qquad E_6\rightsquigarrow F_4,\qquad
+  D_4\rightsquigarrow G_2\ \text{(by triality)}.
+\]
+Here the symmetry $\sigma$ has to be lifted to $\mathfrak g$ by permuting the Serre generators,
+$e_i\mapsto e_{\sigma(i)}$, $f_i\mapsto f_{\sigma(i)}$. For $\mathfrak{sl}_{2n}$ a lift (up to signs, which
+can be absorbed into the generators) is $X\mapsto-JX^TJ^{-1}$ with the skew $J$ of
+Section~\ref{LIE:sec:classical}, and its fixed points are exactly $\mathfrak{sp}_{2n}$; the plain flip
+$X\mapsto-X^T$ differs from it by an inner automorphism and fixes $\mathfrak{so}_{2n}$ instead. Which
+node becomes short is visible on the diagram: averaging the roots in an orbit of two orthogonal simple
+roots halves the squared length. So in $A_{2n-1}$ the one fixed (middle) node stays long, giving $C_n$,
+while in $D_{n+1}$ the two swapped end nodes become one short node, giving $B_n$.
+So the multiple edges remember a hidden symmetry of a simply laced diagram. Folding with the golden
+ratio instead leads to the non-crystallographic $E_8\rightsquigarrow H_4$, $D_6\rightsquigarrow H_3$,
+$A_4\rightsquigarrow H_2$ and to quasicrystals (Interlude~C).
+
+\paragraph{7. The extended diagram and McKay's correspondence.} Adding the negative of the highest
+root as an extra node gives the \emph{extended} (affine) Dynkin diagram, the diagram of the affine
+Weyl group that tiles $\mathfrak t$ by alcoves (Section~\ref{LIE:sec:torus}). For the simply laced types
+something unexpected happens. The finite subgroups $\Gamma\subset\mathrm{SU}(2)$ (cyclic, binary dihedral,
+binary tetrahedral, octahedral, icosahedral) correspond exactly to the extended diagrams
+$\tilde A_{n-1},\tilde D_n,\tilde E_6,\tilde E_7,\tilde E_8$ (McKay, 1980). The nodes are the
+irreducible representations of $\Gamma$, and the edges record tensoring with the two-dimensional
+representation. So the binary icosahedral group, the $120$ unit quaternions that are the vertices of
+the $600$-cell and the double cover of the rotation group of the icosahedron of Interlude~C, \emph{is}
+$\tilde E_8$. The same ADE list, now with the ordinary (unextended) diagrams, classifies the simple
+surface singularities $\C^2/\Gamma$, whose minimal resolutions have the Dynkin diagram as dual graph
+(du~Val, 1934; Arnold, 1972), and the quivers of finite representation type (Gabriel, 1972).
+
+\paragraph{8. Representations: label the nodes.} The irreducible finite-dimensional representations
+of $\mathfrak g$ correspond to labellings of the nodes by non-negative integers $(n_1,\dots,n_r)$, the
+coordinates of the highest weight in the basis of fundamental weights. Their dimensions are given by
+Weyl's dimension formula. For $\mathfrak{sl}_2$ the label $m$ gives dimension $m+1$, as in
+Theorem~\ref{LIE:thm:sl2}. For $\mathfrak{sl}_3$ the labels $(a,b)$ give
+\[
+  \dim V_{(a,b)}=\tfrac12(a+1)(b+1)(a+b+2),
+\]
+so $(1,0)$ is $\C^3$ (dimension $3$) and $(1,1)$ is the adjoint representation (dimension $8$).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+type & $\abs{\Delta}$ & $h$ & exponents & $\abs{W}$ & $\det C$ & $\dim\mathfrak g$\\
+\midrule
+$A_n$ & $n(n+1)$ & $n+1$ & $1,2,\dots,n$ & $(n+1)!$ & $n+1$ & $n(n+2)$\\
+$B_n$, $C_n$ & $2n^2$ & $2n$ & $1,3,\dots,2n-1$ & $2^nn!$ & $2$ & $n(2n+1)$\\
+$D_n$ & $2n(n-1)$ & $2n-2$ & $1,3,\dots,2n-3;\ n-1$ & $2^{n-1}n!$ & $4$ & $n(2n-1)$\\
+$E_6$ & $72$ & $12$ & $1,4,5,7,8,11$ & $51\,840$ & $3$ & $78$\\
+$E_7$ & $126$ & $18$ & $1,5,7,9,11,13,17$ & $2\,903\,040$ & $2$ & $133$\\
+$E_8$ & $240$ & $30$ & $1,7,11,13,17,19,23,29$ & $696\,729\,600$ & $1$ & $248$\\
+$F_4$ & $48$ & $12$ & $1,5,7,11$ & $1\,152$ & $1$ & $52$\\
+$G_2$ & $12$ & $6$ & $1,5$ & $12$ & $1$ & $14$\\
+\bottomrule
+\end{tabular}
+\end{center}
+(References: Humphreys, \emph{Reflection Groups and Coxeter Groups}, \S\S3.7--3.9 and 3.16--3.20; Bourbaki,
+\emph{Lie Groups and Lie Algebras}, Ch.~VI, Plates; McKay, \emph{Graphs, singularities, and finite
+groups}, Proc.\ Sympos.\ Pure Math.\ 37 (1980).)
+
+%======================================================================
 \section{Summary: a dictionary}
 \label{LIE:sec:dictionary}
 
@@ -635,6 +916,8 @@ reflection $s_\alpha$, Weyl group $W$ & symmetry of $\alpha$-strings; $W=N(T)/T$
 choice of $d$, positive roots, Weyl chamber & upper triangular matrices (a Borel subalgebra)\\
 simple roots, Dynkin diagram & generators $e_i,f_i,h_i$ and Serre relations\\
 rank $+\abs{\Delta}$ & $\dim\mathfrak g$\\
+$\det$ of the Cartan matrix; density of the root lattice & order of the centre of the simply connected group\\
+symmetries and foldings of the diagram & outer automorphisms; fixed subalgebras\\
 root lattice $\Z\Delta$ (coroot lattice, in general) & $\tfrac1{2\pi}\,$kernel of $\exp$ on the maximal torus (simply connected, compact)\\
 $E_8$ kissing configuration ($240$ vectors) & root spaces of $\mathfrak e_8$, $248=8+240$\\
 walls $x_i=x_j$ of $\Conf(N,\R)$ & eigenvalue collisions; non-regular elements of $\mathrm{SU}(N)$\\
@@ -686,6 +969,17 @@ Draw the kernel of $\exp$ on the maximal torus of $\mathrm{SU}(3)$ inside the pl
 $\theta_1+\theta_2+\theta_3=0$, together with the Weyl alcove. Check that the kernel is a hexagonal
 lattice and that the alcove is an equilateral triangle. How many alcoves fit into a fundamental domain
 of the lattice?
+\end{exercise}
+
+\begin{exercise}
+Using only the Dynkin diagrams, compute $\det C$ for $D_n$ and $E_7$ and recover the densities of the
+lattices $D_5$ and $E_7$. Compare with the laminated lattices of Lecture~6
+(Section~\ref{L04b:sec:laminated}).
+\end{exercise}
+
+\begin{exercise}
+Check $\abs{W(E_8)}=696\,729\,600$ from the exponents, and verify that the exponents of $A_{n-1}$ give
+$\abs{\Sigma_n}=n!$. Find a Coxeter element of $\Sigma_4$ and show that it has order $h=4$.
 \end{exercise}
 
 \section*{Further reading}

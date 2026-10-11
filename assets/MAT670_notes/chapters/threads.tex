@@ -1,0 +1,146 @@
+% Front matter: an associative guide to the notes. New material.
+\chapter*{Threads through the notes}
+\addcontentsline{toc}{chapter}{Threads through the notes}
+\label{THR:ch}
+
+These notes are not meant to be read in a straight line. The same few objects keep turning up in
+different clothes, and following them is the most fun way through. Below are some of the threads,
+each with its stops. Lectures are numbered $1$--$11$ and the new interludes are lettered A--E.
+
+\begin{center}
+\begin{tikzpicture}[x=0.62cm,y=0.55cm]
+  \node[font=\small] at (0,1) {1};
+  \node[font=\small] at (1,1) {2};
+  \node[font=\small] at (2,1) {3};
+  \node[font=\small] at (3,1) {4};
+  \node[font=\small] at (4,1) {5};
+  \node[font=\small] at (5,1) {6};
+  \node[font=\small\bfseries,addcol] at (6,1) {A};
+  \node[font=\small\bfseries,addcol] at (7,1) {B};
+  \node[font=\small\bfseries,addcol] at (8,1) {C};
+  \node[font=\small] at (9,1) {7};
+  \node[font=\small] at (10,1) {8};
+  \node[font=\small] at (11,1) {9};
+  \node[font=\small] at (12,1) {10};
+  \node[font=\small] at (13,1) {11};
+  \node[font=\small\bfseries,addcol] at (14,1) {D};
+  \node[font=\small\bfseries,addcol] at (15,1) {E};
+  \node[anchor=east,font=\small] at (-0.7,0) {golden ratio};
+  \draw[gray!30] (0,0)--(15,0);
+  \draw[addcol,thick] (6,0)--(15,0);
+  \fill[addcol] (6,0) circle (0.17);
+  \fill[addcol] (8,0) circle (0.17);
+  \fill[addcol] (13,0) circle (0.17);
+  \fill[addcol] (15,0) circle (0.17);
+  \node[anchor=east,font=\small] at (-0.7,-1) {the root system $A_{n-1}$};
+  \draw[gray!30] (0,-1)--(15,-1);
+  \draw[addcol,thick] (5,-1)--(14,-1);
+  \fill[addcol] (5,-1) circle (0.17);
+  \fill[addcol] (6,-1) circle (0.17);
+  \fill[addcol] (9,-1) circle (0.17);
+  \fill[addcol] (10,-1) circle (0.17);
+  \fill[addcol] (14,-1) circle (0.17);
+  \node[anchor=east,font=\small] at (-0.7,-2) {Blichfeldt};
+  \draw[gray!30] (0,-2)--(15,-2);
+  \draw[addcol,thick] (1,-2)--(7,-2);
+  \fill[addcol] (1,-2) circle (0.17);
+  \fill[addcol] (2,-2) circle (0.17);
+  \fill[addcol] (7,-2) circle (0.17);
+  \node[anchor=east,font=\small] at (-0.7,-3) {$E_8$};
+  \draw[gray!30] (0,-3)--(15,-3);
+  \draw[addcol,thick] (5,-3)--(15,-3);
+  \fill[addcol] (5,-3) circle (0.17);
+  \fill[addcol] (6,-3) circle (0.17);
+  \fill[addcol] (7,-3) circle (0.17);
+  \fill[addcol] (8,-3) circle (0.17);
+  \fill[addcol] (15,-3) circle (0.17);
+  \node[anchor=east,font=\small] at (-0.7,-4) {the space of lattices};
+  \draw[gray!30] (0,-4)--(15,-4);
+  \draw[addcol,thick] (0,-4)--(8,-4);
+  \fill[addcol] (0,-4) circle (0.17);
+  \fill[addcol] (2,-4) circle (0.17);
+  \fill[addcol] (3,-4) circle (0.17);
+  \fill[addcol] (7,-4) circle (0.17);
+  \fill[addcol] (8,-4) circle (0.17);
+  \node[anchor=east,font=\small] at (-0.7,-5) {contacts and critical points};
+  \draw[gray!30] (0,-5)--(15,-5);
+  \draw[addcol,thick] (12,-5)--(15,-5);
+  \fill[addcol] (12,-5) circle (0.17);
+  \fill[addcol] (13,-5) circle (0.17);
+  \fill[addcol] (14,-5) circle (0.17);
+  \fill[addcol] (15,-5) circle (0.17);
+  \node[anchor=east,font=\small] at (-0.7,-6) {entropy};
+  \draw[gray!30] (0,-6)--(15,-6);
+  \draw[addcol,thick] (2,-6)--(15,-6);
+  \fill[addcol] (2,-6) circle (0.17);
+  \fill[addcol] (9,-6) circle (0.17);
+  \fill[addcol] (13,-6) circle (0.17);
+  \fill[addcol] (15,-6) circle (0.17);
+  \node[anchor=east,font=\small] at (-0.7,-7) {circles and tori};
+  \draw[gray!30] (0,-7)--(15,-7);
+  \draw[addcol,thick] (6,-7)--(9,-7);
+  \fill[addcol] (6,-7) circle (0.17);
+  \fill[addcol] (7,-7) circle (0.17);
+  \fill[addcol] (8,-7) circle (0.17);
+  \fill[addcol] (9,-7) circle (0.17);
+  \draw[gray,dashed] (5.5,1.5)--(5.5,-7.5); \draw[gray,dashed] (8.5,1.5)--(8.5,-7.5); \draw[gray,dashed] (13.5,1.5)--(13.5,-7.5);
+\end{tikzpicture}
+\end{center}
+Chapters are listed in book order (lectures in black, interludes in blue); a dot marks a stop on the thread.
+
+\paragraph{The golden ratio.} Lecture~11 counts the jammed states of a narrow channel with binary words
+having no two adjacent $1$s, and Fibonacci numbers appear. The most likely fraction of $1$s is
+$(5-\sqrt5)/10$, and the entropy per site is $\log\varphi$. Interlude~E recognizes this as the Shannon
+capacity of the ``golden mean'' channel. Interlude~C meets the Fibonacci word again: it is a Sturmian
+word of slope $\varphi^{-2}$, the cutting sequence of an irrational line through the square lattice, its gaps obey the three-gap
+theorem, and the golden ratio is the worst approximable number (Hurwitz). Folding the $E_8$ diagram
+with $\tau=\varphi$ gives the non-crystallographic group $H_4$ and icosahedral quasicrystals
+(Interlude~C). Interlude~A sends the binary icosahedral group to the extended $E_8$ diagram (McKay).
+The icosahedron itself is not made of regular tetrahedra (Interlude~E).
+
+\paragraph{The root system $A_{n-1}$.} It is built in Lecture~6 as the vectors $e_i-e_j$ in the
+hyperplane $\sum x_i=0$. In Lecture~8 the same hyperplanes $x_i=x_j$ cut $\Conf(N,\R)$ into Weyl
+chambers. In Interlude~A the roots are the eigenvalues of conjugation on the matrix units
+$E_{ij}$; the maximal torus of $\mathrm{SU}(n)$ is $\R^{n-1}$ modulo the $A_{n-1}$ lattice; and its Weyl
+alcove is the triangle of gaps between points on a circle from Lecture~7. Complexify the hyperplanes
+and divide by $\Sigma_N$, and you get the braid group (Interlude~D).
+
+\paragraph{Blichfeldt.} His 1929 gauge trick bounds the density in Lectures~2 and~3. His 1914 lemma
+proves Minkowski's convex body theorem (Interlude~B). The Cohn--Elkies bound is a ``two-sided''
+Blichfeldt gauge, with positivity demanded on both sides of the Fourier transform, and with Viazovska's
+magic function it settles dimension $8$ (Interlude~B). The gauges for long bodies in Lecture~3 (capsules, cylinders) are the
+subject of G.~Fejes T\'oth and W.~Kuperberg, \emph{Blichfeldt's density bound revisited} (Math.\ Ann.\ 1993),
+which leads on to the cylinder bounds of A.~Bezdek and W.~Kuperberg (1990) and W.~Kusner (2014).
+
+\paragraph{$E_8$.} It is constructed in Lecture~6 as $D_8\cup(D_8+h)$ and from the Hamming code. In
+Interlude~A it is $248=8+240$: Cartan subalgebra plus root spaces, and its density $\pi^4/384$ can be
+read off from $\det C=1$. In Interlude~B its theta series is the Eisenstein series $E_4$, so it has
+$240\,\sigma_3(m)$ vectors of norm $2m$, and Viazovska's theorem makes it the densest packing in
+dimension~$8$. In Interlude~C it folds to $H_4$, and in Interlude~E the Golay code builds its big
+sibling, the Leech lattice.
+
+\paragraph{The space of lattices.} It appears in Lecture~4 with Mahler's criterion, and in
+Interlude~B with Hermite's constant, reduction of quadratic forms and Siegel's mean value theorem. From
+the last of these comes the Minkowski--Hlawka lower bound $\dens\ge 2^{-d}\cdot2\zeta(d)$, which was the
+lower bound quoted in Lectures~1 and~3. In Interlude~C dynamics on the space takes over: bounded orbits
+correspond to badly approximable numbers (Dani), and Margulis's proof of the Oppenheim conjecture.
+
+\paragraph{Contacts, forces and critical points.} The contact graphs and force balance of
+Lectures~10--11 make the max-min distance function a ``min-type'' Morse function. Interlude~D turns this
+into min-max: the Tammes problem as the top critical value, Betti numbers of configuration spaces as
+lower bounds on the number of critical configurations, and kissing numbers. Interlude~E reads the same
+force-balance condition as jamming, with Maxwell counting and isostaticity. The slack in the
+icosahedral kissing configuration (Interlude~E) is what lets the jitterbug of Lecture~11 move.
+
+\paragraph{Entropy.} Lecture~7 derives the Boltzmann distribution and the Gaussian fluctuations of a
+gas in a box. Lecture~11 introduces Edwards' entropy of jammed states and solves hard rods. In
+Interlude~E the partition function of hard spheres becomes the volume of a configuration space; the
+parking problem has an exact answer; and maximum entropy, Shannon's channel capacity and sphere
+packing in high dimensions turn out to be one circle of ideas, with Kabatiansky--Levenshtein
+(Lecture~3) as a coding theorem.
+
+\paragraph{Circles and tori.} Points on a circle (Lecture~7) have a triangle of gaps. Interlude~A finds
+that triangle as the space of conjugacy classes of $\mathrm{SU}(3)$. Interlude~C cuts the torus along an
+irrational line (``shredding the torus''), proves equidistribution, and finds at most three gaps.
+Interlude~B counts lattice points in a circle and asks how wrong $\pi r^2$ can be (the Gauss circle
+problem).

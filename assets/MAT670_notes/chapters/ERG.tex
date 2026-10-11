@@ -1,0 +1,1181 @@
+% MAT670 -- Interlude C: the torus, Diophantine approximation and aperiodic order.
+% Entirely new material (not in the handwritten notes). Labels prefixed ERG:.
+% Placed after Interlude B (number theory). Numerical claims checked with python3.
+
+\tikzset{
+  ERGv/.style={circle,draw,fill=white,inner sep=0pt,minimum size=6pt},
+  ERGw/.style={circle,draw,fill=addcol!25,inner sep=0pt,minimum size=6pt},
+  ERGproj/.style={gray,densely dotted},
+  ERGthick/.style={draw=black,line width=0.3pt,fill=addcol!35},
+  ERGthin/.style={draw=black,line width=0.3pt,fill=flagcol!30},
+}
+
+\chapter[Interlude C: Torus and aperiodic order]{Interlude C: The torus, Diophantine approximation and aperiodic order}
+\label{ERG:ch}
+
+\begin{addedblock}
+This interlude is new: it is not in the handwritten notes. It starts from the torus $\R^n/\Lat$ of
+Lecture~4 and asks what a single straight line does on it. The answer leads through Diophantine
+approximation, the points on a circle of Lecture~7, the Fibonacci words of Lecture~11, and finally
+to quasicrystals, which are obtained by \emph{folding} the Dynkin diagrams of Lectures~4--6. To keep
+it readable it is set in black; all of it should be read as added material.
+\end{addedblock}
+
+Several objects in these notes have quietly been tori. Lecture~4 attached to a lattice $\Lat\subset\R^n$
+the torus $\R^n/\Lat$, whose volume is $\abs{\det\Lat}$. Interlude~A found the maximal torus of
+$\mathrm{SU}(n)$ to be $\mathfrak t/2\pi A_{n-1}$ (Section~\ref{LIE:sec:torus}). And the circle
+$\Sph^1=\R/\Z$ carrying the points of Lecture~7 is the one-dimensional torus. The simplest dynamical
+question we can ask about a torus is:
+\begin{center}
+\emph{draw a straight line on $\R^2/\Z^2$. Where does it go?}
+\end{center}
+If the slope is rational, the line closes up. If the slope is irrational, the line never closes and
+\emph{shreds} the torus: it comes arbitrarily close to every point. How fast it does so is the subject
+of Diophantine approximation, and the answer singles out the golden ratio
+\[
+  \varphi=\tau=\frac{1+\sqrt5}2=1.618\ldots,\qquad \varphi^2=\varphi+1 .
+\]
+(Both letters are standard. We write $\varphi$ in the number-theoretic sections and $\tau$ in the
+Coxeter group sections, following each literature; $\tau'=-1/\tau=\frac{1-\sqrt5}{2}$ is its Galois
+conjugate. Here $\tau$ is \emph{not} the kissing number.) Cutting the line out of the torus in a
+different way produces the Fibonacci chain, the simplest quasicrystal. Its higher-dimensional
+relatives come from the lattices $A_4$, $D_6$ and $E_8$ of Lecture~6.
+
+Throughout, $\{x\}=x-\lfloor x\rfloor$ is the fractional part, $\norm{x}_{\Z}=\min_{p\in\Z}\abs{x-p}$
+is the distance to the nearest integer, and $e(x)=e^{2\pi ix}$.
+
+%======================================================================
+\section{Shredding the torus}
+\label{ERG:sec:torus}
+
+Let $\ell_\alpha$ be the image in $\T^2=\R^2/\Z^2$ of the line $y=\alpha x$. Each time the line crosses
+the vertical circle $\{x=0\}$ (that is, at $x=k\in\Z$) its height is $k\alpha$ modulo $1$. So the
+\emph{first return map} to this circle is the rotation
+\[
+  R_\alpha\colon\T^1\to\T^1,\qquad t\mapsto t+\alpha \pmod 1,
+\]
+and $\ell_\alpha$ is the suspension of $R_\alpha$: it is dense in $\T^2$ exactly when the orbit
+$\{k\alpha\}$ is dense in $\T^1$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=2.5]
+  \begin{scope}
+    \begin{scope}\clip (0,0) rectangle (1,1);
+      \foreach \k in {0,...,4} {\pgfmathsetmacro{\y}{\k*0.4-floor(\k*0.4+0.0001)}
+        \draw[addcol,thick] (0,\y)--++(1,0.4); \draw[addcol,thick] (0,\y-1)--++(1,0.4);}
+    \end{scope}
+    \draw[thick] (0,0) rectangle (1,1);
+    \foreach \k in {0,...,4} {\pgfmathsetmacro{\y}{\k*0.4-floor(\k*0.4+0.0001)} \fill (0,\y) circle (0.025);}
+    \node[below,font=\footnotesize] at (0.5,-0.05) {slope $\frac25$: a closed curve};
+  \end{scope}
+  \begin{scope}[shift={(1.8,0)}]
+    \begin{scope}\clip (0,0) rectangle (1,1);
+      \foreach \k in {0,...,29} {\pgfmathsetmacro{\y}{\k*0.41421356-floor(\k*0.41421356)}
+        \draw[addcol] (0,\y)--++(1,0.41421356); \draw[addcol] (0,\y-1)--++(1,0.41421356);}
+    \end{scope}
+    \draw[thick] (0,0) rectangle (1,1);
+    \foreach \k in {0,...,29} {\pgfmathsetmacro{\y}{\k*0.41421356-floor(\k*0.41421356)} \fill (0,\y) circle (0.018);}
+    \node[below,font=\footnotesize] at (0.5,-0.05) {slope $\sqrt2-1$: $30$ windings};
+  \end{scope}
+  \foreach \s in {0,1.8} {
+    \draw[-{Stealth[length=3pt]}] (\s+0.47,0)--(\s+0.53,0); \draw[-{Stealth[length=3pt]}] (\s+0.47,1)--(\s+0.53,1);
+    \draw[-{Stealth[length=3pt]}] (\s,0.44)--(\s,0.5); \draw[-{Stealth[length=3pt]}] (\s,0.5)--(\s,0.56);
+    \draw[-{Stealth[length=3pt]}] (\s+1,0.44)--(\s+1,0.5); \draw[-{Stealth[length=3pt]}] (\s+1,0.5)--(\s+1,0.56);}
+\end{tikzpicture}
+\caption{The line $y=\alpha x$ wrapped around the torus $\R^2/\Z^2$ (opposite edges identified as
+marked). The dots on the left edge are the returns $\{k\alpha\}$ to the circle $x=0$. For rational
+$\alpha=p/q$ the line closes after $q$ turns; for irrational $\alpha$ it shreds the torus.}
+\label{ERG:fig:torus}
+\end{figure}
+
+If $\alpha=p/q$ in lowest terms, the line closes up after $q$ horizontal and $p$ vertical turns, a
+closed geodesic of length $\sqrt{p^2+q^2}$. The irrational case is Kronecker's theorem, and the proof
+is the pigeonhole principle.
+
+\begin{proposition}[Dirichlet 1842; Kronecker 1884]\label{ERG:prop:dirichlet}
+Let $\alpha\in\R$ and let $Q\ge1$ be an integer. There is an integer $q$ with $1\le q\le Q$ and
+$\norm{q\alpha}_\Z<1/Q$. If $\alpha$ is irrational, the orbit $\{k\alpha\}_{k\ge0}$ is dense in
+$[0,1)$, and so $\ell_\alpha$ is dense in $\T^2$.
+\end{proposition}
+
+\begin{proof}
+The $Q+1$ numbers $\{k\alpha\}$, $0\le k\le Q$, lie in the $Q$ intervals $[i/Q,(i+1)/Q)$, so two of
+them, say for $j<k$, lie in the same interval. Then $q=k-j$ satisfies $\norm{q\alpha}_\Z<1/Q$. If
+$\alpha$ is irrational then $\delta=\norm{q\alpha}_\Z>0$, and the multiples of $q\alpha$ march around
+the circle in steps of length $\delta<1/Q$ (all in the same direction), so every interval of length
+$1/Q$ contains a point of the orbit. Since $Q$ was arbitrary, the orbit is dense.
+\end{proof}
+
+Density says nothing about \emph{how often} the orbit visits a given arc. The right notion is the one
+behind the Boltzmann distribution of Lecture~7: time averages should equal space averages.
+
+\begin{definition}
+A sequence $(x_k)$ in $[0,1)$ is \emph{equidistributed} if for every interval $I\subseteq[0,1)$
+\[
+  \lim_{N\to\infty}\frac1N\#\{0\le k<N: x_k\in I\}=\abs{I}.
+\]
+\end{definition}
+
+\begin{theorem}[Weyl's criterion; Weyl 1916]\label{ERG:thm:weylcrit}
+$(x_k)$ is equidistributed if and only if
+\[
+  \frac1N\sum_{k<N}e(mx_k)\to0\qquad\text{for every integer } m\neq0.
+\]
+Equivalently, $\frac1N\sum_{k<N}f(x_k)\to\int_0^1f$ for every continuous $1$-periodic $f$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+If $(x_k)$ is equidistributed, then the averages of step functions converge, and continuous functions are
+uniform limits of step functions. Conversely, the condition gives convergence for trigonometric
+polynomials, which are uniformly dense in the continuous periodic functions (Fej\'er, or
+Stone--Weierstrass). For an interval $I$, choose continuous $f_-\le\mathbf 1_I\le f_+$ with
+$\int(f_+-f_-)<\varepsilon$ and squeeze.
+\end{proof}
+
+\begin{theorem}[Weyl 1916; also Bohl and Sierpi\'nski 1909--10]\label{ERG:thm:weyl}
+If $\alpha$ is irrational, $(\{k\alpha\})_{k\ge0}$ is equidistributed.
+\end{theorem}
+
+\begin{proof}
+For $m\neq0$ we have $m\alpha\notin\Z$, so $e(m\alpha)\neq1$ and the geometric series gives
+\[
+  \Big|\frac1N\sum_{k=0}^{N-1}e(mk\alpha)\Big|
+  =\frac{\abs{e(mN\alpha)-1}}{N\abs{e(m\alpha)-1}}\le\frac{1}{N\abs{\sin\pi m\alpha}}\longrightarrow0 .
+  \qedhere
+\]
+\end{proof}
+
+The same Fourier argument gives a statement about measures rather than orbits.
+
+\begin{proposition}[Unique ergodicity]\label{ERG:prop:ue}
+If $\alpha$ is irrational, Lebesgue measure is the only Borel probability measure on $\T^1$ invariant
+under $R_\alpha$.
+\end{proposition}
+
+\begin{proof}
+Let $\mu$ be invariant and $\hat\mu(m)=\int e(-mt)\,d\mu(t)$. Invariance gives
+$\hat\mu(m)=\int e(-m(t+\alpha))\,d\mu=e(-m\alpha)\hat\mu(m)$, so $\hat\mu(m)=0$ for $m\neq0$. A
+measure on the circle is determined by its Fourier coefficients, and these are those of Lebesgue measure.
+\end{proof}
+
+For a general measure-preserving system there is no such uniformity, and the best one can say is
+\emph{Birkhoff's ergodic theorem} (1931): if $T$ preserves a probability measure $\mu$ and
+$f\in L^1(\mu)$, then $\frac1N\sum_{k<N}f(T^kx)$ converges for $\mu$-almost every $x$, and the limit is
+$\int f\,d\mu$ when $T$ is \emph{ergodic} (every invariant set has measure $0$ or $1$). Unique
+ergodicity upgrades ``almost every $x$'' to ``every $x$, uniformly''.
+
+\subsection*{Higher dimensions, and the torus inside a Lie group}
+
+Now let $\Lat\subset\R^n$ be a lattice and $\T_\Lat=\R^n/\Lat$ the torus of Lecture~4. Its
+characters are $x\mapsto e(\ip{w}{x})$ with $w$ in the \emph{dual lattice}
+$\Lat^*=\{w:\ip{w}{\lambda}\in\Z\ \forall\lambda\in\Lat\}$ (the same dual lattice that appears in the
+Poisson summation formula of Interlude~B). Weyl's criterion holds on $\T_\Lat$ with these characters, and
+the geometric series argument gives:
+
+\begin{theorem}[Kronecker--Weyl]\label{ERG:thm:kroneckerweyl}
+Let $v\in\R^n$.
+\begin{enumerate}[nosep]
+\item The sequence $kv\bmod\Lat$ ($k\in\N$) is equidistributed in $\T_\Lat$ if and only if
+  $\ip{w}{v}\notin\Z$ for every $w\in\Lat^*\setminus\{0\}$.
+\item The line $tv\bmod\Lat$ ($t\in\R$) is equidistributed (in particular dense) if and only if
+  $\ip{w}{v}\neq0$ for every $w\in\Lat^*\setminus\{0\}$, i.e.\ $v$ lies in no rational hyperplane of
+  $\Lat$.
+\end{enumerate}
+For $\Lat=\Z^n$, (1) says that $1,v_1,\dots,v_n$ are linearly independent over $\Q$.
+\end{theorem}
+
+If the condition fails for some $w$, the orbit stays in the closed subgroup $\{x:\ip{w}{x}\in\Z\}$,
+a finite union of parallel subtori. So orbit closures
+of linear flows on tori are always subtori. This is the abelian ancestor of Ratner's theorem in
+Section~\ref{ERG:sec:lattices}.
+
+\begin{remark}[Generic elements of a maximal torus]
+In Interlude~A the maximal torus of a compact group is $T=\mathfrak t/\Lat_0$, with $\Lat_0$ the kernel
+of $\exp$ (Section~\ref{LIE:sec:torus}). By Theorem~\ref{ERG:thm:kroneckerweyl}(1), an element
+$t=\exp(H)$ generates a dense subgroup of $T$ if and only if $\chi(t)\neq1$ for every nontrivial
+character $\chi$ of $T$. Such \emph{topological generators} form a dense set of full measure. They are
+the standard tool for deducing from Theorem~\ref{LIE:thm:torus} (every element is conjugate into $T$)
+that any two maximal tori are conjugate: conjugate a generator $t'$ of $T'$ into $T$, and its closure
+$T'$ goes along with it.
+\end{remark}
+
+%======================================================================
+\section{How close does the line come? Diophantine approximation}
+\label{ERG:sec:dioph}
+
+The line $\ell_\alpha$ passes within $\norm{q\alpha}_\Z$ of the lattice point $(q,p)$, measured
+vertically. Dirichlet's bound $\norm{q\alpha}_\Z<1/q$ for infinitely many $q$ is a statement about
+lattice points near a line, and it has a second proof from the geometry of numbers of Lecture~4.
+
+\begin{proof}[Second proof of Dirichlet, via Minkowski]
+The parallelogram $K_Q=\{(x,y):\abs{x}\le Q,\ \abs{x\alpha-y}\le1/Q\}$ is convex, symmetric and compact,
+of area $2Q\cdot 2/Q=4$. By Minkowski's convex body theorem it contains a lattice point
+$(q,p)\neq0$. If $q=0$ then $\abs{p}\le1/Q<1$ forces $p=0$; so $1\le\abs{q}\le Q$ and
+$\abs{q\alpha-p}\le1/Q$.
+\end{proof}
+
+\subsection*{Continued fractions}
+
+Write $\alpha=[a_0;a_1,a_2,\dots]=a_0+\cfrac{1}{a_1+\cfrac{1}{a_2+\dotsb}}$ with $a_i\in\Z$, $a_i\ge1$
+for $i\ge1$, and let $p_n/q_n=[a_0;a_1,\dots,a_n]$ be the convergents, so
+$q_{n+1}=a_{n+1}q_n+q_{n-1}$. The following facts are classical (see e.g.\ Khinchin's
+\emph{Continued Fractions}, or Cassels' \emph{Introduction to Diophantine Approximation}, Ch.~I).
+\begin{enumerate}[nosep,label=(\roman*)]
+\item $\frac{1}{(a_{n+1}+2)}<q_n\,\norm{q_n\alpha}_\Z<\frac{1}{a_{n+1}}$ for $n\ge1$, and $q_n\alpha-p_n$
+  alternates in sign.
+\item (Best approximation, Lagrange) If $1\le q<q_{n+1}$, then $\norm{q\alpha}_\Z\ge\norm{q_n\alpha}_\Z$.
+  So the record holders for $\norm{q\alpha}_\Z$ are exactly the $q_n$.
+\item For $\varphi=[1;1,1,1,\dots]$ the convergents are $F_{n+1}/F_n$ (Fibonacci numbers,
+  $F_1=F_2=1$), and $F_n\varphi-F_{n+1}=-(\tau')^{n}=(-1)^{n+1}\varphi^{-n}$.
+\end{enumerate}
+Fact (iii) is Binet's formula $\varphi^n=F_n\varphi+F_{n-1}$ applied to $\tau'$, which satisfies the
+same quadratic equation. By (i), $\inf_q q\norm{q\alpha}_\Z>0$ if and only if the partial quotients $a_n$
+are bounded; such $\alpha$ are called \emph{badly approximable}. The golden ratio has the smallest
+possible partial quotients, and it turns out to be the worst approximable number of all.
+
+\begin{theorem}[Hurwitz 1891]\label{ERG:thm:hurwitz}
+For every irrational $\alpha$ there are infinitely many fractions $p/q$ with
+$\abs{\alpha-p/q}<\frac1{\sqrt5\,q^2}$. The constant $\sqrt5$ cannot be increased: for
+$\alpha=\varphi$ and any $A>\sqrt5$ only finitely many $p/q$ satisfy $\abs{\alpha-p/q}<\frac1{Aq^2}$.
+\end{theorem}
+
+\begin{proof}[Proof of the sharpness]
+The existence part follows by showing that of any three consecutive convergents one satisfies the
+inequality (Hardy--Wright, Thm.~195). For the optimality, note that
+$(p-q\varphi)(p-q\tau')=p^2-pq-q^2$ is a nonzero integer for $(p,q)\neq(0,0)$, because $\varphi$ is
+irrational. Hence
+\[
+  q^2\Big|\varphi-\frac pq\Big|=\frac{q\abs{p^2-pq-q^2}}{\abs{p-q\tau'}}\ \ge\ \frac{1}{\abs{p/q-\tau'}}
+  \longrightarrow\frac1{\varphi-\tau'}=\frac1{\sqrt5}
+\]
+as $p/q\to\varphi$. So $\liminf q^2\abs{\varphi-p/q}\ge1/\sqrt5$, and the convergents
+$F_{n+1}/F_n$ attain this value in the limit.
+\end{proof}
+
+The proof is really about the indefinite quadratic form $x^2-xy-y^2$, which takes no small nonzero
+values on $\Z^2$. Markov turned this into a complete description of the top of the spectrum.
+
+\begin{theorem}[Markov 1879--80]\label{ERG:thm:markov}
+For a real indefinite binary quadratic form $f$ of discriminant $d>0$, put
+$\mu(f)=\inf_{(x,y)\in\Z^2\setminus0}\abs{f(x,y)}/\sqrt d$. The values of $\mu(f)$ that exceed $\frac13$
+are exactly
+\[
+  \frac{m}{\sqrt{9m^2-4}},\qquad m\in\{1,2,5,13,29,34,89,169,194,\dots\},
+\]
+where $m$ runs over the \emph{Markov numbers}, the integers occurring in positive solutions of
+$x^2+y^2+z^2=3xyz$. The value for $m$ is attained only by forms equivalent to a multiple of an
+explicit integral form $f_m$. For $m=1,2$ these are $x^2-xy-y^2$ ($\mu=1/\sqrt5$) and $x^2-2y^2$
+($\mu=1/\sqrt8$).
+\end{theorem}
+
+The dual statement for numbers is that the \emph{Lagrange spectrum}
+$\{\limsup_q(q\norm{q\alpha}_\Z)^{-1}\}$ begins $\sqrt5,\sqrt8,\sqrt{221}/5,\dots$ and accumulates
+only at $3$. All Markov triples arise from $(1,1,1)$ by the moves $(x,y,z)\mapsto(x,y,3xy-z)$. Whether
+each Markov number is the largest entry of only one triple (Frobenius 1913) is the \emph{Markov
+uniqueness conjecture}, still open.
+
+\subsection*{Badly approximable numbers are bounded orbits}
+
+Here the torus meets the space of lattices $X_2=\SL_2(\R)/\SL_2(\Z)$ of Lecture~4. Put
+\[
+  \Lat_\alpha=\begin{pmatrix}1&0\\ \alpha&1\end{pmatrix}\Z^2=\{(q,\,q\alpha+p):p,q\in\Z\},
+  \qquad g_t=\begin{pmatrix}e^{-t}&0\\0&e^{t}\end{pmatrix}.
+\]
+The flow $g_t$ squeezes the first coordinate and stretches the second. A lattice point with small
+$q\abs{q\alpha+p}$ becomes, at the right time $t$, a short vector of $g_t\Lat_\alpha$.
+
+\begin{proposition}[Dani correspondence, simplest case]\label{ERG:prop:dani}
+$\alpha$ is badly approximable if and only if the forward orbit $\{g_t\Lat_\alpha:t\ge0\}$ is bounded
+in $X_2$.
+\end{proposition}
+
+\begin{proof}
+By Mahler's criterion (Lecture~4) a set of unimodular lattices is bounded exactly when the shortest
+vector length $\lambda_1$ is bounded below on it. We use the sup norm, which changes $\lambda_1$ by at
+most a factor $\sqrt2$. Suppose $\abs q\abs{q\alpha+p}\ge c$ for all $q\neq0$, where we may take $c\le1$.
+A vector $v=(e^{-t}q,e^t(q\alpha+p))$ of $g_t\Lat_\alpha$ with $q=0$ has $\norm v_\infty=e^t\abs p\ge1$.
+If $q\neq0$ then $\norm v_\infty^2\ge\abs q\abs{q\alpha+p}\ge c$. So $\lambda_1\ge\sqrt c$ along the
+orbit. Conversely, suppose $\norm v_\infty\ge\varepsilon$ for all $t\ge0$ and $v\neq0$, where
+$\varepsilon\le1$. Given $q\ge1$ and $p$, choose $t\ge0$ with $e^{-t}q=\varepsilon/2$. Then the first
+coordinate of $v$ is less than $\varepsilon$, so $e^t\abs{q\alpha+p}\ge\varepsilon$, that is,
+$q\abs{q\alpha+p}\ge\varepsilon^2/2$.
+\end{proof}
+
+This dictionary, due to Dani (1985) in all dimensions, turns questions about numbers into questions about
+orbits on the space of lattices. We return to it in Section~\ref{ERG:sec:lattices}.
+
+%======================================================================
+\section{Three gaps}
+\label{ERG:sec:threegap}
+
+Return to the circle of Lecture~7 (Section~\ref{L07:subsec:circle}), which we take to have length $1$, and
+place on it the first $N$ points of an irrational rotation,
+\[
+  x_k=\{k\alpha\},\qquad 0\le k\le N-1 .
+\]
+They cut the circle into $N$ arcs, a point $(g_1,\dots,g_N)$ of the open gap simplex of Lecture~7. One
+would expect $N$ different gap lengths. There are at most three.
+
+\begin{theorem}[Three gap theorem; conjectured by Steinhaus, proved by S\'os 1957/58, Sur\'anyi 1958, \'Swierczkowski 1959]\label{ERG:thm:threegap}
+Let $\alpha$ be irrational and $N\ge2$. Let $u,v\in\{1,\dots,N-1\}$ be the indices of the points
+closest to $0$ from the right and from the left, and put $a=\{u\alpha\}$, $b=1-\{v\alpha\}$. Then every
+gap between neighbouring points has length $a$, $b$ or $a+b$. More precisely, the right neighbour of
+$x_k$ is
+\[
+  x_{k+u}\ \ (\text{gap } a)\ \text{if } k<N-u,\qquad
+  x_{k-v}\ \ (\text{gap } b)\ \text{if } k\ge v,\qquad
+  x_{k+u-v}\ \ (\text{gap } a+b)\ \text{otherwise}.
+\]
+There are $N-u$ gaps of length $a$, $N-v$ of length $b$, and $u+v-N$ of length $a+b$.
+\end{theorem}
+
+\begin{proof}
+All the indices named are in $[0,N-1]$, so each claimed neighbour is one of the points, at the stated
+distance to the right of $x_k$ (because $x_{k+u}=x_k+a$ and $x_{k-v}=x_k+b$ modulo $1$). We must
+show that no point $x_j$ lies strictly inside the arc. We use only the minimality of $a$ and $b$: no
+$1\le m\le N-1$ has $\{m\alpha\}\in(0,a)$ or $\{m\alpha\}\in(1-b,1)$.
+
+\emph{Gap $a$} ($k+u\le N-1$). If $x_j\in(x_k,x_k+a)$ with $j>k$, then $\{(j-k)\alpha\}\in(0,a)$,
+contradicting minimality of $a$. If $j<k$, then $x_{k+u}=x_k+a$ lies in $(x_j,x_j+a)$, so
+$m=k+u-j\in[1,N-1]$ has $\{m\alpha\}\in(0,a)$, again a contradiction.
+
+\emph{Gap $b$} ($k\ge v$). If $x_j\in(x_k,x_k+b)$ with $j<k$, then $\{(j-k)\alpha\}\in(0,b)$, i.e.\
+$m=k-j$ has $\{m\alpha\}\in(1-b,1)$. If $j>k$, then $x_j\in(x_{k-v}-b,x_{k-v})$, and $m=j-k+v$
+(which lies in $[1,N-1]$) has $\{m\alpha\}\in(1-b,1)$. Both contradict minimality of $b$.
+
+\emph{Gap $a+b$} ($N-u\le k\le v-1$). Suppose $x_j\in(x_k,x_k+a+b)$. If $j>k$, then
+$\{(j-k)\alpha\}\in(0,a+b)$, and in fact in $(a,a+b)$ by minimality of $a$. (It cannot equal $a$,
+since then $j=k+u\ge N$.) Then $m=k+u-j$ lies in $[1,N-1]$ and $\{-m\alpha\}=\{(j-k)\alpha\}-a\in(0,b)$, so
+$\{m\alpha\}\in(1-b,1)$, which is impossible. If $j<k$, then $s=k-j\in[1,N-1]$ has
+$1-\{s\alpha\}\in(b,a+b)$, and $m=v-s\in[1,N-1]$ has
+$\{m\alpha\}=\{v\alpha\}-\{s\alpha\}=(1-\{s\alpha\})-b\in(0,a)$, which is impossible.
+
+The three ranges of $k$ are disjoint: a $k$ in the first two would give $a=b$, hence
+$(u+v)\alpha\in\Z$. Counting the $k$ in each range gives the multiplicities.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.75]
+  \draw[gray!40] (0,0) circle (1);
+  % arcs: start x, gap, style
+  \foreach \x/\g/\c in {0/0.0711/addcol, 0.0711/0.1716/black, 0.2426/0.0711/addcol, 0.3137/0.1005/flagcol,
+     0.4142/0.0711/addcol, 0.4853/0.1716/black, 0.6569/0.0711/addcol, 0.7279/0.1005/flagcol,
+     0.8284/0.0711/addcol, 0.8995/0.1005/flagcol}
+    {\draw[\c,line width=1.8pt] ({90-360*\x}:1) arc[start angle={90-360*\x}, end angle={90-360*(\x+\g)}, radius=1];}
+  \foreach \k/\x in {0/0, 5/0.0711, 3/0.2426, 8/0.3137, 1/0.4142, 6/0.4853, 4/0.6569, 9/0.7279, 2/0.8284, 7/0.8995}
+    {\fill ({90-360*\x}:1) circle (0.035); \node[font=\scriptsize] at ({90-360*\x}:1.17) {$\k$};}
+  \node[font=\small,align=left,anchor=west] at (1.45,0.35) {\textcolor{addcol}{$\blacksquare$} $a=\{5\alpha\}\approx0.0711$ \ ($\times5$)};
+  \node[font=\small,align=left,anchor=west] at (1.45,0) {\textcolor{flagcol}{$\blacksquare$} $b=1-\{7\alpha\}\approx0.1005$ \ ($\times3$)};
+  \node[font=\small,align=left,anchor=west] at (1.45,-0.35) {$\blacksquare$ $a+b\approx0.1716$ \ ($\times2$)};
+\end{tikzpicture}
+\caption{The points $\{k\alpha\}$, $0\le k\le9$, for $\alpha=\sqrt2-1$, drawn clockwise from the top.
+Here $u=5$, $v=7$, $N=10$, and the multiplicities are $N-u=5$, $N-v=3$ and $u+v-N=2$.}
+\label{ERG:fig:threegap}
+\end{figure}
+
+\begin{example}[Fibonacci: two gaps in ratio $\varphi$]\label{ERG:ex:fibgaps}
+Take $\alpha=\varphi^{-1}=\varphi-1$ and $N=F_n$ with $n\ge4$. By facts (ii) and (iii) above, the
+closest returns to $0$ among $1\le k<F_n$ occur at $k=F_{n-1}$ and $k=F_{n-2}$. (Since all partial
+quotients equal $1$, there are no intermediate fractions, so the one-sided best approximations are also
+convergents.) They are at distances
+$\varphi^{-(n-1)}$ and $\varphi^{-(n-2)}$ on opposite sides (the convergents of $\varphi^{-1}$ are
+$F_{k-1}/F_k$). So $\{u,v\}=\{F_{n-1},F_{n-2}\}$ and $u+v-N=0$: \emph{there are only two gap lengths,
+and their ratio is $\varphi$}. There are $F_{n-2}$ short gaps and $F_{n-1}$ long ones, and indeed
+$F_{n-2}\varphi^{-(n-1)}+F_{n-1}\varphi^{-(n-2)}=1$. Adding the next point splits one long gap into a
+long and a short gap, in the ratio $\varphi:1$. This is the arrangement of leaves (``phyllotaxis'') that
+a plant produces when it turns each new leaf by the golden angle $2\pi/\varphi^2\approx137.5^\circ$.
+(Checked numerically for $N\le40$.)
+\end{example}
+
+\begin{proposition}[How well spread is an orbit?]\label{ERG:prop:spread}
+Let $m_N(\alpha)$ be the smallest gap of $\{k\alpha\}_{0\le k<N}$, so that the injectivity radius of
+Lecture~7 is $\rho=m_N/2$. The regular $N$-gon has $Nm_N=1$. For every irrational $\alpha$,
+\[
+  \liminf_{N\to\infty}N\,m_N(\alpha)=\liminf_{q\to\infty}q\,\norm{q\alpha}_\Z\le\frac1{\sqrt5},
+\]
+with equality for $\alpha=\varphi$. Moreover $\inf_NNm_N(\alpha)>0$ if and only if $\alpha$ is badly
+approximable.
+\end{proposition}
+
+\begin{proof}
+The smallest gap is the smallest circular distance between two of the points, so
+$m_N=\min_{1\le k<N}\norm{k\alpha}_\Z$. Taking $N=q+1$ gives
+$Nm_N\le(q+1)\norm{q\alpha}_\Z$. Conversely $m_N=\norm{k\alpha}_\Z$ for some $k<N$, so
+$Nm_N\ge k\norm{k\alpha}_\Z$, and $k\to\infty$ as $N\to\infty$ because $m_N\to0$. This proves the
+equality of the two $\liminf$s, and the same two inequalities give the last statement. The bound
+$1/\sqrt5$ and the equality case are Hurwitz's Theorem~\ref{ERG:thm:hurwitz}.
+\end{proof}
+
+So for \emph{every} rotation, infinitely often the injectivity radius falls short of the optimal value
+$1/(2N)$ of Lecture~7 by a factor of (almost) $\sqrt5$. The golden rotation does no worse than this
+asymptotically. Rotations by numbers not equivalent to $\varphi$ do worse (by a factor $\sqrt8$ or
+more), by Markov's Theorem~\ref{ERG:thm:markov}.
+
+\begin{remark}[Gaps as a function on the space of lattices]
+The vector of gaps lives in the gap simplex of Lecture~7. In Interlude~A the same simplex appeared as
+the Weyl alcove $T/W$ of $\mathrm{SU}(N)$ (the eigenvalues of a unitary matrix are $N$ points on a
+circle). Marklof and Str\"ombergsson (2017) observed that the gap lengths of $\{k\alpha\}_{k<N}$ are
+values of a simple function on the space of lattices $X_2$, evaluated at a lattice obtained from
+$\Lat_\alpha$ by the diagonal flow at time $t\approx\log N$. The three gap theorem then becomes an elementary
+statement about two-dimensional lattices.
+\end{remark}
+
+%======================================================================
+\section{Fibonacci points and discrepancy}
+\label{ERG:sec:fib}
+
+How uniform can $N$ points in the unit square be? Measure the error with the \emph{star discrepancy}
+\[
+  D^*(P)=\sup_{0\le x,y\le1}\Big|\frac{\#\big(P\cap[0,x)\times[0,y)\big)}{N}-xy\Big| .
+\]
+Random points have $D^*\approx N^{-1/2}$. The three gap structure suggests a better choice. The
+\emph{Fibonacci lattice} with $N=F_m$ points is
+\[
+  P_m=\Big\{\Big(\frac{k}{F_m},\Big\{\frac{kF_{m-1}}{F_m}\Big\}\Big):0\le k<F_m\Big\},
+\]
+the points of the line of slope $F_{m-1}/F_m\approx\varphi^{-1}$ on the torus
+(Figure~\ref{ERG:fig:torus}), sampled at the $F_m$ times it crosses $x=k/F_m$. It is a lattice in
+$\T^2$, namely $\Z^2+\Z\,(1,F_{m-1})/F_m$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=3.4]
+  \draw (0,0) rectangle (1,1);
+  \foreach \k in {0,...,54} {\pgfmathsetmacro{\y}{mod(34*\k,55)/55} \fill[addcol] ({\k/55},\y) circle (0.012);}
+  \node[below,font=\small] at (0.5,0) {$F_{10}=55$ Fibonacci lattice points};
+\end{tikzpicture}
+\qquad
+\begin{tikzpicture}[scale=1.55]
+  \draw[gray!50] (0,0) circle (1);
+  \foreach \k in {0,...,99} {
+    \pgfmathsetmacro{\z}{1-(2*\k+1)/100}
+    \pgfmathsetmacro{\r}{sqrt(1-\z*\z)}
+    \pgfmathsetmacro{\th}{360*mod(\k*0.6180339887,1)}
+    \pgfmathsetmacro{\c}{cos(\th)}
+    \ifdim \c pt>0pt \fill[addcol] ({\r*sin(\th)},\z) circle (0.022); \fi}
+  \node[below,font=\small] at (0,-1.05) {$100$ spherical Fibonacci points};
+\end{tikzpicture}
+\caption{Left: the Fibonacci lattice $P_{10}$. Right: the front half of the spherical Fibonacci point set
+\eqref{ERG:eq:sphfib} with $N=100$, viewed from the side.}
+\label{ERG:fig:fib}
+\end{figure}
+
+\begin{theorem}[Discrepancy in the square]\label{ERG:thm:discrepancy}\leavevmode
+\begin{enumerate}[nosep]
+\item (Schmidt 1972) There is $c>0$ such that every $N$-point set $P\subset[0,1]^2$ has
+  $D^*(P)\ge c\,\frac{\log N}{N}$. (Roth 1954 had proved the weaker bound $c\sqrt{\log N}/N$. It is a bound for the
+  $L^2$ average of the discrepancy, and in that form it is sharp, by Davenport 1956.)
+\item The Fibonacci lattice has $D^*(P_m)=O\big(\frac{\log F_m}{F_m}\big)$. More generally, a
+  two-dimensional lattice $\{(k/N,\{kg/N\})\}$ has $D^*=O(K\log N/N)$ if the partial quotients of
+  $g/N$ are at most $K$ (see Niederreiter, \emph{Random Number Generation and Quasi-Monte Carlo
+  Methods}, 1992, Ch.~5).
+\end{enumerate}
+\end{theorem}
+
+So the Fibonacci lattice is optimal up to a constant, because all partial quotients of
+$F_{m-1}/F_m=[0;1,1,\dots,1]$ equal $1$. The same mechanism appears in one dimension: for badly
+approximable $\alpha$ the discrepancy of $\{k\alpha\}_{k<N}$ is $O(\log N/N)$ (see Kuipers--Niederreiter,
+Ch.~2), while Schmidt showed that every infinite sequence in $[0,1)$ has discrepancy at least $c\log N/N$ for infinitely many $N$.
+
+\paragraph{On the sphere.} Pull the Fibonacci lattice back to $\Sph^2$ by the area-preserving
+cylindrical (Lambert) projection $(\theta,z)\mapsto(\sqrt{1-z^2}\cos\theta,\sqrt{1-z^2}\sin\theta,z)$.
+Up to small variations this gives the \emph{spherical Fibonacci points}
+\begin{equation}\label{ERG:eq:sphfib}
+  z_k=1-\frac{2k+1}{N},\qquad \theta_k=2\pi k\varphi^{-1},\qquad 0\le k<N,
+\end{equation}
+a golden spiral from pole to pole. The relevant measure of uniformity is the \emph{spherical cap
+discrepancy} $D_{\mathrm{cap}}$, the supremum over spherical caps $C$ of $\abs{\#(P\cap C)/N-\sigma(C)}$,
+with $\sigma$ the normalized area. Beck (1984) showed that every $N$-point set has
+$D_{\mathrm{cap}}\ge cN^{-3/4}$, and that some $N$-point sets have $D_{\mathrm{cap}}\le C N^{-3/4}\sqrt{\log N}$.
+For the spherical Fibonacci lattice, Aistleitner, Brauchart and Dick (2012) proved
+$D_{\mathrm{cap}}\le 44\sqrt{8/F_m}$, that is $O(N^{-1/2})$. Their numerical experiments suggest
+that the true order is close to $N^{-3/4}$, but this is \emph{not} proved. Spherical Fibonacci points
+are also a standard starting configuration for numerical searches in the Tammes and Thomson problems
+of Lectures~2 and~11. This is an empirical observation; they are not optimal.
+
+%======================================================================
+\section{Sturmian words and the Fibonacci chain}
+\label{ERG:sec:sturm}
+
+Now \emph{code} the irrational line. Record, at each integer time $k$, whether the rotation
+$t\mapsto t+\alpha$ wraps around:
+\[
+  s_k=\lfloor(k+1)\alpha+\rho\rfloor-\lfloor k\alpha+\rho\rfloor\in\{0,1\}\qquad(0<\alpha<1).
+\]
+Equivalently, $s_k=1$ if and only if $\{k\alpha+\rho\}\in[1-\alpha,1)$. Such a word is called a
+\emph{mechanical} (or \emph{Sturmian}) word of slope $\alpha$. It is also the \emph{cutting sequence} of
+the line $y=\alpha x+\rho$: the record of which horizontal grid lines it crosses between consecutive
+vertical ones. The \emph{complexity} $p(n)$ of an infinite word is its number of distinct factors (blocks)
+of length $n$.
+
+\begin{theorem}[Morse--Hedlund 1938/1940; Coven--Hedlund 1973]\label{ERG:thm:morsehedlund}
+An infinite word with $p(n)\le n$ for some $n$ is eventually periodic. The one-sided infinite words of
+the smallest remaining complexity, $p(n)=n+1$ for all $n$, are exactly the mechanical words of
+irrational slope. (For two-sided words this needs recurrence: $\cdots aaabaaa\cdots$ also has
+$p(n)=n+1$.)
+\end{theorem}
+
+\begin{proof}[Sketch that a mechanical word has $p(n)=n+1$]
+The factor $s_k\cdots s_{k+n-1}$ is determined by which of the arcs $[1-\alpha,1)-j\alpha$,
+$0\le j<n$, contain $y=\{k\alpha+\rho\}$. As $y$ moves around the circle, the factor can change only when
+$y$ crosses one of the endpoints of these arcs, which are the $n+1$ points $\{-j\alpha\}$, $0\le j\le n$.
+These cut the circle into $n+1$ arcs, so $p(n)\le n+1$. The word is not eventually periodic (its frequency
+of $1$'s is the irrational number $\alpha$), so $p(n)\ge n+1$ by the first half of the theorem
+(Exercise~\ref{ERG:ex:mh}). Hence $p(n)=n+1$, and the $n+1$ arcs correspond bijectively to the factors.
+\end{proof}
+
+By equidistribution, the frequency of a factor is the length of its arc, and by the three gap theorem
+the $n+1$ arcs have at most three different lengths. So \emph{the factors of length $n$ of a Sturmian
+word occur with at most three different frequencies}.
+
+\paragraph{The Fibonacci word.} Let $\sigma$ be the substitution $a\mapsto ab$, $b\mapsto a$. Then
+$\sigma^n(a)$ is a prefix of $\sigma^{n+1}(a)$, and the limit is the \emph{Fibonacci word}
+\[
+  f=abaababaabaababaababaabaababaabaab\cdots,\qquad \abs{\sigma^n(a)}=F_{n+2}.
+\]
+The lengths obey $\abs{\sigma^{n+1}(a)}=\abs{\sigma^n(a)}+\abs{\sigma^{n-1}(a)}$, because
+$\sigma^{n+1}(a)=\sigma^n(a)\,\sigma^{n-1}(a)$. The letter $b$ never appears twice in a row, since
+every $b$ comes from an $a\mapsto ab$ and the next block begins with $a$. The frequency of $b$ is
+$\lim F_n/F_{n+2}=\varphi^{-2}\approx0.382$. In fact $f$ is the mechanical word of slope
+$\varphi^{-2}$ with $\rho=\varphi^{-2}$ and $b\leftrightarrow1$ (the word with $\rho=0$ is $af$): its $k$-th letter ($k\ge0$) is $b$ exactly when
+$\lfloor(k+2)\varphi^{-2}\rfloor-\lfloor(k+1)\varphi^{-2}\rfloor=1$ (Lothaire,
+\emph{Algebraic Combinatorics on Words}, Ch.~2; we checked the first $987$ letters numerically).
+
+\begin{remark}[Back to the channel of Lecture~11]
+With $b=1$ and $a=0$, the Fibonacci word is a binary word with no two adjacent $1$'s, which is exactly
+the jamming condition for discs in the narrow channel of Section~\ref{L11:sec:channel}. It is a
+jammed configuration that is neither periodic nor random. Its fraction of $1$'s is
+$\varphi^{-2}\approx0.382$. This lies strictly between the typical value
+$\frac12-\frac{\sqrt5}{10}\approx0.276$ of Exercise~\ref{L11:ex:typical} and the maximum $\frac12$. Its
+length per contact is $2\varphi^{-2}+L\varphi^{-1}$. Every finite block of it occurs in it with bounded
+gaps, so it is ``as ordered as an aperiodic jammed state can be''. The count $F_{\ell+2}$ of all such
+words and the lengths $\abs{\sigma^n(a)}=F_{n+2}$ obey the same Fibonacci recursion.
+\end{remark}
+
+%======================================================================
+\section{Cut and project}
+\label{ERG:sec:cutproject}
+
+Here is the Fibonacci chain as a geometric object. In $\R^2$ take the line $E_\parallel$ of slope
+$\varphi^{-1}$ (direction $(\varphi,1)$), the perpendicular line $E_\perp$, and the strip
+$S=E_\parallel+W$, where the \emph{window} $W$ is the projection of the unit square to $E_\perp$, shifted
+generically. Select the lattice points of $\Z^2$ in the strip and project them to $E_\parallel$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.78]
+  \begin{scope}
+    \clip (-0.6,-2.4) rectangle (10.4,5.6);
+    \fill[addcol!10] (-0.6,{(-0.6-1.3)/1.618034}) -- (10.4,{(10.4-1.3)/1.618034}) -- (10.4,{(10.4+1.318034)/1.618034}) -- (-0.6,{(-0.6+1.318034)/1.618034}) -- cycle;
+    \draw[addcol!60] (-0.6,{(-0.6-1.3)/1.618034}) -- (10.4,{(10.4-1.3)/1.618034});
+    \draw[addcol!60] (-0.6,{(-0.6+1.318034)/1.618034}) -- (10.4,{(10.4+1.318034)/1.618034});
+  \end{scope}
+  \foreach \m in {0,...,8} \foreach \k in {0,...,5} \fill[gray!60] (\m,\k) circle (0.04);
+  \draw[thick,addcol] (0.667,-2.188) -- (10.18,3.691) node[right,font=\small]{$E_\parallel$};
+\draw[ERGproj] (0,0)--(1.163,-1.881); \fill[addcol] (1.163,-1.881) circle (0.06);
+\draw[ERGproj] (1,0)--(1.886,-1.434); \fill[addcol] (1.886,-1.434) circle (0.06);
+\draw[ERGproj] (1,1)--(2.334,-1.158); \fill[addcol] (2.334,-1.158) circle (0.06);
+\draw[ERGproj] (2,1)--(3.057,-0.711); \fill[addcol] (3.057,-0.711) circle (0.06);
+\draw[ERGproj] (2,2)--(3.504,-0.434); \fill[addcol] (3.504,-0.434) circle (0.06);
+\draw[ERGproj] (3,2)--(4.228,0.013); \fill[addcol] (4.228,0.013) circle (0.06);
+\draw[ERGproj] (4,2)--(4.952,0.460); \fill[addcol] (4.952,0.460) circle (0.06);
+\draw[ERGproj] (4,3)--(5.399,0.737); \fill[addcol] (5.399,0.737) circle (0.06);
+\draw[ERGproj] (5,3)--(6.122,1.184); \fill[addcol] (6.122,1.184) circle (0.06);
+\draw[ERGproj] (6,3)--(6.846,1.631); \fill[addcol] (6.846,1.631) circle (0.06);
+\draw[ERGproj] (6,4)--(7.293,1.907); \fill[addcol] (7.293,1.907) circle (0.06);
+\draw[ERGproj] (7,4)--(8.017,2.355); \fill[addcol] (8.017,2.355) circle (0.06);
+\draw[ERGproj] (7,5)--(8.464,2.631); \fill[addcol] (8.464,2.631) circle (0.06);
+\draw[ERGproj] (8,5)--(9.188,3.078); \fill[addcol] (9.188,3.078) circle (0.06);
+\foreach \x/\y/\l in {1.672/-1.896/L, 2.257/-1.534/S, 2.843/-1.172/L, 3.428/-0.811/S, 4.013/-0.449/L,
+  4.737/-0.002/L, 5.322/0.360/S, 5.908/0.722/L, 6.631/1.169/L, 7.217/1.531/S, 7.802/1.893/L,
+  8.388/2.255/S, 8.973/2.617/L} \node[font=\scriptsize] at (\x,\y) {$\l$};
+\draw[thick] (0,0)--(1,0)--(1,1)--(2,1)--(2,2)--(4,2)--(4,3)--(6,3)--(6,4)--(7,4)--(7,5)--(8,5);
+\foreach \p in {(0,0),(1,0),(1,1),(2,1),(2,2),(3,2),(4,2),(4,3),(5,3),(6,3),(6,4),(7,4),(7,5),(8,5)} \fill \p circle (0.07);
+  \draw[-{Stealth}] (9.6,0.2) -- ++(-0.4,0.647) node[left,font=\small]{$E_\perp$};
+  \node[font=\small,addcol,anchor=west] at (-0.5,5.3) {strip $S=E_\parallel+W$};
+\end{tikzpicture}
+\caption{The Fibonacci chain by cut and project. The lattice points of $\Z^2$ in the strip (black) form a
+staircase. Projected orthogonally onto $E_\parallel$ they give long ($L$) and short ($S$) intervals,
+of lengths in the ratio $\varphi:1$, in the order of the Fibonacci word.}
+\label{ERG:fig:cutproject}
+\end{figure}
+
+\begin{proposition}\label{ERG:prop:fibchain}
+Let $w(m,k)=\varphi k-m+s$ (this is $\sqrt{1+\varphi^2}$ times the $E_\perp$-coordinate, shifted by
+$s$), and select the points with $w\in(-1,\varphi]$. Each selected point $x$ is followed in the strip by
+exactly one of $x+(1,0)$ (if $w(x)>0$) or $x+(0,1)$ (if $w(x)\le0$). The steps project to intervals of
+lengths $\varphi/\sqrt{1+\varphi^2}$ and $1/\sqrt{1+\varphi^2}$. In the normalized coordinate
+$y=(w+1)/\varphi^2\in(0,1]$, every step acts as $y\mapsto y-\varphi^{-2}\pmod1$, and the step is short
+exactly when $y\le\varphi^{-2}$. So the sequence of tiles is a mechanical word of slope $\varphi^{-2}$:
+a Fibonacci word (for $s$ chosen suitably, exactly $f$).
+\end{proposition}
+
+\begin{proof}
+If $w(x)>0$ then $w(x+(1,0))=w(x)-1\in(-1,\varphi-1]$ is in the window, while $w(x+(0,1))=w(x)+\varphi>\varphi$
+is not. If $w(x)\le0$ the roles are reversed, since $w(x)-1\le-1$ and $w(x)+\varphi\in(\varphi-1,\varphi]$.
+A step $(1,0)$ changes $y$ by $-1/\varphi^2$, and a step $(0,1)$ by $\varphi/\varphi^2=1-\varphi^{-2}$,
+and $w>0$ means $y>\varphi^{-2}$. It remains to see that the staircase through one selected point
+contains all of them. Every selected point lies on such a staircase (run the rule backwards as well), and
+distinct staircases are disjoint. By Theorem~\ref{ERG:thm:weyl} a staircase has a fraction
+$\varphi^{-2}$ of short steps, so it has $1/(\varphi^{-1}\cdot\frac{\varphi}{\sqrt{1+\varphi^2}}+
+\varphi^{-2}\frac{1}{\sqrt{1+\varphi^2}})=\varphi^2/\sqrt{1+\varphi^2}$ points per unit length of
+$E_\parallel$. This is already the density of all lattice points in the strip, which is (strip width)/(covolume) $=\varphi^2/\sqrt{1+\varphi^2}$. So there is only one staircase.
+\end{proof}
+
+This is the prototype of a \emph{model set}.
+
+\begin{definition}
+A \emph{cut and project scheme} is a lattice $\mathcal L\subset E_\parallel\times E_\perp$ such that the
+projection $\pi_\parallel$ is injective on $\mathcal L$ and $\pi_\perp(\mathcal L)$ is dense in
+$E_\perp$. For a \emph{window} $W\subset E_\perp$, relatively compact with nonempty interior, the
+\emph{model set} is $\Lambda(W)=\{\pi_\parallel(x):x\in\mathcal L,\ \pi_\perp(x)\in W\}$. It is
+\emph{regular} if $\partial W$ has measure zero.
+\end{definition}
+
+A model set is a Delone set (uniformly discrete and relatively dense), so it is a packing in the sense of
+Lecture~1 and has a density. It is in general not periodic. It is a \emph{Meyer set}:
+$\Lambda-\Lambda\subseteq\Lambda+F$ for a finite set $F$ (Meyer 1972). Its density is
+$\vol(W)/\covol(\mathcal L)$, by Weyl equidistribution of $\pi_\perp(\mathcal L)$ in $W$. Most importantly
+for physics, \emph{regular model sets have pure point diffraction}: the Fourier transform of the
+autocorrelation of the Dirac comb $\sum_{x\in\Lambda}\delta_x$ is a sum of point masses, supported on the
+projection of the dual lattice $\mathcal L^*$ (Hof 1995 for Euclidean internal spaces; Schlottmann 2000
+in general). The proof is a Poisson summation formula (Interlude~B) for $\mathcal L$, cut down by the
+window.
+
+\paragraph{Penrose tilings and Shechtman's crystals.} De Bruijn (1981) showed that the rhombic Penrose
+tilings (Penrose 1974) are dual to \emph{pentagrids}: superpositions of five families of parallel lines
+at angles $2\pi j/5$. Equivalently, their vertex sets are obtained by cut and project from $\Z^5$, with
+$E_\parallel$ the plane on which the cyclic permutation of coordinates acts as rotation by $2\pi/5$. Since
+the vertices lie in finitely many layers along $(1,1,1,1,1)$, the minimal setting is the
+four-dimensional root lattice $A_4$, with a window made of four pentagons in a two-dimensional internal
+space (Baake--Kramer--Schlottmann--Zeidler 1990). Figure~\ref{ERG:fig:penrose} was drawn from a
+pentagrid. In 1984 Shechtman, Blech, Gratias and Cahn reported a rapidly
+solidified Al--Mn alloy whose electron diffraction pattern had sharp spots and icosahedral symmetry. Such
+symmetry is impossible for a crystal: a rotation of order $5$ preserving a lattice in $\R^2$ or $\R^3$
+would have integer trace, but its trace is $2\cos\frac{2\pi}5=\varphi^{-1}$, or $1+\varphi^{-1}$. The
+discovery earned Shechtman the 2011 Nobel Prize in Chemistry. Model sets with icosahedral symmetry are
+the standard mathematical models of such quasicrystals.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.52]
+\begin{scope}
+\clip (0,0) circle (4.9);
+\filldraw[ERGthick] (-5.545,0.951)--(-4.545,0.951)--(-4.236,1.902)--(-5.236,1.902)--cycle;
+\filldraw[ERGthick] (-3.427,-2.490)--(-2.427,-2.490)--(-2.118,-1.539)--(-3.118,-1.539)--cycle;
+\filldraw[ERGthick] (-3.427,-0.588)--(-2.427,-0.588)--(-2.118,0.363)--(-3.118,0.363)--cycle;
+\filldraw[ERGthick] (-3.427,2.490)--(-2.427,2.490)--(-2.118,3.441)--(-3.118,3.441)--cycle;
+\filldraw[ERGthick] (-0.809,-5.568)--(0.191,-5.568)--(0.500,-4.617)--(-0.500,-4.617)--cycle;
+\filldraw[ERGthick] (-1.618,-3.078)--(-0.618,-3.078)--(-0.309,-2.127)--(-1.309,-2.127)--cycle;
+\filldraw[ERGthick] (-0.809,-0.588)--(0.191,-0.588)--(0.500,0.363)--(-0.500,0.363)--cycle;
+\filldraw[ERGthick] (-1.618,1.902)--(-0.618,1.902)--(-0.309,2.853)--(-1.309,2.853)--cycle;
+\filldraw[ERGthick] (-0.809,4.392)--(0.191,4.392)--(0.500,5.343)--(-0.500,5.343)--cycle;
+\filldraw[ERGthick] (1.309,-4.029)--(2.309,-4.029)--(2.618,-3.078)--(1.618,-3.078)--cycle;
+\filldraw[ERGthick] (1.309,-2.127)--(2.309,-2.127)--(2.618,-1.176)--(1.618,-1.176)--cycle;
+\filldraw[ERGthick] (1.309,0.951)--(2.309,0.951)--(2.618,1.902)--(1.618,1.902)--cycle;
+\filldraw[ERGthick] (2.118,3.441)--(3.118,3.441)--(3.427,4.392)--(2.427,4.392)--cycle;
+\filldraw[ERGthick] (3.927,-2.127)--(4.927,-2.127)--(5.236,-1.176)--(4.236,-1.176)--cycle;
+\filldraw[ERGthick] (3.927,0.951)--(4.927,0.951)--(5.236,1.902)--(4.236,1.902)--cycle;
+\filldraw[ERGthin] (-2.618,-3.078)--(-1.618,-3.078)--(-2.427,-2.490)--(-3.427,-2.490)--cycle;
+\filldraw[ERGthin] (-2.618,1.902)--(-1.618,1.902)--(-2.427,2.490)--(-3.427,2.490)--cycle;
+\filldraw[ERGthin] (-0.809,-3.665)--(0.191,-3.665)--(-0.618,-3.078)--(-1.618,-3.078)--cycle;
+\filldraw[ERGthin] (-0.500,0.363)--(0.500,0.363)--(-0.309,0.951)--(-1.309,0.951)--cycle;
+\filldraw[ERGthin] (2.118,-4.617)--(3.118,-4.617)--(2.309,-4.029)--(1.309,-4.029)--cycle;
+\filldraw[ERGthin] (2.118,0.363)--(3.118,0.363)--(2.309,0.951)--(1.309,0.951)--cycle;
+\filldraw[ERGthin] (4.236,-1.176)--(5.236,-1.176)--(4.427,-0.588)--(3.427,-0.588)--cycle;
+\filldraw[ERGthin] (-2.618,1.902)--(-1.618,1.902)--(-2.427,1.314)--(-3.427,1.314)--cycle;
+\filldraw[ERGthin] (-2.618,-3.078)--(-1.618,-3.078)--(-2.427,-3.665)--(-3.427,-3.665)--cycle;
+\filldraw[ERGthin] (-0.500,3.441)--(0.500,3.441)--(-0.309,2.853)--(-1.309,2.853)--cycle;
+\filldraw[ERGthin] (-0.500,-1.539)--(0.500,-1.539)--(-0.309,-2.127)--(-1.309,-2.127)--cycle;
+\filldraw[ERGthin] (2.118,3.441)--(3.118,3.441)--(2.309,2.853)--(1.309,2.853)--cycle;
+\filldraw[ERGthin] (2.427,-0.588)--(3.427,-0.588)--(2.618,-1.176)--(1.618,-1.176)--cycle;
+\filldraw[ERGthin] (4.236,-0.000)--(5.236,-0.000)--(4.427,-0.588)--(3.427,-0.588)--cycle;
+\filldraw[ERGthick] (-3.427,4.392)--(-2.427,4.392)--(-2.118,3.441)--(-3.118,3.441)--cycle;
+\filldraw[ERGthick] (-3.427,1.314)--(-2.427,1.314)--(-2.118,0.363)--(-3.118,0.363)--cycle;
+\filldraw[ERGthick] (-3.427,-0.588)--(-2.427,-0.588)--(-2.118,-1.539)--(-3.118,-1.539)--cycle;
+\filldraw[ERGthick] (-3.427,-3.665)--(-2.427,-3.665)--(-2.118,-4.617)--(-3.118,-4.617)--cycle;
+\filldraw[ERGthick] (-0.809,4.392)--(0.191,4.392)--(0.500,3.441)--(-0.500,3.441)--cycle;
+\filldraw[ERGthick] (-1.618,1.902)--(-0.618,1.902)--(-0.309,0.951)--(-1.309,0.951)--cycle;
+\filldraw[ERGthick] (-0.809,-0.588)--(0.191,-0.588)--(0.500,-1.539)--(-0.500,-1.539)--cycle;
+\filldraw[ERGthick] (-0.809,-3.665)--(0.191,-3.665)--(0.500,-4.617)--(-0.500,-4.617)--cycle;
+\filldraw[ERGthick] (1.309,2.853)--(2.309,2.853)--(2.618,1.902)--(1.618,1.902)--cycle;
+\filldraw[ERGthick] (2.118,0.363)--(3.118,0.363)--(3.427,-0.588)--(2.427,-0.588)--cycle;
+\filldraw[ERGthick] (1.309,-2.127)--(2.309,-2.127)--(2.618,-3.078)--(1.618,-3.078)--cycle;
+\filldraw[ERGthick] (3.927,2.853)--(4.927,2.853)--(5.236,1.902)--(4.236,1.902)--cycle;
+\filldraw[ERGthick] (3.927,0.951)--(4.927,0.951)--(5.236,-0.000)--(4.236,-0.000)--cycle;
+\filldraw[ERGthick] (3.118,-4.617)--(3.427,-3.665)--(2.618,-3.078)--(2.309,-4.029)--cycle;
+\filldraw[ERGthick] (0.191,-3.665)--(0.500,-2.714)--(-0.309,-2.127)--(-0.618,-3.078)--cycle;
+\filldraw[ERGthick] (-1.618,-3.078)--(-1.309,-2.127)--(-2.118,-1.539)--(-2.427,-2.490)--cycle;
+\filldraw[ERGthick] (-4.545,-2.127)--(-4.236,-1.176)--(-5.045,-0.588)--(-5.354,-1.539)--cycle;
+\filldraw[ERGthick] (3.927,-2.127)--(4.236,-1.176)--(3.427,-0.588)--(3.118,-1.539)--cycle;
+\filldraw[ERGthick] (1.309,-2.127)--(1.618,-1.176)--(0.809,-0.588)--(0.500,-1.539)--cycle;
+\filldraw[ERGthick] (-0.809,-0.588)--(-0.500,0.363)--(-1.309,0.951)--(-1.618,0.000)--cycle;
+\filldraw[ERGthick] (-3.736,0.363)--(-3.427,1.314)--(-4.236,1.902)--(-4.545,0.951)--cycle;
+\filldraw[ERGthick] (3.118,0.363)--(3.427,1.314)--(2.618,1.902)--(2.309,0.951)--cycle;
+\filldraw[ERGthick] (1.000,1.902)--(1.309,2.853)--(0.500,3.441)--(0.191,2.490)--cycle;
+\filldraw[ERGthick] (-1.618,1.902)--(-1.309,2.853)--(-2.118,3.441)--(-2.427,2.490)--cycle;
+\filldraw[ERGthick] (3.927,2.853)--(4.236,3.804)--(3.427,4.392)--(3.118,3.441)--cycle;
+\filldraw[ERGthick] (2.118,3.441)--(2.427,4.392)--(1.618,4.980)--(1.309,4.029)--cycle;
+\filldraw[ERGthin] (1.000,-3.078)--(1.309,-2.127)--(0.500,-2.714)--(0.191,-3.665)--cycle;
+\filldraw[ERGthin] (-3.736,-1.539)--(-3.427,-0.588)--(-4.236,-1.176)--(-4.545,-2.127)--cycle;
+\filldraw[ERGthin] (3.118,-1.539)--(3.427,-0.588)--(2.618,-1.176)--(2.309,-2.127)--cycle;
+\filldraw[ERGthin] (-1.618,0.000)--(-1.309,0.951)--(-2.118,0.363)--(-2.427,-0.588)--cycle;
+\filldraw[ERGthin] (3.927,0.951)--(4.236,1.902)--(3.427,1.314)--(3.118,0.363)--cycle;
+\filldraw[ERGthin] (0.191,2.490)--(0.500,3.441)--(-0.309,2.853)--(-0.618,1.902)--cycle;
+\filldraw[ERGthin] (1.309,4.029)--(1.618,4.980)--(0.809,4.392)--(0.500,3.441)--cycle;
+\filldraw[ERGthin] (-3.736,-1.539)--(-3.427,-0.588)--(-3.118,-1.539)--(-3.427,-2.490)--cycle;
+\filldraw[ERGthin] (1.000,-3.078)--(1.309,-2.127)--(1.618,-3.078)--(1.309,-4.029)--cycle;
+\filldraw[ERGthin] (-3.736,0.363)--(-3.427,1.314)--(-3.118,0.363)--(-3.427,-0.588)--cycle;
+\filldraw[ERGthin] (0.191,-0.588)--(0.500,0.363)--(0.809,-0.588)--(0.500,-1.539)--cycle;
+\filldraw[ERGthin] (-3.736,3.441)--(-3.427,4.392)--(-3.118,3.441)--(-3.427,2.490)--cycle;
+\filldraw[ERGthin] (1.000,1.902)--(1.309,2.853)--(1.618,1.902)--(1.309,0.951)--cycle;
+\filldraw[ERGthin] (0.191,4.392)--(0.500,5.343)--(0.809,4.392)--(0.500,3.441)--cycle;
+\filldraw[ERGthick] (3.927,-2.127)--(3.118,-1.539)--(2.309,-2.127)--(3.118,-2.714)--cycle;
+\filldraw[ERGthick] (2.118,-4.617)--(1.309,-4.029)--(0.500,-4.617)--(1.309,-5.204)--cycle;
+\filldraw[ERGthick] (4.236,1.902)--(3.427,2.490)--(2.618,1.902)--(3.427,1.314)--cycle;
+\filldraw[ERGthick] (2.118,0.363)--(1.309,0.951)--(0.500,0.363)--(1.309,-0.225)--cycle;
+\filldraw[ERGthick] (1.309,-2.127)--(0.500,-1.539)--(-0.309,-2.127)--(0.500,-2.714)--cycle;
+\filldraw[ERGthick] (-0.500,-4.617)--(-1.309,-4.029)--(-2.118,-4.617)--(-1.309,-5.204)--cycle;
+\filldraw[ERGthick] (2.118,3.441)--(1.309,4.029)--(0.500,3.441)--(1.309,2.853)--cycle;
+\filldraw[ERGthick] (1.000,1.902)--(0.191,2.490)--(-0.618,1.902)--(0.191,1.314)--cycle;
+\filldraw[ERGthick] (-0.809,-0.588)--(-1.618,0.000)--(-2.427,-0.588)--(-1.618,-1.176)--cycle;
+\filldraw[ERGthick] (-2.618,-3.078)--(-3.427,-2.490)--(-4.236,-3.078)--(-3.427,-3.665)--cycle;
+\filldraw[ERGthick] (-0.809,4.392)--(-1.618,4.980)--(-2.427,4.392)--(-1.618,3.804)--cycle;
+\filldraw[ERGthick] (-2.618,1.902)--(-3.427,2.490)--(-4.236,1.902)--(-3.427,1.314)--cycle;
+\filldraw[ERGthick] (-3.427,-0.588)--(-4.236,0.000)--(-5.045,-0.588)--(-4.236,-1.176)--cycle;
+\filldraw[ERGthin] (3.118,-2.714)--(2.309,-2.127)--(2.618,-3.078)--(3.427,-3.665)--cycle;
+\filldraw[ERGthin] (3.927,2.853)--(3.118,3.441)--(3.427,2.490)--(4.236,1.902)--cycle;
+\filldraw[ERGthin] (1.309,-0.225)--(0.500,0.363)--(0.809,-0.588)--(1.618,-1.176)--cycle;
+\filldraw[ERGthin] (-0.809,-3.665)--(-1.618,-3.078)--(-1.309,-4.029)--(-0.500,-4.617)--cycle;
+\filldraw[ERGthin] (0.191,1.314)--(-0.618,1.902)--(-0.309,0.951)--(0.500,0.363)--cycle;
+\filldraw[ERGthin] (-1.618,-1.176)--(-2.427,-0.588)--(-2.118,-1.539)--(-1.309,-2.127)--cycle;
+\filldraw[ERGthin] (-1.618,3.804)--(-2.427,4.392)--(-2.118,3.441)--(-1.309,2.853)--cycle;
+\filldraw[ERGthin] (-3.736,0.363)--(-4.545,0.951)--(-4.236,0.000)--(-3.427,-0.588)--cycle;
+\filldraw[ERGthick] (3.118,3.441)--(2.309,2.853)--(2.618,1.902)--(3.427,2.490)--cycle;
+\filldraw[ERGthick] (3.927,0.951)--(3.118,0.363)--(3.427,-0.588)--(4.236,-0.000)--cycle;
+\filldraw[ERGthick] (-0.809,4.392)--(-1.618,3.804)--(-1.309,2.853)--(-0.500,3.441)--cycle;
+\filldraw[ERGthick] (1.000,1.902)--(0.191,1.314)--(0.500,0.363)--(1.309,0.951)--cycle;
+\filldraw[ERGthick] (2.118,0.363)--(1.309,-0.225)--(1.618,-1.176)--(2.427,-0.588)--cycle;
+\filldraw[ERGthick] (3.927,-2.127)--(3.118,-2.714)--(3.427,-3.665)--(4.236,-3.078)--cycle;
+\filldraw[ERGthick] (-3.736,3.441)--(-4.545,2.853)--(-4.236,1.902)--(-3.427,2.490)--cycle;
+\filldraw[ERGthick] (-1.618,1.902)--(-2.427,1.314)--(-2.118,0.363)--(-1.309,0.951)--cycle;
+\filldraw[ERGthick] (-0.809,-0.588)--(-1.618,-1.176)--(-1.309,-2.127)--(-0.500,-1.539)--cycle;
+\filldraw[ERGthick] (1.000,-3.078)--(0.191,-3.665)--(0.500,-4.617)--(1.309,-4.029)--cycle;
+\filldraw[ERGthick] (-4.545,0.951)--(-5.354,0.363)--(-5.045,-0.588)--(-4.236,0.000)--cycle;
+\filldraw[ERGthick] (-3.736,-1.539)--(-4.545,-2.127)--(-4.236,-3.078)--(-3.427,-2.490)--cycle;
+\filldraw[ERGthick] (-1.618,-3.078)--(-2.427,-3.665)--(-2.118,-4.617)--(-1.309,-4.029)--cycle;
+\end{scope}
+\end{tikzpicture}
+\caption{A patch of a rhombic Penrose tiling, computed from a generic pentagrid (de Bruijn's method).
+Thick rhombi ($72^\circ$) blue, thin rhombi ($36^\circ$) orange.}
+\label{ERG:fig:penrose}
+\end{figure}
+
+%======================================================================
+\section{Folding Dynkin diagrams: quasicrystals from \texorpdfstring{$A_4$, $D_6$, $E_8$}{A4, D6, E8}}
+\label{ERG:sec:fold}
+
+Where do the icosahedral windows and lattices come from? Return to Lecture~4. Dropping the
+crystallographic axiom~4) from Definition~\ref{L04a:def:rootsystem} allows more root systems. The
+exercise after that definition asked for the decagon and the icosidodecahedron. Coxeter's classification
+of finite reflection groups (1934) adds exactly three types to the list of Lecture~5: the dihedral groups
+$I_2(m)$ ($m\neq2,3,4,6$), and two exceptional groups $H_3$ and $H_4$, with Coxeter graphs
+\[
+  H_2=I_2(5):\ \circ\overset{5}{\text{---}}\circ,\qquad
+  H_3:\ \circ\text{---}\circ\overset{5}{\text{---}}\circ,\qquad
+  H_4:\ \circ\text{---}\circ\text{---}\circ\overset{5}{\text{---}}\circ .
+\]
+These are the symmetry groups of the regular pentagon (order $10$), the icosahedron (order $120$) and the
+$600$-cell (order $14400$). An edge labelled $5$ means an angle of $\pi-\pi/5$ between simple roots, so
+$\cos\frac\pi5=\frac\tau2$ enters, and the Cartan numbers are irrational. These groups preserve no lattice
+in their own dimension. But they do preserve a lattice of \emph{twice} the dimension, and that is where
+the quasicrystals come from.
+
+The construction is a \emph{folding} of a simply laced Dynkin diagram (Shcherbak 1988; Moody--Patera
+1993). Pair up the $2r$ nodes of $\Gamma=A_4,D_6,E_8$ as $(\alpha_i,\beta_i)$, $1\le i\le r$ (so $r=2,3,4$), as in
+Figure~\ref{ERG:fig:fold}. The rule is simple. Each plain edge $i$---$j$ of $H_r$ gives the two edges
+$\alpha_i$---$\alpha_j$ and $\beta_i$---$\beta_j$. Each $5$-edge $i$---$j$ gives the three edges
+$\alpha_i$---$\beta_j$, $\beta_i$---$\alpha_j$ and $\beta_i$---$\beta_j$. For $H_4$ this produces the
+tree with arms of lengths $4,2,1$ from the node $\beta_3$, which is $E_8$. For $H_3$ it produces $D_6$, and
+for $H_2$ the chain $\alpha_1$---$\beta_2$---$\beta_1$---$\alpha_2$, which is $A_4$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.86]
+  % E8 -> H4
+  \begin{scope}
+    \foreach \i in {1,...,4} {\node[ERGv] (a\i) at (\i-1,1) {}; \node[font=\scriptsize,above=2pt] at (\i-1,1) {$\alpha_{\i}$};
+                              \node[ERGw] (b\i) at (\i-1,0) {}; \node[font=\scriptsize,below=2pt] at (\i-1,0) {$\beta_{\i}$};
+                              \draw[gray,dashed] (a\i)--(b\i);}
+    \draw (a1)--(a2)--(a3); \draw (b1)--(b2)--(b3)--(b4); \draw (a3)--(b4); \draw (a4)--(b3);
+    \node[font=\small] at (1.5,-0.85) {$E_8$};
+    \draw[-{Stealth},thick] (3.5,0.5)--(4.3,0.5);
+    \foreach \i in {1,...,4} {\node[ERGv] (h\i) at (4.6+0.7*\i-0.7,0.5) {}; \node[font=\scriptsize,above=2pt] at (4.6+0.7*\i-0.7,0.5) {$a_{\i}$};}
+    \draw (h1)--(h2)--(h3)--node[below,font=\scriptsize]{$5$}(h4);
+    \node[font=\small] at (5.65,-0.85) {$H_4$};
+  \end{scope}
+  % D6 -> H3
+  \begin{scope}[xshift=7.6cm]
+    \foreach \i in {1,...,3} {\node[ERGv] (a\i) at (\i-1,1) {}; \node[font=\scriptsize,above=2pt] at (\i-1,1) {$\alpha_{\i}$};
+                              \node[ERGw] (b\i) at (\i-1,0) {}; \node[font=\scriptsize,below=2pt] at (\i-1,0) {$\beta_{\i}$};
+                              \draw[gray,dashed] (a\i)--(b\i);}
+    \draw (a1)--(a2); \draw (b1)--(b2)--(b3); \draw (a2)--(b3); \draw (a3)--(b2);
+    \node[font=\small] at (1,-0.85) {$D_6$};
+    \draw[-{Stealth},thick] (2.5,0.5)--(3.2,0.5);
+    \foreach \i in {1,...,3} {\node[ERGv] (h\i) at (3.5+0.7*\i-0.7,0.5) {}; \node[font=\scriptsize,above=2pt] at (3.5+0.7*\i-0.7,0.5) {$a_{\i}$};}
+    \draw (h1)--(h2)--node[below,font=\scriptsize]{$5$}(h3);
+    \node[font=\small] at (4.2,-0.85) {$H_3$};
+  \end{scope}
+  % A4 -> H2
+  \begin{scope}[xshift=13.3cm]
+    \foreach \i in {1,2} {\node[ERGv] (a\i) at (\i-1,1) {}; \node[font=\scriptsize,above=2pt] at (\i-1,1) {$\alpha_{\i}$};
+                          \node[ERGw] (b\i) at (\i-1,0) {}; \node[font=\scriptsize,below=2pt] at (\i-1,0) {$\beta_{\i}$};
+                          \draw[gray,dashed] (a\i)--(b\i);}
+    \draw (b1)--(b2); \draw (a1)--(b2); \draw (a2)--(b1);
+    \node[font=\small] at (0.5,-0.85) {$A_4$};
+    \draw[-{Stealth},thick] (1.4,0.5)--(2.0,0.5);
+    \node[ERGv] (h1) at (2.3,0.5) {}; \node[ERGv] (h2) at (3.0,0.5) {};
+    \node[font=\scriptsize,above=2pt] at (2.3,0.5) {$a_1$}; \node[font=\scriptsize,above=2pt] at (3.0,0.5) {$a_2$};
+    \draw (h1)--node[below,font=\scriptsize]{$5$}(h2);
+    \node[font=\small] at (2.65,-0.85) {$H_2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Folding $E_8\to H_4$, $D_6\to H_3$, $A_4\to H_2$. The dashed lines pair each node $\alpha_i$
+with its partner $\beta_i$ (shaded). These are orthogonal, and under the projection
+$\beta_i\mapsto\tau a_i$, $\alpha_i\mapsto a_i$. A plain edge of $H_r$ comes from two parallel edges, and a
+$5$-edge from a crossing pair plus the bottom edge. The $E_8$ diagram here is the chain
+$\alpha_1\alpha_2\alpha_3\beta_4\beta_3\beta_2\beta_1$ with $\alpha_4$ attached to $\beta_3$.}
+\label{ERG:fig:fold}
+\end{figure}
+
+\begin{theorem}[Folding]\label{ERG:thm:fold}
+Let $\Gamma\in\{A_4,D_6,E_8\}$ with simple roots labelled as in Figure~\ref{ERG:fig:fold}, $L$ its root
+lattice in $V=\R^{2r}$, and define $M\colon L\to L$ on the simple roots by
+\[
+  M\alpha_i=\beta_i,\qquad M\beta_i=\alpha_i+\beta_i .
+\]
+\begin{enumerate}[nosep]
+\item $M$ is self-adjoint and $M^2=M+1$. Hence $V=E_\tau\oplus E_{\tau'}$ is an orthogonal sum of the
+  $\tau$- and $\tau'$-eigenspaces of $M$, each of dimension $r$, and $L$ is a module over
+  $\Z[\tau]$ (with $\tau$ acting as $M$).
+\item Let $P$ be the orthogonal projection onto $E_\tau$ and $a_i=P\alpha_i$. Then $P\beta_i=\tau a_i$, and
+  $a_1,\dots,a_r$ are the simple roots of $H_r$, all of squared length $1-\frac1{\sqrt5}$.
+\item The products $w_i=s_{\alpha_i}s_{\beta_i}$ preserve $E_\tau$ and act on it as the reflections
+  $s_{a_i}$. They generate a subgroup of the Weyl group $W(\Gamma)$ isomorphic to $W(H_r)$.
+\item $P$ is injective on $L$, and $P(L)=\Z[\tau]a_1+\dots+\Z[\tau]a_r$ is dense in $E_\tau$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) $M$ is self-adjoint if and only if $\ip{\beta_i}{\alpha_j}=\ip{\alpha_i}{\beta_j}$ and
+$\ip{\beta_i}{\beta_j}=\ip{\alpha_i}{\alpha_j}+\ip{\alpha_i}{\beta_j}$ for all $i,j$. Both identities can
+be read off the edge rule. Each side of the first is $-1$ exactly for a $5$-edge. For the second, take
+$i=j$ ($2=2+0$), a plain edge ($-1=-1+0$), a $5$-edge ($-1=0-1$), and no edge ($0=0$). Clearly
+$M^2\alpha_i=M\beta_i=\alpha_i+\beta_i=(M+1)\alpha_i$, and similarly for $\beta_i$. A self-adjoint
+operator with $M^2=M+1$ has eigenvalues among $\tau,\tau'$ and orthogonal eigenspaces. Since $M$ has an
+integer matrix, the two eigenvalues, being Galois conjugate, have equal multiplicity.
+
+(2) $P=(M-\tau')/\sqrt5$ commutes with $M$, so $P\beta_i=PM\alpha_i=MP\alpha_i=\tau a_i$. Then
+$\ip{a_i}{a_j}=\ip{P\alpha_i}{\alpha_j}=\big(\ip{\beta_i}{\alpha_j}-\tau'\ip{\alpha_i}{\alpha_j}\big)/\sqrt5$.
+This gives $-2\tau'/\sqrt5=1-\frac1{\sqrt5}=:x$ for $i=j$, $\tau'/\sqrt5=-\frac x2$ for a plain edge, so
+the angle is $2\pi/3$, and $-1/\sqrt5=-x\frac\tau2$ for a $5$-edge, so the angle is $\pi-\pi/5$. Non-adjacent
+pairs give $0$.
+
+(3) The roots $\alpha_i,\beta_i$ are orthogonal, so $w_i=-1$ on $U_i=\operatorname{span}(\alpha_i,\beta_i)$
+and $w_i=1$ on $U_i^\perp$. The plane $U_i$ is $M$-invariant, hence so is $U_i^\perp$, so $w_i$ commutes
+with $M$ and preserves $E_\tau$. On $E_\tau$ its $(-1)$-eigenspace is $U_i\cap E_\tau=\R a_i$. So
+$w_i|_{E_\tau}=s_{a_i}$, and these generate $W(H_r)$. If some $w\in\langle w_i\rangle$ is trivial on
+$E_\tau$, then $w-1$ is a rational matrix vanishing on $E_\tau$, hence also on its Galois conjugate
+$E_{\tau'}$, so $w=1$.
+
+(4) A nonzero $v\in L$ with $Pv=0$ would satisfy $Mv=\tau'v$, impossible for a rational vector $v$ and an
+integer matrix $M$. The image is the $\Z[\tau]$-span of the $a_i$, which is dense because $\Z[\tau]$ is
+dense in $\R$.
+\end{proof}
+
+A direct computation (we did it in python3) shows that $P$ maps the roots of $\Gamma$ onto
+$\Delta(H_r)\cup\tau\Delta(H_r)$:
+\[
+  A_4:\ 20=10+10,\qquad D_6:\ 60=30+30,\qquad E_8:\ 240=120+120 .
+\]
+Here $\Delta(H_r)$ is the root system of $H_r$: the vertices of a decagon, of an icosidodecahedron, and
+of a $600$-cell. The $120$ unit quaternions forming the $600$-cell are the \emph{icosians}; their
+$\Z[\tau]$-span, the icosian ring, is a $\Z[\tau]$-order in the quaternions, and Theorem~\ref{ERG:thm:fold}(1) is a shadow of the fact that $E_8$ is the
+icosian ring, with a suitably modified norm, viewed as a lattice over $\Z$ (Conway--Sloane, Ch.~8, \S2; Moody--Patera 1993). The planar
+case is drawn in Figure~\ref{ERG:fig:a4}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.25]
+  \foreach \k in {0,...,9} {\draw[gray!40] (0,0)--({36*\k}:1.618);}
+  \draw[addcol] (0:1) \foreach \k in {1,...,10} {-- ({36*\k}:1)};
+  \draw[flagcol] (0:1.618) \foreach \k in {1,...,10} {-- ({36*\k}:1.618)};
+  \foreach \k in {0,...,9} {\fill[addcol] ({36*\k}:1) circle (0.045); \fill[flagcol] ({36*\k}:1.618) circle (0.045);}
+  \draw[-{Stealth},thick] (0,0)--(0:1) node[below right=-1pt,font=\scriptsize]{$a_1$};
+  \draw[-{Stealth},thick] (0,0)--(144:1) node[below left=-1pt,font=\scriptsize]{$a_2$};
+  \node[font=\scriptsize,flagcol] at (0:2.05) {$\tau a_1$};
+  \node[font=\small,align=left,anchor=west] at (2.4,0.3) {$P(\alpha)$ for the $20$ roots of $A_4$:};
+  \node[font=\small,align=left,anchor=west] at (2.4,-0.15) {\textcolor{addcol}{inner decagon} $=\Delta(H_2)$,};
+  \node[font=\small,align=left,anchor=west] at (2.4,-0.6) {\textcolor{flagcol}{outer decagon} $=\tau\,\Delta(H_2)$.};
+\end{tikzpicture}
+\caption{The $20$ roots of $A_4$ projected to the plane $E_\tau$ (the Coxeter plane of $A_4$). The two
+concentric decagons have radii in the ratio $\tau$.}
+\label{ERG:fig:a4}
+\end{figure}
+
+\paragraph{Quasicrystals.} By Theorem~\ref{ERG:thm:fold}(4), $(L,E_\tau,E_{\tau'})$ is a cut and project
+scheme whose symmetry group $W(H_r)$ acts on both factors, on $E_\tau$ as $H_r$ and on $E_{\tau'}$ as its
+Galois twin. Choosing an $H_r$-invariant window in $E_{\tau'}$ gives model sets with decagonal ($A_4$),
+icosahedral ($D_6$; face-centred icosahedral phases such as Al--Cu--Fe are modelled on it, while
+primitive ones such as Shechtman's Al--Mn use $\Z^6$) or $H_4$ symmetry ($E_8$, the
+four-dimensional quasicrystal of Elser--Sloane 1987). In this way the lattices of Lecture~6 \emph{are}
+the hidden periodic structures behind the quasicrystals.
+
+\paragraph{Affine extensions and viruses.} For a crystallographic diagram, adding the extra node of the
+extended (affine) Dynkin diagram adds a translation, and the group becomes an infinite discrete affine
+reflection group, as in Interlude~A's alcoves. For $H_r$, adding a translation produces a group whose
+orbits are dense, because $\Z[\tau]$ is. Patera and Twarock (2002) constructed an affine extension of each of
+$H_2,H_3,H_4$ (unique under their axioms), and used finitely many steps of it to generate finite
+quasicrystal fragments.
+Dechant, Boehm and Twarock (2013) showed that some of these extensions are exactly what one gets by
+folding the \emph{affine} diagrams $\tilde A_4,\tilde D_6,\tilde E_8$ and projecting. Twarock's
+motivation was biology. Many viral capsids are icosahedral. Caspar--Klug theory explains many of them,
+but not, for instance, the papovaviruses, whose $72$ capsomers are all pentamers. Twarock (2004)
+explained their architecture by tilings built from the icosahedral group. Keef and Twarock (2009) used
+affine extensions of the icosahedral group to describe how material at different radii of a virus
+(capsid, genome) is organised by one common icosahedral blueprint.
+
+%======================================================================
+\section{The space of lattices as a dynamical system}
+\label{ERG:sec:lattices}
+
+Section~\ref{ERG:sec:dioph} used the space $X_n=\SL_n(\R)/\SL_n(\Z)$ of unimodular lattices from
+Lecture~4. It is not compact (Mahler's criterion characterizes its bounded sets), but it has finite
+volume. Siegel's mean value theorem (Interlude~B) says that, for the normalized invariant probability
+measure $\mu_n$ on $X_n$ and $f$ integrable on $\R^n$,
+\[
+  \int_{X_n}\sum_{v\in\Lat\setminus0}f(v)\,d\mu_n(\Lat)=\int_{\R^n}f .
+\]
+Take $f=\mathbf 1_B$ for a ball $B$ of radius $r$ and volume $V<2$. The average number of nonzero
+lattice vectors in $B$ is $V<2$. Since nonzero lattice vectors come in pairs $\pm v$, \emph{some} lattice
+has none. Its balls of radius $r/2$ form a packing of density $V2^{-n}$. This gives the Minkowski--Hlawka bound
+$\dens\ge2^{1-n}$ for lattice packings, and counting only primitive vectors improves it to
+$\zeta(n)2^{1-n}$. It is a non-constructive existence statement, like the saturation bound of
+Lecture~1, but for lattices.
+
+$\SL_n(\R)$ acts on $X_n$, and the dynamics of its subgroups encode arithmetic. The diagonal flow
+$g_t$ of Proposition~\ref{ERG:prop:dani} is the geodesic flow on the modular surface. \emph{Unipotent}
+subgroups behave much more rigidly.
+
+\begin{theorem}[Margulis 1987, the Oppenheim conjecture]\label{ERG:thm:margulis}
+Let $Q$ be a real nondegenerate indefinite quadratic form in $n\ge3$ variables that is not a multiple of a
+form with rational coefficients. Then for every $\varepsilon>0$ there is $x\in\Z^n\setminus0$ with
+$\abs{Q(x)}<\varepsilon$. (Dani and Margulis, \emph{Invent.\ Math.}~98 (1989), strengthened this to the
+density of $Q(x)$, $x\in\Z^n$ primitive, in $\R$.)
+\end{theorem}
+
+Margulis's proof is a statement about orbits. It suffices to treat $n=3$. Write $Q=Q_0\circ g$ with
+$Q_0$ a fixed form of signature $(2,1)$, and let $H=\SO(Q_0)^\circ\cong\SO(2,1)^\circ$, which is generated by
+unipotent elements. Raghunathan observed that it suffices to show: \emph{every bounded $H$-orbit in $X_3$ is
+compact}. Margulis proved this. A compact orbit $Hg\Z^3$ occurs only when $Q$ is a multiple of a rational
+form. Otherwise the orbit is unbounded, so by Mahler's criterion some $hg\Z^3$ contains a very short vector
+$hgx$, and then $\abs{Q(x)}=\abs{Q_0(hgx)}$ is small. Theorem~\ref{ERG:thm:margulis} fails for $n=2$, and the
+reason is Section~\ref{ERG:sec:dioph}. For $Q(x,y)=(x-\sqrt2y)(x-\sqrt3y)$ one has
+$\inf_{\Z^2\setminus0}\abs{Q}>0$ (Exercise~\ref{ERG:ex:oppenheim2}), because $\sqrt2$ and $\sqrt3$ are badly
+approximable. Markov's Theorem~\ref{ERG:thm:markov} is a detailed study of exactly these binary forms.
+
+\begin{theorem}[Ratner 1991]\label{ERG:thm:ratner}
+Let $G$ be a Lie group, $\Gamma\subset G$ a lattice and $U\subseteq G$ a subgroup generated by
+one-parameter unipotent subgroups. Then the closure of every orbit $Ux\Gamma$ in $G/\Gamma$ is
+\emph{homogeneous}: it is an orbit $Fx\Gamma$ of a closed subgroup $F\supseteq U$, carrying a finite
+$F$-invariant measure. Every ergodic $U$-invariant probability measure is of this algebraic form.
+\end{theorem}
+
+This is the non-abelian descendant of Theorem~\ref{ERG:thm:kroneckerweyl}, where orbit closures of linear
+flows were subtori. For diagonal flows nothing like it holds in general (bounded orbits abound, as the
+badly approximable numbers show). But for higher rank diagonal actions there is a rigidity conjecture of
+Margulis, of which the Littlewood conjecture in the Gallery is a consequence.
+
+%======================================================================
+\section{Gallery of theorems}
+\label{ERG:sec:gallery}
+
+\begin{itemize}[leftmargin=1.2em,itemsep=0.45em]
+\item \textbf{Weyl's polynomial theorem} (Weyl 1916, \emph{Math.\ Ann.}~77). If a real polynomial $p$
+  has an irrational coefficient other than the constant term, then $\{p(k)\}$ is equidistributed. This is
+  the first step beyond rotations; the proof uses Weyl differencing.
+\item \textbf{Bounded remainder intervals} (Hecke 1922, Ostrowski; Kesten 1966, \emph{Acta Arith.}~12,
+  193--212). For irrational $\alpha$, the discrepancy $\#\{k<N:\{k\alpha\}\in I\}-N\abs I$ stays bounded
+  if and only if $\abs I\in\Z+\alpha\Z$. The window of the Fibonacci chain is such an interval, which is
+  why its tile counts deviate from $N\varphi^{-1}$, $N\varphi^{-2}$ by $O(1)$.
+\item \textbf{Khinchin's theorem} (Khinchin 1924, \emph{Math.\ Ann.}~92). Let $\psi\colon\N\to[0,\infty)$ be
+  non-increasing. For almost every $\alpha$, $\norm{q\alpha}_\Z<\psi(q)$ has infinitely many solutions if
+  $\sum\psi(q)=\infty$, and only finitely many if $\sum\psi(q)<\infty$. In particular almost every number
+  is \emph{not} badly approximable, yet the badly approximable numbers have full Hausdorff dimension
+  (Jarn\'ik 1928).
+\item \textbf{The Duffin--Schaeffer conjecture} (Duffin--Schaeffer 1941; proved by Koukoulopoulos and
+  Maynard, \emph{Ann.\ of Math.}~192 (2020), 251--307). For \emph{any} $\psi\colon\N\to[0,\infty)$, if
+  $\sum_q\psi(q)\phi(q)/q=\infty$ (with $\phi$ Euler's function), then almost every $\alpha$ has infinitely
+  many reduced fractions $a/q$ with $\abs{\alpha-a/q}\le\psi(q)/q$. This removes monotonicity from
+  Khinchin's theorem. The proof is a delicate study of overlaps of the approximation sets, organised as a
+  graph-theoretic compression argument.
+\item \textbf{Littlewood's conjecture} (c.~1930, open). For all real $\alpha,\beta$,
+  $\liminf_{q\to\infty}q\norm{q\alpha}_\Z\norm{q\beta}_\Z=0$. Einsiedler, Katok and Lindenstrauss
+  (\emph{Ann.\ of Math.}~164 (2006), 513--560) classified the positive entropy invariant measures for the
+  diagonal group on $\SL_k(\R)/\SL_k(\Z)$, and deduced that the set of exceptions $(\alpha,\beta)$ has
+  Hausdorff dimension $0$. By the Dani correspondence, Littlewood concerns orbits of the $2$-parameter
+  diagonal group on $X_3$.
+\item \textbf{Three gaps and lattices} (Marklof--Str\"ombergsson, \emph{Amer.\ Math.\ Monthly}~124 (2017),
+  741--745). A proof of Theorem~\ref{ERG:thm:threegap} in which the gaps are the values of a function on the
+  space of $2$-dimensional lattices, as in the remark at the end of Section~\ref{ERG:sec:threegap}.
+\item \textbf{Gaps of $\sqrt n$ mod 1} (Elkies--McMullen, \emph{Duke Math.\ J.}~123 (2004), 95--139). The
+  points $\{\sqrt n\}$, $n\le N$, also cut the circle (Lecture~7). Their normalized gap distribution
+  exists, is \emph{not} the exponential law of random points, and is given by an explicit piecewise analytic
+  formula. The proof uses Ratner's theorem on a space of affine lattices.
+\item \textbf{Optimal dispersion} (Breneis--Hinrichs, arXiv 2019; in \emph{Discrepancy Theory}, de Gruyter
+  2020, 117--132). The largest empty axis-parallel box among $n\ge2$ points in the torus $\T^2$ has area at least $2/n$,
+  and for $n$ a Fibonacci number the Fibonacci lattice attains exactly $2/n$. This is a packing problem
+  for boxes in which the golden lattice is optimal.
+\item \textbf{Spherical Fibonacci points} (Aistleitner--Brauchart--Dick, \emph{Discrete Comput.\ Geom.}~48
+  (2012), 990--1024). The spherical cap discrepancy is $O(N^{-1/2})$, with an explicit constant, for the spherical
+  Fibonacci lattice, and the same order for spherical digital nets. Compare Beck's lower bound $cN^{-3/4}$
+  (\emph{Mathematika}~31, 1984).
+\item \textbf{Pure point diffraction} (Hof, \emph{Comm.\ Math.\ Phys.}~169 (1995), 25--43; Schlottmann,
+  in \emph{Directions in Mathematical Quasicrystals}, CRM Monogr.~13, AMS 2000, 143--159). Regular model
+  sets have pure point diffraction. This is the precise sense in which a model set is ``crystalline
+  without being periodic''.
+\item \textbf{Gauss circle problem for Penrose tilings} (Haynes--Lutsko, arXiv:2512.21444, 2025). The number of
+  vertices of a rhombic Penrose tiling (unit edges) in a disc of radius $R$ is
+  $\pi C_PR^2+O(R^{2/3}(\log R)^{2/3})$, uniformly over all such tilings, with $C_P\approx1.231$. The proof
+  combines the cut and project description with Poisson summation in $\Q(\zeta_5)$, a direct bridge to
+  Interlude~B. A recent preprint.
+\item \textbf{Undecidability of tiling} (Wang 1961; Berger, \emph{Mem.\ Amer.\ Math.\ Soc.}~66 (1966);
+  Robinson, \emph{Invent.\ Math.}~12 (1971)). It is undecidable whether a finite set of Wang tiles (unit
+  squares with coloured edges, matched edge to edge, no rotations) tiles the plane. The proof needs, and
+  produces, an \emph{aperiodic} tile set: one that tiles, but only non-periodically. Berger used $20426$
+  tiles, and Robinson used $6$ tiles (allowing rotations and reflections). The minimum is $11$ Wang tiles, on $4$ colours (Jeandel--Rao,
+  \emph{Advances in Combinatorics} 2021).
+\item \textbf{Penrose tilings} (Penrose 1974, \emph{Bull.\ Inst.\ Math.\ Appl.}~10; de Bruijn 1981,
+  \emph{Indag.\ Math.}~43). Two rhombi with matching rules tile only aperiodically. Every finite patch
+  recurs with bounded gaps, and the vertex sets are model sets (Section~\ref{ERG:sec:cutproject}).
+\item \textbf{The einstein problem} (Smith--Myers--Kaplan--Goodman-Strauss, ``An aperiodic monotile'',
+  \emph{Combinatorial Theory}~4(1) (2024); ``A chiral aperiodic monotile'', \emph{ibid.}~4(2) (2024)). The
+  ``hat'', a polygon made of $8$ kites of the deltoidal trihexagonal tiling, tiles the plane but never
+  periodically. Its tilings use the hat and its mirror image. The ``spectre'', a modification of a related
+  tile, tiles only aperiodically and needs no mirror images. Earlier, Socolar and Taylor (\emph{J.\ Combin.\ Theory Ser.~A}~118 (2011), 2207--2231) had
+  given an aperiodic hexagonal monotile whose matching rules are not enforced by shape alone.
+\item \textbf{Keller's conjecture} (Keller 1930). In every tiling of $\R^n$ by unit cubes, some two cubes
+  share a full facet. It is true for $n\le6$ (Perron 1940). It is false for $n\ge10$ (Lagarias--Shor,
+  \emph{Bull.\ Amer.\ Math.\ Soc.}~27 (1992), 279--283) and for $n\ge8$ (Mackey, \emph{Discrete Comput.\
+  Geom.}~28 (2002), 275--279). It is true for $n=7$ (Brakensiek--Heule--Mackey--Narv\'aez, IJCAR 2020;
+  \emph{J.\ Automated Reasoning}~66 (2022), 277--300, by a SAT solver). By Haj\'os' 1942 theorem the
+  \emph{lattice} case, Minkowski's conjecture, is true in all dimensions. By a reduction of Szab\'o (1986)
+  one may assume that the tiling is periodic modulo $2\Z^n$, so that it is a configuration of cubes in the
+  flat torus $\R^n/2\Z^n$.
+\item \textbf{Periodic tiling conjecture} (Grünbaum--Shephard; Lagarias--Wang 1996). If a single finite set
+  $F\subset\Z^d$ tiles $\Z^d$ by translations, does it also tile periodically? Yes for $d=2$ (Bhattacharya,
+  \emph{Amer.\ J.\ Math.}~142 (2020), 255--266), hence tiling by one tile is decidable there. No in general: Greenfeld and
+  Tao (\emph{Ann.\ of Math.}~200 (2024), 301--363) found a counterexample in sufficiently high dimension,
+  encoding a ``Sudoku'' by a single tiling equation. So translational tilings by one tile can be forced to
+  be aperiodic.
+\item \textbf{Convex pentagons} (Reinhardt 1918 to Mann--McLoud-Mann--Von Derau, arXiv 2015,
+  \emph{Geom.\ Dedicata}~194 (2018), 141--167). Fifteen families of
+  convex pentagons are known to tile the plane, the fifteenth found by computer search in 2015. Rao (arXiv
+  2017, computer-assisted) announced a proof that the list is complete; Hales independently reproduced
+  the main part of the computation, but to our knowledge the proof has not appeared in a refereed journal. As a consequence, no convex polygon
+  tiles the plane only non-periodically.
+\item \textbf{Oppenheim and Ratner} (Margulis, \emph{C.\ R.\ Acad.\ Sci.\ Paris}~304 (1987); Ratner,
+  \emph{Ann.\ of Math.}~134 (1991), 545--607, and \emph{Duke Math.\ J.}~63 (1991), 235--280). See
+  Theorems~\ref{ERG:thm:margulis} and~\ref{ERG:thm:ratner}. They are the reason that counting lattice
+  points in thin regions (Interlude~B) can be done by dynamics.
+\item \textbf{Quasicrystals and icosians} (Elser--Sloane, \emph{J.\ Phys.\ A}~20 (1987), 6161; Moody--Patera,
+  \emph{J.\ Phys.\ A}~26 (1993), 2829). These are the $E_8\to H_4$ projection and its algebraic form, via the
+  icosian ring. Shcherbak (\emph{Russian Math.\ Surveys}~43 (1988), 149) found the foldings
+  $A_4\to H_2$, $D_6\to H_3$, $E_8\to H_4$ in singularity theory. Affine versions: Patera--Twarock,
+  \emph{J.\ Phys.\ A}~35 (2002), 1551--1574; Dechant--Boehm--Twarock, \emph{J.\ Phys.\ A}~45 (2012), 285202
+  and \emph{J.\ Math.\ Phys.}~54 (2013), 093508. Viruses: Twarock, \emph{J.\ Theor.\ Biol.}~226 (2004),
+  477--482; Keef--Twarock, \emph{J.\ Math.\ Biol.}~59 (2009), 287--313.
+\item \textbf{Quasicrystals in the lab} (Shechtman--Blech--Gratias--Cahn, \emph{Phys.\ Rev.\ Lett.}~53 (1984),
+  1951; Nobel Prize in Chemistry 2011). Sharp icosahedral diffraction in Al--Mn: the experimental
+  counterpart of pure point diffraction of model sets.
+\end{itemize}
+
+%======================================================================
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Let $\gcd(p,q)=1$. Show that the closed geodesic $\ell_{p/q}$ on $\R^2/\Z^2$ has length $\sqrt{p^2+q^2}$,
+and that its complement is a single open annulus of width $1/\sqrt{p^2+q^2}$. (Its lifts to $\R^2$ are the
+lines $qy-px\in\Z$.) So rational lines are spread evenly, but they leave a gap that shrinks only like
+$1/\text{length}$.
+\end{exercise}
+
+\begin{exercise}
+Prove Theorem~\ref{ERG:thm:kroneckerweyl} for $\Lat=\Z^n$ using Weyl's criterion on $\T^n$ (characters
+$e(\ip{m}{x})$, $m\in\Z^n$). Then deduce the general case by a linear change of variables, and identify
+the dual lattice.
+\end{exercise}
+
+\begin{exercise}
+For $\alpha=\varphi^{-1}$ and $N=F_n$, list the points $\{k\alpha\}$ for $n=5$ ($N=5$) and $n=6$
+($N=8$), and verify Example~\ref{ERG:ex:fibgaps} directly. What happens for $N=F_n+1$?
+\end{exercise}
+
+\begin{exercise}\label{ERG:ex:oppenheim2}
+Show that $Q(x,y)=(x-\sqrt2y)(x-\sqrt3y)$ satisfies $\inf_{(x,y)\in\Z^2\setminus0}\abs{Q(x,y)}>0$.
+\emph{Hint:} $\sqrt2=[1;2,2,\dots]$ and $\sqrt3=[1;1,2,1,2,\dots]$ have bounded partial quotients. If
+$\abs{x-\sqrt2y}<\frac{\sqrt3-\sqrt2}{2}\abs y$, then the other factor is at least
+$\frac{\sqrt3-\sqrt2}{2}\abs y$.
+\end{exercise}
+
+\begin{exercise}
+Show that the Fibonacci word $f$ is \emph{balanced}: any two factors of the same length contain numbers of
+$b$'s differing by at most one. Deduce again that $bb$ does not occur, and show that $aaa$ does not occur
+either. Interpret both facts for the jammed channel of Lecture~11.
+\end{exercise}
+
+\begin{exercise}
+Verify the edge rule of Section~\ref{ERG:sec:fold} for $H_3$: the resulting graph on the
+six nodes $\alpha_i,\beta_i$ is $D_6$. Then compute the $2\times2$ Gram matrix
+of $a_1,a_2$ in the case $A_4\to H_2$ and check that the angle is $4\pi/5$.
+\end{exercise}
+
+\begin{exercise}
+Using the explicit $A_4$ roots $e_i-e_j\in\R^5$, find the plane on which the cyclic shift
+$e_1\to e_2\to\dots\to e_5\to e_1$ acts as rotation by $2\pi/5$, project the $20$ roots to it, and recover
+Figure~\ref{ERG:fig:a4}. (The cyclic shift is a Coxeter element of $W(A_4)=\Sigma_5$.)
+\end{exercise}
+
+\begin{exercise}
+Using only Siegel's mean value theorem, show that for every $\varepsilon>0$ there is a lattice in $\R^n$
+with packing density at least $(2-\varepsilon)2^{-n}$. Where exactly is the symmetry $v\leftrightarrow-v$
+used?
+\end{exercise}
+
+\begin{exercise}\label{ERG:ex:mh}
+Prove the first half of the Morse--Hedlund theorem. If $p(n)\le n$ for some $n$, then $p(m)=p(m+1)$ for
+some $m\le n$. Deduce that every factor of length $m$ has a unique extension to the right, so the word is
+eventually periodic.
+\end{exercise}
+
+\section*{Further reading}
+\addcontentsline{toc}{section}{Further reading}
+\begin{itemize}[nosep]
+\item M.~Einsiedler and T.~Ward, \emph{Ergodic Theory with a view towards Number Theory}, Springer GTM 259,
+  2011. Rotations, Weyl, the space of lattices, and the Dani correspondence.
+\item J.~W.~S.~Cassels, \emph{An Introduction to Diophantine Approximation}, Cambridge, 1957; and
+  M.~Aigner, \emph{Markov's Theorem and 100 Years of the Uniqueness Conjecture}, Springer, 2013.
+\item L.~Kuipers and H.~Niederreiter, \emph{Uniform Distribution of Sequences}, Wiley, 1974. Weyl's
+  criterion, discrepancy, $\{k\alpha\}$.
+\item M.~Lothaire, \emph{Algebraic Combinatorics on Words}, Cambridge, 2002, Ch.~2 (Sturmian words).
+\item M.~Baake and U.~Grimm, \emph{Aperiodic Order}, Vol.~1, Cambridge, 2013. Substitutions, cut and
+  project, Penrose tilings, diffraction.
+\item M.~Senechal, \emph{Quasicrystals and Geometry}, Cambridge, 1995; B.~Gr\"unbaum and G.~C.~Shephard,
+  \emph{Tilings and Patterns}, Freeman, 1987.
+\item J.~E.~Humphreys, \emph{Reflection Groups and Coxeter Groups}, Cambridge, 1990, for $H_3$, $H_4$ and
+  Coxeter elements. Conway--Sloane, Ch.~8, for the icosians.
+\item D.~W.~Morris, \emph{Ratner's Theorems on Unipotent Flows}, Chicago Lectures in Math., 2005.
+\end{itemize}

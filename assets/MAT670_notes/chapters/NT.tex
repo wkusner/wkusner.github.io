@@ -1,0 +1,1024 @@
+% MAT670 -- Interlude B (end of Part II): lattices, quadratic forms and the geometry of numbers.
+% Entirely new material (not in the handwritten notes). Labels prefixed NT:.
+
+\chapter[Interlude B: Number theory]{Interlude B: Lattices, quadratic forms and the geometry of numbers}
+\label{NT:ch}
+
+\begin{addedblock}
+This interlude is new: it is not in the handwritten notes. It starts from the title of Blichfeldt's
+1929 paper quoted in Lecture~2, \emph{``The minimum value of quadratic forms, and the closest packing of
+spheres''}, and follows the first half of that title into number theory. To keep it readable it is set
+in black; all of it should be read as added material.
+\end{addedblock}
+
+Blichfeldt's title puts two problems side by side, and in Lectures~1--6 we only looked at the second
+one. This interlude is about the first. We shall see that
+\begin{itemize}
+\item a lattice \emph{is} a positive definite quadratic form, so the lattice packing problem is the
+  question of how large the minimum of a form of given determinant can be (Hermite's problem);
+\item counting lattice points in balls is the classical problem of counting representations of integers
+  by forms, and the leading term of the count is the covolume, which is what density measures;
+\item Blichfeldt's averaging trick from Lecture~2 has a famous cousin, Blichfeldt's lemma of 1914, which
+  gives Minkowski's convex body theorem, and through it Fermat's and Lagrange's theorems on sums of squares;
+\item the generating function of the lattice point counts, the \emph{theta series}, is a modular form.
+  Poisson summation turns this into strong restrictions on very good lattices, and the same Poisson
+  summation is the engine of the Cohn--Elkies bound behind Viazovska's theorem.
+\end{itemize}
+Throughout, $\Lat\subset\R^n$ is a full-rank lattice, $\covol(\Lat)=\abs{\det\Lat}$ as in Lecture~4,
+$\lambda_1(\Lat)$ is the length of a shortest nonzero vector, $V_n=\vol(\Ball^n)$, and
+\[
+  \dens(\Lat)=\frac{V_n\,(\lambda_1/2)^n}{\covol(\Lat)}
+\]
+is the density of the associated packing (Lecture~4). To avoid a clash with the centre density
+$\cent$, the theta series will be written $\Theta_\Lat$.
+
+%======================================================================
+\section{Lattices are quadratic forms}
+\label{NT:sec:forms}
+
+Let $B$ be a basis matrix of $\Lat$, with the basis vectors $b_1,\dots,b_n$ as its columns. A lattice
+vector is $Bx$ with $x\in\Z^n$, and its squared length is
+\[
+  \abs{Bx}^2=x^TB^TBx=x^TGx=:Q(x),\qquad G=B^TB=\big(\ip{b_i}{b_j}\big)_{i,j}.
+\]
+The \emph{Gram matrix} $G$ is symmetric and positive definite, and $\det G=\covol(\Lat)^2$. Conversely,
+every positive definite symmetric $G$ factors as $G=B^TB$ (Cholesky), and $B$ is unique up to
+$B\mapsto UB$ with $U\in\Orth(n)$. Changing the basis replaces $B$ by $BK$ with $K\in\GL_n(\Z)$
+(Lecture~4), hence $G$ by $K^TGK$. So:
+\[
+  \frac{\{\text{lattices in }\R^n\}}{\text{rotations}}
+  \;\;\longleftrightarrow\;\;
+  \frac{\{\text{positive definite }n\times n\text{ symmetric matrices}\}}{G\sim K^TGK,\ K\in\GL_n(\Z)} .
+\]
+Under this dictionary
+\[
+  \lambda_1(\Lat)^2=\min_{x\in\Z^n\setminus0}Q(x)=:\min Q,\qquad \covol(\Lat)=\sqrt{\det G},
+\]
+and the number of lattice vectors of squared length $m$ is the number of \emph{representations} of $m$
+by $Q$. Integral lattices (Lecture~4) are the forms with $G\in M_n(\Z)$. For example $\Z^n$ is the sum
+of squares $x_1^2+\dots+x_n^2$, and the hexagonal lattice with basis $(1,0)$,
+$(\tfrac12,\tfrac{\sqrt3}2)$ is
+\[
+  Q_{\mathrm{hex}}(x,y)=x^2+xy+y^2,\qquad G=\begin{pmatrix}1&\tfrac12\\ \tfrac12&1\end{pmatrix},
+\]
+while the root lattice $A_2$ (Lecture~6, minimal norm $2$) is $2Q_{\mathrm{hex}}$.
+
+\begin{definition}[Hermite's constant]\label{NT:def:hermite}
+For a positive definite form put $\gamma(Q)=\min Q/(\det G)^{1/n}$; this is invariant under scaling and
+$\GL_n(\Z)$. \emph{Hermite's constant} is $\gamma_n=\sup_Q\gamma(Q)$, the supremum over all positive
+definite $n$-ary forms. Equivalently, $\gamma_n=\sup_\Lat\lambda_1(\Lat)^2/\covol(\Lat)^{2/n}$.
+\end{definition}
+
+Comparing with the formula for $\dens(\Lat)$ gives
+\begin{equation}\label{NT:eq:hermite-density}
+  \dens(\Lat)=\frac{V_n}{2^n}\,\gamma(\Lat)^{n/2},
+  \qquad\text{so}\qquad
+  \sup_\Lat\dens(\Lat)=\frac{V_n}{2^n}\,\gamma_n^{n/2}.
+\end{equation}
+\emph{Finding the densest lattice packing is the same problem as computing Hermite's constant.} The
+known values are below. They are attained exactly by the lattices of Lectures~4--6, and the reader
+can recompute each from minimal norm $2$ and the determinants $\det G=n+1$ for $A_n$, $4$ for $D_n$, and
+$3,2,1$ for $E_6,E_7,E_8$. For the Leech lattice the minimal norm is $4$ and $\det G=1$.
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccccccccc}
+\toprule
+$n$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 24\\
+\midrule
+$\gamma_n^n$ & $1$ & $\tfrac43$ & $2$ & $4$ & $8$ & $\tfrac{64}3$ & $64$ & $2^8$ & $4^{24}$\\
+optimal lattice & $\Z$ & $A_2$ & $A_3$ & $D_4$ & $D_5$ & $E_6$ & $E_7$ & $E_8$ & $\Lambda_{24}$\\
+density & $1$ & $.9069$ & $.7405$ & $.6169$ & $.4653$ & $.3729$ & $.2953$ & $.2537$ & $.00193$\\
+\bottomrule
+\end{tabular}
+\end{center}
+(Lagrange for $n=2$; Gauss for $n=3$; Korkine--Zolotarev for $n=4,5$; Blichfeldt for $n=6,7,8$;
+Cohn--Kumar for $n=24$. See the Gallery for references.)
+
+\subsection*{Binary forms: Lagrange's reduction}
+
+For $n=2$ write $Q(x,y)=ax^2+bxy+cy^2$, so $G=\left(\begin{smallmatrix}a&b/2\\b/2&c\end{smallmatrix}\right)$
+and $\det G=ac-b^2/4$. Following Lagrange (1773) and Gauss (\emph{Disquisitiones}, 1801), call $Q$
+\emph{reduced} if
+\[
+  \abs b\le a\le c .
+\]
+
+\begin{proposition}[Lagrange reduction]\label{NT:prop:reduction}
+Every positive definite binary form is equivalent under $\SL_2(\Z)$ to a reduced form, and if $Q$ is
+reduced then $\min Q=a$.
+\end{proposition}
+
+\begin{proof}
+Let $v_1$ be a shortest nonzero vector of the lattice $\Lat$ of $Q$. It is primitive, since
+$v_1=kw$ with $k\ge2$ would make $w$ shorter. So $v_1$ extends to a basis $(v_1,w)$, and every other
+completion of $v_1$ to a basis is $\pm w+kv_1$, $k\in\Z$. Among the vectors $w+kv_1$ choose a shortest
+one, $v_2$, and replace $v_2$ by $-v_2$ if needed to make the determinant positive. In the basis
+$(v_1,v_2)$ we have $a=\abs{v_1}^2=\min Q$, $c=\abs{v_2}^2\ge a$, and $b=2\ip{v_1}{v_2}$. Minimality
+of $v_2$ gives $c\le\abs{v_2\pm v_1}^2=c\pm b+a$, that is, $\abs b\le a$. For the second statement:
+if $\abs b\le a\le c$ and $\abs x\ge\abs y>0$, then
+$Q(x,y)\ge a x^2-a\abs{x}\abs{y}+cy^2\ge cy^2\ge a$; the case $\abs y\ge\abs x>0$ is symmetric
+(use $\abs b\le c$), and $Q(x,0)=ax^2\ge a$, $Q(0,y)=cy^2\ge a$.
+\end{proof}
+
+\begin{theorem}[Lagrange; $\gamma_2=2/\sqrt3$]\label{NT:thm:gamma2}
+For every positive definite binary form, $\min Q\le\frac{2}{\sqrt3}\sqrt{\det G}$, with equality only
+for forms equivalent to a multiple of $x^2+xy+y^2$. Consequently every lattice packing of disks has
+density at most $\pi/\sqrt{12}$, with equality only for the hexagonal lattice.
+\end{theorem}
+
+\begin{proof}
+Take $Q$ reduced. Then $\det G=ac-\tfrac{b^2}4\ge a^2-\tfrac{a^2}4=\tfrac34a^2$, so
+$\min Q=a\le\sqrt{4/3}\sqrt{\det G}$. Equality forces $c=a$ and $\abs b=a$, i.e.\
+$Q=a(x^2\pm xy+y^2)$, and $x^2-xy+y^2$ is equivalent to $x^2+xy+y^2$ via $y\mapsto-y$. The density
+statement is \eqref{NT:eq:hermite-density}: $\frac{\pi}{4}\cdot\frac{2}{\sqrt3}=\frac{\pi}{2\sqrt3}$.
+\end{proof}
+
+This is Theorem~\ref{L1:thm:lattice2} of Lecture~1 again. In fact the proof there, which stacked the
+rows $\Z v$ at height $h$ and slid the next row so that one of its points sits over the gap, is
+exactly the choice of $v_1$ and $v_2$ above. That proof generalizes to all $n$ as Hermite's inequality
+(Exercise~\ref{NT:ex:hermite}).
+
+\subsection*{The picture: the modular figure}
+
+Rotate and scale so that $v_1=1\in\C$, and write $v_2=\tau$ with $\operatorname{Im}\tau>0$. Then
+\[
+  Q(x,y)=\abs{v_1}^2\abs{x+y\tau}^2=a\big(x^2+2\operatorname{Re}\tau\,xy+\abs\tau^2y^2\big),
+\]
+so $b/a=2\operatorname{Re}\tau$ and $c/a=\abs\tau^2$. The reduction conditions become
+\[
+  \abs{\operatorname{Re}\tau}\le\tfrac12,\qquad \abs\tau\ge1 ,
+\]
+which describe the classical fundamental domain $\mathcal F$ of $\SL_2(\Z)$ acting on the upper half
+plane $\mathbb H$ by M\"obius transformations. A change of basis in $\SL_2(\Z)$ acts on $\tau=v_2/v_1$
+exactly by $\tau\mapsto\frac{a\tau+b}{c\tau+d}$. So the space of planar lattices up to rotation and
+scaling is $\SL_2(\Z)\backslash\mathbb H$, and $\mathcal F$ is a map of it (Figure~\ref{NT:fig:modular}).
+Allowing $\GL_2(\Z)$ also identifies $\tau$ with $-\bar\tau$, which folds $\mathcal F$ in half.
+
+In these coordinates the density is very simple. The covolume is $\abs{v_1}^2\operatorname{Im}\tau$ and,
+for $\tau\in\mathcal F$, the minimum is $\abs{v_1}^2$, so
+\[
+  \dens(\tau)=\frac{\pi\abs{v_1}^2/4}{\abs{v_1}^2\operatorname{Im}\tau}=\frac{\pi}{4\operatorname{Im}\tau}
+  \qquad(\tau\in\mathcal F).
+\]
+The level sets of the density are horizontal lines. The densest lattice is the \emph{lowest point} of
+$\mathcal F$, the corner $\rho=e^{\pi i/3}$ with $\operatorname{Im}\rho=\frac{\sqrt3}{2}$: the hexagonal
+lattice. The square lattice is $\tau=i$, with $\dens=\pi/4$. Lattices high up in the cusp are long and
+thin and have small density; this is Mahler's criterion (Lecture~4) in its simplest form.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=2.3]
+  \fill[addcol!12] (-0.5,3.0) -- (-0.5,0.866) arc (120:60:1) -- (0.5,3.0) -- cycle;
+  \draw[->] (-1.7,0) -- (1.8,0) node[right]{$\operatorname{Re}\tau$};
+  \draw[->] (0,-0.05) -- (0,3.15);
+  \foreach \c in {-1,1} \draw[gray,dashed] (\c,0) ++(0:1) arc (0:180:1);
+  \draw[gray,dashed] (1,0) arc (0:180:1);
+  \foreach \c in {-1.5,1.5} \draw[gray,dashed] (\c,0) -- (\c,3.0);
+  \draw[thick] (-0.5,3.0) -- (-0.5,0.866) arc (120:60:1) -- (0.5,3.0);
+  \draw[flagcol,thin] (-1.6,0.866) -- (1.7,0.866) node[below right,font=\scriptsize]{$\dens=\frac{\pi}{\sqrt{12}}$};
+  \draw[flagcol,thin] (-1.6,1) -- (1.7,1) node[above right,font=\scriptsize]{$\dens=\frac{\pi}{4}$};
+  \draw[flagcol,thin] (-1.6,2) -- (1.7,2) node[right,font=\scriptsize]{$\dens=\frac{\pi}{8}$};
+  \fill (0,1) circle (0.025) node[above left,font=\small]{$i$};
+  \fill (0.5,0.866) circle (0.025) node[below right,font=\small]{$\rho$};
+  \fill (-0.5,0.866) circle (0.025) node[below left,font=\small]{$\rho^2$};
+  \foreach \x/\l in {-1/{-1},-0.5/{-\frac12},0.5/{\frac12},1/{1}} \node[below,font=\scriptsize] at (\x,0) {$\l$};
+  \node[font=\small] at (0,2.6) {$\mathcal F$};
+  \node[font=\scriptsize,gray,align=center] at (1.2,2.75) {long thin lattices\\(cusp)};
+  % little lattice pictures
+  \begin{scope}[shift={(-1.35,1.55)},scale=0.13]
+    \foreach \i in {-2,...,2} \foreach \j in {-1,...,1} \fill ({\i+0.5*\j},{0.866*\j}) circle (0.18);
+  \end{scope}
+  \draw[gray,-{Stealth}] (-1.1,1.4) -- (0.42,0.9);
+  \begin{scope}[shift={(1.25,1.55)},scale=0.13]
+    \foreach \i in {-2,...,2} \foreach \j in {-1,...,1} \fill (\i,\j) circle (0.18);
+  \end{scope}
+  \draw[gray,-{Stealth}] (1.0,1.45) -- (0.06,1.03);
+\end{tikzpicture}
+\caption{The reduced domain $\mathcal F=\{\abs{\operatorname{Re}\tau}\le\frac12,\ \abs\tau\ge1\}$ for
+binary forms, with some of its $\SL_2(\Z)$-translates dashed. Each point is a planar lattice with basis
+$1,\tau$, up to rotation and scaling. The density $\pi/(4\operatorname{Im}\tau)$ is constant on
+horizontal lines and is largest at the corners $\rho,\rho^2$, the hexagonal lattice.}
+\label{NT:fig:modular}
+\end{figure}
+
+\begin{remark}[Class numbers]\label{NT:rem:classno}
+For integral forms ($a,b,c\in\Z$) the discriminant $D=b^2-4ac<0$ is an invariant, and reduced forms
+satisfy $3a^2\le -D$. So there are only finitely many reduced forms of a given discriminant. The number of
+\emph{primitive} ones ($\gcd(a,b,c)=1$), with the usual boundary convention ($b\ge0$ if $\abs b=a$ or $a=c$),
+is the \emph{class number} $h(D)$. For instance, $h(-4)=1$ (only $x^2+y^2$) and $h(-20)=2$ ($x^2+5y^2$ and $2x^2+2xy+3y^2$). Gauss
+asked which $D$ have $h(D)=1$; see the Gallery.
+\end{remark}
+
+%======================================================================
+\section{Counting lattice points: the Gauss circle problem}
+\label{NT:sec:circle}
+
+The density of a lattice packing is a count in disguise: by Exercise~\ref{L1:ex:periodic-density} of
+Lecture~1, the number of lattice points in a large ball is
+\[
+  N_\Lat(r)=\#\{x\in\Lat:\abs x\le r\}\;\sim\;\frac{V_nr^n}{\covol(\Lat)},
+  \qquad\text{so}\qquad
+  \dens(\Lat)=\lim_{r\to\infty}\frac{N_\Lat(r)\,V_n(\lambda_1/2)^n}{V_nr^n}.
+\]
+How good is the approximation? For $\Lat=\Z^2$ this is \emph{Gauss's circle problem}. Write
+\[
+  N(r)=\#\{(x,y)\in\Z^2:x^2+y^2\le r^2\}=\pi r^2+E(r).
+\]
+
+\begin{proposition}[Gauss]\label{NT:prop:gauss}
+$\abs{E(r)}\le\pi\big(\sqrt2\,r+\tfrac12\big)$ for $r\ge1$; in particular $E(r)=O(r)$.
+\end{proposition}
+
+\begin{proof}
+Attach to each lattice point $p$ the unit square $p+[-\frac12,\frac12]^2$; these squares tile the plane
+and each has diameter $\sqrt2$. The squares of the $N(r)$ points in the closed disk of radius $r$ lie
+in the disk of radius $r+\frac{\sqrt2}2$. Conversely, every point of the disk of radius
+$r-\frac{\sqrt2}2$ lies in a square whose centre is in the disk of radius $r$. Comparing areas,
+\[
+  \pi\big(r-\tfrac{\sqrt2}{2}\big)^2\le N(r)\le\pi\big(r+\tfrac{\sqrt2}{2}\big)^2,
+\]
+and $\pi(r\pm\frac{\sqrt2}2)^2-\pi r^2=\pm\pi\sqrt2\,r+\frac\pi2$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.42]
+  \def\rr{4.3}
+  \foreach \i in {-5,...,5} \foreach \j in {-5,...,5} {
+    \pgfmathtruncatemacro{\inside}{(\i*\i+\j*\j<=18.49)?1:0}
+    \ifnum\inside=1
+      \fill[addcol!15] (\i-0.5,\j-0.5) rectangle (\i+0.5,\j+0.5);
+      \draw[addcol!50,very thin] (\i-0.5,\j-0.5) rectangle (\i+0.5,\j+0.5);
+      \fill (\i,\j) circle (2.6pt);
+    \else
+      \fill[gray!60] (\i,\j) circle (1.6pt);
+    \fi
+  }
+  \draw[thick] (0,0) circle (\rr);
+  \draw[flagcol,dashed] (0,0) circle ({\rr+0.7071});
+  \draw[flagcol,dashed] (0,0) circle ({\rr-0.7071});
+  \draw[-{Stealth}] (0,0) -- (30:\rr) node[pos=0.6,above,font=\small]{$r$};
+  \node[font=\small,flagcol] at (6.9,3.6) {$r\pm\tfrac{\sqrt2}{2}$};
+\end{tikzpicture}
+\caption{Gauss's argument for $r=4.3$: the $N(r)=61$ unit squares centred at the lattice points in the
+disk are trapped between the disks of radii $r\pm\frac{\sqrt2}{2}$, so $\abs{N(r)-\pi r^2}=O(r)$.}
+\label{NT:fig:gauss}
+\end{figure}
+
+The same argument, with a fundamental parallelepiped in place of the square, gives
+$N_\Lat(r)=V_nr^n/\covol(\Lat)+O(r^{n-1})$ for every lattice and every dimension, and also for any
+ellipsoid $\{Q(x)\le r^2\}$ in place of the ball. So the error term is a ``boundary layer'', as in the
+density remarks of Lecture~1. The question is how much the lattice points conspire along the boundary.
+
+\paragraph{Representation numbers.} Let $r_2(m)=\#\{(x,y)\in\Z^2:x^2+y^2=m\}$. Then
+$N(\sqrt X)=1+\sum_{1\le m\le X}r_2(m)$, so Proposition~\ref{NT:prop:gauss} says that \emph{the average
+value of $r_2(m)$ is $\pi$}. At the same time $r_2(m)$ is given exactly by a formula of Jacobi (1829):
+with $\chi(d)=0,1,-1$ for $d$ even, $d\equiv1$, $d\equiv3\pmod4$,
+\begin{equation}\label{NT:eq:r2}
+  r_2(m)=4\sum_{d\mid m}\chi(d)=4\big(d_1(m)-d_3(m)\big),
+\end{equation}
+where $d_i(m)$ counts the divisors of $m$ that are $\equiv i\pmod 4$. (For example $r_2(5)=8$ and
+$r_2(3)=0$; it was checked numerically for all $m<2000$ in preparing these notes.) Combining the
+geometric count with the arithmetic formula gives a lattice point proof of Leibniz's series.
+
+\begin{proposition}[Lattice points prove Leibniz]\label{NT:prop:leibniz}
+$1-\frac13+\frac15-\frac17+\dots=\frac\pi4$.
+\end{proposition}
+
+\begin{proof}
+Put $L=\sum_{d\ge1}\chi(d)/d$ and $S(t)=\sum_{d\le t}\chi(d)\in\{0,1\}$. By \eqref{NT:eq:r2},
+$N(\sqrt X)-1=4\sum_{dm\le X}\chi(d)$, a sum over the lattice points under the hyperbola $dm=X$. With
+$y=\sqrt X$, Dirichlet's hyperbola method splits it as
+\[
+  \sum_{dm\le X}\chi(d)=\sum_{d\le y}\chi(d)\Big\lfloor\frac Xd\Big\rfloor+\sum_{m\le y}S\Big(\frac Xm\Big)-S(y)\lfloor y\rfloor .
+\]
+The last two terms are $O(y)$. In the first, $\lfloor X/d\rfloor=X/d+O(1)$, and the alternating series
+gives $\sum_{d\le y}\chi(d)/d=L+O(1/y)$. Hence $N(\sqrt X)=4LX+O(\sqrt X)$. Proposition~\ref{NT:prop:gauss}
+gives $N(\sqrt X)=\pi X+O(\sqrt X)$. Divide by $X$ and let $X\to\infty$.
+\end{proof}
+
+\paragraph{How big is $E(r)$?} Gauss's $O(r)$ uses nothing about circles except that they are curves
+of finite length. Curvature helps: Sierpi\'nski (1906) proved $E(r)=O(r^{2/3})$, and the exponent has
+been lowered slowly since. The conjecture, usually attributed to Hardy, is that
+\[
+  E(r)=O_\varepsilon\big(r^{1/2+\varepsilon}\big)\qquad\text{for every }\varepsilon>0,
+\]
+and this would be optimal: Hardy and, independently, Landau showed in 1915 that $E(r)$ is not
+$o(r^{1/2})$, and Hardy (1916) that it is \emph{not} $o(r^{1/2}(\log r)^{1/4})$, so the
+exponent $\frac12$ cannot be lowered. Sharper logarithmic factors are due to Hafner (1981) and
+Soundararajan (2003). The exponent $\frac12$ is also the right one on average: Cram\'er (Math.\ Z.\ 15,
+1922) showed
+that $\frac{1}{R}\int_0^RE(r)^2\,dr$ grows like a constant times $R$, so a typical $\abs{E(r)}$ is of
+size $r^{1/2}$. The current upper bounds, as exponents of $r$, are
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lll}
+\toprule
+Gauss (c.~1800) & $1$ & elementary\\
+Sierpi\'nski (1906) & $2/3\approx0.6667$ & \\
+Huxley (2003) & $131/208\approx0.62981$ & Proc.\ London Math.\ Soc.\ 87\\
+Bourgain--Watt (2017) & $517/824\approx0.62743$ & arXiv:1709.04340 (claimed)\\
+Li--Yang (2023) & $\approx0.628966$ & arXiv:2308.14859\\
+conjecture & $1/2+\varepsilon$ & \\
+\bottomrule
+\end{tabular}
+\end{center}
+Huxley's exponent is the best one published in a refereed journal: as of 2026 both later papers are
+unpublished arXiv preprints. Both build on the Bombieri--Iwaniec method, and Bourgain--Watt add
+Bourgain's decoupling theory. The Bourgain--Watt preprint claims the smaller exponent, but Li and Yang
+describe Huxley's bound as the best known before their work and present theirs as its first improvement.
+So the record is not settled, and should be quoted with care.
+
+\begin{remark}[Why a packing person should care]
+The circle problem is the cleanest model of a phenomenon that appears all through these notes: the bulk
+term of a count is a volume, and hence a density, while the correction is a boundary term whose size
+depends on fine arithmetic. In Lecture~2 we removed the boundary term by letting a box grow. Here it is
+the main object of study.
+\end{remark}
+
+%======================================================================
+\section{Blichfeldt again: Minkowski's convex body theorem}
+\label{NT:sec:minkowski}
+
+In Lecture~2 Blichfeldt's method compared a pointwise bound with an average: if
+$\sum_if(\varphi_i^{-1}x)\le1$ everywhere, then its average, which is proportional to the density, is at
+most $1$. Fifteen years earlier Blichfeldt had used the same comparison the other way round.
+
+\begin{lemma}[Blichfeldt 1914]\label{NT:lem:blichfeldt}
+Let $S\subset\R^n$ be measurable with $\vol(S)>\covol(\Lat)$. Then $S$ contains two distinct points
+$s,s'$ with $s-s'\in\Lat$.
+\end{lemma}
+
+\begin{proof}
+Consider the periodization $F(x)=\sum_{\lambda\in\Lat}\chi_S(x+\lambda)$, a $\Lat$-periodic function.
+Integrating over a fundamental domain $P$,
+\[
+  \int_PF(x)\,dx=\sum_{\lambda\in\Lat}\vol\big(S\cap(P+\lambda)\big)=\vol(S)>\vol(P).
+\]
+So $F$ cannot be $\le1$ everywhere: there is an $x$ with $F(x)\ge2$, that is, two different
+$\lambda,\lambda'\in\Lat$ with $s=x+\lambda$ and $s'=x+\lambda'$ in $S$. Then $s-s'=\lambda-\lambda'\in\Lat\setminus0$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.25]
+  \def\blob{plot[smooth cycle,tension=0.8] coordinates {(0.25,0.35) (1.3,0.15) (2.35,0.55) (2.6,1.45) (1.75,2.05) (0.8,1.8) (0.15,1.2)}}
+  \foreach \i in {0,...,3} \draw[gray!60] (\i,0) -- (\i,2.3);
+  \foreach \j in {0,...,2} \draw[gray!60] (-0.1,\j) -- (3.1,\j);
+  \foreach \i in {0,...,3} \foreach \j in {0,...,2} \fill[gray] (\i,\j) circle (0.025);
+  \fill[addcol!25] \blob; \draw[addcol,thick] \blob;
+  \node[addcol,font=\small] at (1.4,1.05) {$S$};
+  \draw[-{Stealth},thick] (3.35,1) -- (4.15,1) node[midway,above,font=\scriptsize]{mod $\Lat$};
+  \begin{scope}[xshift=4.5cm,yshift=0cm,scale=2]
+    \foreach \i in {0,1,2} \foreach \j in {0,1} {
+      \begin{scope}[shift={(-\i,-\j)}]
+        \clip (\i,\j) rectangle (\i+1,\j+1);
+        \fill[addcol,opacity=0.28] \blob;
+        \draw[addcol] \blob;
+      \end{scope}}
+    \draw[thick] (0,0) rectangle (1,1);
+    \node[below,font=\small] at (0.5,0) {$P=[0,1)^2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Blichfeldt's lemma for $\Lat=\Z^2$. The pieces of $S$ in the different unit squares are
+translated into one fundamental square $P$. Their total area is $\vol(S)>1=\vol(P)$, so two pieces
+overlap (the darker regions). A point of overlap comes from two points of $S$ that differ by a lattice
+vector.}
+\label{NT:fig:blichfeldt}
+\end{figure}
+
+Notice the parallel. In Lecture~2 the periodized function was bounded by $1$ (packing condition), and
+the conclusion was that its average, and so the density, is at most $1$. Here the average exceeds $1$, so
+the function is somewhere at least $2$: the translates $S+\lambda$ are \emph{not} a packing. Both are
+pigeonhole arguments for the periodization of a function.
+
+\begin{theorem}[Minkowski's convex body theorem, 1889/1896]\label{NT:thm:minkowski}
+Let $K\subset\R^n$ be convex and symmetric ($K=-K$). If $\vol(K)>2^n\covol(\Lat)$, then $K$ contains a
+nonzero point of $\Lat$. If $K$ is also compact, $\vol(K)\ge2^n\covol(\Lat)$ suffices.
+\end{theorem}
+
+\begin{proof}
+Apply Lemma~\ref{NT:lem:blichfeldt} to $S=\frac12K$, of volume $2^{-n}\vol(K)>\covol(\Lat)$. This
+gives $s\ne s'$ in $\frac12K$ with $s-s'\in\Lat$. By symmetry $-s'\in\frac12K$, and by convexity
+$\frac12(2s)+\frac12(-2s')=s-s'\in K$. For compact $K$ apply the first part to $(1+\varepsilon)K$ for
+each $\varepsilon>0$. Each of these contains a nonzero lattice point, and they all lie in the bounded set
+$2K$, which contains only finitely many lattice points. So one nonzero point lies in $(1+\varepsilon)K$
+for arbitrarily small $\varepsilon$, hence in $K$.
+\end{proof}
+
+\begin{remark}[Minkowski and the trivial bound]
+Applied to the ball $K=\Ball^n(\lambda_1)$, Minkowski gives $V_n\lambda_1^n\le2^n\covol(\Lat)$, which
+is $\dens(\Lat)\le1$, the trivial bound that the balls of radius $\lambda_1/2$ are disjoint. (So the two
+estimates quoted in Lecture~4 are actually the same inequality.) For sphere packing Minkowski's theorem
+is therefore weak. Its power lies in two other directions: in arithmetic, where the lattice is
+cut out by congruences, and in the bodies $K$ other than balls. Here are the two classic examples.
+\end{remark}
+
+\begin{theorem}[Fermat]\label{NT:thm:fermat}
+Every prime $p\equiv1\pmod4$ is a sum of two squares.
+\end{theorem}
+
+\begin{proof}
+Since $p\equiv1\pmod4$, $-1$ is a square modulo $p$; for instance $u=\big(\frac{p-1}2\big)!$ satisfies
+$u^2\equiv-1$ by Wilson's theorem. Let
+\[
+  \Lat=\{(x,y)\in\Z^2:\ y\equiv ux\pmod p\},
+\]
+a sublattice of index $p$ in $\Z^2$, so $\covol(\Lat)=p$. The open disk of radius $\sqrt{2p}$ has area
+$2\pi p>4p$, so by Theorem~\ref{NT:thm:minkowski} it contains some $(x,y)\in\Lat\setminus0$. Then
+$0<x^2+y^2<2p$ and $x^2+y^2\equiv x^2(1+u^2)\equiv0\pmod p$. Hence $x^2+y^2=p$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.4]
+  \foreach \x in {-6,...,6} \foreach \y in {-6,...,6} \fill[gray!40] (\x,\y) circle (1.5pt);
+  \foreach \x in {-6,...,6} \foreach \y in {-6,...,6} {
+    \pgfmathtruncatemacro{\t}{mod(\y-5*\x+130,13)}
+    \ifnum\t=0 \fill (\x,\y) circle (4pt); \fi }
+  \draw[thick,addcol] (0,0) circle ({sqrt(26)});
+  \draw[-{Stealth},flagcol,thick] (0,0) -- (2,-3) node[below right,font=\scriptsize]{$(2,-3)$};
+  \draw[-{Stealth},flagcol,thick] (0,0) -- (3,2) node[right,font=\scriptsize]{$(3,2)$};
+  \node[addcol,font=\small] at (5.6,4.9) {$\abs v=\sqrt{26}$};
+\end{tikzpicture}
+\caption{Fermat by Minkowski for $p=13$, $u=5$ ($5^2\equiv-1$). The lattice
+$\{y\equiv5x\bmod13\}$ (black) has covolume $13$. The disk of area $26\pi>4\cdot13$ must contain
+lattice vectors, and they have $x^2+y^2=13$. Here the lattice is a square lattice of side $\sqrt{13}$,
+with reduced basis $(3,2)$, $(2,-3)$.}
+\label{NT:fig:fermat}
+\end{figure}
+
+\begin{theorem}[Lagrange's four square theorem, 1770]\label{NT:thm:lagrange4}
+Every positive integer is a sum of four squares.
+\end{theorem}
+
+\begin{proof}
+By Euler's identity, which expresses $(a_1^2+\dots+a_4^2)(b_1^2+\dots+b_4^2)$ as a sum of four squares
+(it is the multiplicativity of the quaternion norm), it suffices to treat primes, and $2=1^2+1^2$. Let
+$p$ be an odd prime. The sets $\{a^2\bmod p\}$ and $\{-1-b^2\bmod p\}$ each have $\frac{p+1}2$
+elements, so they meet: $a^2+b^2+1\equiv0\pmod p$ for some $a,b$. Let
+\[
+  \Lat=\{x\in\Z^4:\ x_3\equiv ax_1+bx_2,\ \ x_4\equiv bx_1-ax_2\pmod p\},
+\]
+of index $p^2$ in $\Z^4$. For $x\in\Lat$,
+\[
+  x_1^2+x_2^2+x_3^2+x_4^2\equiv(x_1^2+x_2^2)(1+a^2+b^2)\equiv0\pmod p .
+\]
+The open ball of radius $\sqrt{2p}$ in $\R^4$ has volume $\frac{\pi^2}{2}(2p)^2=2\pi^2p^2>16p^2$, so
+it contains a nonzero $x\in\Lat$, and then $0<\abs x^2<2p$ and $p\mid\abs x^2$ force $\abs x^2=p$.
+\end{proof}
+
+Three squares are more delicate. There is no product identity for sums of three squares, and the known
+geometric proof (Ankeny, 1957) needs Dirichlet's theorem on primes in arithmetic progressions in
+addition to Minkowski's theorem.
+
+\begin{theorem}[Legendre 1798; Gauss 1801]\label{NT:thm:legendre}
+A positive integer is a sum of three squares if and only if it is not of the form $4^a(8b+7)$.
+\end{theorem}
+
+The ``only if'' half is a computation mod $8$. The ``if'' half needs the theory of ternary forms (or
+Dirichlet's theorem on primes in progressions). Which other forms represent \emph{every} positive integer?
+Ramanujan (1917) listed $55$ diagonal quaternary forms $ax^2+by^2+cz^2+dw^2$ with this property. One of
+them, $x^2+2y^2+5z^2+5w^2$, fails to represent $15$, and the other $54$ are exactly the universal ones. The definitive answer is surprisingly finite; see the $15$ and $290$ theorems in
+the Gallery.
+
+%======================================================================
+\section{Theta series and modular forms}
+\label{NT:sec:theta}
+
+All the representation numbers of a lattice can be packaged into one function.
+
+\begin{definition}\label{NT:def:theta}
+The \emph{theta series} of $\Lat$ is
+\[
+  \Theta_\Lat(\tau)=\sum_{x\in\Lat}e^{\pi i\tau\abs x^2}=\sum_{t\ge0}N_t\,e^{\pi i\tau t},
+  \qquad \tau\in\mathbb H,
+\]
+where $N_t$ is the number of vectors of squared length $t$. The series converges absolutely and locally
+uniformly on $\mathbb H$, because $\abs{e^{\pi i\tau\abs x^2}}=e^{-\pi\operatorname{Im}\tau\abs x^2}$.
+\end{definition}
+
+For example $\Theta_{\Z}(\tau)=\sum_{k\in\Z}q^{k^2}$ with $q=e^{\pi i\tau}$ is Jacobi's theta function,
+and $\Theta_{\Lat\oplus\Lat'}=\Theta_\Lat\Theta_{\Lat'}$, so
+$\Theta_{\Z^2}=\Theta_\Z^2=\sum_mr_2(m)q^m$. Formula \eqref{NT:eq:r2} and Jacobi's four square formula
+\begin{equation}\label{NT:eq:r4}
+  r_4(m)=8\sum_{d\mid m,\ 4\nmid d}d
+\end{equation}
+are identities between $q$-series (both were checked numerically for small $m$). The tool that makes
+theta series powerful is the following.
+
+\begin{theorem}[Poisson summation over a lattice]\label{NT:thm:poisson}
+Let $f\colon\R^n\to\C$ be continuous and satisfy $\abs{f(x)},\abs{\hat f(x)}\le C(1+\abs x)^{-n-\eta}$ for some $C,\eta>0$,
+where $\hat f(y)=\int_{\R^n}f(x)e^{-2\pi i\ip xy}dx$. Then for every $v\in\R^n$,
+\[
+  \sum_{x\in\Lat}f(x+v)=\frac{1}{\covol(\Lat)}\sum_{y\in\Lat^*}\hat f(y)\,e^{2\pi i\ip yv},
+  \qquad \Lat^*=\{y\in\R^n:\ip xy\in\Z\ \text{for all }x\in\Lat\}.
+\]
+Both sides converge absolutely.
+\end{theorem}
+
+\begin{proof}[Sketch]
+The left side $F(v)$ is a continuous $\Lat$-periodic function, so it is a function on the torus
+$\R^n/\Lat$, whose characters are $v\mapsto e^{2\pi i\ip yv}$, $y\in\Lat^*$. Its Fourier coefficients are
+\[
+  \frac{1}{\covol(\Lat)}\int_{\R^n/\Lat}F(v)e^{-2\pi i\ip yv}dv
+  =\frac{1}{\covol(\Lat)}\int_{\R^n}f(v)e^{-2\pi i\ip yv}dv=\frac{\hat f(y)}{\covol(\Lat)},
+\]
+by unfolding the sum against the integral. These coefficients are absolutely summable by the decay of
+$\hat f$, so the Fourier series converges uniformly to $F$.
+\end{proof}
+
+The \emph{dual lattice} $\Lat^*$ has $\covol(\Lat^*)=1/\covol(\Lat)$ and Gram matrix $G^{-1}$. $\Lat$ is
+integral iff $\Lat\subseteq\Lat^*$, and \emph{unimodular} iff $\Lat=\Lat^*$ (equivalently, it is integral with
+$\covol=1$). It is \emph{even} if all $\abs x^2$ are even. $\Z^n$ is unimodular but odd; $E_8$ is even
+unimodular: it is integral and has determinant $1$ (Lecture~6).
+
+Apply Theorem~\ref{NT:thm:poisson} to a Gaussian. For $\tau\in\mathbb H$ the function
+$f(x)=e^{\pi i\tau\abs x^2}$ has $\hat f(y)=(\tau/i)^{-n/2}e^{\pi i(-1/\tau)\abs y^2}$ (principal branch;
+for $\tau=it$ this is the familiar fact that $e^{-\pi t\abs x^2}$ has Fourier transform
+$t^{-n/2}e^{-\pi\abs y^2/t}$, and both sides are holomorphic in $\tau$). With $v=0$ this gives $\Theta_\Lat(\tau)=\covol(\Lat)^{-1}(i/\tau)^{n/2}\,\Theta_{\Lat^*}(-1/\tau)$; now replace $\tau$ by $-1/\tau$.
+
+\begin{corollary}[Theta transformation formula]\label{NT:cor:thetatrans}
+$\displaystyle \Theta_\Lat\Big(-\frac1\tau\Big)=\Big(\frac\tau i\Big)^{n/2}\frac{1}{\covol(\Lat)}\,\Theta_{\Lat^*}(\tau).$
+\end{corollary}
+
+So the theta series of a lattice controls that of its dual, through the substitution $\tau\mapsto-1/\tau$.
+For an even unimodular lattice we get two symmetries:
+\begin{equation}\label{NT:eq:modular}
+  \Theta_\Lat(\tau+1)=\Theta_\Lat(\tau),\qquad
+  \Theta_\Lat\Big(-\frac1\tau\Big)=\Big(\frac\tau i\Big)^{n/2}\Theta_\Lat(\tau).
+\end{equation}
+The maps $T\colon\tau\mapsto\tau+1$ and $S\colon\tau\mapsto-1/\tau$ generate $\SL_2(\Z)$, the group
+whose fundamental domain we drew in Figure~\ref{NT:fig:modular}. The fact that \emph{lattices in the
+plane} are parametrized by $\SL_2(\Z)\backslash\mathbb H$ and the fact that \emph{theta series of lattices
+in any dimension} transform under $\SL_2(\Z)$ are two separate appearances of the same group.
+
+\begin{theorem}\label{NT:thm:8n}
+If $\R^n$ contains an even unimodular lattice, then $8\mid n$.
+\end{theorem}
+
+\begin{proof}
+Let $f=\Theta_\Lat$. Since $\Theta_{\Lat\oplus\Lat}=f^2$ and $\Lat\oplus\Lat$ is again even unimodular,
+we may pass to $\Lat\oplus\Lat$ or to $\Lat^{\oplus4}$. So if $8\nmid n$ we may assume $n\equiv4\pmod 8$.
+Put $k=n/2\equiv2\pmod4$. Then $(\tau/i)^{k}=i^{-k}\tau^k=-\tau^k$, and \eqref{NT:eq:modular} reads
+$f(\tau+1)=f(\tau)$, $f(-1/\tau)=-\tau^kf(\tau)$. For $\gamma=\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)\in\SL_2(\Z)$
+define $(f|\gamma)(\tau)=(c\tau+d)^{-k}f(\gamma\tau)$. The chain rule for $\gamma\tau$ shows
+that $(f|\gamma)|\gamma'=f|(\gamma\gamma')$, and $f|(-I)=f$ since $k$ is even. With
+$T=\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$ and $S=\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$
+we have $f|T=f$ and $f|S=-f$. A direct multiplication gives $(ST)^3=-I$. Therefore
+\[
+  f=f|(-I)=f|STSTST=(-1)^3f=-f,
+\]
+so $f\equiv0$. This contradicts $f(\tau)\to1$ as $\operatorname{Im}\tau\to\infty$ (only $x=0$ survives).
+\end{proof}
+
+Conversely, even unimodular lattices exist in every dimension $8k$: $E_8^{\oplus k}$, or
+$D_{8k}^+=D_{8k}\cup(D_{8k}+\frac12\mathbf 1)$ (Exercise~\ref{NT:ex:D16}; $E_8=D_8^+$ by Lecture~6).
+
+\subsection*{The theta series of \texorpdfstring{$E_8$}{E8}}
+
+For $8\mid n$ the factor $(\tau/i)^{n/2}$ equals $\tau^{n/2}$, and \eqref{NT:eq:modular} says that
+$\Theta_\Lat$ is a \emph{modular form of weight $n/2$} for $\SL_2(\Z)$: a holomorphic function on
+$\mathbb H$, bounded as $\operatorname{Im}\tau\to\infty$, with $f(\gamma\tau)=(c\tau+d)^{n/2}f(\tau)$.
+Write $\mathsf q=e^{2\pi i\tau}$ (so $\mathsf q=q^2$). The basic theorem on such forms (see Serre,
+\emph{A Course in Arithmetic}, Ch.~VII) is that the space $M_k$ of modular forms of weight $k$ is
+finite-dimensional, with
+\[
+  M_4=\C E_4,\qquad M_8=\C E_4^2,\qquad M_{12}=\C E_4^3\oplus\C\Delta,
+\]
+where $E_4=1+240\sum_{m\ge1}\sigma_3(m)\mathsf q^m$ is the Eisenstein series
+($\sigma_3(m)=\sum_{d\mid m}d^3$) and $\Delta=\mathsf q\prod_{m\ge1}(1-\mathsf q^m)^{24}$. Since
+$\Theta_{E_8}=\sum_mN_{2m}\mathsf q^m$ lies in $M_4$ and has constant term $1$,
+\begin{equation}\label{NT:eq:E8theta}
+  \Theta_{E_8}=E_4,\qquad\text{i.e.}\qquad
+  \#\{x\in E_8:\abs x^2=2m\}=240\,\sigma_3(m).
+\end{equation}
+For $m=1$ this is $240$, the root count from Lecture~6 and the dimension~$8$ kissing number. For $m=2$
+it predicts $240\cdot9=2160$ vectors of norm $4$, and for $m=3$, $240\cdot28=6720$. A brute-force count
+of $E_8$ vectors confirms $240,\,2160,\,6720$. \emph{A single modular form knows every shell of $E_8$.}
+
+\subsection*{Hearing the shape of a drum, and Niemeier's lattices}
+
+The flat torus $\R^n/\Lat$ has Laplace eigenfunctions $e^{2\pi i\ip yx}$, $y\in\Lat^*$, with eigenvalues
+$4\pi^2\abs y^2$. So its spectrum, with multiplicities, is recorded by $\Theta_{\Lat^*}$.
+
+\begin{theorem}[Milnor 1964]\label{NT:thm:milnor}
+The $16$-dimensional flat tori $\R^{16}/(E_8\oplus E_8)$ and $\R^{16}/D_{16}^+$ have the same Laplace
+spectrum but are not isometric.
+\end{theorem}
+
+\begin{proof}
+Both lattices are even unimodular, so both theta series lie in $M_8=\C E_4^2$ and have constant term $1$.
+So they are equal, and the lattices are self-dual, which makes the spectra equal. (Numerically, both have
+$480$ vectors of norm $2$ and $61920$ of norm $4$.) An isometry of the tori would lift to an isometry of
+$\R^{16}$ carrying one lattice onto the other. But the $480$ norm-$2$ vectors of $E_8\oplus E_8$ span it,
+while those of $D_{16}^+$ (the vectors $\pm e_i\pm e_j$) span only the index-$2$ sublattice $D_{16}$.
+\end{proof}
+
+This was the first counterexample to the question ``can one hear the shape of a drum?'', two years
+before Kac named the question. In dimension $24$, $M_{12}$ is two-dimensional, so $\Theta_\Lat$ is
+determined by its constant term and by the number of roots. Taking zero roots gives
+\[
+  \Theta_{\Lambda_{24}}=E_4^3-720\Delta=1+196560\,\mathsf q^2+16773120\,\mathsf q^3+\cdots,
+\]
+and $196560$ is the kissing number of the Leech lattice. Niemeier (1973) classified the even unimodular
+lattices in dimension $24$. There are exactly $24$ of them, determined by their root systems (each one of
+rank $24$ or empty), and the Leech lattice is the unique one without roots (Conway 1969).
+
+%======================================================================
+\section{Poisson summation as the engine: LP bounds}
+\label{NT:sec:LP}
+
+Lecture~3 mentioned that the solutions in dimensions $8$ and $24$ use ``linear programming duality'' and a
+``magic'' auxiliary function. With Poisson summation in hand, the argument for lattices takes only a few lines.
+
+\begin{definition}
+Call $f\colon\R^n\to\R$ \emph{admissible} if $f$ and $\hat f$ satisfy the decay hypothesis of
+Theorem~\ref{NT:thm:poisson}, and $f$ is even (so $\hat f$ is real).
+\end{definition}
+
+\begin{theorem}[Cohn--Elkies bound for lattices]\label{NT:thm:CElattice}
+Let $f$ be admissible with $f(0)=\hat f(0)>0$, and suppose
+\begin{enumerate}[label=(\roman*),nosep]
+\item $f(x)\le0$ for $\abs x\ge r$, and
+\item $\hat f(y)\ge0$ for all $y$.
+\end{enumerate}
+Then every lattice packing in $\R^n$ has density at most $V_n(r/2)^n$.
+\end{theorem}
+
+\begin{proof}
+Scale the lattice so that $\lambda_1(\Lat)=r$. Apply Poisson summation with $v=0$:
+\[
+  f(0)\;\ge\;f(0)+\sum_{x\in\Lat\setminus0}f(x)\;=\;\frac{1}{\covol(\Lat)}\sum_{y\in\Lat^*}\hat f(y)
+  \;\ge\;\frac{\hat f(0)}{\covol(\Lat)}.
+\]
+The first inequality is (i), since every $x\ne0$ has $\abs x\ge r$, and the last is (ii), dropping
+all $y\ne0$. Hence $\covol(\Lat)\ge\hat f(0)/f(0)=1$, and $\dens(\Lat)=V_n(r/2)^n/\covol(\Lat)\le V_n(r/2)^n$.
+\end{proof}
+
+The full theorem drops the lattice assumption at almost no cost.
+
+\begin{theorem}[Cohn--Elkies 2003]\label{NT:thm:CE}
+Under the same hypotheses, every sphere packing in $\R^n$ has density at most $V_n(r/2)^n$.
+\end{theorem}
+
+\begin{proof}
+By Exercise~\ref{L1:ex:periodic-approx} of Lecture~1 it suffices to treat periodic packings, with
+centres $\bigcup_{j=1}^N(\Lat+v_j)$, the $v_j$ pairwise incongruent modulo $\Lat$, scaled to have
+minimal distance $r$. Sum Poisson summation over all pairs
+$(j,k)$ with $v=v_j-v_k$:
+\[
+  \sum_{j,k=1}^N\sum_{x\in\Lat}f(x+v_j-v_k)
+  =\frac{1}{\covol(\Lat)}\sum_{y\in\Lat^*}\hat f(y)\,\Big|\sum_{j=1}^Ne^{2\pi i\ip y{v_j}}\Big|^2 .
+\]
+On the left, $x+v_j-v_k$ is the difference of two centres. It is $0$ exactly when $j=k$ and $x=0$, and
+otherwise it has length at least $r$. So the left side is at most $Nf(0)$. On the right every term is
+$\ge0$, and the $y=0$ term is $N^2\hat f(0)/\covol(\Lat)$. So $N/\covol(\Lat)\le f(0)/\hat f(0)=1$. The
+density is $(N/\covol(\Lat))V_n(r/2)^n$.
+\end{proof}
+
+\begin{remark}[Blichfeldt's gauge versus Cohn--Elkies]\label{NT:rem:blichfeldt-vs-CE}
+Recall the proof that $f_0=1-\frac12\abs x^2$ is a gauge (Lemma~\ref{L2:lem:f0}). It rested on the identity
+\[
+  \sum_{i<j}\abs{x_i-x_j}^2=m\sum_i\abs{x_i}^2-\Big|\sum_ix_i\Big|^2,
+\]
+and the inequality came from \emph{throwing away a square}, $\abs{\sum_ix_i}^2\ge0$. The proof of
+Theorem~\ref{NT:thm:CE} throws away the squares $\hat f(y)\abs{\sum_je^{2\pi i\ip y{v_j}}}^2\ge0$, one for
+each frequency $y\ne0$. Blichfeldt uses one quadratic ``moment'', while Cohn--Elkies use all the
+exponentials. There is also a difference in what the auxiliary function must satisfy:
+\begin{itemize}[nosep]
+\item a Blichfeldt gauge is a condition in physical space only: $f\ge0$ and
+  $\sum_if(\varphi_i^{-1}x)\le1$ for every packing;
+\item a Cohn--Elkies function has a sign condition in \emph{both} spaces: $f\le0$ beyond $r$, and
+  $\hat f\ge0$ everywhere.
+\end{itemize}
+The uncertainty principle makes the second kind of condition hard to satisfy, and this is why the
+optimal functions are rare and remarkable.
+\end{remark}
+
+\paragraph{When is the bound sharp?} Suppose $\Lat$ is unimodular, $\lambda_1(\Lat)=r$, and $f$ gives
+equality. Then both inequalities in the proof of Theorem~\ref{NT:thm:CElattice} are equalities, so
+\[
+  f(x)=0\ \text{ for all }x\in\Lat\setminus0,\qquad \hat f(y)=0\ \text{ for all }y\in\Lat^*\setminus0.
+\]
+For $E_8$ ($r=\sqrt2$) this says that $f$ and $\hat f$ vanish on all spheres $\abs x=\sqrt{2m}$, $m\ge1$. Since
+$f\le0$ beyond $\sqrt2$ and $\hat f\ge0$ everywhere, these zeros must have even order (they are double roots),
+except that $f$ may change sign, with a simple root, at $\sqrt2$ itself.
+Cohn and Elkies found numerically that such functions seem to exist in dimensions $8$ and $24$ (and
+$2$), but could not construct them.
+
+\paragraph{Viazovska's idea.} Look for $f$ radial and built out of Gaussians:
+\[
+  f(x)=\int_{\Gamma}\phi(z)\,e^{\pi iz\abs x^2}\,dz
+\]
+along a path $\Gamma$ in $\mathbb H$. In dimension $8$ the Fourier transform of $e^{\pi iz\abs x^2}$ is
+$z^{-4}e^{\pi i(-1/z)\abs y^2}$ (the computation before Corollary~\ref{NT:cor:thetatrans}). Substituting
+$w=-1/z$ shows that $\hat f$ is given by the same kind of integral with weight $\phi(-1/w)\,w^{2}$ in place of
+$\phi(w)$, over the image path. So the Fourier transform acts on the \emph{weight} $\phi$ through
+$z\mapsto-1/z$, and $f$ is a Fourier eigenfunction when $\phi$ transforms like a modular form of weight $-2$
+(up to the change of path). Viazovska (2016) built two eigenfunctions of the Fourier transform, with
+eigenvalues $\pm1$: one from a weakly holomorphic \emph{quasimodular} form for $\SL_2(\Z)$ (a rational
+expression in $E_2,E_4,E_6$ and $\Delta$), and one from a weakly holomorphic modular form for the subgroup
+$\Gamma(2)$ (built from Jacobi theta functions). A factor $\sin^2(\pi\abs x^2/2)$ supplies the
+double roots at $\abs x^2\in2\Z$. A suitable linear combination of the two is the magic function, and it proves that $E_8$ is the densest
+packing in $\R^8$. A week later, Cohn, Kumar, Miller, Radchenko and Viazovska did the same in dimension
+$24$ for the Leech lattice. The theta series of Section~\ref{NT:sec:theta} and the magic functions use
+the same symmetry $\tau\mapsto-1/\tau$, once applied to a lattice and once to an auxiliary function.
+
+\paragraph{Universal optimality.} The same circle of ideas gives a much stronger statement (Gallery,
+Theorem~\ref{NT:gal:universal}): $E_8$ and Leech minimize energy for every completely monotone function of
+squared distance, Gaussians $e^{-\alpha\abs x^2}$ included. For Gaussian potentials, Poisson summation
+turns the energy of a lattice into the energy of its dual. The proof needs a \emph{Fourier interpolation
+formula}: a radial Schwartz function on $\R^8$ is determined by the values of $f$ and $\hat f$ (and
+their radial derivatives) on the spheres $\abs x=\sqrt{2m}$.
+
+%======================================================================
+\section{Averaging over all lattices: Siegel and Minkowski--Hlawka}
+\label{NT:sec:siegel}
+
+So far we have looked at special lattices. At the opposite extreme, take a \emph{random} lattice. Let
+$X_n=\SL_n(\R)/\SL_n(\Z)$ be the space of lattices of covolume $1$ in $\R^n$. It carries a unique
+$\SL_n(\R)$-invariant probability measure $\mu$ (Minkowski, Siegel). For $n=2$, after quotienting by
+rotations, $X_2$ becomes the modular surface of Figure~\ref{NT:fig:modular}, and $\mu$ becomes the
+hyperbolic area $\frac{3}{\pi}\frac{dx\,dy}{y^2}$ restricted to $\mathcal F$.
+
+\begin{theorem}[Siegel's mean value theorem, 1945]\label{NT:thm:siegel}
+For $n\ge2$ and every integrable $f\colon\R^n\to\R$,
+\[
+  \int_{X_n}\sum_{x\in\Lat\setminus0}f(x)\,d\mu(\Lat)=\int_{\R^n}f(x)\,dx,
+  \qquad
+  \int_{X_n}\sum_{x\in\Lat\ \mathrm{primitive}}f(x)\,d\mu(\Lat)=\frac{1}{\zeta(n)}\int_{\R^n}f(x)\,dx .
+\]
+\end{theorem}
+
+The two formulas are equivalent, because every nonzero vector is uniquely $kx$ with $k\ge1$ and $x$
+primitive, and $\sum_kk^{-n}=\zeta(n)$. In words: \emph{on average, a lattice looks like Lebesgue measure.}
+From this one gets a lower bound in a few lines.
+
+\begin{corollary}[Minkowski--Hlawka]\label{NT:cor:MH}
+For $n\ge2$, $\sup_\Lat\dens(\Lat)\ge\dfrac{2\zeta(n)}{2^n}$.
+\end{corollary}
+
+\begin{proof}
+Let $B$ be a ball centred at $0$ with $\vol(B)<2\zeta(n)$, and apply the primitive form of
+Theorem~\ref{NT:thm:siegel} to $f=\chi_B$. The average number of primitive vectors in $B$ is
+$\vol(B)/\zeta(n)<2$. Primitive vectors come in pairs $\pm x$, so some $\Lat\in X_n$ has no primitive
+vector in $B$, and hence no nonzero vector at all (if $kx\in B$ with $k\ge1$, then $x\in B$). Balls of
+half the radius centred at $\Lat$ form a packing of density $\vol(B)/2^n$. Let
+$\vol(B)\uparrow2\zeta(n)$.
+\end{proof}
+
+This is the ``$2\zeta(d)2^{-d}$'' of the remark after Proposition~\ref{L1:prop:saturated-bound} in
+Lecture~1, and it is still within a polynomial factor of the best known lower bounds (for lattices,
+Klartag's 2025 bound $c\,n^2\,2^{-n}$). Upper bounds are exponentially larger
+(Kabatiansky--Levenshtein, Lecture~3). It is still unknown whether the best lattices in high dimension are
+exponentially better than random ones.
+
+Siegel's theorem treats $X_n$ as a probability space. Interlude~C treats it as a dynamical system: the
+diagonal flow on $X_n$, Mahler's criterion as a statement about the cusp, and equidistribution results
+that sharpen Siegel's average.
+
+%======================================================================
+\section{A dictionary}
+\label{NT:sec:dictionary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{0.42\textwidth}p{0.50\textwidth}}
+\toprule
+Packings and lattices & Number theory\\
+\midrule
+lattice up to rotation & positive definite form up to $\GL_n(\Z)$\\
+$\lambda_1^2$, $\covol^2$ & $\min Q$, $\det G$\\
+densest lattice packing & Hermite's constant $\gamma_n$\\
+planar lattices, Figure~\ref{NT:fig:modular} & $\SL_2(\Z)\backslash\mathbb H$, reduced binary forms\\
+number of points in a ball & $\sum_{m\le r^2}r_Q(m)$; Gauss circle problem\\
+kissing number of $\Lat$ & number of representations of $\min Q$\\
+Blichfeldt's gauge (Lecture 2) & Blichfeldt's lemma, Minkowski's theorem\\
+shells of $E_8$, Leech & coefficients of $E_4$, $E_4^3-720\Delta$\\
+dual lattice $\Lat^*$ & $G^{-1}$; $\tau\mapsto-1/\tau$\\
+LP bound, magic function & Poisson summation, (quasi)modular forms\\
+random lattice & Siegel's mean value theorem\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%======================================================================
+\section{Gallery of theorems}
+\label{NT:sec:gallery}
+
+Classical results first, then recent ones. Each comes with a sentence on why it belongs in this course.
+
+\begin{theorem}[Hermite's inequality; Hermite 1850]\label{NT:gal:hermite}
+$\gamma_n\le(4/3)^{(n-1)/2}$ for all $n\ge1$.
+\end{theorem}
+Published in Hermite's letters to Jacobi, J.\ reine angew.\ Math.\ 40 (1850). For $n=2$ it is
+Theorem~\ref{NT:thm:gamma2}. The proof (Exercise~\ref{NT:ex:hermite}) is the row-stacking argument of
+Lecture~1, run by induction on the dimension.
+
+\begin{theorem}[The known Hermite constants]\label{NT:gal:hermiteknown}
+The values of $\gamma_n$ in the table of Section~\ref{NT:sec:forms} are correct, and in each of these
+dimensions the optimal lattice is unique up to similarity.
+\end{theorem}
+Lagrange (1773) and Gauss (1831, in his review of Seeber) for $n=2,3$; Korkine and Zolotarev, Math.\
+Ann.\ 6 (1873) and 11 (1877), for $n=4,5$; Blichfeldt, Math.\ Z.\ 39 (1935), for $n=6,7,8$ (uniqueness
+there is due to Vet\v{c}inkin, 1980); H.~Cohn and A.~Kumar, \emph{Optimality and uniqueness of the Leech
+lattice among lattices}, Ann.\ of Math.\ 170 (2009), for $n=24$. The case $n=24$ uses the Cohn--Elkies
+bound of Section~\ref{NT:sec:LP} together with an argument special to lattices. These are exactly the
+lattices of Lectures~4--6.
+
+\begin{theorem}[Voronoi 1908]\label{NT:gal:voronoi}
+A positive definite form $Q$ is a local maximum of $\gamma(Q)$ (an \emph{extreme} form) if and only if it is
+\emph{perfect} (it is the only form with its minimum value and its set of minimal vectors; equivalently,
+the matrices $xx^T$, $x$ minimal, span the space of symmetric matrices) and \emph{eutactic} ($G^{-1}$ is a
+combination of the matrices $xx^T$, $x$ minimal, with strictly positive coefficients). Up to equivalence and scaling there are finitely many perfect forms in each dimension.
+\end{theorem}
+G.~Voronoi, J.\ reine angew.\ Math.\ 133 (1908). The numbers of perfect forms in dimensions $2,\dots,8$
+are $1,1,2,3,7,33,10916$ (dimension $7$: Jaquet-Chiffelle, Ann.\ Inst.\ Fourier 43 (1993); dimension $8$:
+Dutour Sikiri\'c, Schürmann and Vallentin, Electron.\ Res.\ Announc.\ AMS 13 (2007)). This is a finite
+algorithm for the lattice packing problem in each fixed dimension. Eutaxy is the lattice analogue of the
+force balanced contact graphs of Lecture~10: the minimal vectors are the contacts, and the positive coefficients are
+the stresses.
+
+\begin{theorem}[Class number one; Heegner 1952, Baker 1966, Stark 1967]\label{NT:gal:classno}
+The imaginary quadratic fields $\Q(\sqrt{-d})$ with class number $1$ are exactly those with
+$d=1,2,3,7,11,19,43,67,163$.
+\end{theorem}
+Gauss conjectured the list. Heegner's proof (Math.\ Z.\ 56, 1952) was not accepted at first. Baker
+(Mathematika 13, 1966) and Stark (Michigan Math.\ J.\ 14, 1967) gave independent proofs, and Heegner's
+argument was later found to be essentially correct. In the language of Remark~\ref{NT:rem:classno}: for the
+corresponding discriminants $D=-3,-4,-7,-8,-11,-19,-43,-67,-163$ there is exactly one reduced primitive form.
+For $D=-3$ and $D=-4$ it is the hexagonal and the square lattice. For $D=-163$ it is $x^2+xy+41y^2$, and
+Euler's observation that $k^2+k+41$ is prime for $0\le k\le39$ is a shadow of $h(-163)=1$ (Rabinowitsch, 1913).
+
+\begin{theorem}[The $15$ theorem; Conway--Schneeberger 1993, Bhargava 2000]\label{NT:gal:15}
+A positive definite quadratic form with integer Gram matrix represents every positive integer if and only if it
+represents $1,2,3,5,6,7,10,14,15$.
+\end{theorem}
+Conway and Schneeberger did not publish their proof. M.~Bhargava, \emph{On the Conway--Schneeberger
+fifteen theorem}, in \emph{Quadratic Forms and Their Applications} (Dublin 1999), Contemp.\ Math.\ 272,
+AMS (2000), 27--37, gave a short proof, built by ``escalating'' lattices: one adds a vector whose
+norm is the smallest integer not yet represented. This is the arithmetic version of the laminated
+lattices of Lecture~6. None of the nine numbers can be omitted.
+
+\begin{theorem}[The $290$ theorem; Bhargava--Hanke]\label{NT:gal:290}
+A positive definite integer-valued quadratic form represents every positive integer if and only if it
+represents
+the $29$ numbers 1, 2, 3, 5, 6, 7, 10, 13, 14, 15, 17, 19, 21, 22, 23, 26, 29, 30, 31, 34, 35, 37, 42, 58, 93,
+110, 145, 203, 290.
+\end{theorem}
+Conjectured by Conway. M.~Bhargava and J.~Hanke, \emph{Universal quadratic forms and the 290-theorem},
+preprint (2011). It is widely cited, but as of 2026 it has not appeared in a journal.
+``Integer-valued'' allows odd off-diagonal coefficients, such as $x^2+xy+y^2$; that is why the list is longer.
+
+\begin{theorem}[Hardy 1916; Huxley 2003]\label{NT:gal:circle}
+In the circle problem, $E(r)$ is not $o\big(r^{1/2}(\log r)^{1/4}\big)$. On the other hand,
+$E(r)=O_\varepsilon(r^{131/208+\varepsilon})$ for every $\varepsilon>0$.
+\end{theorem}
+The lower bound is in G.~H.~Hardy, \emph{On Dirichlet's divisor problem}, Proc.\ London Math.\ Soc.\ (2)
+15 (1916). The upper bound is in M.~N.~Huxley, \emph{Exponential sums and lattice points III}, Proc.\
+London Math.\ Soc.\ (3) 87 (2003), 591--609. The logarithmic factors in the lower bound were sharpened
+by Hafner (Invent.\ Math.\ 63, 1981) and by Soundararajan (Int.\ Math.\ Res.\ Not.\ 2003, no.~36). For
+the arXiv improvements of the upper bound, see Section~\ref{NT:sec:circle}. This is the prototype of a boundary-layer error in a density count.
+
+\begin{theorem}[Milnor 1964; Niemeier 1973]\label{NT:gal:niemeier}
+There are non-isometric isospectral flat tori in dimension $16$. There are exactly $24$ even unimodular
+lattices in $\R^{24}$, and the Leech lattice is the only one with no vectors of norm $2$.
+\end{theorem}
+J.~Milnor, \emph{Eigenvalues of the Laplace operator on certain manifolds}, Proc.\ Nat.\ Acad.\ Sci.\
+USA 51 (1964), 542; H.-V.~Niemeier, J.\ Number Theory 5 (1973), 142--178; J.~H.~Conway, Invent.\ Math.\ 7
+(1969), 137--142, for the characterization of Leech. Both are consequences of the theta series being a
+modular form (Section~\ref{NT:sec:theta}).
+
+\begin{theorem}[Cohn--Elkies 2003]\label{NT:gal:CE}
+Theorem~\ref{NT:thm:CE} holds.
+\end{theorem}
+H.~Cohn and N.~Elkies, \emph{New upper bounds on sphere packings I}, Ann.\ of Math.\ 157 (2003), 689--714.
+Their numerical bounds were the best known in many dimensions, and in dimensions $8$ and $24$ they came
+extremely close to the densities of $E_8$ and Leech. This is the bridge from Blichfeldt's method to the solution in dimensions $8$ and $24$.
+
+\begin{conjecture}[Cohn--Elkies]\label{NT:gal:CE2}
+The linear programming bound of Theorem~\ref{NT:thm:CE} is sharp in dimension $2$, that is, its optimum
+equals $\pi/\sqrt{12}$.
+\end{conjecture}
+Numerical optimization supports it, but no exact auxiliary function is known. Thue's
+theorem is known by other means (Lecture~1), so what is open is whether \emph{this method} reproves it.
+
+\begin{theorem}[Viazovska 2016; Cohn--Kumar--Miller--Radchenko--Viazovska 2016]\label{NT:gal:viazovska}
+The $E_8$ lattice packing is the densest sphere packing in $\R^8$, and the Leech lattice packing is the
+densest in $\R^{24}$.
+\end{theorem}
+M.~Viazovska, \emph{The sphere packing problem in dimension 8}, Ann.\ of Math.\ 185 (2017), 991--1015;
+H.~Cohn, A.~Kumar, S.~D.~Miller, D.~Radchenko and M.~Viazovska, \emph{The sphere packing problem in dimension
+24}, Ann.\ of Math.\ 185 (2017), 1017--1033. In both cases the magic function is built from (quasi)modular
+forms, as sketched in Section~\ref{NT:sec:LP}.
+
+\begin{theorem}[Universal optimality; Cohn--Kumar--Miller--Radchenko--Viazovska 2022]\label{NT:gal:universal}
+Let $p(r)=g(r^2)$ with $g\colon(0,\infty)\to\R$ completely monotone. Among all point configurations in $\R^8$
+(resp.\ $\R^{24}$) of density one point per unit volume, $E_8$ (resp.\ the Leech lattice) minimizes the
+lower $p$-energy.
+\end{theorem}
+H.~Cohn, A.~Kumar, S.~D.~Miller, D.~Radchenko and M.~Viazovska, \emph{Universal optimality of the $E_8$ and
+Leech lattices and interpolation formulas}, Ann.\ of Math.\ 196 (2022), no.~3, 983--1082. Sphere packing is
+a limiting case (very steep potentials). This connects the lattice problem to the Boltzmann weights and
+energy landscapes of Lectures~7--11: $E_8$ and Leech are ground states for a whole class of interactions,
+and not only optimal hard spheres.
+
+\begin{theorem}[Siegel 1945; Minkowski--Hlawka 1943]\label{NT:gal:siegel}
+Theorem~\ref{NT:thm:siegel} and Corollary~\ref{NT:cor:MH} hold.
+\end{theorem}
+C.~L.~Siegel, \emph{A mean value theorem in geometry of numbers}, Ann.\ of Math.\ 46 (1945), 340--347;
+E.~Hlawka, \emph{Zur Geometrie der Zahlen}, Math.\ Z.\ 49 (1943/44), 285--312. Minkowski had stated the bound
+without a complete proof. The lattice analogue of the saturation bound of Lecture~1.
+
+\begin{theorem}[Klartag 2025]\label{NT:gal:klartag}
+There is a constant $c>0$ such that for all large $n$ there is a lattice packing in $\R^n$ of density at least
+$c\,n^2\,2^{-n}$.
+\end{theorem}
+B.~Klartag, \emph{Lattice packing of spheres in high dimensions using a stochastically evolving ellipsoid},
+Invent.\ Math.\ (2026), doi:10.1007/s00222-026-01412-w; arXiv:2504.05042 (2025). It is the first lower bound, for lattices or for general packings, that beats
+$n\,2^{-n}$ by more than a logarithmic factor. The proof grows an ellipsoid that contains no nonzero point
+of a lattice, by a random process. Compare the Minkowski--Hlawka bound
+$2\zeta(n)2^{-n}$ above and the table in Lecture~3.
+
+%======================================================================
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{NT:ex:reduce}
+Reduce the form $26x^2+130xy+169y^2$ (the Gram matrix of the basis $(1,5)$, $(0,13)$ of the lattice in
+Figure~\ref{NT:fig:fermat}). Check that you get $13(x^2+y^2)$, and read off a representation $13=a^2+b^2$.
+Show that $h(-20)=2$ by listing the reduced forms of discriminant $-20$.
+\end{exercise}
+
+\begin{exercise}\label{NT:ex:hermite}
+(Hermite's inequality.) Let $v_1$ be a shortest vector of $\Lat\subset\R^n$, and let $\Lat'$ be the
+orthogonal projection of $\Lat$ onto $v_1^\perp$.
+\begin{enumerate}[nosep]
+\item Show that $\Lat'$ is a lattice with $\covol(\Lat')=\covol(\Lat)/\abs{v_1}$.
+\item Show that every $w'\in\Lat'$ lifts to $w\in\Lat$ with $\abs{w}^2\le\abs{w'}^2+\frac14\abs{v_1}^2$, and
+  deduce $\frac34\lambda_1(\Lat)^2\le\lambda_1(\Lat')^2$.
+\item Conclude that $\gamma_n\le\big(\frac43\gamma_{n-1}\big)^{(n-1)/n}$, and hence $\gamma_n\le(4/3)^{(n-1)/2}$.
+  Compare with the proof of Theorem~\ref{L1:thm:lattice2}.
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}
+Show that $N_\Lat(r)=V_nr^n/\covol(\Lat)+O(r^{n-1})$ for every lattice $\Lat\subset\R^n$, by Gauss's
+argument with a fundamental parallelepiped. Then use it to show that the average of $r_2(m)$ for
+$m\le X$ tends to $\pi$, and that the average of $r_4(m)$ over $m\le X$ is asymptotic to $\frac{\pi^2}{2}X$.
+\end{exercise}
+
+\begin{exercise}
+Use Minkowski's theorem to show that every prime $p\equiv1$ or $3\pmod8$ can be written as $x^2+2y^2$.
+(Use that $-2$ is a square mod $p$ for these primes, and the ellipse $x^2+2y^2<2p$, of area $\sqrt2\,\pi p>4p$.)
+\end{exercise}
+
+\begin{exercise}
+Prove Corollary~\ref{NT:cor:thetatrans} for $\Lat=\Z$ directly, by applying Poisson summation to
+$e^{-\pi tx^2}$, $t>0$. Deduce that $t^{1/4}\,\Theta_\Z(it)$ is invariant under $t\mapsto1/t$, and use this to
+show that $\Theta_\Z(it)\sim t^{-1/2}$ as $t\to0^+$. Interpret this limit as a lattice point count.
+\end{exercise}
+
+\begin{exercise}\label{NT:ex:D16}
+Show that $D_n^+=D_n\cup(D_n+\frac12\mathbf 1)$ is a lattice if and only if $n$ is even, that it is
+unimodular when it is integral, and that it is even unimodular if and only if $8\mid n$. Count the vectors of
+norm $2$ and $4$ in $D_{16}^+$ and compare with $E_8\oplus E_8$.
+\end{exercise}
+
+\begin{exercise}
+Using $\Theta_{E_8}=E_4$, show that the number of vectors of norm $2m$ in $E_8$ is divisible by $240$ for every $m\ge1$.
+Then verify by hand that $E_8$ has $2160$ vectors of norm $4$. (They are $\pm2e_i$, the vectors
+$\pm e_i\pm e_j\pm e_k\pm e_l$, and the half-integral vectors with one coordinate $\pm\frac32$.)
+\end{exercise}
+
+\begin{exercise}
+(The LP bound in dimension one.) Let $f(x)=\max(0,1-\abs x)$. Compute $\hat f(y)=\big(\frac{\sin\pi y}{\pi y}\big)^2$,
+check that $f$ satisfies the hypotheses of Theorem~\ref{NT:thm:CE} with $r=1$, and conclude that the bound is
+sharp in dimension $1$. Which lattice packings achieve it, and how does this show up in the equality analysis of
+Section~\ref{NT:sec:LP}?
+\end{exercise}
+
+\begin{exercise}
+Using Siegel's theorem, compute the average over $X_n$ of the number of nonzero lattice vectors in a ball
+of volume $V$ centred at $0$. Deduce that some unimodular lattice has $\lambda_1\ge(2/V_n)^{1/n}$, which is
+asymptotically $\sqrt{n/(2\pi e)}$. Compare with the upper bound $\lambda_1\le2V_n^{-1/n}$ coming from
+Minkowski's theorem, and translate both into bounds on $\gamma_n$.
+\end{exercise}
+
+\section*{Further reading}
+\addcontentsline{toc}{section}{Further reading}
+\begin{itemize}[nosep]
+\item J.-P.~Serre, \emph{A Course in Arithmetic}, Springer GTM 7, 1973. Chapter~V: quadratic forms over $\Z$
+  (including $8\mid n$ for even unimodular lattices); Chapter~VII: modular forms and theta series.
+\item J.~H.~Conway and N.~J.~A.~Sloane, \emph{Sphere Packings, Lattices and Groups}, 3rd ed., Springer, 1999.
+  Ch.~2 (theta series), Ch.~16--18 (Niemeier lattices, Leech).
+\item J.~W.~S.~Cassels, \emph{An Introduction to the Geometry of Numbers}, Springer, 1959. Blichfeldt,
+  Minkowski, Siegel and Hlawka.
+\item J.~Martinet, \emph{Perfect Lattices in Euclidean Spaces}, Springer, 2003. Hermite constants and Voronoi's theory.
+\item J.~H.~Conway (with F.~Fung), \emph{The Sensual (Quadratic) Form}, MAA, 1997. Binary forms
+  and the topograph, and the 15 theorem.
+\item H.~Cohn, \emph{A conceptual breakthrough in sphere packing}, Notices AMS 64 (2017), 102--115. The LP
+  bound and Viazovska's construction, for non-specialists.
+\item M.~N.~Huxley, \emph{Area, Lattice Points, and Exponential Sums}, Oxford, 1996. For the circle problem.
+\end{itemize}

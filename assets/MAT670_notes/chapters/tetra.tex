@@ -1,0 +1,144 @@
+% Section for Interlude E: why 20 regular tetrahedra do not make a regular icosahedron.
+% Written to follow W. Kusner's argument. Labels prefixed TET:.
+
+\section{Twenty tetrahedra do not make an icosahedron}
+\label{TET:sec}
+
+Frank's icosahedral cluster (and the jitterbug of Lecture~11) rests on a small geometric fact: a regular
+icosahedron is \emph{not} made of $20$ regular tetrahedra. Cone the icosahedron from its centre and
+you get $20$ congruent tetrahedra, but they are slightly flattened. The edges from the centre are a
+little \emph{shorter} than the edges of the icosahedron:
+\[
+  \frac{\text{circumradius}}{\text{edge}}=\sin\frac{2\pi}{5}\approx0.951<1 .
+\]
+In terms of balls: twelve unit balls placed at the vertices of an icosahedron around a central unit
+ball can all touch the central ball, but then they do not touch each other. This slack is why the
+twelve outer balls can roll around (the kissing configuration in $\R^3$ is not rigid), and it is the
+root of the Newton--Gregory dispute over whether a thirteenth ball fits.
+
+The usual proof is a computation, for instance with the dihedral angle $\arccos\frac13$ of the regular
+tetrahedron. The following argument needs no computation. It uses only the plane fact that \emph{six}
+equal circles fit exactly around a seventh, together with the triangle inequality on the sphere.
+
+\begin{proposition}\label{TET:prop}
+A regular icosahedron is not the union of $20$ regular tetrahedra sharing a vertex at its centre.
+\end{proposition}
+
+\paragraph{The argument.} Suppose it were, with edge length $a$. Put balls of radius $a/2$ at the centre
+and at the $12$ vertices. Then the central ball touches all twelve, and each vertex ball touches its
+five neighbours. Project the twelve contact points radially onto a sphere about the centre, and
+measure distances by angle. Neighbouring vertices are then exactly $60^\circ$ apart, because the centre
+and two neighbours form an equilateral triangle.
+
+Stand the icosahedron on a vertex: a north pole $N$, the antipodal vertex $S$, and two
+\emph{tropical rings} of five vertices each. The upper ring consists of the neighbours of $N$, the
+lower ring of the neighbours of $S$, and the rings are staggered by $36^\circ$ of longitude. The equatorial
+band between the rings is made of ten triangles (Figure~\ref{TET:fig:band}, left). Every vertex of the
+upper ring is $60^\circ$ from $N$, so the upper ring lies at latitude $30^\circ$\,N. Likewise the lower ring
+lies at latitude $30^\circ$\,S.
+
+Now \emph{rotate the lower ring} by $36^\circ$ about the axis $NS$, keeping its latitude. Each lower vertex
+$\ell$ now sits directly below an upper vertex $u$, and the ten equatorial triangles have become five
+equatorial quadrilaterals, the ``squares'' (Figure~\ref{TET:fig:band}, right). Each of the five
+meridians through $N$ and $S$ now carries four of our points,
+\[
+  N,\ u,\ \ell,\ S\qquad\text{at angles}\qquad 0^\circ,\ 60^\circ,\ 120^\circ,\ 180^\circ
+\]
+along the meridian, since $u$ is $60^\circ$ from $N$, $\ell$ is $60^\circ$ from $S$, and $N$ and $S$ are
+$180^\circ$ apart. The meridian is a great circle, and $60^\circ$ steps are exactly the spacing of a
+\emph{ring of six} balls around the central one, as in the hexagonal packing
+(Figure~\ref{TET:fig:meridian}). So after the rotation, $u$ and $\ell$ touch: the five meridians have
+become five half-rings of six, one great circle each.
+
+But before the rotation $u$ and $\ell$ also touched, since they were neighbours in the icosahedron, and
+in between we only slid $\ell$ sideways along its latitude circle. The closest point of a latitude
+circle to $u$ is the one on $u$'s meridian, so sliding $\ell$ off the meridian moves it strictly
+\emph{farther} from $u$. In other words, the deformation from ten equatorial triangles to five
+equatorial squares, made without changing any latitude, shortened the distance from $u$ to $\ell$. Yet
+it is $60^\circ$ at both ends. That is a contradiction. \qed
+
+\medskip
+In one line, the same argument is the triangle inequality on the sphere:
+\[
+  d(u,\ell)\ \ge\ d(N,\ell)-d(N,u)\ =\ (180^\circ-60^\circ)-60^\circ\ =\ 60^\circ,
+\]
+with equality only if $u$ lies on the arc from $N$ to $\ell$, that is, on $\ell$'s meridian. Each upper
+vertex $u$ has two lower neighbours, and they cannot both lie on $u$'s meridian, so for at least one of
+them $d(u,\ell)>60^\circ$. (In the icosahedron both are off the meridian, by $\pm36^\circ$.) The ring of six
+is the picture of the equality case.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  % left: antiprism band (10 triangles), right: prism band (5 squares)
+  \begin{scope}
+    \foreach \k in {0,...,5} {\coordinate (U\k) at (\k,1); }
+    \foreach \k in {0,...,4} {\coordinate (L\k) at (\k+0.5,0); }
+    \coordinate (Lm) at (-0.5,0);
+    \draw[thick] (U0)--(U5); \draw[thick] (Lm)--(L4);
+    \foreach \k [evaluate=\k as \j using int(\k+1)] in {0,...,4} {\draw (U\k)--(L\k)--(U\j);}
+    \draw (U0)--(Lm);
+    \foreach \k in {0,...,5} \fill (U\k) circle (0.06);
+    \foreach \k in {0,...,4} \fill[flagcol] (L\k) circle (0.06);
+    \node[font=\small] at (2.5,1.55) {upper ring, latitude $30^\circ$\,N};
+    \node[font=\small] at (2.5,-0.55) {lower ring, latitude $30^\circ$\,S};
+    \node[font=\small,gray] at (2.5,-1.1) {ten triangles (icosahedron)};
+  \end{scope}
+  \draw[-{Stealth},thick] (5.8,0.5)--(6.9,0.5) node[midway,above,font=\scriptsize]{rotate};
+  \node[font=\scriptsize] at (6.35,0.2) {lower ring};
+  \begin{scope}[xshift=7.4cm]
+    \foreach \k in {0,...,5} {\coordinate (U\k) at (\k,1); \coordinate (L\k) at (\k,0);}
+    \draw[thick] (U0)--(U5); \draw[thick] (L0)--(L5);
+    \foreach \k in {0,...,5} \draw (U\k)--(L\k);
+    \foreach \k in {0,...,5} {\fill (U\k) circle (0.06); \fill[flagcol] (L\k) circle (0.06);}
+    \node[font=\small,gray] at (2.5,-1.1) {five squares, same latitudes};
+  \end{scope}
+\end{tikzpicture}
+\caption{The equatorial band, unrolled (the left and right ends are identified; longitudes in units of
+$72^\circ$). Rotating the lower ring by $36^\circ$ turns the ten equatorial triangles into five
+quadrilaterals without changing any latitude.}
+\label{TET:fig:band}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.62]
+  \fill[gray!15] (0,0) circle (1); \draw (0,0) circle (1); \node[font=\scriptsize] at (0,0) {$O$};
+  \foreach \a/\lab in {90/N,30/u,-30/\ell,-90/S}
+    {\filldraw[fill=addcol!15,draw=addcol,thick] (\a:2) circle (1); \node[font=\small] at (\a:2) {$\lab$};}
+  \foreach \a in {150,210} {\draw[dashed,gray] (\a:2) circle (1);}
+  \draw[gray,thin] (0,0) circle (2);
+  \foreach \a in {90,30,-30,-90} \draw[gray,thin] (0,0)--(\a:2);
+  \node[font=\scriptsize] at (60:0.65) {$60^\circ$};
+  \node[font=\scriptsize] at (0:0.7) {$60^\circ$};
+  \node[font=\scriptsize] at (-60:0.65) {$60^\circ$};
+\end{tikzpicture}
+\caption{After the rotation, each meridian is half of a ring of six balls around the central ball: $N$,
+$u$, $\ell$, $S$ are consecutive at $60^\circ$ steps. The dashed balls complete the ring.}
+\label{TET:fig:meridian}
+\end{figure}
+
+\begin{remark}[What the argument shows, quantitatively]
+In the hypothetical configuration with rings at latitudes $\pm30^\circ$, an upper and a lower vertex
+whose longitudes differ by $36^\circ$ are at angular distance $\arccos\big(\tfrac34\cos36^\circ-\tfrac14\big)
+\approx69.1^\circ$, not $60^\circ$. In the true icosahedron the rings sit lower, at latitudes
+$\pm\arctan\frac12\approx\pm26.6^\circ$, every edge subtends $\arctan2\approx63.4^\circ$ at the centre, and
+the gaps between neighbouring outer balls are what let the twelve balls roll.
+\end{remark}
+
+\begin{remark}[Two related classical facts]
+(1) Regular tetrahedra do not even fill the space around an \emph{edge}: the dihedral angle is
+$\arccos\frac13\approx70.53^\circ$, and five such angles leave a gap of about $7.36^\circ$. (Aristotle
+claimed that regular tetrahedra tile space; see Lagarias--Zong, \emph{Mysteries in packing regular
+tetrahedra}, Notices AMS 59 (2012).) The same angle appears here: five points at $60^\circ$ from $N$ and
+$60^\circ$ from each other would need angles of $\arccos\frac13$ at $N$, and five of these do not close up.
+(2) In curved space the frustration disappears. In the $3$-sphere, $600$ regular tetrahedra (with
+the right curvature) fit together exactly, five around each edge, forming the regular polytope
+$\{3,3,5\}$ with $120$ vertices, each surrounded by a regular icosahedron. This is the ``ideal''
+icosahedral order of Frank's liquids; the flat-space packing problem has to compromise.
+\end{remark}
+
+\begin{remark}[Source]
+\unclear{Wording of the attribution is a placeholder for the author to edit.}
+This argument came out of a conversation between the author and T.~C.~Hales.
+\end{remark}

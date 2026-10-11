@@ -1,0 +1,991 @@
+% MAT670 -- Interlude E: random packings, entropy and information.
+% Entirely new material (not in the handwritten notes). Labels prefixed SM:.
+% Includes the coordinator's section chapters/tetra.tex (labels TET:) verbatim.
+
+\chapter[Interlude E: Entropy and information]{Interlude E: Random packings, entropy and information}
+\label{SM:ch}
+
+\begin{addedblock}
+This interlude is new: it is not in the handwritten notes. It picks up three threads that the course
+left loose: the coin flips and the gas in a box of Lecture~7, the Edwards entropy and the Fibonacci
+words of Lecture~11, and the project topics ``error correcting codes and information theory'' and
+``entropy of jammed systems'' listed at the end of Lecture~6. To keep it readable it is set in black;
+all of it should be read as added material.
+\end{addedblock}
+
+Most of this course was about the \emph{best} configurations: the densest packing, the largest
+kissing configuration, the maximum of the injectivity radius. Lecture~7 already suggested a second
+point of view. For large $N$ one does not ask for the best configuration but for the \emph{typical}
+one, and one answers with Stirling's formula. Lecture~11 then did exactly this for jammed discs in a
+channel, and found the golden ratio.
+
+In this interlude we follow that second point of view: hard spheres as statistical mechanics with no
+energy at all (Section~\ref{SM:sec:hard}); random and jammed packings (Section~\ref{SM:sec:random}); why
+dense liquids do not simply crystallize (Sections~\ref{SM:sec:frustration}--\ref{SM:sec:curved}); Edwards'
+statistical mechanics of the Lecture~11 channel, solved completely (Section~\ref{SM:sec:edwards}); and
+information theory (Section~\ref{SM:sec:info}), where the channel's maximal Edwards entropy turns out to
+be a Shannon capacity and $E_8$ and Leech come from perfect codes.
+
+Throughout, $\ln$ is the natural logarithm and $\log_2$ the logarithm to base $2$. Boltzmann's constant
+is set to $1$.
+
+%======================================================================
+\section{Hard spheres as statistical mechanics}
+\label{SM:sec:hard}
+
+Recall the remark at the end of \S\ref{L11:sec:boltzmann}: for hard particles the energy of a
+configuration is $0$ if no two particles overlap and $+\infty$ if two do, so the Boltzmann weight
+$e^{-\beta E}$ is the indicator function of the admissible configurations, at every temperature.
+For $N$ balls of diameter $1$ with centres in a region $\Omega\subset\R^d$ of volume $V$, the
+admissible configurations form the \emph{hard-sphere configuration space}
+\[
+  \Conf_{\ge1}(N,\Omega)=\{(x_1,\dots,x_N)\in\Omega^N:\ \abs{x_i-x_j}\ge1\ \text{for all }i\ne j\},
+\]
+a closed subset of the configuration space $\Conf(N,\Omega)$ of Lecture~7
+(Definition~\ref{L07:def:conf}). On the sphere it is the space $\Conf(N,\theta)$ of
+Definition~\ref{L10:def:conftheta}, whose topology we computed with min-type Morse theory. The
+(configurational) \emph{partition function} is its volume,
+\[
+  Z_N(\Omega)=\frac1{N!}\vol\Conf_{\ge1}(N,\Omega),
+\]
+the factor $1/N!$ accounting for the indistinguishability of the particles. The \emph{entropy} is
+$S=\ln Z_N$, and since the energy is identically zero the free energy is $F=-TS$. Temperature only
+sets a scale. The \emph{pressure} is
+\[
+  \beta P=\frac{\partial S}{\partial V},
+\]
+the rate at which the configuration space grows when the box grows. (Change $\Omega$ by a homothety
+to make this a derivative in one variable.) So for hard spheres \emph{everything is entropy}. This
+is worth remembering in Section~\ref{SM:sec:edwards}, where Edwards runs the same dictionary in the
+opposite direction and treats volume as if it were energy.
+
+\subsection*{The Kepler problem is about where the free energy is finite}
+
+Let $\dens_d$ be the maximal packing density of balls in $\R^d$, and let
+\[
+  \rho_{\mathrm{cp}}=\frac{\dens_d}{\vol\Ball^d(\tfrac12)}
+\]
+be the corresponding maximal \emph{number density} of centres for balls of diameter~$1$. In
+dimension~$3$, Hales' theorem gives $\dens_3=\pi/\sqrt{18}$ and so $\rho_{\mathrm{cp}}=\sqrt2$, the
+number density of the face-centred cubic lattice with nearest-neighbour distance~$1$.
+
+\begin{proposition}\label{SM:prop:kepler}
+Let $Q_\ell=[0,\ell]^d$, and let $N=N(\ell)$ with $N/\ell^d\to\rho$ as $\ell\to\infty$.
+\begin{enumerate}[nosep]
+\item If $N>\rho_{\mathrm{cp}}(\ell+1)^d$, then $Z_N(Q_\ell)=0$. In particular $Z_N(Q_\ell)=0$ for all
+  large $\ell$ when $\rho>\rho_{\mathrm{cp}}$.
+\item If $\rho<\rho_{\mathrm{cp}}$, then $\liminf_{\ell\to\infty}\frac1N\ln Z_N(Q_\ell)>-\infty$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) Given $N$ admissible centres in $Q_\ell$, the balls of radius $\frac12$ around them lie in the
+cube $[-\frac12,\ell+\frac12]^d$ of side $\ell+1$. Repeat this cube periodically. The result is a
+periodic packing of density $N\vol\Ball^d(\frac12)/(\ell+1)^d$, which is at most $\dens_d$.
+
+(2) Choose $\rho<\rho''<\rho_{\mathrm{cp}}$. There is a periodic packing of balls of diameter $1$
+with some number density $\rho'>\rho''$, since periodic packings come arbitrarily close to the optimal density
+(Exercise~\ref{L1:ex:periodic-approx} of Lecture~1). Scale it by $\lambda=(\rho'/\rho'')^{1/d}>1$. The
+centres now have number density $\rho''$ and are at mutual distance at least $\lambda$, so each centre may
+be moved independently anywhere in a ball of radius $r=(\lambda-1)/2$ without creating an overlap.
+The cube $Q_\ell$ contains $\rho''\ell^d-O(\ell^{d-1})$ of these wiggle balls, which is more than $N$ for
+large $\ell$; keep $N$ of them. Assigning the $N$ labelled particles to the $N$ wiggle balls in any of
+the $N!$ ways gives disjoint pieces of $\Conf_{\ge1}(N,Q_\ell)$, so
+$Z_N\ge\frac1{N!}N!\,(\vol\Ball^d(r))^N$ and $\frac1N\ln Z_N\ge\ln\vol\Ball^d(r)$.
+\end{proof}
+
+The limit $s(\rho)=\lim\frac1N\ln Z_N$ exists for $\rho<\rho_{\mathrm{cp}}$ (subadditivity; see Ruelle's
+book), so the free energy is finite at every density below $\rho_{\mathrm{cp}}$ and infinite at every
+density above it. At $\rho_{\mathrm{cp}}$ itself one expects $s=-\infty$ and a divergent pressure, as for the
+Tonks gas below, but the proposition does not decide this. Thus the theorems of Hales in $\R^3$, and of Viazovska and
+Cohn--Kumar--Miller--Radchenko--Viazovska in $\R^8$ and $\R^{24}$, determine the density at which the
+free energy of the hard-sphere gas becomes infinite.
+
+\subsection*{One dimension: the Tonks gas}
+
+On a line everything can be computed. Lecture~11 (\S\ref{L11:sec:hardrods}) found that the gaps
+between $n$ rods of length $1$ in an interval of length $\ell$ form a simplex of volume
+$(\ell-n)^n/n!$. Ordering the labels gives a factor $n!$, so
+\[
+  Z_n(\ell)=\frac{1}{n!}\cdot n!\cdot\frac{(\ell-n)^n}{n!}=\frac{(\ell-n)^n}{n!}.
+\]
+
+\begin{proposition}[Tonks 1936]\label{SM:prop:tonks}
+The hard-rod gas has equation of state
+\[
+  \beta P=\frac{\partial}{\partial\ell}\ln Z_n(\ell)=\frac{n}{\ell-n}=\frac{\rho}{1-\rho},\qquad\rho=\frac n\ell,
+\]
+and entropy per particle $\frac1n\ln Z_n\to1+\ln\frac{1-\rho}{\rho}$ as $n,\ell\to\infty$ with
+$n/\ell\to\rho\in(0,1)$.
+\end{proposition}
+
+The first formula is a one-line computation, and the second is Stirling's formula. Compare
+Exercise~\ref{L11:ex:tonks}, where the same system was treated in the grand canonical ensemble: there
+the density was $\rho=P/(1+P)$, which is the same equation of state solved for $P$. The pressure is a
+real-analytic function of $\rho\in[0,1)$ and blows up at $\rho=1=\rho_{\mathrm{cp}}$, as
+Proposition~\ref{SM:prop:kepler} predicts. There is no phase transition. That is not an accident of the
+model.
+
+\begin{theorem}[van Hove 1950]\label{SM:thm:vanhove}
+Consider particles on a line interacting by a pair potential that has a hard core ($\phi(r)=+\infty$ for
+$r<a$) and finite range ($\phi(r)=0$ for $r>R$), and is bounded on $[a,R]$. Then the thermodynamic
+limit of the pressure is a real-analytic function of the temperature and the density: one-dimensional
+systems of this kind have no phase transitions.
+\end{theorem}
+
+The proof uses a \emph{transfer operator}: by the hard core and the finite range, the partition function
+is an iterated integral $\langle f,\mathcal T^ng\rangle$ of a positive integral operator, whose simple top
+eigenvalue (Perron--Frobenius--Jentzsch) depends analytically on the parameters. Section~\ref{SM:sec:edwards}
+has the same mechanism with a $2\times2$ matrix. (Cuesta and S\'anchez, J.~Stat.~Phys.\ 2004, discuss
+which hypotheses are needed, and give one-dimensional models with transitions when they fail.)
+
+\subsection*{Two and three dimensions: transitions seen only on the computer}
+
+In $\R^3$ the hard-sphere gas is believed to \emph{freeze}. In 1957 Alder and Wainwright (molecular
+dynamics) and Wood and Jacobson (Monte Carlo) published, back to back in J.~Chem.\ Phys.~27, the
+first computer evidence of a fluid--solid transition. In the accepted picture (Hoover and Ree 1968) the
+fluid is stable up to packing fraction about $0.494$, the close-packed crystal from about $0.545$, and
+the two coexist in between. All of this is \emph{numerical}: that hard spheres crystallize, or have any
+phase transition at all, is open in every dimension $d\ge2$. In $\R^2$ long-range positional order is
+impossible (Mermin 1968 for smooth potentials; Richthammer 2016 for hard discs, see the gallery), and
+what can survive is \emph{orientational} bond order, the hexatic phase. Bernard and Krauth (Phys.\ Rev.\
+Lett.\ 107, 2011) found numerically that hard discs melt in two steps: a first-order liquid--hexatic
+transition and a continuous hexatic--solid transition. Rigorous results are mostly at zero temperature,
+where the problem becomes an optimization problem of the kind studied in this course (Theil's theorem in
+the gallery). The first continuum model with finite-range interactions and a \emph{proved} phase
+transition was the two-species Widom--Rowlinson model (Ruelle, Phys.\ Rev.\ Lett.\ 27, 1971), with hard
+cores only between unlike particles.
+
+%======================================================================
+\section{Random packings}
+\label{SM:sec:random}
+
+\subsection{R\'enyi's parking problem}
+
+Lecture~1 (Proposition~\ref{L1:prop:saturated-bound}) gave the easiest lower bound for packing
+densities: a \emph{saturated} packing, one to which no ball can be added, has density at least
+$2^{-d}$. The most natural random way of producing a saturated packing is to throw balls at random,
+one at a time, and keep each one that does not overlap those already placed, until there is no room
+left. This is \emph{random sequential adsorption} (RSA). In dimension one it is R\'enyi's \emph{parking
+problem}: cars of length $1$ park at uniformly random free positions along a kerb of length $x$ until no
+gap of length $\ge1$ remains.
+
+Let $M(x)$ be the expected number of cars that park. Clearly $M(x)=0$ for $x<1$, and $M(x)=1$ for
+$1\le x<2$. For $x\ge1$, condition on the position $t\in[0,x-1]$ of the first car, which is uniform. It
+leaves two independent kerbs, of lengths $t$ and $x-1-t$:
+\begin{equation}\label{SM:eq:renyi}
+  M(x)=1+\frac1{x-1}\int_0^{x-1}\big(M(t)+M(x-1-t)\big)\,dt=1+\frac2{x-1}\int_0^{x-1}M(t)\,dt .
+\end{equation}
+
+\begin{theorem}[R\'enyi 1958]\label{SM:thm:renyi}
+$M(x)/x\to m$ as $x\to\infty$, where
+\[
+  m=\int_0^\infty\exp\Big(-2\int_0^t\frac{1-e^{-u}}{u}\,du\Big)\,dt=0.7475979202\ldots
+\]
+\end{theorem}
+
+\begin{proof}
+Since the cars are disjoint subintervals of $[0,x]$, $0\le M(x)\le x$, so all Laplace transforms below
+converge for $s>0$. Put $N(y)=M(y+1)$ for $y\ge0$ and multiply \eqref{SM:eq:renyi} by $y=x-1$:
+\[
+  yN(y)=y+2\int_0^yM(t)\,dt .
+\]
+Take Laplace transforms $\hat f(s)=\int_0^\infty e^{-sy}f(y)\,dy$. The transform of $yN(y)$ is
+$-\hat N'(s)$, that of $\int_0^yM$ is $\hat M(s)/s$, and $\hat M(s)=e^{-s}\hat N(s)$ because $M$ vanishes on
+$[0,1)$. So
+\[
+  \hat N'(s)+\frac{2e^{-s}}{s}\hat N(s)=-\frac1{s^2}.
+\]
+Solutions of the homogeneous equation are constant multiples of $\exp\big(2\int_s^\infty e^{-u}u^{-1}du\big)$,
+which tends to a nonzero constant as $s\to\infty$, whereas $\hat N(s)\le\int_0^\infty e^{-sy}(y+1)\,dy\to0$. Hence
+$\hat N$ is the unique decaying solution,
+\[
+  \hat N(s)=\int_s^\infty\frac{1}{t^2}\exp\Big(2\int_s^t\frac{e^{-u}}u\,du\Big)\,dt
+  =\frac1{s^2}\int_s^\infty\exp\Big(-2\int_s^t\frac{1-e^{-u}}u\,du\Big)\,dt,
+\]
+where we wrote $e^{-u}=1-(1-e^{-u})$ and used $\exp(2\int_s^t du/u)=t^2/s^2$. As $s\to0^+$ the last
+integral tends to $m$ by dominated convergence (for $t\ge1$ the integrand is at most
+$\exp(-2\int_1^t\frac{1-e^{-u}}u du)=O(t^{-2})$). Hence $\hat M(s)=e^{-s}\hat N(s)\sim m/s^2$.
+
+Now $U(x)=\int_0^xM$ is nondecreasing and $\int_0^\infty e^{-sx}dU(x)=\hat M(s)\sim m\,s^{-2}$, so Karamata's
+Tauberian theorem (Feller, \emph{An Introduction to Probability Theory}, Vol.~II, \S XIII.5) gives
+$U(x)\sim mx^2/2$. Finally \eqref{SM:eq:renyi} itself says $M(x)=1+2U(x-1)/(x-1)$, so $M(x)\sim mx$.
+\end{proof}
+
+\paragraph{Numerical check.} Quadrature gives $m=0.74759792025$ (R\'enyi, Publ.\ Math.\ Inst.\ Hung.\
+Acad.\ Sci.\ 3, 1958). Twenty simulated kerbs of length $10^5$ gave
+$0.74762\pm0.00012$. Solving \eqref{SM:eq:renyi} on a grid shows that $M(x)-mx$ settles down to
+$m-1\approx-0.2524$ already for $x\approx10$. The density $m\approx0.748$ lies well above the saturation
+bound $\frac12$ and well below~$1$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  % 1D parking: first car splits the kerb
+  \draw[thick] (0,0)--(7,0);
+  \draw (0,-0.12)--(0,0.12) node[below=7pt,font=\small]{$0$};
+  \draw (7,-0.12)--(7,0.12) node[below=7pt,font=\small]{$x$};
+  \fill[flagcol!60] (2.6,0.05) rectangle (3.6,0.35);
+  \draw (2.6,0.05) rectangle (3.6,0.35);
+  \node[font=\scriptsize] at (3.1,0.6) {first car};
+  \draw[<->] (0,-0.45)--node[below,font=\small]{$t$}(2.6,-0.45);
+  \draw[<->] (3.6,-0.45)--node[below,font=\small]{$x-1-t$}(7,-0.45);
+  \foreach \a in {0.3,1.45,4.1,5.2} {\fill[addcol!30] (\a,0.05) rectangle (\a+1,0.35); \draw (\a,0.05) rectangle (\a+1,0.35);}
+  \node[font=\small,align=center] at (3.5,-1.6) {two independent smaller\\ parking problems};
+  % 2D RSA picture
+  \begin{scope}[xshift=8.0cm,yshift=-1.9cm,scale=0.5]
+    \clip (0,0) rectangle (9,9);
+    \foreach \p in {(5.63,8.07),(6.98,2.03),(2.70,7.86),(0.05,7.39),(9.05,7.39),(7.17,4.21),(2.73,2.51),(2.29,4.01),(4.54,4.98),(1.94,1.44),(5.51,0.40),(5.51,9.39),(0.32,4.63),(9.32,4.63),(4.20,8.26),(5.66,4.63),(4.47,2.23),(0.11,1.73),(9.11,1.73),(3.33,0.03),(3.33,9.03),(5.76,6.68),(3.25,5.38),(0.53,3.49),(6.09,1.36),(6.05,2.70),(7.87,5.96),(1.19,7.61),(5.13,3.39),(2.90,6.76),(7.86,3.10),(6.89,8.18),(3.77,7.34),(0.13,5.66),(9.13,5.66),(1.61,3.12),(6.68,5.23),(7.56,1.01),(0.27,0.18),(0.27,9.18),(9.27,0.18),(9.27,9.18),(1.69,5.10),(1.49,6.10),(7.76,7.17),(1.45,0.24),(1.45,9.24),(4.11,5.92),(3.40,3.78),(8.00,8.25),(-0.45,3.90),(8.55,3.90),(6.75,6.37),(6.25,3.79),(3.53,1.38),(4.72,6.71),(4.60,1.03),(5.32,5.65),(6.81,0.18),(6.81,9.19),(8.28,4.90),(8.03,2.01),(0.82,1.02),(0.95,2.32),(-0.14,2.70),(8.86,2.70),(2.48,0.57),(1.28,4.15),(8.21,0.25),(8.21,9.25),(0.60,6.55)} {\filldraw[fill=addcol!20,draw=addcol] \p circle (0.5);}
+    \draw[thick] (0,0) rectangle (9,9);
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: the recursion behind R\'enyi's integral equation \eqref{SM:eq:renyi}. Right: a saturated
+random sequential adsorption of $57$ discs of diameter $1$ in a periodic $9\times9$ square (computed for
+this figure). Every point of the square is within distance $1$ of a centre, yet no two discs touch.}
+\label{SM:fig:parking}
+\end{figure}
+
+In the plane, RSA of discs saturates at packing fraction about $0.547$ (Feder 1980). This is a
+numerical value; Zhang and Torquato (Phys.\ Rev.\ E 88, 2013) give $0.5470735(28)$, and in $\R^3$
+$0.3841307(21)$. (A quick simulation for this interlude, ten saturated periodic configurations of about
+$1740$ discs each, gave $0.5468\pm0.0009$.) No closed form is known in any dimension $d\ge2$.
+
+Notice what RSA does \emph{not} produce. In a saturated RSA configuration, with probability one no two
+discs touch: the contact graph of Lectures~10--11 is empty. RSA packings are saturated but not
+jammed; a small shake would let every disc move. To get mechanically stable random packings one has to
+compress.
+
+\subsection{Random close packing and the maximally random jammed state}
+
+Pour ball bearings into a container and shake it: the packing fraction settles near $0.64$. This
+\emph{random close packing} (RCP) value goes back to the experiments of Bernal and of Scott (both in
+\emph{Nature}, 1960); Scott and Kilgour (1969) measured about $0.637$. It is well below the crystal value
+$0.7405$, and remarkably reproducible.
+
+Torquato, Truskett and Debenedetti (\emph{Is random close packing of spheres well defined?}, Phys.\
+Rev.\ Lett.\ 84, 2000) argued that it is not: by compressing faster or slower one trades a little
+disorder for a little density, with no canonical place to stop. They proposed instead the
+\emph{maximally random jammed} (MRJ) state, the jammed packing minimizing a chosen order parameter,
+again at about $0.64$ (numerical). This needs a definition of ``jammed''; Torquato and Stillinger
+(J.~Phys.\ Chem.~B 105, 2001) give a hierarchy. For a packing in a container with rigid walls:
+\begin{itemize}[nosep]
+\item \emph{locally jammed}: no single ball can be moved while all the others are held fixed;
+\item \emph{collectively jammed}: locally jammed, and no subset of balls can be moved
+  collectively, the walls being fixed;
+\item \emph{strictly jammed}: collectively jammed, also under small volume-nonincreasing
+  deformations of the walls (for periodic packings: of the lattice).
+\end{itemize}
+For instance, with suitable walls, the simple cubic packing is collectively but not strictly jammed (shearing the box lets it
+slide), FCC is strictly jammed, and the honeycomb disc packing is locally but not collectively jammed.
+(In a torus there are no walls to stop a row, and the square and simple cubic packings are not even
+collectively jammed; see Figure~\ref{SM:fig:maxwell}.)
+To first order, a ball with the others held fixed is stuck exactly when the directions to its contacts
+do not all lie in a closed hemisphere. In particular a locally jammed ball has at least $d+1$ contacts.
+
+\subsection{Jamming, force balance and Maxwell counting}
+
+Collective jamming is the version of Lectures~10--11 that sees all balls at once. Take $N$ balls with
+centres $x_i$ and radii $r_i$ in a flat torus $\R^d/\Lambda$ (periodic boundary conditions), with contact
+set $E=\{\{i,j\}:\abs{x_i-x_j}=r_i+r_j\}$, and let $u_{ij}=(x_j-x_i)/\abs{x_j-x_i}$. A velocity
+$v=(v_1,\dots,v_N)\in(\R^d)^N$ changes the contact distances at the rates
+\[
+  (Av)_{ij}=\ip{u_{ij}}{v_j-v_i},\qquad\{i,j\}\in E.
+\]
+The linear map $A\colon(\R^d)^N\to\R^E$ is the \emph{rigidity matrix} of the contact graph. To first order a
+motion keeps the balls disjoint if and only if $Av\ge0$ componentwise. Translations $v_i=c$ always
+satisfy $Av=0$; call them \emph{trivial}.
+
+\begin{definition}\label{SM:def:jam}
+The packing is \emph{first-order jammed} if every $v$ with $Av\ge0$ is trivial.
+\end{definition}
+
+For sphere packings, first-order jamming is equivalent to collective jamming (with the lattice fixed):
+a sphere packing is rigid if and only if it is infinitesimally rigid. This is a theorem of Connelly (1988)
+for packings in a container, extended to periodic packings by Donev, Torquato, Stillinger and Connelly
+(J.~Comput.\ Phys.\ 197, 2004). It is special to spheres; it fails for ellipsoids.
+
+\begin{proposition}\label{SM:prop:jam}
+A packing is first-order jammed if and only if
+\begin{enumerate}[nosep]
+\item $\ker A$ consists of the trivial motions (the contact graph is infinitesimally rigid as a bar
+  framework), and
+\item there are \emph{strictly positive} weights $w_{ij}>0$ on all contacts with
+  $\sum_jw_{ij}u_{ij}=0$ at every ball $i$ (a positive self-stress: the forces balance at every ball).
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+If (1) and (2) hold and $Av\ge0$, then
+\[
+  0=\sum_i\Big\langle v_i,\sum_jw_{ij}u_{ij}\Big\rangle=-\sum_{\{i,j\}\in E}w_{ij}\ip{u_{ij}}{v_j-v_i}=-\ip{w}{Av},
+\]
+a sum of non-positive terms, so $Av=0$, and $v$ is trivial by (1). Conversely, (1) is necessary because
+$Av=0$ implies $Av\ge0$. For (2), Stiemke's alternative (a relative of Gordan's alternative used in the
+proof of Theorem~\ref{L11:thm:forcebalance}) says that either there is $v$ with $Av\ge0$ and $Av\ne0$, or
+there is $w>0$ with $A^Tw=0$. In a first-order jammed packing the first option is excluded, and $A^Tw=0$
+is exactly the balance condition.
+\end{proof}
+
+So the jammed packings are the force-balanced contact graphs of Lecture~10 with two upgrades: the
+weights are positive on \emph{every} contact, and the graph is rigid. (Compare
+Corollary~\ref{L10:cor:topchange}, where critical configurations of the min-distance function only
+needed weights $\ge0$, not all zero.) The rigidity condition already forces a lot of contacts.
+
+\begin{corollary}[Maxwell counting]\label{SM:cor:maxwell}
+A first-order jammed packing of $N$ balls in a $d$-dimensional torus has at least $dN-d+1$ contacts, so the
+mean number of contacts per ball satisfies
+\[
+  z=\frac{2\abs E}{N}\ \ge\ 2d-\frac{2(d-1)}{N}.
+\]
+\end{corollary}
+
+\begin{proof}
+By (1), $\ker A$ has dimension $d$, so $\operatorname{rank}A=dN-d$. By (2), $A^T$ has a nonzero kernel, so
+$\abs E\ge\operatorname{rank}A+1=dN-d+1$.
+\end{proof}
+
+This is Maxwell's 1864 count for frames. Conversely, for generic radii each contact is one equation
+$\abs{x_i-x_j}=r_i+r_j$ on $dN-d$ free coordinates plus one free parameter, the common scale of the radii
+at which the packing jams, and generic equations should not be overdetermined.
+Together the counts give $z=2d$: jammed frictionless packings should be \emph{isostatic}. The upper bound
+is a theorem in the plane (Connelly--Gortler--Solomonides--Yampolskaya, gallery) and open for $d\ge3$, but
+it holds very precisely in simulations. O'Hern, Silbert, Liu and Nagel (Phys.\ Rev.~E 68, 2003), compressing
+soft repulsive spheres to the threshold ``point~J'' where they first jam, found $z=3.98$ in $2$d and $5.98$ in
+$3$d (both $\pm0.02$, rattlers removed) and a $3$d monodisperse threshold $\phi^*=0.639\pm0.001$,
+essentially the RCP value.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.55]
+  \foreach \i in {0,...,5} \foreach \j in {0,1,3} {\draw (\i,\j) circle (0.5);}
+  \foreach \i in {0,...,5} {\filldraw[fill=addcol!20,draw=addcol] (\i+0.35,2) circle (0.5);}
+  \draw[-{Stealth},thick,flagcol] (5.6,2)--(6.6,2);
+  \draw[dashed,gray] (-0.6,-0.6) rectangle (5.6,3.6);
+  \node[right,font=\small,align=left] at (7.0,1.5) {square lattice in a torus: $z=4=2d$,\\
+    but the shaded row slides; to first order\\ $Av=0$ for this motion, so it is not jammed};
+\end{tikzpicture}
+\caption{Maxwell's count is necessary, not sufficient. In the square packing every disc has four
+contacts, yet a whole row can slide along itself: its vertical contacts open only to second order.}
+\label{SM:fig:maxwell}
+\end{figure}
+
+
+%======================================================================
+\section{Geometric frustration}
+\label{SM:sec:frustration}
+
+Why does a dense liquid not simply crystallize? In 1952 F.~C.~Frank (\emph{Supercooling of liquids},
+Proc.\ R.\ Soc.\ Lond.\ A 215) pointed out that the question has a \emph{local} answer. Put twelve atoms
+around a thirteenth. There are three natural candidates: the cuboctahedron (the FCC neighbourhood), its
+twisted relative from HCP, and the icosahedron. Lecture~11 met the first and the last, which the jitterbug
+connects. For
+Lennard-Jones atoms Frank computed that the icosahedral cluster has the lowest energy of the three: it
+has $30$ near-neighbour pairs among the outer twelve, against $24$. But icosahedral symmetry is
+incompatible with a lattice, so a liquid of locally icosahedral clusters must rearrange substantially
+before it can crystallize, and it can be supercooled. This is the first instance of \emph{geometric
+frustration}: the locally preferred structure cannot be extended to fill space.
+
+For hard spheres the same tension appears as a statement about densities. The densest \emph{local}
+arrangement around one ball beats the densest global one. Fejes T\'oth conjectured, and Hales and
+McLaughlin proved (J.~Amer.\ Math.\ Soc.\ 23, 2010), that in any packing of unit balls in $\R^3$ every
+Voronoi cell (Lecture~1, Definition~\ref{L1:def:voronoi}) has volume at least that of the regular
+dodecahedron of inradius $1$. That cell would give density
+\[
+  \frac{\vol\Ball^3}{\vol(\text{dodecahedron of inradius }1)}\approx0.7547\ >\ \frac{\pi}{\sqrt{18}}\approx0.7405 .
+\]
+The dodecahedral cell is the Voronoi cell of a ball surrounded by an icosahedron of twelve touching balls,
+and regular dodecahedra do not tile space. The local optimum is not the global one.
+
+Frank's icosahedron is often described as twenty regular tetrahedra, the densest arrangement of four
+balls, glued around the centre. That description is slightly wrong, and the error is the heart of the
+matter.
+
+\input{chapters/tetra}
+
+%======================================================================
+\section{Ideal order in curved space}
+\label{SM:sec:curved}
+
+The previous section measured the frustration: five regular tetrahedra around an edge leave a gap of
+about $7.36^\circ$. As noted there, the gap closes in positive curvature. The dihedral angle of a regular
+spherical tetrahedron grows with its size from the flat value $\arccos\frac13\approx70.53^\circ$, and for
+edge $36^\circ$ on the unit $\Sph^3$ it is exactly $72^\circ=360^\circ/5$. Six hundred such tetrahedra are the cells of the
+regular polytope $\{3,3,5\}$ (Coxeter, \emph{Regular Polytopes}), whose $120$ vertices are at angular
+distance at least $36^\circ$, each with $12$ nearest neighbours forming a regular icosahedron. Balls of
+angular radius $18^\circ$ at these points realize Frank's local structure \emph{everywhere}. By a theorem of
+Cohn and Kumar (gallery) these $120$ points even minimize every completely monotonic pair potential on
+$\Sph^3$: the ideal order is a zero-temperature ground state, though in curved space.
+
+This is the starting point of the curved-space approach to liquids and glasses of Sadoc, Mosseri and
+others, and of Nelson (\emph{Order, frustration, and defects in liquids and glasses}, Phys.\ Rev.~B 28,
+1983): a dense flat liquid is the ideal $\{3,3,5\}$ structure ``flattened'', with the curvature
+concentrated on line defects (disclinations) along which six rather than five tetrahedra share an edge.
+See Sadoc and Mosseri, \emph{Geometrical Frustration} (Cambridge, 1999).
+
+%======================================================================
+\section{Edwards entropy}
+\label{SM:sec:edwards}
+
+\subsection{The ansatz and its tests}
+
+A pile of sand is not at thermal equilibrium; $k_BT$ is negligible next to the energy needed to lift a
+grain. Yet tapped or sheared granular packings settle into reproducible states, and Edwards and
+Oakeshott (\emph{Theory of powders}, Physica~A 157, 1989) proposed a statistical mechanics for them in
+which the \emph{volume} plays the role of energy. This is Definition~\ref{L11:def:edwards}: all jammed
+(mechanically stable) states of the same volume are equally probable. Writing $\Omega(V)$ for the number
+(or a suitable measure) of jammed states of volume $V$, the dictionary is
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{ll}
+\toprule
+thermal statistical mechanics & Edwards' granular ensemble\\
+\midrule
+energy $E$ & volume $V$\\
+all states of energy $E$ & jammed states of volume $V$\\
+entropy $S(E)=\ln\Omega(E)$ & Edwards entropy $S(V)=\ln\Omega(V)$\\
+temperature $T=\partial E/\partial S$ & compactivity $X=\partial V/\partial S$\\
+Boltzmann weight $e^{-E/T}$ & weight $e^{-V/X}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The compactivity measures how much more compact the packing could be. As $X\to0^+$ the weight
+concentrates on the densest jammed states, and as $X\to\infty$ on the most numerous ones. Compare
+Section~\ref{SM:sec:hard}: for the thermal hard-sphere gas $\partial S/\partial V=\beta P$, while for
+Edwards $\partial S/\partial V=1/X$.
+
+In the continuum, jammed packings are isolated points of configuration space, so ``equal
+probability'' needs a measure, and a real protocol samples a jammed state with probability equal to the
+volume of its \emph{basin of attraction}, as in the $\rho$-evolution of Lecture~11. Edwards' ansatz then
+says that basins of equal-volume states are equally large; as noted in Lecture~11, small disc packings
+violate this. The most careful test so far (Martiniani, Schrenk, Ramola, Chakraborty and Frenkel,
+\emph{Nature Physics} 13, 2017) computed basin volumes by thermodynamic integration for $N=64$
+polydisperse discs in $2$d (hard cores with soft repulsive shells), with $N=32$ to $128$ for finite-size
+scaling. Above jamming the basin volumes are broadly distributed and the ansatz fails; the distribution
+narrows towards the unjamming point, extrapolated to $\phi^*=0.841(3)$, where all packings become
+equally probable (numerically). Baule, Morone, Herrmann and Makse (Rev.\ Mod.\ Phys.\ 90, 2018) review
+the theory and its tests.
+
+Where Edwards' ensemble can be written down \emph{exactly}, its predictions can be checked against the
+ansatz-free dynamics. The channel of Lecture~11 is the simplest such model, and we now solve it.
+
+\subsection{The channel model solved}
+\label{SM:sec:channel}
+
+Recall the setting of \S\ref{L11:sec:channel}. Discs of radius $1$ lie in a channel of width $w=2+h$
+with $0<h<\sqrt3$, so that each disc touches at most its two neighbours. Two consecutive discs in
+contact at opposite walls are horizontally $L=\sqrt{4-h^2}\in(1,2)$ apart, and two at the same wall are
+$2$ apart. A jammed configuration of $n=\ell+1$ discs is recorded by its contact word
+$\sigma\in\{0,1\}^\ell$ with no two adjacent $1$'s ($1$ for same wall, $0$ for opposite walls). A word
+with $k$ ones has length
+\[
+  t(\sigma)=2k+(\ell-k)L+2=\ell L+(2-L)k+2,
+\]
+and the number of such words is
+\[
+  \Omega(\ell,k)=\binom{\ell-k+1}{k},
+\]
+or $\binom{\ell-k-1}{k}$ if the end discs are restricted, as flagged in Lecture~11.
+We take the volume to be the channel length, $V=t$ (multiply by $w$ for the area). Since $t$ is an affine
+function of $k$, fixing the volume is the same as fixing the number $k$ of defects. Write
+$x=k/\ell\in[0,\frac12]$ for the defect density, and use $\eta$ for the packing fraction (the letter
+$\varphi$ is reserved for the golden ratio).
+
+\begin{proposition}[Edwards entropy of the channel]\label{SM:prop:entropy}
+As $\ell\to\infty$ with $k/\ell\to x\in[0,\frac12]$,
+\[
+  \frac1\ell\ln\Omega(\ell,k)\ \longrightarrow\ s(x)=(1-x)\ln(1-x)-x\ln x-(1-2x)\ln(1-2x),
+\]
+for both counts. The function $s$ is strictly concave on $[0,\frac12]$, vanishes at both ends, and has
+its maximum $s(x^*)=\ln\varphi$ at $x^*=\frac{5-\sqrt5}{10}$. The volume per contact is
+$v(x)=L+(2-L)x$ and the packing fraction is
+\[
+  \eta(x)=\frac{\pi}{w\,v(x)}=\frac{\pi}{w\,(L+(2-L)x)} .
+\]
+\end{proposition}
+
+\begin{proof}
+Stirling's formula in the form $\ln\binom ab=a\,H\!\big(\tfrac ba\big)+O(\ln a)$, with
+$H(p)=-p\ln p-(1-p)\ln(1-p)$, applied with $a=\ell(1-x)+O(1)$ and $b=\ell x$, gives the limit
+$(1-x)H\big(\frac x{1-x}\big)$. Expanding, with $1-\frac x{1-x}=\frac{1-2x}{1-x}$, this is $s(x)$. The
+shift $O(1)$ in $a$ does not change the limit, so the two counts agree to leading order. Next,
+\[
+  s'(x)=\ln\frac{(1-2x)^2}{x(1-x)},\qquad s''(x)=\frac1{1-x}-\frac1x-\frac4{1-2x}<0,
+\]
+since $\frac1{1-x}\le2<\frac4{1-2x}$ on $[0,\frac12)$. The critical point solves $(1-2x)^2=x(1-x)$, that is
+$5x^2-5x+1=0$, as in Lecture~11. At $x^*$ one has $1-x^*=\frac{5+\sqrt5}{10}=\frac{\varphi}{\sqrt5}$,
+$x^*=\frac{1}{\sqrt5\,\varphi}$ and $1-2x^*=\frac{1}{\sqrt5}$, so that
+$s(x^*)=\frac\varphi{\sqrt5}\ln\frac\varphi{\sqrt5}-\frac1{\sqrt5\varphi}\ln\frac1{\sqrt5\varphi}-\frac1{\sqrt5}\ln\frac1{\sqrt5}$.
+Since $\frac\varphi{\sqrt5}-\frac1{\sqrt5\varphi}-\frac1{\sqrt5}=0$, the terms in $\ln\sqrt5$ cancel and what is
+left is $\big(\frac\varphi{\sqrt5}+\frac1{\sqrt5\varphi}\big)\ln\varphi=\ln\varphi$, using
+$\varphi+\varphi^{-1}=\sqrt5$. The formula for $v$ is $t/\ell$ up to $O(1/\ell)$, and $\eta$ is the area
+$\pi n$ of the discs divided by the area $wt$ of the channel, in the limit.
+\end{proof}
+
+The densest jammed state is the zigzag, $x=0$, with $\eta_{\max}=\pi/(wL)$; the loosest is
+$x=\frac12$, with $\eta_{\min}=2\pi/(w(L+2))$. The zigzag word $00\cdots0$ is unique, the loosest word
+$1010\cdots1$ is unique for odd $\ell$ (for even $\ell$ there are $\frac\ell2+1$ words with $\frac\ell2$
+ones), and both have Edwards entropy zero. For $h=1.2$, the channel of Figure~\ref{L11:fig:channel}, one has $L=1.6$, $w=3.2$ and
+\[
+  \eta_{\max}\approx0.6136,\qquad \eta(x^*)\approx0.5739,\qquad \eta_{\min}\approx0.5454 .
+\]
+
+\paragraph{Compactivity and the equation of state.} Changing $k$ by one changes $V$ by $2-L$ and $\ln\Omega$
+by $s'(x)+o(1)$, so
+\begin{equation}\label{SM:eq:compactivity}
+  \frac1X=\frac{\partial S}{\partial V}=\frac{s'(x)}{2-L}=\frac1{2-L}\ln\frac{(1-2x)^2}{x(1-x)} .
+\end{equation}
+
+\begin{proposition}[Equation of state]\label{SM:prop:eos}
+For $X\in(-\infty,0)\cup(0,\infty]$, the defect density at compactivity $X$ is
+\[
+  x(X)=\frac12\Big(1-\frac1{\sqrt{1+4e^{-(2-L)/X}}}\Big),
+\]
+and $\eta(X)=\pi/\big(w(L+(2-L)x(X))\big)$. In particular:
+\begin{itemize}[nosep]
+\item as $X\to0^+$, $x\sim e^{-(2-L)/X}\to0$ and $\eta\to\eta_{\max}$ (densest);
+\item $X=\pm\infty$ corresponds to $x=x^*$, the most numerous states;
+\item the states looser than typical, $x^*<x<\frac12$, have \emph{negative} compactivity, and as $X\to0^-$,
+  $x\to\frac12$ and $\eta\to\eta_{\min}$ (loosest).
+\end{itemize}
+\end{proposition}
+
+\begin{proof}
+Put $y=e^{(2-L)/X}$. By \eqref{SM:eq:compactivity}, $(1-2x)^2=y\,x(1-x)$, that is
+$(4+y)x^2-(4+y)x+1=0$, whose root in $[0,\frac12]$ is $x=\frac12\big(1-\sqrt{y/(y+4)}\big)$, which is the
+formula. The limits follow by inspection: $y\to\infty$, $y=1$, and $y\to0$ respectively. The sign of
+$X$ is the sign of $s'(x)$, which changes at $x^*$.
+\end{proof}
+
+The small-$X$ behaviour $x\approx e^{-(2-L)/X}$ is an Arrhenius law: a defect costs ``volume'' $2-L$,
+just as a thermal excitation costs energy. The negative branch is the analogue of negative temperatures
+for spin systems, whose energy is bounded above. Here the jammed volume is bounded above, and past the
+entropy maximum adding volume \emph{decreases} the number of states. For $h=1.2$, for example,
+$X=0.25,1,-1,-0.25$ give $x\approx0.128,0.239,0.311,0.390$ and $\eta\approx0.595,0.579,0.569,0.559$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.0]
+  \draw[->] (0,0)--(7.6,0) node[below right,font=\small]{$\eta$};
+  \draw[->] (0,0)--(0,4.5) node[left,font=\small]{$s$};
+  \foreach \e/\x in {0.55/0.95,0.56/1.9,0.57/2.85,0.58/3.8,0.59/4.75,0.60/5.7,0.61/6.65}
+    {\draw (\x,0)--(\x,-0.08) node[below,font=\scriptsize]{$\e$};}
+  \foreach \v in {0.1,0.2,0.3,0.4} {\draw (0,8*\v)--(-0.08,8*\v) node[left,font=\scriptsize]{$\v$};}
+  \draw[dashed,gray] (0,3.8497)--(3.224,3.8497) node[pos=0,left,font=\scriptsize,black]{$\ln\varphi$};
+  \draw[dashed,gray] (3.224,0)--(3.224,3.8497);
+  \draw[very thick,addcol] plot[smooth] coordinates {(6.991,0.000) (6.955,0.140) (6.918,0.252) (6.882,0.353) (6.846,0.447) (6.701,0.781) (6.557,1.071) (6.414,1.330) (6.272,1.567) (6.130,1.785) (5.989,1.987) (5.848,2.174) (5.709,2.349) (5.570,2.512) (5.431,2.663) (5.293,2.804) (5.156,2.935) (5.020,3.057) (4.884,3.169) (4.749,3.272) (4.615,3.367) (4.481,3.452) (4.348,3.530) (4.215,3.599) (4.084,3.660) (3.952,3.712) (3.822,3.756) (3.692,3.792) (3.562,3.819) (3.434,3.838) (3.305,3.848) (3.178,3.849) (3.051,3.841) (2.924,3.824) (2.799,3.798) (2.673,3.761) (2.549,3.715) (2.425,3.657) (2.301,3.589) (2.178,3.509) (2.056,3.416) (1.934,3.310) (1.813,3.191) (1.692,3.055) (1.572,2.903) (1.452,2.733) (1.333,2.542) (1.215,2.328) (1.097,2.086) (0.979,1.812) (0.862,1.497) (0.746,1.128) (0.688,0.915) (0.659,0.799) (0.630,0.675) (0.601,0.541) (0.572,0.393) (0.543,0.224) (0.514,0.000)};
+  \fill (6.991,0) circle (0.06) node[above right,font=\scriptsize,align=left]{zigzag\\ $X\to0^+$};
+  \fill (0.514,0) circle (0.06) node[right,xshift=3pt,yshift=6pt,font=\scriptsize,align=left]{$0101\cdots$, $X\to0^-$};
+  \fill (3.224,3.8497) circle (0.06) node[above,font=\scriptsize]{$x^*=\frac{5-\sqrt5}{10}$, $X=\pm\infty$};
+  \node[font=\small,flagcol] at (5.6,3.6) {$X>0$};
+  \node[font=\small,flagcol] at (1.0,3.6) {$X<0$};
+\end{tikzpicture}
+\caption{Edwards entropy per contact of the channel model as a function of the packing fraction, for
+$h=1.2$ ($L=1.6$, $w=3.2$); computed from Proposition~\ref{SM:prop:entropy}. Since $V$ decreases as $\eta$
+increases, the compactivity $X=\partial V/\partial S$ is positive on the dense side of the maximum and
+negative on the loose side.}
+\label{SM:fig:entropy}
+\end{figure}
+
+\paragraph{The canonical ensemble is a transfer matrix.} Instead of fixing $V$, weight every jammed
+state by $e^{-V/X}$:
+\[
+  Z_\ell(X)=\sum_\sigma e^{-t(\sigma)/X}=e^{-2/X}\sum_\sigma a^{\#0(\sigma)}\,b^{\#1(\sigma)},\qquad a=e^{-L/X},\ b=e^{-2/X},
+\]
+the sum running over words of length $\ell$ with no $11$. Keep track of the last letter. If
+$(c_\ell(0),c_\ell(1))$ are the weighted sums over words ending in $0$ and in $1$, then
+$(c_1(0),c_1(1))=(a,b)$ and
+\[
+  \big(c_{\ell+1}(0),c_{\ell+1}(1)\big)=\big(c_\ell(0),c_\ell(1)\big)\,T,\qquad
+  T=\begin{pmatrix}a&b\\a&0\end{pmatrix},
+\]
+since after a $0$ we may write either letter and after a $1$ only a $0$. So we have
+$Z_\ell(X)=e^{-2/X}(a,b)\,T^{\ell-1}(1,1)^T$. Since $T\ge0$ and $T^2>0$, Perron--Frobenius gives
+\[
+  \frac1\ell\ln Z_\ell(X)\longrightarrow\ln\lambda(X),\qquad \lambda(X)=\frac{a+\sqrt{a^2+4ab}}2 ,
+\]
+the larger root of $\lambda^2-a\lambda-ab=0$. This is analytic in $X\ne0$: as in van Hove's theorem, the
+one-dimensional channel has no Edwards phase transition.
+
+\begin{proposition}[Equivalence of ensembles]\label{SM:prop:canon}
+The mean defect density in the canonical ensemble at compactivity $X$,
+$\lim_\ell\langle k\rangle/\ell=b\,\partial_b\ln\lambda$ (with $a$ held fixed), equals the microcanonical
+$x(X)$ of Proposition~\ref{SM:prop:eos}. Moreover
+\[
+  \ln\lambda(X)=\max_{0\le x\le1/2}\Big(s(x)-\frac{v(x)}X\Big),
+\]
+so $-X\ln\lambda$ is the Legendre transform of the entropy (an ``Edwards free energy'' per contact).
+\end{proposition}
+
+\begin{proof}
+Write $\lambda=a\,g(u)$ with $u=b/a=e^{-(2-L)/X}$ and $g(u)=\frac12(1+r)$, $r=\sqrt{1+4u}$. Then
+\[
+  b\,\partial_b\ln\lambda=u\,\frac{g'(u)}{g(u)}=\frac{u\cdot 2/r}{1+r}=\frac{r^2-1}{2r(1+r)}=\frac12\Big(1-\frac1r\Big),
+\]
+and $1/r=\big(1+4e^{-(2-L)/X}\big)^{-1/2}$, as in Proposition~\ref{SM:prop:eos}. For the second statement,
+group the words by $k$: $Z_\ell=\sum_k\Omega(\ell,k)e^{-(\ell L+(2-L)k+2)/X}$ has at most $\ell+1$ terms, so
+$\frac1\ell\ln Z_\ell$ converges to the maximum over $x$ of $s(x)-v(x)/X$ (Laplace's method). Since $s$ is strictly concave, the
+maximizer is unique and is characterized by $s'(x)=(2-L)/X$, which is again \eqref{SM:eq:compactivity}.
+\end{proof}
+
+At $X=\infty$ we have $a=b=1$, and $T$ becomes the Fibonacci matrix $\left(\begin{smallmatrix}1&1\\1&0\end{smallmatrix}\right)$ with
+$\lambda=\varphi$. The identity $\ln\lambda(\infty)=\max s=\ln\varphi$ is Lecture~11's observation that ``the
+maximal term carries the whole exponential growth''. Exercise~\ref{L11:ex:typical} asked for the
+typical defect fraction $x^*$; we now see it as the $X=\infty$ point of a whole equation of state. Section~\ref{SM:sec:info}
+identifies the measure behind it.
+
+\subsection{Comparison with Bowles and Ashwin}
+
+The same model was analysed independently, and in the same spirit, by Bowles and Ashwin (\emph{Edwards
+entropy and compactivity in a model of granular matter}, Phys.\ Rev.~E 83, 2011). They use discs of
+diameter $\sigma$ between walls a distance $H$ apart, with $H/\sigma<1+\sqrt{3/4}$, so that each disc
+touches only its neighbours and one wall. With $\sigma=2$ and $H=w$ this is exactly our condition
+$h<\sqrt3$. Their bond volumes $v_0=H\sqrt{(2-H)H}$ (cross-channel, $\sigma=1$) and $v_1=H$
+(same wall) are our $L$ and $2$, rescaled by $\frac12$ and multiplied by the width. They count
+$\Omega_J=\binom{N-M}{M}$ jammed states with $M$ defects among $N$ bonds, which differs from Lecture~11's
+count only at the ends, and their entropy per particle and compactivity are exactly our $s(x)$ and
+\eqref{SM:eq:compactivity}, in their units. They note that $X\to\infty$ at
+$\theta=\frac12-\frac{\sqrt5}{10}$ and they restrict attention to $X>0$, remarking that denser-defect
+packings would need negative compactivities. They also show that all the jammed packings are isostatic,
+and that two subsystems exchanging defects equilibrate at equal compactivity. Ashwin and Bowles had
+earlier (\emph{Complete jamming landscape of confined hard discs}, Phys.\ Rev.\ Lett.\ 102, 2009) treated the wider channel $1+\sqrt{3/4}<H/\sigma<2$ with a transfer
+matrix on $32$ local tiles.
+
+The open-ends caveat of Lecture~11 is precisely the boundary term on which the two counts differ; it
+affects none of the limits above.
+
+%======================================================================
+\section{Information theory}
+\label{SM:sec:info}
+
+\subsection{Entropy and maximum entropy}
+
+Lecture~7 counted coin flips and Lecture~11 maximized a multinomial coefficient. In both, the number of
+sequences of length $N$ with letter frequencies $p$ is $e^{NH(p)+O(\ln N)}$, $H(p)=-\sum_ip_i\ln p_i$.
+Shannon (1948) took $H$ as the measure of \emph{information}: such a source can be encoded with
+$H(p)/\ln2$ bits per letter and no fewer. Jaynes (\emph{Information theory and statistical mechanics},
+Phys.\ Rev.~106, 1957) turned the Lagrange multiplier computation of \S\ref{L11:sec:boltzmann} into a
+principle: \emph{the least biased distribution compatible with what one knows has maximal entropy.}
+
+\begin{proposition}[Maximum entropy gives Boltzmann]\label{SM:prop:jaynes}
+Let $E_1,\dots,E_k$ be energies and $q_i=e^{-\beta E_i}/Z$ a Boltzmann distribution with mean energy
+$\bar E=\sum q_iE_i$. Every probability vector $p$ with $\sum p_iE_i=\bar E$ satisfies $H(p)\le H(q)$, with
+equality only for $p=q$.
+\end{proposition}
+
+\begin{proof}
+The \emph{relative entropy} $D(p\Vert q)=\sum p_i\ln(p_i/q_i)$ is non-negative and vanishes only for $p=q$,
+by Jensen's inequality for $\ln$. Since $-\ln q_i=\beta E_i+\ln Z$,
+\[
+  0\le D(p\Vert q)=-H(p)+\beta\sum_ip_iE_i+\ln Z=-H(p)+\beta\bar E+\ln Z=-H(p)+H(q).
+\]
+\end{proof}
+
+Edwards' ansatz is the same principle with volume for energy: the flat measure on jammed states of
+volume $V$ is the maximum entropy measure given $V$, and the canonical weight $e^{-V/X}$ is the maximum
+entropy measure given the mean volume.
+
+\subsection{The golden-mean channel}
+
+Shannon's 1948 paper also treated \emph{constrained} channels, where not every sequence of symbols may be
+sent. Its first example is the telegraph, whose symbols have different durations and may not follow each
+other arbitrarily. The capacity of such a channel is the exponential growth rate of the number of
+admissible messages. The simplest constraint is ``no two consecutive $1$'s'', the $(1,\infty)$
+run-length-limited constraint of magnetic and optical recording. In symbolic dynamics the admissible
+bi-infinite sequences form the \emph{golden-mean shift}. These are exactly the contact words of the
+channel model.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.0,>={Stealth}]
+  \node[circle,draw,thick,minimum size=0.8cm] (A) at (0,0) {$0$};
+  \node[circle,draw,thick,minimum size=0.8cm] (B) at (2.6,0) {$1$};
+  \draw[->,thick] (A) to[bend left=30] node[above,font=\small]{$1$} (B);
+  \draw[->,thick] (B) to[bend left=30] node[below,font=\small]{$0$} (A);
+  \draw[->,thick] (A) to[out=150,in=210,looseness=6] node[left,font=\small]{$0$} (A);
+  \node[font=\small] at (6.2,0.3) {$T=\begin{pmatrix}1&1\\1&0\end{pmatrix}$,\quad $\lambda=\varphi$};
+  \node[font=\small] at (6.2,-0.5) {Parry: $P(0\to1)=\varphi^{-2}$, $P(0\to0)=\varphi^{-1}$};
+\end{tikzpicture}
+\caption{The golden-mean shift. Admissible words are paths in this graph, where the state is the last
+letter written. Its adjacency matrix is the Fibonacci matrix. With the weights $a=e^{-L/X}$, $b=e^{-2/X}$ on
+the edges labelled $0$ and $1$, it becomes the Edwards transfer matrix of the channel.}
+\label{SM:fig:golden}
+\end{figure}
+
+\begin{theorem}[Shannon 1948; Parry 1964]\label{SM:thm:golden}
+\begin{enumerate}[nosep]
+\item The number of binary words of length $n$ with no two consecutive $1$'s is $F_{n+2}$, and the
+  capacity of the constraint is
+  \[
+    C=\lim_{n\to\infty}\frac1n\log_2F_{n+2}=\log_2\varphi\approx0.6942\ \text{bits per symbol}.
+  \]
+\item Among stationary Markov chains supported on admissible sequences, the entropy rate is maximized
+  uniquely by the chain with $P(0\to1)=\varphi^{-2}$, $P(0\to0)=\varphi^{-1}$, $P(1\to0)=1$ (the
+  \emph{Parry measure}). Its entropy rate is $\ln\varphi$ nats $=C$, and its frequency of $1$'s is
+  $\frac{5-\sqrt5}{10}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) The count is Lecture~11's Fibonacci argument. Equivalently it is $(1,1)T^{n-1}(1,1)^T$ with $T$ the
+Fibonacci matrix, whose eigenvalues are $\varphi$ and $-\varphi^{-1}$, so the count is $c\varphi^n+O(\varphi^{-n})$.
+
+(2) Such a chain is determined by $p=P(0\to1)$, since after a $1$ a $0$ is forced. Its stationary law
+is $\pi_0=\frac1{1+p}$, $\pi_1=\frac p{1+p}$, and its entropy rate is $f(p)=\pi_0H(p)=H(p)/(1+p)$. Setting
+$f'(p)=0$ gives $(1+p)\ln\frac{1-p}{p}=H(p)$, which simplifies to $2\ln(1-p)=\ln p$, that is
+$(1-p)^2=p$, so $p=\frac{3-\sqrt5}2=\varphi^{-2}$ and $1-p=\varphi^{-1}$. Then
+$H(p)=2p\ln\varphi+(1-p)\ln\varphi=(1+p)\ln\varphi$, so $f(p)=\ln\varphi$, and
+$\pi_1=\frac{\varphi^{-2}}{1+\varphi^{-2}}=\frac1{\varphi^2+1}=\frac{5-\sqrt5}{10}$. Uniqueness: $f$ is
+continuous on $[0,1]$, vanishes at $p=0$ and at $p=1$, and has only one critical point in $(0,1)$.
+\end{proof}
+
+(The variational principle of symbolic dynamics upgrades (2) to all shift-invariant measures: the Parry
+measure is the unique measure of maximal entropy, and its entropy is the topological entropy
+$\ln\varphi$. See Lind and Marcus in the Further reading.)
+
+\begin{corollary}\label{SM:cor:capacity}
+The maximal Edwards entropy per contact of the channel model equals the Shannon capacity of the
+golden-mean constraint, $\ln\varphi$ nats $=\log_2\varphi$ bits. Edwards' flat measure on jammed
+channel packings (the case $X=\infty$) is, in the limit, the Parry measure. More generally, the
+canonical Edwards ensemble at compactivity $X$ is the Markov measure that maximizes entropy minus mean volume divided by $X$, for the weights $a,b$ of
+Figure~\ref{SM:fig:golden}: an equilibrium (Gibbs) measure in the sense of dynamics (Exercise~\ref{SM:ex:markov}).
+\end{corollary}
+
+So the typical jammed state of Lecture~11, with its fraction $\frac{5-\sqrt5}{10}$ of same-wall contacts, is
+the typical message of an optimally used golden-mean channel.
+
+\begin{remark}[Capacity per unit length]
+Shannon's telegraph asks for capacity per unit \emph{time} when symbols have durations $t_i$; for free
+concatenation it is $\ln X_0$ with $\sum_iX_0^{-t_i}=1$. A no-$11$ word is a free concatenation of the blocks
+$0$ and $10$, of channel lengths $L$ and $2+L$, so jammed configurations (any number of discs) of length
+at most $t$ number $e^{C't+o(t)}$ with $e^{-C'L}+e^{-C'(L+2)}=1$. This is $\lambda(X)=1$ with $X=1/C'$, and by
+Proposition~\ref{SM:prop:canon} $C'=\max_xs(x)/v(x)$. For $h=1.2$: $C'\approx0.2817$ at $x\approx0.266$, so
+$X\approx3.55$.
+\end{remark}
+
+\subsection{Noise spheres: Shannon's packing argument}
+
+Codes enter sphere packing through noise. A sender transmits a vector $x\in\R^n$ (one real number per
+use of the channel) subject to a power constraint $\abs x^2\le nP$. The receiver sees $y=x+z$, where $z$ has
+independent $N(0,N)$ coordinates. The capacity of this \emph{additive white Gaussian noise} channel is
+the largest rate $R$ (bits per coordinate) such that $2^{nR}$ codewords can be chosen and decoded with
+error probability tending to $0$ as $n\to\infty$.
+
+\begin{theorem}[Shannon 1948, 1949]\label{SM:thm:awgn}
+The capacity of the AWGN channel with signal power $P$ and noise power $N$ is
+\[
+  C=\tfrac12\log_2\Big(1+\frac PN\Big)\ \text{bits per coordinate}.
+\]
+\end{theorem}
+
+
+\paragraph{Why packing?} The heuristic is the gas in a box of Lecture~7 again. By the law of large
+numbers $\abs z^2=nN(1+O(n^{-1/2}))$: in high dimension the noise is concentrated on a thin shell of
+radius $\sqrt{nN}$ around the transmitted codeword, just as the particle counts were concentrated near
+their mean. It is also nearly orthogonal to $x$, so $\abs y^2\approx\abs x^2+\abs z^2\le n(P+N)$. Reliable
+decoding requires the noise balls of radius $\sqrt{nN}$ around different codewords to be essentially
+disjoint, and they all lie in a ball of radius about $\sqrt{n(P+N)}$. Comparing volumes gives at most
+$\big(\sqrt{n(P+N)}/\sqrt{nN}\big)^n=(1+P/N)^{n/2}$ codewords, the bound in the theorem. Shannon's 1949 paper (\emph{Communication in the presence of noise}, Proc.\
+IRE 37) turned this picture into a proof; achievability uses codewords chosen \emph{at random}, the
+analogue of the non-constructive lower bounds of Lecture~1.
+
+Demanding \emph{zero} error against every noise vector of length less than $\rho$ gives a genuine packing
+problem. For codewords of equal power, on the sphere of radius $\sqrt{nP}$, this means angular separation
+$\theta$ with $\sin(\theta/2)\ge\rho/\sqrt{nP}$, and the best such codes are counted by $M(n,\theta)$ of
+Definition~\ref{L3:def:M}. So the Kabatiansky--Levenshtein bound of \S\ref{L3:sec:KL} is a coding theorem,
+published as one (Problems of Information Transmission, 1978), and through Corollary~\ref{L3:cor:KL} it is
+also the best known exponential upper bound on packing density.
+
+\subsection{Perfect codes, Golay and Leech}
+
+For binary codes (Definition~\ref{L04b:def:code}) the Hamming distance replaces the Euclidean one, and the
+noise ball is a Hamming ball.
+
+\begin{proposition}[Hamming's sphere packing bound]\label{SM:prop:hamming}
+A binary code $C\subseteq\{0,1\}^n$ with minimal distance $d(C)\ge2e+1$ satisfies
+\[
+  \abs C\sum_{i=0}^e\binom ni\le2^n .
+\]
+\end{proposition}
+
+\begin{proof}
+The Hamming balls of radius $e$ around the codewords are disjoint, by the triangle inequality, and each
+contains $\sum_{i\le e}\binom ni$ words.
+\end{proof}
+
+A code attaining equality is \emph{perfect}: its Hamming balls tile the cube, so every received word lies
+within distance $e$ of exactly one codeword. The trivial perfect codes are a single word, the whole cube, and the
+binary repetition codes of odd length. The nontrivial examples are rare and beautiful.
+\begin{itemize}[nosep]
+\item The \emph{Hamming codes} (1950): $n=2^r-1$, $e=1$, $\abs C=2^{n-r}$, and indeed
+  $2^{n-r}(1+n)=2^n$.
+\item The binary \emph{Golay code} (1949): $n=23$, $e=3$, $\abs C=2^{12}$, and
+  \[
+    2^{12}\Big(1+23+\binom{23}2+\binom{23}3\Big)=2^{12}(1+23+253+1771)=2^{12}\cdot2^{11}=2^{23}.
+  \]
+\item The ternary Golay code: $n=11$, $e=2$, $3^6$ words over $\mathbb F_3$, and
+  $3^6(1+11\cdot2+\binom{11}2\cdot4)=3^6\cdot243=3^{11}$.
+\end{itemize}
+In fact these are all of them (Theorem~\ref{SM:thm:perfect} in the gallery).
+
+Adding a parity bit turns the Hamming code of length $7$ into the extended Hamming code $[8,4,4]$, and
+Construction~A (Definition~\ref{L04b:def:constrA}) turns that into $E_8$, as we saw in Lecture~6. Adding a
+parity bit to the Golay code gives the extended Golay code $\mathcal G_{24}$, a $[24,12,8]$ code whose
+$759$ words of weight $8$ (the \emph{octads}) form a Steiner system $S(5,8,24)$. Leech (1964, 1967) built
+the Leech lattice from it. In the form given by Conway and Sloane (Ch.~4, \S11), $\sqrt8\,\Lambda_{24}$ is the set
+of $x\in\Z^{24}$ such that, for some $m\in\{0,1\}$, all $x_i\equiv m\pmod2$, each set
+$\{i:x_i\equiv\nu\pmod4\}$ ($\nu\in\Z/4$) is a word of $\mathcal G_{24}$, and $\sum_ix_i\equiv4m\pmod8$.
+The minimal vectors have norm $32$ in these coordinates, and there are
+\[
+  \underbrace{\tbinom{24}2\cdot4}_{(\pm4,\pm4,0^{22})}+\underbrace{759\cdot2^7}_{(\pm2^8,0^{16})\text{ on an octad}}+\underbrace{24\cdot2^{12}}_{(\mp3,\pm1^{23})}
+  =1104+97152+98304=196560
+\]
+of them, the kissing number in dimension $24$ quoted in Lecture~3. So $E_8$ and the Leech lattice, the two lattices now known to be optimal packings beyond dimension $3$,
+come from the perfect Hamming code of length $7$ and the perfect Golay code of length $23$ by adding a
+parity bit.
+
+\subsection{Lattice codes}
+
+Construction~A also runs the other way: a lattice $\Lambda\subset\R^n$ is a code for the Gaussian channel,
+with infinitely many codewords. To respect the power constraint one keeps only the points of $\Lambda$ in a
+bounded region. A good choice of region, which keeps the code a group, is the Voronoi cell of a coarser lattice $\Lambda'\subset\Lambda$,
+which gives the \emph{nested lattice codes} $\Lambda/\Lambda'$. Erez and Zamir (IEEE Trans.\ Inform.\ Theory 50,
+2004) proved that, with a random dither and a scaling at the receiver, nested lattice codes with
+lattice decoding achieve the capacity $\frac12\log_2(1+P/N)$. Decoding is then
+the nearest-point (Voronoi cell) problem of Lecture~1.
+
+%======================================================================
+\section{Gallery of theorems}
+\label{SM:sec:gallery}
+
+Results stated in the text (R\'enyi, Tonks and van Hove, Shannon, Kabatiansky--Levenshtein) are not
+repeated here.
+
+\begin{theorem}[Hales, Ann.\ of Math.\ 162, 2005; Viazovska, Ann.\ of Math.\ 185, 2017; Cohn--Kumar--Miller--Radchenko--Viazovska, Ann.\ of Math.\ 185, 2017]
+The optimal sphere packing densities in dimensions $3$, $8$, $24$ are $\pi/\sqrt{18}$, $\pi^4/384$ and
+$\pi^{12}/12!$. Equivalently, the hard-sphere gas of unit diameter in $\R^3$, $\R^8$, $\R^{24}$ has finite
+free energy at number densities below, and infinite free energy above, $\sqrt2$, $16$ and $2^{24}$ respectively.
+\end{theorem}
+\noindent By Proposition~\ref{SM:prop:kepler}, $\rho_{\mathrm{cp}}$ is the optimal density divided by
+$\vol\Ball^d(\frac12)$; it is the number density of FCC, $E_8$ and Leech, scaled to minimal distance~$1$.
+
+\begin{theorem}[Hales--McLaughlin, J.~Amer.\ Math.\ Soc.\ 23, 2010]
+In a packing of unit balls in $\R^3$, every Voronoi cell has volume at least that of a regular dodecahedron
+of inradius $1$.
+\end{theorem}
+\noindent Fejes T\'oth's dodecahedral conjecture: the locally best density $\approx0.7547$ exceeds the global
+optimum $0.7405$. This is geometric frustration as a theorem.
+
+\begin{theorem}[Theil, Comm.\ Math.\ Phys.\ 262, 2006]
+For a class of short-range, Lennard-Jones-like pair potentials in the plane, the ground-state energy per
+particle of $N$ particles converges as $N\to\infty$ to the energy per particle of the triangular lattice:
+pieces of the triangular lattice are asymptotically optimal.
+\end{theorem}
+\noindent Crystallization at zero temperature, the problem whose finite-temperature version for hard
+spheres is open (\S\ref{SM:sec:hard}). Heitmann--Radin (1980) had done ``sticky discs''.
+
+\begin{theorem}[Richthammer, Comm.\ Math.\ Phys.\ 345, 2016]
+In the hard disc model in a $2n\times2n$ box with arbitrary boundary condition, the mean square
+displacement of a particle near the centre is at least $c\log n$.
+\end{theorem}
+\noindent Hard discs have no long-range positional order: the most a two-dimensional ``crystal'' can
+have is the hexatic orientational order seen numerically by Bernard and Krauth.
+
+\begin{theorem}[Connelly--Gortler--Solomonides--Yampolskaya, Discrete Comput.\ Geom.\ 2020]
+A collectively jammed packing of $n$ discs in a flat torus $\R^2/\Lambda$ whose radii and lattice are
+generic has exactly $2n-1$ contacts, and its contact graph is isostatic.
+\end{theorem}
+\noindent The isostatic conjecture of Section~\ref{SM:sec:random} as a theorem in the plane (the lattice is
+held fixed, and must itself be generic). Corollary~\ref{SM:cor:maxwell} gives the lower bound $2n-1$; the
+content is the matching upper bound, $2n-2$ positions modulo translation plus the common scale of the
+radii. The authors leave dimension $\ge3$ open.
+
+\begin{theorem}[Cohn--Kumar, J.~Amer.\ Math.\ Soc.\ 20, 2007]
+A configuration on $\Sph^{n-1}$ that has $m$ distinct distances and is a spherical $(2m-1)$-design
+(``sharp'') minimizes the energy $\sum_{i\ne j}f(\abs{x_i-x_j}^2)$ among configurations of the same size,
+for every completely monotonic $f$. The same holds for the $120$ vertices of the $600$-cell.
+\end{theorem}
+\noindent Examples: the icosahedron, the $240$ roots of $E_8$, the $196560$ minimal vectors of the Leech
+lattice. These are zero-temperature ground states for a whole family of interactions at once, including
+Frank's ideal $\{3,3,5\}$ order.
+
+\begin{theorem}[Cohn--Kumar--Miller--Radchenko--Viazovska, Ann.\ of Math.\ 196, 2022]
+The $E_8$ and Leech lattices are universally optimal among point configurations in $\R^8$ and $\R^{24}$:
+they minimize energy for every potential that is a completely monotonic function of squared distance,
+for example Gaussians $e^{-\alpha r^2}$ and inverse powers.
+\end{theorem}
+\noindent So the zero-temperature Gaussian core model is solved in dimensions $8$ and $24$ at every
+density. The sphere packing theorems are recovered in the limit $\alpha\to\infty$.
+
+\begin{theorem}[Tiet\"av\"ainen, SIAM J.~Appl.\ Math.\ 24, 1973; van Lint 1971; Zinov'ev--Leont'ev 1973]\label{SM:thm:perfect}
+Every nontrivial perfect code over a finite field has the same length, number of words and minimal
+distance as a Hamming code or one of the two Golay codes.
+\end{theorem}
+\noindent Tilings of the Hamming cube by Hamming balls are classified by their parameters (codes with
+the Hamming parameters need not be linear). The Golay code's tiling is the
+discrete shadow of the Leech lattice.
+
+\begin{theorem}[Erez--Zamir, IEEE Trans.\ Inform.\ Theory 50, 2004]
+Nested lattice codes with dithering, MMSE scaling and lattice decoding achieve the capacity
+$\frac12\log_2(1+P/N)$ of the Gaussian channel.
+\end{theorem}
+\noindent Structured codes, decoded by finding the nearest lattice point, reach Shannon's capacity.
+
+%======================================================================
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+
+\begin{exercise}
+(a) Solve \eqref{SM:eq:renyi} on $[2,3]$: show $M(x)=1+\frac{2(x-2)}{x-1}$ there. (b) Show that every saturated
+packing of unit intervals in $[0,x]$ has at least $(x-1)/2$ intervals, and deduce $m\ge\frac12$ without
+computing anything.
+\end{exercise}
+
+\begin{exercise}
+(a) Show that the honeycomb disc packing is locally jammed but not collectively jammed: find a collective
+motion. (b) Verify the claim of Figure~\ref{SM:fig:maxwell}.
+\end{exercise}
+
+
+\begin{exercise}\label{SM:ex:markov}
+Let $r=(r_0,r_1)^T$ be a positive right eigenvector of $T=\left(\begin{smallmatrix}a&b\\a&0\end{smallmatrix}\right)$
+for $\lambda=\lambda(X)$. Show that $P(i\to j)=T_{ij}r_j/(\lambda r_i)$ is a stochastic matrix, that its
+stationary chain has frequency of $1$'s equal to $x(X)$, and that for $X=\infty$ it is the Parry measure
+of Theorem~\ref{SM:thm:golden}.
+\end{exercise}
+
+\begin{exercise}
+Compute the variance of the number of defects $k$ in the canonical ensemble to leading order in $\ell$, by
+differentiating $\ln\lambda$ twice in $\ln b$. Show that it is $\ell\big/\!\big(-s''(x)\big)$, $x=x(X)$ (compare
+Lemma~\ref{L11:lem:concave}).
+\end{exercise}
+
+\begin{exercise}
+(a) Check that $1+90+\binom{90}2=2^{12}$, so the sphere packing bound allows a perfect binary code of
+length $90$ with $2^{78}$ words and $e=2$. (b) Show that no such code exists. \emph{Hint:} assume
+$0\in C$, so every word of weight $3$ lies at distance $\le2$ from a unique codeword, necessarily of
+weight $5$. Count the weight-$3$ words that have $1$'s in the first two positions and are covered by
+codewords of weight $5$ with $1$'s in the first two positions: each such codeword covers exactly three of them.
+\end{exercise}
+
+\begin{exercise}
+(a) Let $z\in\R^n$ have independent $N(0,N)$ coordinates. Show that
+$\abs z^2/n\to N$ in probability, and compare with the gas in a box of
+\S\ref{L07:subsec:gas}. (b) Show that a fixed $x$ with $\abs x^2=nP$ satisfies $\ip xz/n\to0$ in
+probability, and deduce $\abs{x+z}^2/n\to P+N$. (c) If disjoint balls of radius $\sqrt{n(N-\varepsilon)}$
+lie in a ball of radius $\sqrt{n(P+N+\varepsilon)}$, bound their number by $2^{n(C+\delta(\varepsilon))}$.
+\end{exercise}
+
+
+\section*{Further reading}
+\addcontentsline{toc}{section}{Further reading}
+\begin{itemize}[nosep]
+\item D.~Ruelle, \emph{Statistical Mechanics: Rigorous Results}, Benjamin, 1969.
+\item S.~Torquato and F.~H.~Stillinger, \emph{Jammed hard-particle packings: From Kepler to Bernal and
+  beyond}, Rev.\ Mod.\ Phys.\ 82 (2010).
+\item A.~Baule, F.~Morone, H.~J.~Herrmann and H.~A.~Makse, \emph{Edwards statistical mechanics for jammed
+  granular matter}, Rev.\ Mod.\ Phys.\ 90 (2018).
+\item T.~M.~Cover and J.~A.~Thomas, \emph{Elements of Information Theory}, Wiley.
+\item D.~Lind and B.~Marcus, \emph{An Introduction to Symbolic Dynamics and Coding}, Cambridge, 1995.
+\item J.~H.~Conway and N.~J.~A.~Sloane, \emph{Sphere Packings, Lattices and Groups}, Springer, Chs.~1--5.
+\end{itemize}

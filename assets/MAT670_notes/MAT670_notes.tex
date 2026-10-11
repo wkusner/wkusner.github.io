@@ -37,8 +37,15 @@ been written out as prose, sketches have been redrawn, and gaps have been filled
 \item Grey margin notes describe the original page (crossed-out text, omitted doodles, and so on).
 \end{itemize}
 
-\paragraph{The interlude.} The chapter ``Interlude: From Dynkin diagrams to Lie algebras and Lie groups'',
-placed after Lecture~6, is entirely new. It is set in black for readability but is all added material.
+\paragraph{The interludes.} Five chapters are entirely new and are set in black for readability, but
+all of them are added material:
+\begin{itemize}
+\item[A] From Dynkin diagrams to Lie algebras and Lie groups (after Lecture 6);
+\item[B] Lattices, quadratic forms and the geometry of numbers (after A);
+\item[C] The torus, Diophantine approximation and aperiodic order (after B);
+\item[D] Min-max, configuration spaces and braids (after Lecture 11);
+\item[E] Random packings, entropy and information (after D).
+\end{itemize}
 
 \paragraph{Sources.} The scans used are \texttt{MAT670\_1}, \texttt{\_2}, \texttt{\_3},
 \texttt{\_46}, \texttt{\_78}, \texttt{\_9X} and \texttt{\_XI} on the course web page.
@@ -60,6 +67,8 @@ cross-check.
 
 \tableofcontents
 
+\input{chapters/threads}
+
 \mainmatter
 \part{Packing bounds}
 \input{chapters/L01}
@@ -70,10 +79,15 @@ cross-check.
 \input{chapters/L04a}
 \input{chapters/L04b}
 
-% Interlude (new material): numbered "I" so that lecture numbers stay aligned with chapter numbers
-\begingroup
-\renewcommand{\thechapter}{I}\renewcommand{\theHchapter}{interlude}
+% Interludes (new material): lettered so that lecture numbers stay aligned with chapter numbers
+\begingroup\renewcommand{\thechapter}{A}\renewcommand{\theHchapter}{interludeA}
 \input{chapters/Lie}
+\endgroup
+\begingroup\renewcommand{\thechapter}{B}\renewcommand{\theHchapter}{interludeB}
+\input{chapters/NT}
+\endgroup
+\begingroup\renewcommand{\thechapter}{C}\renewcommand{\theHchapter}{interludeC}
+\input{chapters/ERG}
 \endgroup
 \setcounter{chapter}{6}
 
@@ -81,5 +95,11 @@ cross-check.
 \input{chapters/L07}
 \input{chapters/L09}
 \input{chapters/L11}
+\begingroup\renewcommand{\thechapter}{D}\renewcommand{\theHchapter}{interludeD}
+\input{chapters/TOP}
+\endgroup
+\begingroup\renewcommand{\thechapter}{E}\renewcommand{\theHchapter}{interludeE}
+\input{chapters/SM}
+\endgroup
 
 \end{document}
