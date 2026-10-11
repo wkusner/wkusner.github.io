@@ -14,7 +14,7 @@
    free[]: free resources. "ref" is an entry id from resources.js, or "url" + "label" for a direct link; "where" says what to open. */
 window.QRC_DIAGNOSTIC =
 {
-  "version": "0.4",
+  "version": "0.5",
   "updated": "2026-10-11",
   "levels": [
     {
@@ -1266,8 +1266,8 @@ window.QRC_DIAGNOSTIC =
             "where": "Chapters 1 and 3: substitution and integration techniques, where MATH 155 starts."
           },
           {
-            "section": "calcds",
-            "label": "Calculus for data science topic page"
+            "section": "applinalg",
+            "label": "Applied linear algebra (MATH 205), open to you after MATH 140"
           }
         ]
       }

@@ -1,8 +1,8 @@
 # QRC Resource Directory
 
-An annotated directory of free, vetted quantitative resources for Lawrence students, tutors, faculty, and staff. Version 0.1, October 2026.
+An annotated directory of free, vetted quantitative resources for Lawrence students, tutors, faculty, and staff. Version 0.7, October 2026.
 
-Live (once pushed): `https://wkusner.github.io/qrc/resources/`
+Live: `https://wkusner.github.io/qrc/resources/` (self-check: `diagnostic.html`)
 
 ## Files
 
@@ -54,7 +54,18 @@ To write a new guide, copy one of the same kind and keep it short. A guide shoul
 
 ## Going further (v0.6)
 
-Some topics deliberately reach past Lawrence's syllabi: **Geometry and further trig** (MATH 103 rushes trig and skips most geometry), **Multivariable and vector calculus** (past MATH 155: path independence, Green's, Stokes', and the divergence theorem), **Matrices and linear algebra** (matrix algebra isn't covered in 155), and **Calculus for data science**. In the self-check, each course's `further` list adds a "Going further" box to the results.
+Some topics deliberately reach past Lawrence's syllabi: **Geometry and further trig** (MATH 103 rushes trig and skips most geometry), **Multivariable and vector calculus** (past MATH 155: path independence, Green's, Stokes', and the divergence theorem), and **Applied linear algebra** (matrix algebra isn't covered in 155). In the self-check, each course's `further` list adds a "Going further" box to the results.
+
+## Course sequences (v0.7)
+
+Three topics follow Lawrence's course sequences, from the 2026–27 catalog and the department course-description pages:
+
+- **Statistics** (`stats`): STAT 107, STAT 255, MATH/STAT 340, and STAT 445, 450, and 455. Lawrence's own STAT 255 notes are the first pick.
+- **Data science** (`datasci`): DASC 110, DASC 210, STAT/CMSC 208, DASC 420, and CMSC/STAT 205 and 405.
+- **Computer science** (`cs`): CMSC 140 and 210 (Python), CMSC 150 and 250 (Java), CMSC 270 (C++), CMSC 106 and 225, and the MATH 230 courses beyond.
+- **Applied linear algebra** (`applinalg`, MATH 205) replaced the earlier "Calculus for data science" topic. MATH 205 is the data science major's linear algebra course; `linalg` now covers MATH 250 and 350.
+
+Each of these topic guides has one row per course instead of the usual three time horizons, so a student can find their course and go. The how-to guide `#guide-sequences` maps the prerequisites across all three. Entries carry specific course numbers in `courses` (for example `"STAT 255"`), which show as tags and are searchable. When a course changes, update its row in the topic guide and the `courses` tags.
 
 ## How visitors move through it (v0.5)
 
@@ -89,6 +100,7 @@ Sections are organized by the need a visitor arrives with ("I'm rusty on algebra
 
 ## Open items
 
-- 33 of 72 entries have `checked: null`. They're standard, well-known URLs, but they couldn't be opened from the build environment. Run `check` once to confirm them.
-- Lawrence course numbers are tagged only for MATH 102, 103, and 140 and PHYS 141. Other courses use the department code. Add specific numbers as faculty confirm.
+- Many entries have `checked: null`. They're standard, well-known URLs, but they couldn't be opened from the build environment. Run `check` once to confirm them.
+- Course numbers are tagged for MATH 102–355, STAT, DASC, and CMSC. Science and economics entries still use the department code. Add specific numbers as faculty confirm.
+- The DASC courses aren't yet in the online catalog's course listings; their descriptions come from the department's course-description page.
 - The Mudd Library entry should point to a data or research-help page once you pick one.
