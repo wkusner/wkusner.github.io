@@ -194,6 +194,7 @@ table.cal td.ev{text-decoration:underline;text-decoration-color:var(--spot);text
 #stage:fullscreen canvas.view3d{width:100vw!important;height:100vh!important}
 #stage canvas.view3d[data-cursor=drag]{cursor:grabbing}
 #stage canvas.view3d[data-cursor=none]{cursor:grab}
+#stage canvas.view3d[data-cursor=inert]{cursor:default}
 
 /* ===== the Myst skin (default): a dark room around a lit picture; journals of parchment bound in leather; brass and sepia ink.
    The HyperCard skin above stays as it was, and the menu's Skin button switches between them. ===== */
@@ -346,8 +347,19 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
 .primercard,html.skin-myst .primercard.win{position:absolute} .primercard{left:50%;bottom:16px;transform:translateX(-50%);width:min(520px,92%);z-index:6;display:none} .primercard.open{display:block}
 .primercard .wb{padding:6px 16px 12px;font-size:15px;line-height:1.45}
 
-.back3d{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;display:none;font:400 14px var(--fellsc,serif);letter-spacing:.08em;padding:6px 16px;border:1px solid rgba(255,240,210,.55);border-radius:3px;background:rgba(20,16,12,.55);color:#f3e8cf;cursor:pointer}
-.back3d.on{display:block} .back3d:hover{background:rgba(20,16,12,.8)}
+.back3d{position:absolute;left:0;right:0;bottom:0;z-index:4;display:none;font:400 15px var(--fellsc,serif);letter-spacing:.08em;padding:9px 16px 10px;border:none;border-top:1px solid rgba(255,240,210,.35);background:linear-gradient(rgba(20,16,12,.35),rgba(20,16,12,.72));color:#f3e8cf;cursor:s-resize;text-align:center}
+.back3d.on{display:block} .back3d:hover{background:linear-gradient(rgba(20,16,12,.55),rgba(20,16,12,.88))}
+.back3d:focus-visible{outline:2px solid #f3e8cf;outline-offset:-4px}
+@property --r{syntax:"<length>";inherits:false;initial-value:0px}
+html.closelook .corner{opacity:0;pointer-events:none}
+.hint-close{display:none} html.closelook .hint-close{display:inline} html.closelook .hint-room{display:none}
+.corner{transition:opacity .3s}
+.iris3d{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),transparent var(--r),rgba(12,9,6,.92) calc(var(--r) + 60px))}
+.iris3d.in{animation:iris-in .5s cubic-bezier(.2,.7,.3,1)}
+.iris3d.out{animation:iris-out .45s cubic-bezier(.5,0,.6,1)}
+@keyframes iris-in{0%{--r:0px;opacity:.9}100%{--r:140vmax;opacity:0}}
+@keyframes iris-out{0%{--r:120vmax;opacity:0}55%{--r:30vmax;opacity:.55}100%{--r:0px;opacity:0}}
+@media (prefers-reduced-motion: reduce){.iris3d{display:none}}
 .chalkpage{background:#26302c;color:#e9ece4;padding:16px 18px;border-radius:3px;font-family:"Kalam","Segoe Print","Bradley Hand","Comic Sans MS",cursive}
 .chalk{border-collapse:collapse;width:100%;font-size:17px;line-height:1.45} .chalk th,.chalk td{border-bottom:2px solid rgba(233,236,228,.45);padding:8px 10px;vertical-align:top;text-align:left} .chalk th{font-weight:700} .chalk td+td,.chalk th+th{border-left:2px solid rgba(233,236,228,.35)}
 .chalknote{opacity:.85;margin:4px 0 10px;font-size:16px}
@@ -365,6 +377,12 @@ html.skin-myst .primerdock{background:linear-gradient(#efe3c6,#e6d7b4);color:#2b
 .act3d button:hover{background:#2b2118;color:#efe3c6}
 .stage3d{position:absolute;left:50%;top:12px;transform:translateX(-50%) translateY(-6px);z-index:5;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;font:400 17px var(--fellsc,serif);letter-spacing:.08em;color:#efe3c6;padding:4px 18px;border-top:1px solid rgba(239,227,198,.5);border-bottom:1px solid rgba(239,227,198,.5);background:rgba(20,15,10,.55)}
 .stage3d.on{opacity:1;transform:translateX(-50%)}
+.stage3d{white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.stage3d.on{pointer-events:auto}
+.stage3d button{font:inherit;letter-spacing:inherit;color:rgba(239,227,198,.72);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(239,227,198,.35);text-underline-offset:3px}
+.stage3d button:hover{color:#fff}
+.stage3d b{font-weight:400;color:#efe3c6}
+.stage3d .sep{margin:0 .55em;opacity:.55}
 .staged::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 8px rgba(18,13,9,.9),inset 0 0 0 9px rgba(201,170,110,.55);transition:opacity .4s}
 /* a device's own model in its pop-up, and the things it leads to */
 .ovmodel{float:right;width:250px;margin:0 0 10px 16px;text-align:center} .ovmodel canvas{width:250px!important;height:auto!important;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.4)}
@@ -413,7 +431,7 @@ html.skin-myst .primerdock{background:linear-gradient(#efe3c6,#e6d7b4);color:#2b
       <button class="corner tr" id="mini" type="button" aria-label="Open the map"></button>
       <button class="corner bl" id="primerc" type="button" aria-label="Open the Primer"></button>
     </div>
-    <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint">drag to look · ← → or A D turn · ↑ W go through · ↓ S step back · ⇧↑ ⇧↓ look up, down · F full view · C compass</span></div>
+    <div class="bagbar"><span class="baglabel">Bag</span><div class="bag" id="bag"></div><span class="hint hint-room">drag to look · ← → or A D turn · ↑ W go through · ↓ S step back · ⇧↑ ⇧↓ look up, down · F full view · C compass</span><span class="hint hint-close">a closer look · click what is here · Esc, S, or right click: back one level · drag to turn a thing in your hand</span></div>
     <div class="primerdock" id="primerdock" style="display:none"></div>
   </div>
   <div class="win" id="annwin" style="display:none;margin-top:20px"><div class="tb"><button class="box" type="button" id="ann-x" aria-label="Close annotations"></button><span class="t">Annotations</span></div>
@@ -430,17 +448,17 @@ html.skin-myst .primerdock{background:linear-gradient(#efe3c6,#e6d7b4);color:#2b
 <div class="overlay" id="ov"><div class="sheet win"><div class="tb"><button class="box" type="button" id="ovx" aria-label="Close"></button><span class="t" id="ovt"></span></div><div class="wb" id="ovb"></div></div></div>
 <div class="toast" id="toast"></div>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap">
-<script src="data.js?v=20261011b"></script>
-<script src="sky.js?v=20261011b"></script>
-<script src="systems.js?v=20261011b"></script>
-<script src="numerals.js?v=20261011b"></script>
-<script src="reckoning.js?v=20261011b"></script>
-<script src="musicbox-dsp.js?v=20261011b"></script>
-<script src="musicbox-gen.js?v=20261011b"></script>
-<script src="musicbox-manual.js?v=20261011b"></script>
-<script src="musicbox.js?v=20261011b"></script>
-<script src="materials.js?v=20261011b"></script>
-<script src="furniture.js?v=20261011b"></script>
-<script src="palace.js?v=20261011b"></script>
+<script src="data.js?v=20261011e"></script>
+<script src="sky.js?v=20261011e"></script>
+<script src="systems.js?v=20261011e"></script>
+<script src="numerals.js?v=20261011e"></script>
+<script src="reckoning.js?v=20261011e"></script>
+<script src="musicbox-dsp.js?v=20261011e"></script>
+<script src="musicbox-gen.js?v=20261011e"></script>
+<script src="musicbox-manual.js?v=20261011e"></script>
+<script src="musicbox.js?v=20261011e"></script>
+<script src="materials.js?v=20261011e"></script>
+<script src="furniture.js?v=20261011e"></script>
+<script src="palace.js?v=20261011e"></script>
 </body>
 </html>

@@ -917,9 +917,9 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js?v=20261011b").then(m => {
+  import("./palace3d.js?v=20261011e").then(m => {
     VIEW3D = m.create($("stage"), {
-      turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, calm: () => S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), style: () => S.gfx === "photo" ? "photo" : "engraved",
+      turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, transitions: () => S.trans || "zoom", refine: () => S.refine !== false, calm: () => S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
       closer: slot => { const f = (slot + 3) % 4; if(String(S.node) === String(slot) && f === S.face) setView(S.face, "ahead"); else { S.node = slot; setView(f, null); } },
       goNode: k => goNode(k), info: o => primerNote(o), noted: o => !!(S.notes && S.notes[noteKey(o)]),
@@ -928,7 +928,15 @@ function start3d(){
       actionsFor: o => actionsFor(o.raw),
       palaceSeconds: () => now().getTime()/1000,
       sunTimes: () => sunTimes(), reckon: () => window.RECKON,
-      furniture: k => { if(!window.FURNITURE) return; if(k === "rocker"){ if(furnSeen.rocker) return; furnSeen.rocker = true; } FURNITURE.view(k); award("furniture:" + k, 3); },
+      // stepping up to a piece of furniture no longer opens a card over it; its card is a button in the close look ("About the cabinet")
+      furniture: k => { award("furniture:" + k, 3); },
+      furnitureCard: k => { if(window.FURNITURE) FURNITURE.view(k); },
+      // drawers and cases opened in the room itself: what is inside, whether it is locked, and taking a thing out
+      caseInfo: o => (o = o.raw || o, {locked: !!caseLocked(o), hasKey: !!(o.lock && S.inv.includes(o.lock)), lockName: o.lock === "master-key" ? "the porter's ring of keys" : "a key",
+        holds: (o.holds || []).filter(k => ITEMS[k]).map(k => ({key:k, name: ((P.pages || {})[k] || {}).title || ITEMS[k].name, icon: ITEMS[k].icon, have: S.inv.includes(k)}))}),
+      caseTake: (o, k) => { const it = ITEMS[k]; if(!it || S.inv.includes(k)) return; take(k, `You take ${it.name.charAt(0).toLowerCase() + it.name.slice(1)}. Its page is in your Primer.`); render(); },
+      caseList: o => caseView(o.raw || o),
+      sfx: (name, arg) => { if(sound[name]) sound[name](arg); },
       planets: () => planetsView(),
       sky: () => skyView(), skyClosed: () => { const sp = $("skypanel"); if(sp) sp.classList.remove("open"); }, footstep: () => sound.step(),
       setDial: t => setDial(t), landing: k => setLanding(effective(cur), k), car: k => carGo(effective(cur), k), telescope: () => telescopeView(), mapRoom: () => mapRoomView(), weatherStation: () => weatherStationView(),
@@ -1754,6 +1762,13 @@ const sound = (() => {
       burst("sfx", t + .62, {buf:"brown", type:"lowpass", freq:220, d:.25, v:.5}); },
     page(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; for(let k=0;k<3;k++) burst("sfx", t + k*.05, {freq:4200 + Math.random()*2000, q:.8, type:"highpass", d:.06 + Math.random()*.05, v:.12}); },
     take(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; [2100, 3170, 4600].forEach((f, k) => tone("sfx", t, f, {a:.002, d:.25 - k*.05, v:.05})); },
+    // mechanisms: a drawer on its runners, a key in its lock, a lock that won't give, a glass door on its hinges
+    slide(open){ if(!init() || !S.snd.on) return; const t = ac.currentTime; burst("sfx", t, {buf:"pink", type:"bandpass", freq: open ? 950 : 760, q:1.4, a:.04, d:.42, v:.32, rate: open ? 1 : .9}); burst("sfx", t + .02, {buf:"brown", type:"lowpass", freq:420, a:.03, d:.4, v:.25});
+      burst("sfx", t + (open ? .5 : .42), {buf:"brown", type:"lowpass", freq:260, a:.002, d:.07, v:.55}); },
+    latch(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; tone("sfx", t, 2900, {a:.001, d:.035, v:.06}); burst("sfx", t, {freq:3400, q:4, a:.001, d:.025, v:.25}); tone("sfx", t + .16, 2200, {a:.001, d:.05, v:.07}); burst("sfx", t + .16, {freq:2600, q:3, a:.001, d:.04, v:.3}); },
+    rattle(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; for(let k = 0; k < 4; k++){ burst("sfx", t + k*.075, {freq:1500 + Math.random()*500, q:3, a:.002, d:.045, v:.28}); burst("sfx", t + k*.075, {buf:"brown", type:"lowpass", freq:300, a:.002, d:.04, v:.25}); } },
+    hinge(open){ if(!init() || !S.snd.on) return; const t = ac.currentTime, o = mk("Oscillator"); o.type = "triangle"; o.frequency.setValueAtTime(open ? 520 : 610, t); o.frequency.linearRampToValueAtTime(open ? 640 : 480, t + .45);
+      const e = g(0); o.connect(e); e.connect(buses.sfx); env(e, t, .06, .025, .45); o.start(t); o.stop(t + .6); if(!open) burst("sfx", t + .48, {freq:2400, q:3, a:.001, d:.05, v:.3}); },
     link(){ if(!init() || !S.snd.on) return; const t = ac.currentTime; // a rising rush of air, a shimmer, and quiet
       const src = mk("BufferSource"); src.buffer = noise.pink; const bp = mk("BiquadFilter"); bp.type = "bandpass"; bp.Q.value = 1.2; bp.frequency.setValueAtTime(200, t); bp.frequency.exponentialRampToValueAtTime(3800, t + 1.2); bp.frequency.exponentialRampToValueAtTime(600, t + 2.4);
       const e = g(0); src.connect(bp); bp.connect(e); e.connect(buses.sfx); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(.6, t + .9); e.gain.exponentialRampToValueAtTime(1e-4, t + 2.6); src.start(t); src.stop(t + 2.7);
@@ -2380,7 +2395,7 @@ function catalogueView(force){
 function helpView(){
   overlay("How to walk the house", `<div class="text">${P.help || ""}
   <p><b>Standing places.</b> Each room has a middle and a standing place in front of each wall that has something on it. You stand at one place at a time and turn on the spot, as in Myst. Hover over the floor to see where a click will take you, and click to glide there. ↑ or W walks toward what you face: from the middle to the wall ahead, then up to the desk or through the door. ↓ or S goes back to the middle, or turns you round if you are already there.</p>
-  <p><b>Looking closer.</b> Click a desk, a shelf, or a stand to step up to it: the view zooms in and frames it, and only that thing answers your clicks. Drag to walk round an instrument, scroll to come nearer, and use its buttons (Use it, Take it). Step back, S, or Escape returns you. In the court, “Look at the sky” takes you up into the dome.</p>
+  <p><b>Looking closer.</b> The house works in levels, like the cards of a stack: the room, a desk or stand, and a thing on it. Click something with the magnifying cursor to go one level in; the view zooms to it and only it answers your clicks. The trail at the top names where you are. You leave one level at a time, on purpose: the strip at the bottom (“Back to the desk”), Escape, S, or a right click. Clicking empty space does nothing. Drag to turn an instrument in your hand and scroll to bring it nearer; a desk stays framed. In the court, “Look at the sky” takes you up into the dome. Settings can make the transitions a plain cut.</p>
   <p><b>Things to carry.</b> The porter's desk has a folded map, the Primer, and a ring of keys; the keys open the drawer in the desk and the case of instruments. Some things grow: the map takes its missing sheets, and the astrolabe its storm glass. What you carry is in the bag under the picture.</p>
   <p><b>The Primer.</b> A small glint of light hangs over things that have something to tell, when you stand near them. Touch it and the Primer writes the note down. Each thing you carry comes with its page. Keep the Primer open below the picture, or open it from the menu bar.</p>
   <p><b>Looking around.</b> Drag anywhere in the picture to look around, up, and down; let go past half a quarter turn and you'll face that way. The edges of the picture turn you. Keys: ← → or A D turn, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, F is the full view, C holds up the compass, L steps through the lantern, and / searches the house.</p>
@@ -2921,6 +2936,8 @@ function settingsView(){
     ${row("Ink", "A second colour for each wing, or black only.", seg("ink", S.ink === "1bit" ? "1bit" : "two", [["two", "Two colours"], ["1bit", "Black only"]]))}
     ${row("Corner map", "A small map at the top right, once you carry a map or the Primer.", sw("mini", !S.noMini, "Corner map"))}
     ${has3d ? row("Calm motion", "Close looks change without zooming in and out.", sw("calm", calm, "Calm motion")) : ""}
+    ${has3d ? row("Refined stills", "When you stop, the view is redrawn with light that bounces, soft shadows, and true reflections, like a rendered still. Needs a capable graphics card.", sw("refine", S.refine !== false, "Refined stills")) : ""}
+    ${has3d ? row("Transitions", "Going in to a desk, a thing, or the sky, and coming back out.", seg("trans", S.trans || "zoom", [["zoom", "Zoom"], ["cut", "Cut"]])) : ""}
     ${has3d ? row("Eyes that adjust", "Exposure adapts to the light at each standing place.", sw("eyes", !S.fixedEyes, "Eyes that adjust")) : ""}
     <h4 class="set-sec">Light</h4>
     ${row("Lantern and lamps", "Your lantern, the house lamps, and the shutters.", btn("lamp", "Open"))}
@@ -2940,10 +2957,12 @@ function settingsView(){
     if(id === "gfx"){ if((S.gfx || "3d") === v) return; S.gfx = v; save(); if(v !== "2d" && !VIEW3D) start3d(); render(); toast({"3d":"Engraved.", photo:"Photographic: the light as it is.", "2d":"Woodcuts."}[v]); return redraw(); }
     if(id === "q"){ if(defaultQuality() === v) return; S.quality = v; save(); toast(`Quality: ${v}. Redrawing…`); return setTimeout(() => location.reload(), 400); }
     if(id === "skin"){ S.skin = v; save(); applySkin(); return redraw(); }
-    if(id === "ink"){ S.ink = v; save(); render(); return redraw(); } });
+    if(id === "ink"){ S.ink = v; save(); render(); return redraw(); }
+    if(id === "trans"){ S.trans = v; save(); return redraw(); } });
   document.querySelectorAll("[data-sw]").forEach(c => c.onchange = () => { const id = c.dataset.sw, on = c.checked;
     if(id === "mini"){ S.noMini = !on; save(); render(); }
     else if(id === "calm"){ S.calm = on; save(); }
+    else if(id === "refine"){ S.refine = on; save(); render(); }
     else if(id === "eyes"){ S.fixedEyes = !on; save(); render(); }
     else if(id === "snd"){ S.snd.on = on; save(); sound.levels(); }
     else if(id === "ann"){ S.annot = on; save(); annotations(effective(cur)); }

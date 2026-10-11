@@ -136,7 +136,9 @@ const FELL = '"IM Fell English", Georgia, serif', FELLSC = '"IM Fell English SC"
 const POST_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 const POST_FS = `
 precision highp float;
-uniform sampler2D tColor; uniform sampler2D tDepth;
+uniform sampler2D tColor; uniform sampler2D tDepth; uniform sampler2D tPT; uniform float ptMix, ptGain;
+uniform sampler2D tRlo;
+vec4 TCOL(vec2 u){ vec4 r = texture2D(tColor,u); if(ptMix <= 0.) return r; vec3 lo = texture2D(tRlo,u).rgb, pl = texture2D(tPT,u).rgb*ptGain; vec3 k = pow(clamp((pl + .002)/(lo + .002), vec3(.12), vec3(5.)), vec3(.75)); return vec4(mix(r.rgb, r.rgb*k, ptMix), r.a); }
 uniform vec2 res; uniform float dpr, night, time, cnear, cfar, spacing, aoK, exposure, stageK, focusZ, focusR;
 uniform mat4 projInv; uniform mat4 proj; uniform vec3 paper, ink, paperN, inkN;
 varying vec2 vUv;
@@ -166,7 +168,7 @@ void main(){
       occ += max(dot(N, v/max(d,1e-4)) - .1, 0.) * (1. - smoothstep(rad*.6, rad*2., d)); }
     ao = clamp(1. - aoK*occ/12.*2.2, .35, 1.);
   }
-  vec3 col = pow(max(texture2D(tColor, vUv).rgb*exposure*ao, 0.), vec3(1./2.2));
+  vec3 col = pow(max(TCOL( vUv).rgb*exposure*ao, 0.), vec3(1./2.2));
   float lum0 = dot(col, vec3(.299,.587,.114));
   float lum = smoothstep(.04, .80, lum0);
   if(night > .5) lum = 1. - lum;
@@ -187,8 +189,8 @@ void main(){
   float zc = linz(vUv), zx = linz(vUv+vec2(e.x,0.)), zX = linz(vUv-vec2(e.x,0.)), zy = linz(vUv+vec2(0.,e.y)), zY = linz(vUv-vec2(0.,e.y));
   float dz = (abs(zx - zX) + abs(zy - zY)) / max(zc, .5);
   float edge = smoothstep(.035, .09, dz);
-  float l1 = pow(dot(texture2D(tColor, vUv+vec2(e.x,0.)).rgb, vec3(.333)),.4545), l2 = pow(dot(texture2D(tColor, vUv-vec2(e.x,0.)).rgb, vec3(.333)),.4545);
-  float l3 = pow(dot(texture2D(tColor, vUv+vec2(0.,e.y)).rgb, vec3(.333)),.4545), l4 = pow(dot(texture2D(tColor, vUv-vec2(0.,e.y)).rgb, vec3(.333)),.4545);
+  float l1 = pow(dot(TCOL( vUv+vec2(e.x,0.)).rgb, vec3(.333)),.4545), l2 = pow(dot(TCOL( vUv-vec2(e.x,0.)).rgb, vec3(.333)),.4545);
+  float l3 = pow(dot(TCOL( vUv+vec2(0.,e.y)).rgb, vec3(.333)),.4545), l4 = pow(dot(TCOL( vUv-vec2(0.,e.y)).rgb, vec3(.333)),.4545);
   edge = max(edge, smoothstep(.30, .55, abs(l1-l2) + abs(l3-l4)));
   float inkAmt = clamp(max(hatch, edge*.9), 0., 1.);
   vec3 pap = mix(paper, paperN, night), ik = mix(ink, inkN, night);
@@ -210,13 +212,16 @@ void main(){
 
 const PHOTO_FS = `
 precision highp float;
-uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float time, aoK, night, exposure, stageK, focusZ, focusR; uniform mat4 projInv; uniform mat4 proj;
+uniform sampler2D tColor; uniform sampler2D tDepth; uniform sampler2D tPT; uniform float ptMix, ptGain;
+uniform sampler2D tRlo;
+vec4 TCOL(vec2 u){ vec4 r = texture2D(tColor,u); if(ptMix <= 0.) return r; vec3 lo = texture2D(tRlo,u).rgb, pl = texture2D(tPT,u).rgb*ptGain; vec3 k = pow(clamp((pl + .002)/(lo + .002), vec3(.12), vec3(5.)), vec3(.75)); return vec4(mix(r.rgb, r.rgb*k, ptMix), r.a); }
+uniform vec2 res; uniform float time, aoK, night, exposure, stageK, focusZ, focusR; uniform mat4 projInv; uniform mat4 proj;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
 vec3 viewPos(vec2 uv){ float d = texture2D(tDepth, uv).x; vec4 p = projInv * vec4(uv*2.-1., d*2.-1., 1.); return p.xyz/p.w; }
 vec3 aces(vec3 x){ return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14), 0., 1.); }
 void main(){
-  vec3 col = texture2D(tColor, vUv).rgb * exposure;
+  vec3 col = TCOL( vUv).rgb * exposure;
   float dep = texture2D(tDepth, vUv).x;
   float ao = 1.;
   if(dep < .9999){
@@ -256,7 +261,7 @@ export function create(container, hooks){
   camera.rotation.order = "YXZ";
   let rt = null;
   const post = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:POST_FS, uniforms:{
-    tColor:{value:null}, tDepth:{value:null}, res:{value:new THREE.Vector2()}, dpr:{value:dpr}, night:{value:0}, time:{value:0},
+    tColor:{value:null}, tDepth:{value:null}, tPT:{value:null}, tRlo:{value:null}, ptMix:{value:0}, ptGain:{value:1}, res:{value:new THREE.Vector2()}, dpr:{value:dpr}, night:{value:0}, time:{value:0},
     cnear:{value:camera.near}, cfar:{value:camera.far}, spacing:{value:Q.hatch}, projInv:{value:new THREE.Matrix4()},
     aoK:{value: Q.ss > 1 ? .85 : 0}, exposure:{value:1}, proj:{value:new THREE.Matrix4()}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6},
     paper:{value:new THREE.Color("#EEE4CF")}, ink:{value:new THREE.Color("#2a1f17")}, paperN:{value:new THREE.Color("#14110d")}, inkN:{value:new THREE.Color("#e9ddc4")} }});
@@ -265,7 +270,7 @@ export function create(container, hooks){
   const tri = new THREE.BufferGeometry(); tri.setAttribute("position", new THREE.Float32BufferAttribute([-1,-1,0, 3,-1,0, -1,3,0],3)); tri.setAttribute("uv", new THREE.Float32BufferAttribute([0,0, 2,0, 0,2],2));
   const postMesh = new THREE.Mesh(tri, post); postScene.add(postMesh);
   // the photographic view: no engraving, a tone curve, light reflected from the room, and soft shadow in every corner
-  const photo = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:PHOTO_FS, uniforms:{tColor:{value:null}, tDepth:{value:null}, res:{value:new THREE.Vector2()}, time:{value:0}, aoK:{value:1}, night:{value:0}, exposure:{value:1.0}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6}, projInv:{value:new THREE.Matrix4()}, proj:{value:new THREE.Matrix4()}}});
+  const photo = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:PHOTO_FS, uniforms:{tColor:{value:null}, tDepth:{value:null}, tPT:{value:null}, tRlo:{value:null}, ptMix:{value:0}, ptGain:{value:1}, res:{value:new THREE.Vector2()}, time:{value:0}, aoK:{value:1}, night:{value:0}, exposure:{value:1.0}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6}, projInv:{value:new THREE.Matrix4()}, proj:{value:new THREE.Matrix4()}}});
   photo.extensions = {derivatives:true};
   const isPhoto = () => !!(hooks.style && hooks.style() === "photo");
   let envTex = null;
@@ -303,17 +308,15 @@ export function create(container, hooks){
   // a close look (the sky, a peek at the dial or the cabinet, a desk) answers only to clicks on what is in it; a click anywhere else steps back
   function focusKind(){ if(skyOn) return "sky"; if(peeking) return "peek"; if(plan && plan.close) return "close"; return null; }
   function allowedHit(h){ const f = focusKind(); if(!f) return true; if(f === "sky") return h.distance > 20;
-    const c = f === "peek" ? focusPt : (stations[plan.ahead] && stations[plan.ahead].top); return !c || h.point.distanceTo(c) < 2.4; }
+    const c = f === "peek" ? focusPt : (stations[plan.ahead] && stations[plan.ahead].top); return !c || h.point.distanceTo(c) < (f === "peek" && orbit ? .75 : 2.4); }
   // every way out of a close look ends it the same way: the orbit, the buttons, the seat, and the things that opened for it
   function endPeek(){ const was = peeking || !!seated || !!orbit; peeking = false; focusPt = null; orbit = null; setActions(null); look.yaw = 0; look.pitch = 0;
     if(seated){ const s = seated; seated = null; s.leave(); } if(was) window.dispatchEvent(new CustomEvent("wending-unpeek")); }
   function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ endPeek(); show(plan); } else if(f === "close") hooks.stepBack(); }
   function zoneAt(x, y){
-    if(skyOn && y > H*.88) return {kind:"down", label:"Come back down", onClick:()=>{ skyMode(false); hooks.skyClosed && hooks.skyClosed(); }};
-    if(peeking) return y > H*.84 ? {kind:"back", label: seated ? "Stand up" : "Step back", onClick: exitFocus} : null;
-    // edges of the picture turn you, the top looks up, the bottom looks down or steps back
-    if(plan && plan.close){ if(y > H*.86) return {kind:"back", label:"Step back", onClick:()=>hooks.stepBack()}; }
-    else {
+    // in a close look (the sky, a desk, a thing in the hand) nothing at the edges moves you: you leave by the strip at the bottom, Escape, S, or a right click
+    if(skyOn || peeking || (plan && plan.close)) return null;
+    {
       if(x < W*.14) return {kind:"turnL", label:"Turn left (or drag to look)", onClick:()=>hooks.turn(-1)};
       if(x > W*.86) return {kind:"turnR", label:"Turn right (or drag to look)", onClick:()=>hooks.turn(1)};
       if(y < H*.09 && plan && plan.pitch<=0) return plan.pitch === 0 && (plan.room.ceiling||"") === "open" ? {kind:"up", label:"Look at the sky", onClick:()=>skyMode(true)} : {kind:"up", label: plan.pitch<0 ? "Look ahead" : "Look up", onClick:()=>hooks.look(plan.pitch<0?0:1)};
@@ -330,9 +333,8 @@ export function create(container, hooks){
     const hits = ray.intersectObjects(picks, true);
     // things in the picture win over the turning edges, except for walking, which the edges win
     const shown = ob => { for(let q = ob; q; q = q.parent) if(q.visible === false) return false; return true; };
-    for(const h of hits){ if(!shown(h.object)) continue; let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; if(z && o.userData.hit.kind === "walk") return z; lastHit = h.point.clone(); return o.userData.hit; } }
+    for(const h of hits){ if(!shown(h.object)) continue; let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; if(z && o.userData.hit.kind === "walk") return z; lastHit = h.point.clone(); const hh = o.userData.hit; if(hh.inner && !hh.inner()) return hh.outer(); return hh; } }
     if(z) return z;
-    const f = focusKind(); if(f) return {kind:"back", label: f === "sky" ? "Come back down" : "Step back", onClick: exitFocus};
     return null;
   }
   /* ---- drag to look around: the view follows the hand; let go past half a quarter turn and you face that way ---- */
@@ -357,17 +359,20 @@ export function create(container, hooks){
       if(!drag.moved && Math.hypot(dx, dy) < 6) return;
       if(!drag.moved){ drag.moved = true; try { canvas.setPointerCapture(drag.id); } catch(err){} tip.classList.remove("on"); canvas.dataset.cursor = "drag"; }
       const per = camera.fov*DEG / Math.max(1, canvas.getBoundingClientRect().height);
+      if(focusKind() && focusKind() !== "sky" && !(orbit && peeking)){ drag.x = e.clientX; drag.y = e.clientY; return; }
       if(orbit && peeking){ orbit.az -= dx*.008; if(orbit.span < Math.PI) orbit.az = Math.max(orbit.az0 - orbit.span, Math.min(orbit.az0 + orbit.span, orbit.az)); orbit.el = Math.max(-.05, Math.min(1.25, orbit.el + dy*.006)); orbitApply(); drag.x = e.clientX; drag.y = e.clientY; return; }
       look.yaw += dx*per; look.pitch += dy*per;
       const base = goal.pitch; look.pitch = Math.max(-1.35 - base, Math.min(1.52 - base, look.pitch));
       drag.x = e.clientX; drag.y = e.clientY; dirty = 3; return; }
     const h = pickAt(e.clientX, e.clientY); hover = h;
-    canvas.dataset.cursor = h ? h.kind : "none"; showAim(h && h.kind === "walk" ? (h.at || (lastHit && !(plan && plan.HG) ? lastHit : null)) : null);
+    canvas.dataset.cursor = h ? h.kind : (focusKind() && focusKind() !== "sky" && !(orbit && peeking) ? "inert" : "none"); showAim(h && h.kind === "walk" ? (h.at || (lastHit && !(plan && plan.HG) ? lastHit : null)) : null);
     if(h && h.label){ const r = container.getBoundingClientRect(); tip.textContent = h.label; tip.style.left = Math.min(e.clientX - r.left + 16, r.width - 220) + "px"; tip.style.top = (e.clientY - r.top + 18) + "px"; tip.classList.add("on"); }
     else tip.classList.remove("on");
   });
   canvas.addEventListener("pointerleave", () => { tip.classList.remove("on"); showAim(null); });
-  canvas.addEventListener("click", e => { if(swallowClick){ swallowClick = false; return; } const h = pickAt(e.clientX, e.clientY); if(h && h.onClick) h.onClick(); });
+  let busyUntil = 0;
+  canvas.addEventListener("click", e => { if(swallowClick){ swallowClick = false; return; } if(performance.now() < busyUntil) return; const h = pickAt(e.clientX, e.clientY); if(h && h.onClick) h.onClick(); });
+  canvas.addEventListener("contextmenu", e => { if(!focusKind()) return; e.preventDefault(); if(performance.now() < busyUntil) return; exitFocus(); });
 
   // going up into the sky: stand where you are, tip your head back, and drag to look around
   let skyOn = false;
@@ -403,6 +408,12 @@ export function create(container, hooks){
   function dissolve(){ try { veil.width = Math.max(1, Math.round(canvas.width/2)); veil.height = Math.max(1, Math.round(canvas.height/2)); veil.getContext("2d").drawImage(canvas, 0, 0, veil.width, veil.height);
       veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .5s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
   const flash = document.createElement("div"); flash.className = "flash3d"; container.appendChild(flash);
+  // a transition between levels, as HyperCard's visual effects did it: a zoom-open from where you clicked going in, a zoom-close coming out
+  const iris = document.createElement("div"); iris.className = "iris3d"; container.appendChild(iris);
+  function transit(inward, at){ const mode = hooks.transitions ? hooks.transitions() : "zoom"; if(mode === "cut"){ cam.pos.copy(goal.pos); cam.yaw = goal.yaw + look.yaw; cam.pitch = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch)); dirty = 3; return; }
+    const r = container.getBoundingClientRect(), x = at ? at[0] - r.left : r.width/2, y = at ? at[1] - r.top : r.height/2;
+    iris.style.setProperty("--x", x + "px"); iris.style.setProperty("--y", y + "px"); iris.classList.remove("in", "out"); void iris.offsetWidth; iris.classList.add(inward ? "in" : "out"); }
+  canvas.addEventListener("pointerdown", e => { stage.at = [e.clientX, e.clientY]; }, true);
   const backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "back3d"; backBtn.textContent = "↩ Step back"; container.appendChild(backBtn); container.appendChild(actBar); container.appendChild(stageTitle);
   canvas.addEventListener("wheel", e => { if(!focusKind()) return; e.preventDefault(); if(!(orbit && peeking)) return; orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*Math.exp(e.deltaY*.0012))); orbitApply(); }, {passive:false});
   backBtn.addEventListener("click", e => { e.stopPropagation(); exitFocus(); });
@@ -418,11 +429,80 @@ export function create(container, hooks){
   const meterRT = new THREE.WebGLRenderTarget(16, 9, {type:THREE.UnsignedByteType, depthBuffer:false}), meterMat = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:METER_FS, uniforms:{tColor:{value:null}}});
   const meterScene = new THREE.Scene(); meterScene.add(new THREE.Mesh(tri, meterMat)); const meterBuf = new Uint8Array(16*9*4);
   const meter = {n:0, ev:1, target:1, reset:true};
+  function meterOf(tex){ meterMat.uniforms.tColor.value = tex; renderer.setRenderTarget(meterRT); renderer.render(meterScene, postCam); renderer.readRenderTargetPixels(meterRT, 0, 0, 16, 9, meterBuf); renderer.setRenderTarget(null);
+    let s = 0, w = 0; for(let i=0;i<16*9;i++){ const x = i % 16, y = Math.floor(i/16), wt = 1.6 - Math.hypot((x - 7.5)/8, (y - 4)/4.5)*.8; s += (meterBuf[i*4]/255*18 - 14)*wt; w += wt; } return Math.pow(2, s/w); }
   function meterRead(){ meterMat.uniforms.tColor.value = rt.texture; renderer.setRenderTarget(meterRT); renderer.render(meterScene, postCam); renderer.readRenderTargetPixels(meterRT, 0, 0, 16, 9, meterBuf);
     let s = 0, w = 0; for(let i=0;i<16*9;i++){ const x = i % 16, y = Math.floor(i/16), wt = 1.6 - Math.hypot((x - 7.5)/8, (y - 4)/4.5)*.8; s += (meterBuf[i*4]/255*18 - 14)*wt; w += wt; }   // centre-weighted
     const L = Math.pow(2, s/w), photoV = isPhoto(), night = plan && plan.band === "night", bias = plan && plan.room && plan.room.exposure || 1;
     const key = photoV ? .12 : .24, lo = photoV ? .45 : night ? .85 : .75, hi = photoV ? 2 : night ? 1.25 : 1.8;
     meter.target = Math.min(hi, Math.max(lo, key/Math.max(L, 1e-4)))*bias; }
+  /* ---- refining the still: when you stop at a standing place or in a close look, a path tracer redraws the view sample by sample,
+     with light that bounces, soft shadows, and true reflections, and the picture fades from the quick raster to the refined one, as a
+     Myst card was a rendered still. The engraving and the photographic finish are both laid over it. Moving starts again from the raster. ---- */
+  const refine = {pt:null, loading:false, fail:false, ready:false, building:false, sceneKey:null, camKey:"", stillSince:0, mix:0, env:null, gain:1, metered:0, minS:12};
+  const refineOn = () => !!(hooks.refine && hooks.refine()) && !refine.fail && !window.__refineOff;
+  async function refineLoad(){ if(refine.pt || refine.loading || refine.fail) return; refine.loading = true;
+    try { const gl = renderer.getContext(); if(!(gl instanceof WebGL2RenderingContext) || !renderer.extensions.has("EXT_color_buffer_float")) throw new Error("no float targets");
+      // a software renderer can't path trace at a usable speed
+      const dbg = gl.getExtension("WEBGL_debug_renderer_info"), gpu = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "";
+      if(/swiftshader|llvmpipe|software|basic render/i.test(gpu) && !window.__forceRefine) throw new Error("software rendering (" + gpu + ")");
+      // the path tracer reads scene.environmentRotation and backgroundRotation, which three r160 doesn't have yet
+      ["environmentRotation", "backgroundRotation"].forEach(k => { if(!(k in new THREE.Scene())) Object.defineProperty(THREE.Scene.prototype, k, {configurable:true, get(){ return this["_" + k] || (this["_" + k] = new THREE.Euler()); }, set(v){ this["_" + k] = v; }}); });
+      const m = await import("./lib/pathtracer.module.min.js"); const pt = new m.WebGLPathTracer(renderer);
+      pt.renderToCanvas = false; pt.renderDelay = 0; pt.minSamples = 1; pt.fadeDuration = 0; pt.rasterizeScene = false; pt.tiles.set(2, 2); pt.bounces = 5; pt.filterGlossyFactor = .5;
+      pt.renderScale = window.__ptScale || Math.min(1, 1.25/dpr); pt.textureSize.set(512, 512); refine.pt = pt;
+      refine.den = new m.DenoiseMaterial({sigma:2.5, threshold:.12, kSigma:1}); refine.denMesh = new THREE.Mesh(tri, refine.den); refine.denScene = new THREE.Scene(); refine.denScene.add(refine.denMesh); }
+    catch(e){ refine.fail = true; console.warn("The refined still is off on this computer:", e.message || e, e.stack); }
+    refine.loading = false; }
+  // the hemisphere lights become a sky-and-ground environment the path tracer can see
+  function refineEnv(){ let sky = new THREE.Color(0, 0, 0), gnd = new THREE.Color(0, 0, 0); scene.traverse(o => { if(o.isHemisphereLight){ sky.add(o.color.clone().multiplyScalar(o.intensity)); gnd.add(o.groundColor.clone().multiplyScalar(o.intensity)); } if(o.isAmbientLight){ const c = o.color.clone().multiplyScalar(o.intensity); sky.add(c); gnd.add(c); } });
+    const w = 64, h = 32, d = new Float32Array(w*h*4); for(let y = 0; y < h; y++){ const k = .5 + .5*Math.cos(Math.PI*(y + .5)/h); for(let x = 0; x < w; x++){ const i = (y*w + x)*4; d[i] = gnd.r + (sky.r - gnd.r)*k; d[i+1] = gnd.g + (sky.g - gnd.g)*k; d[i+2] = gnd.b + (sky.b - gnd.b)*k; d[i+3] = 1; } }
+    if(refine.env) refine.env.dispose(); const t = new THREE.DataTexture(d, w, h, THREE.RGBAFormat, THREE.FloatType); t.mapping = THREE.EquirectangularReflectionMapping; t.needsUpdate = true; refine.env = t; return t; }
+  function refineBuild(){ const pt = refine.pt; if(!pt || refine.building) return; refine.building = true; refine.ready = false; const k = key;
+    // only the room itself: no lettering (it is printed on top), no sprites, glints, or lines
+    const hidden = []; scene.traverse(o => { if(o.visible && (o.layers.mask === 2 || o.isSprite || o.isPoints || o.isLine || (o.material && o.material.isShaderMaterial))){ hidden.push(o); o.visible = false; } });
+    const envWas = scene.environment, bgWas = scene.background; scene.environment = refineEnv(); scene.background = null;
+    new Promise(res => setTimeout(() => res(pt.setScene(scene, camera)), 0)).then(() => { refine.ready = k === key; refine.sceneKey = k; refine.camKey = ""; })
+      .catch(e => { refine.fail = true; console.warn("The refined still could not be built:", e.message || e); })
+      .finally(() => { hidden.forEach(o => { o.visible = true; }); scene.environment = envWas; scene.background = bgWas; refine.building = false; dirty = 3; }); }
+  if(/[?&]debug/.test(location.search)) window.__refineState = () => ({loaded:!!refine.pt, fail:refine.fail, ready:refine.ready, building:refine.building, samples:refine.pt ? refine.pt.samples : 0, mix:+refine.mix.toFixed(2)});
+  const blurMat = new THREE.ShaderMaterial({vertexShader:POST_VS, uniforms:{tex:{value:null}, step:{value:new THREE.Vector2()}}, fragmentShader:`precision highp float; uniform sampler2D tex; uniform vec2 step; varying vec2 vUv;
+    void main(){ vec3 s = vec3(0.); float w = 0.; for(int j = -2; j <= 2; j++) for(int i = -2; i <= 2; i++){ float k = exp(-float(i*i + j*j)/4.5); s += texture2D(tex, vUv + vec2(float(i), float(j))*step*.75).rgb*k; w += k; } gl_FragColor = vec4(s/w, 1.); }`});
+  const blurScene = new THREE.Scene(), blurMesh = new THREE.Mesh(tri, blurMat); blurScene.add(blurMesh);
+  function refineInvalidate(){ refine.ready = false; refine.sceneKey = null; }
+  function refineStep(t, moving){
+    const want = refineOn() && !RAW; if(!want){ if(refine.mix){ refine.mix = 0; post.uniforms.ptMix.value = 0; photo.uniforms.ptMix.value = 0; dirty = 3; } return false; }
+    if(!refine.pt){ refineLoad(); return false; }
+    const still = !moving && !(drag && drag.moved) && Math.abs(stage.k - Math.round(stage.k)) < .002 && !walking;
+    if(!still){ refine.stillSince = t; if(refine.mix > 0){ refine.mix = Math.max(0, refine.mix - .25); dirty = 3; } return refine.mix > 0; }
+    if(t - refine.stillSince < 280) return false;
+    if(refine.sceneKey !== key && !refine.building){ refineBuild(); return false; }
+    if(!refine.ready) return false;
+    const ck = camera.matrixWorld.elements.map(v => v.toFixed(4)).join(",") + "|" + camera.fov.toFixed(2) + "|" + camera.aspect.toFixed(3);
+    if(ck !== refine.camKey){ refine.camKey = ck; refine.pt.updateCamera(); refine.mix = 0; }
+    if(refine.pt.samples < 600){ refine.pt.renderSample(); renderer.setRenderTarget(null); }
+    const s = refine.pt.samples;
+    if(s >= 2 && (s < 8 || Math.floor(s) % 16 === 0) && Math.floor(s) !== refine.metered){ refine.metered = Math.floor(s); const a = meterOf(rt.texture), b = meterOf(refine.pt.target.texture); if(b > 1e-5) refine.gain = Math.max(.6, Math.min(16, a/b)); }
+    refine.mix = Math.min(1, Math.max(refine.mix, (s - refine.minS)/(refine.minS*1.5)));
+    if(window.__ptOnly) refine.mix = 1;
+    // the traced light and the quick picture, each blurred down to an eighth of the size
+    const lw = Math.max(8, Math.round(W*dpr/8)), lh = Math.max(8, Math.round(H*dpr/8));
+    if(!refine.loR || refine.loR.width !== lw || refine.loR.height !== lh){ [refine.loR, refine.loP].forEach(r => r && r.dispose()); const o = {type:THREE.HalfFloatType, depthBuffer:false, minFilter:THREE.LinearFilter, magFilter:THREE.LinearFilter}; refine.loR = new THREE.WebGLRenderTarget(lw, lh, o); refine.loP = new THREE.WebGLRenderTarget(lw, lh, o); }
+    blurMat.uniforms.step.value.set(1/lw, 1/lh); blurMesh.material = blurMat;
+    blurMat.uniforms.tex.value = rt.texture; renderer.setRenderTarget(refine.loR); renderer.render(blurScene, postCam);
+    blurMat.uniforms.tex.value = refine.pt.target.texture; renderer.setRenderTarget(refine.loP); renderer.render(blurScene, postCam); renderer.setRenderTarget(null);
+    [post, photo].forEach(m => { m.uniforms.tRlo.value = refine.loR.texture; m.uniforms.tPT.value = refine.loP.texture; m.uniforms.ptMix.value = refine.mix; m.uniforms.ptGain.value = refine.gain; });
+    return s < 400 || refine.mix < 1; }
+
+  /* ---- mechanisms: short tweens for things that move (a drawer on its runners, a key turning, a glass door on its hinges), each with
+     its own easing, so they have weight: a drawer runs out and settles, a door swings and comes to rest, a locked drawer only rattles ---- */
+  const tweens = [];
+  const EASE = {out:k => 1 - Math.pow(1 - k, 3), inOut:k => k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3)/2,
+    settle:k => 1 + 2.4*Math.pow(k - 1, 3) + 1.4*Math.pow(k - 1, 2),                   // runs a hair past and settles back
+    swing:k => k >= 1 ? 1 : 1 - Math.exp(-5.5*k)*Math.cos(7.5*k)*(1 - k*.2)};           // a damped swing on a hinge
+  function tween(dur, fn, ease){ return new Promise(res => { tweens.push({t0:performance.now(), dur: hooks.calm && hooks.calm() ? dur*.6 : dur, fn, ease: EASE[ease] || EASE.out, res}); dirty = 3; }); }
+  function runTweens(t){ if(!tweens.length) return false; for(let i = tweens.length - 1; i >= 0; i--){ const w = tweens[i], k = Math.min(1, (t - w.t0)/w.dur); w.fn(w.ease(k), k); if(k >= 1){ tweens.splice(i, 1); w.res(); refineInvalidate(); } } return true; }
+
   /* ---- the frame loop ---- */
   let last = performance.now(), dirty = 3, lastAnimDraw = 0;
   function frame(t){
@@ -440,10 +520,20 @@ export function create(container, hooks){
     const fp = fk === "peek" ? focusPt : fk === "close" && plan && stations[plan.ahead] ? stations[plan.ahead].top : null;
     if(fp){ stage.z = -fp.clone().applyMatrix4(camera.matrixWorldInverse).z; stage.r = fk === "close" ? .9 : orbit ? Math.max(.35, orbit.r*.55) : .8; }
     [post, photo].forEach(m => { m.uniforms.stageK.value = stage.k; m.uniforms.focusZ.value = stage.z; m.uniforms.focusR.value = stage.r; });
-    const tt = staged ? (fk === "peek" ? stage.title : (plan && stations[plan.ahead] && stations[plan.ahead].title) || "") : "", uiKey = [fk, stage.k > .5, tt, seated ? 1 : 0, actList.length].join("|");
-    if(uiKey !== stage.ui){ stage.ui = uiKey; container.classList.toggle("staged", stage.k > .5); stageTitle.textContent = tt; stageTitle.classList.toggle("on", !!tt); backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0); if(fk) backBtn.textContent = fk === "sky" ? "↩ Come back down" : seated ? "↩ Stand up" : "↩ Step back"; }
+    // the levels you are down: the room, then the desk or stand, then the thing; the trail names them and the strip names the one you go back to
+    if(fk !== stage.fk){ const was = stage.fk; stage.fk = fk; if(was !== undefined){ busyUntil = performance.now() + 420; transit(!!fk && (!was || fk === "peek"), stage.at); } stage.at = null; }
+    const stTitle = plan && stations[plan.ahead] && plan.close ? stations[plan.ahead].title || "the desk" : "";
+    const trail = !fk ? [] : [plan && plan.room ? (plan.room.name || "the room").replace(/^The /, "the ") : "the room"].concat(fk === "sky" ? ["the sky"] : fk === "close" ? [stTitle] : stTitle ? [stTitle, stage.title || (seated ? "the seat" : "")] : [stage.title || (seated ? "the seat" : "a closer look")]).filter(Boolean);
+    const uiKey = [fk, stage.k > .5, trail.join("›"), seated ? 1 : 0, actList.length].join("|");
+    if(uiKey !== stage.ui){ stage.ui = uiKey; container.classList.toggle("staged", stage.k > .5); document.documentElement.classList.toggle("closelook", !!fk);
+      stageTitle.innerHTML = trail.map((t, i) => i < trail.length - 1 ? `<button type="button" data-up="${trail.length - 1 - i}">${t}</button>` : `<b>${t}</b>`).join(`<span class="sep">›</span>`);
+      stageTitle.querySelectorAll("[data-up]").forEach(b => b.onclick = e => { e.stopPropagation(); let n = +b.dataset.up; const go = () => { if(n-- > 0 && focusKind()){ exitFocus(); setTimeout(go, 60); } }; go(); });
+      stageTitle.classList.toggle("on", trail.length > 0); backBtn.classList.toggle("on", !!fk); actBar.classList.toggle("on", fk === "peek" && actList.length > 0);
+      if(fk) backBtn.innerHTML = fk === "sky" ? "↓ Come back down" : seated ? "↓ Stand up" : `↓ Back to ${trail[trail.length - 2] || "the room"}`; }
     // a still room with only flickers and glints in it is drawn about 20 times a second, not 60; moving or changing, every frame
     const animDue = anims.length && t - lastAnimDraw > 48;
+    const mech = runTweens(t); if(mech) dirty = Math.max(dirty, 1);
+    if(refineStep(t, moving || mech)) dirty = Math.max(dirty, 1);
     if(moving || animDue || dirty>0){ lastAnimDraw = t;
       dirty = Math.max(0, dirty-1);
       if(RAW){ camera.layers.enableAll(); renderer.setRenderTarget(null); renderer.render(scene, camera); requestAnimationFrame(frame); return; }
@@ -1500,8 +1590,77 @@ export function create(container, hooks){
     const seen = hooks.noted && hooks.noted(o.raw); s.material.opacity = seen ? .45 : 1;
     s.userData.hit = {kind:"info", label: (seen ? "In your Primer: " : "What is it? ") + o.title, onClick:() => { hooks.info && hooks.info(o.raw); s.material.opacity = .45; dirty = 2; }}; picks.push(s);
     const ph = Math.random()*6; anims.push(t => { if(s.visible){ s.scale.setScalar(.09 + .025*Math.sin(t*2.2 + ph)); } }); glints.push({mesh: s, slot}); }
+  /* ---- drawers and cases that open where they stand: the drawer runs out of the desk with what it holds in it, the glass door of the
+     instrument case swings open, and you take things out with your hand. Locked without the key, they only rattle. ---- */
+  const CASE_OPEN = {};   // a drawer left open stays open when the room is redrawn under it (taking a thing redraws the room)
+  function mechCase(og, o){
+    if(!hooks.caseInfo || (o.icon !== "drawer" && o.icon !== "devcase")) return; const lock = (o.raw || o).lock;
+    og.children.slice().forEach(c => og.remove(c));   // the plain model gives way to one with moving parts
+    const wood = mat("#6e5743"), dark = mat("#4a3b2e"), brass = mat("#b39a62", {metalness:.65, roughness:.32}), felt = mat("#3d4f3a", {roughness:1}), velvet = mat("#5a2a2a", {roughness:1});
+    const box = (w, h, d, m, x, y, z, parent) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); me.position.set(x, y, z); me.castShadow = me.receiveShadow = true; (parent || og).add(me); return me; };
+    const st = {open:false, busy:false, unlocked:false}, info = () => hooks.caseInfo(o), contents = new THREE.Group(), keyG = new THREE.Group();
+    let moving;   // the part that moves: the drawer's slide or the case's door
+    const spot = new THREE.Color("#a0503a");
+    // what it holds, small, each a thing you can take
+    const fill = (places) => { contents.clear(); info().holds.forEach((h, i) => { if(h.have || !places[i]) return; const m = model(h.icon === "lamp" ? "lamp" : h.icon, spot, Math.random); m.scale.setScalar(places[i][3]); m.position.set(places[i][0], places[i][1], places[i][2]); m.rotation.y = places[i][4] || 0;
+      m.traverse(q => { if(q.isMesh) q.castShadow = true; }); m.userData.item = h.key; m.userData.hit = {inner:() => st.open, outer:() => og.userData.hit, kind:"take", label: h.name + ": take it, with its page", onClick:() => takeOut(m, h)}; picks.push(m); contents.add(m); }); };
+    const takeOut = (m, h) => { if(st.busy) return; st.busy = true; hooks.sfx && hooks.sfx("take"); const y0 = m.position.y, s0 = m.scale.x;
+      tween(420, e => { m.position.y = y0 + .16*e; m.scale.setScalar(s0*(1 - .7*e)); }, "inOut").then(() => { m.visible = false; st.busy = false; hooks.caseTake(o, h.key); setActions(actions()); }); };
+    if(o.icon === "drawer"){
+      // the carcass: top, bottom, sides, and back; the drawer slides in it on its runners
+      box(.3, .008, .2, wood, 0, .066, 0); box(.3, .006, .2, dark, 0, .003, 0); box(.006, .07, .2, wood, -.147, .035, 0); box(.006, .07, .2, wood, .147, .035, 0); box(.3, .07, .006, dark, 0, .035, -.097);
+      moving = new THREE.Group(); og.add(moving);
+      box(.288, .062, .01, mat("#7d6450"), 0, .035, .1, moving); box(.27, .004, .185, felt, 0, .012, .005, moving); box(.004, .04, .185, wood, -.134, .03, .005, moving); box(.004, .04, .185, wood, .134, .03, .005, moving); box(.27, .04, .004, wood, 0, .03, -.088, moving);
+      const esc = new THREE.Mesh(new THREE.CylinderGeometry(.012, .012, .004, 20), brass); esc.rotation.x = Math.PI/2; esc.position.set(0, .04, .106); moving.add(esc); box(.003, .01, .003, mat("#1a1410"), 0, .036, .108, moving);
+      box(.05, .008, .012, brass, 0, .022, .11, moving);   // the pull
+      moving.add(contents); fill([[-.07, .014, 0, .32, .3], [.06, .014, -.01, .32, -.2], [0, .014, .05, .3, .1]]);
+      // the key, which appears in the lock when you carry the ring
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(.012, .0025, 8, 24), brass); ring.position.set(0, 0, .03); keyG.add(ring); box(.003, .003, .03, brass, 0, 0, .012, keyG); box(.003, .008, .006, brass, 0, -.004, .002, keyG);
+      keyG.position.set(0, .04, .12); keyG.visible = false; moving.add(keyG);
+    } else {
+      // the instrument case: carcass, a shelf, velvet, and a glazed door hinged on the left
+      box(.4, .5, .01, dark, 0, .25, -.095); box(.01, .5, .2, wood, -.195, .25, 0); box(.01, .5, .2, wood, .195, .25, 0); box(.4, .012, .2, wood, 0, .494, 0); box(.4, .012, .2, wood, 0, .006, 0); box(.38, .008, .17, wood, 0, .25, -.005);
+      box(.38, .004, .17, velvet, 0, .014, -.005); box(.38, .004, .17, velvet, 0, .256, -.005);
+      og.add(contents); fill([[-.11, .016, 0, .28], [0, .016, 0, .26], [.11, .016, 0, .26], [-.08, .258, 0, .26], [.08, .258, 0, .26]]);
+      moving = new THREE.Group(); moving.position.set(-.19, 0, .1); og.add(moving);
+      const glass = mat("#e8eceb", {transparent:true, opacity:.16, roughness:.04});
+      const pane = new THREE.Mesh(new THREE.BoxGeometry(.36, .46, .003), glass); pane.position.set(.19, .25, 0); moving.add(pane);
+      [[.19, .022, .38, .012], [.19, .478, .38, .012], [.008, .25, .012, .48], [.372, .25, .012, .48]].forEach(([x, y, w, h]) => box(w, h, .012, wood, x, y, 0, moving));
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(.008, 16, 12), brass); knob.position.set(.36, .25, .012); moving.add(knob);
+    }
+    const shake = () => { hooks.sfx && hooks.sfx("rattle"); const z0 = moving.position.z, r0 = moving.rotation.y; return tween(420, (e, k) => { const w = Math.sin(k*Math.PI*7)*(1 - k); if(o.icon === "drawer") moving.position.z = z0 + .004*w; else moving.rotation.y = r0 - .02*Math.abs(w); }, "out"); };
+    const open = async () => { if(st.busy || st.open) return; const I = info();
+      if(I.locked){ st.busy = true; await shake(); st.busy = false; hooks.toast && hooks.toast(`Locked. ${I.lockName.charAt(0).toUpperCase() + I.lockName.slice(1)} would open it.`); return; }
+      st.busy = true;
+      if(lock && !st.unlocked && o.icon === "drawer"){ keyG.visible = true; keyG.rotation.z = 0; await tween(300, e => { keyG.position.z = .15 - .03*e; }, "out"); hooks.sfx && hooks.sfx("latch"); await tween(320, e => { keyG.rotation.z = -Math.PI/2*e; }, "inOut"); st.unlocked = true; }
+      if(lock && !st.unlocked && o.icon === "devcase"){ hooks.sfx && hooks.sfx("latch"); st.unlocked = true; await tween(200, () => {}, "out"); }
+      if(o.icon === "drawer"){ hooks.sfx && hooks.sfx("slide", true); reframe(true); await tween(700, e => { moving.position.z = .15*e; }, "settle"); }
+      else { hooks.sfx && hooks.sfx("hinge", true); reframe(true); await tween(1000, e => { moving.rotation.y = -1.75*e; }, "swing"); }
+      st.open = true; CASE_OPEN[o.title] = true; st.busy = false; setActions(actions()); };
+    // the close look follows the drawer out and tips to look down into it, or steps back to see into the case
+    const reframe = (opening) => { if(!(orbit && peeking && orbit.key === "item:" + o.title)) return Promise.resolve(); const o0 = {c:orbit.c.clone(), el:orbit.el, r:orbit.r};
+      const fwd = new THREE.Vector3(0, 0, o.icon === "drawer" ? .15*og.scale.z : 0).applyQuaternion(og.getWorldQuaternion(new THREE.Quaternion()));
+      const t1 = opening ? (o.icon === "drawer" ? {c:o0.c.clone().add(fwd).setY(o0.c.y - .06), el:1.05, r:Math.max(orbit.rmin, o0.r*.8)} : {c:o0.c.clone().setY(o0.c.y + .22*og.scale.y), el:.22, r:Math.min(orbit.rmax, o0.r*1.55)}) : orbit.home;
+      if(opening) orbit.home = o0; if(!t1) return Promise.resolve();
+      return tween(650, e => { orbit.c.lerpVectors(o0.c, t1.c, e); orbit.el = o0.el + (t1.el - o0.el)*e; orbit.r = o0.r + (t1.r - o0.r)*e; orbitApply(); }, "inOut"); };
+    const close = async () => { if(st.busy || !st.open) return; st.busy = true; delete CASE_OPEN[o.title]; reframe(false);
+      if(o.icon === "drawer"){ hooks.sfx && hooks.sfx("slide", false); await tween(520, e => { moving.position.z = .15*(1 - e); }, "inOut"); if(keyG.visible){ await tween(260, e => { keyG.rotation.z = -Math.PI/2*(1 - e); }, "inOut"); hooks.sfx && hooks.sfx("latch"); } }
+      else { hooks.sfx && hooks.sfx("hinge", false); await tween(650, e => { moving.rotation.y = -1.75*(1 - e); }, "inOut"); }
+      st.open = false; st.busy = false; setActions(actions()); };
+    const actions = () => { const I = info(), left = I.holds.filter(h => !h.have).length;
+      return [st.open ? {label:"Close it", fn: close} : {label: I.locked ? "Try the lock" : "Open it", fn: open}].concat(st.open && left === 0 ? [] : []).concat([{label:"The pages", fn:() => hooks.caseList && hooks.caseList(o)}]); };
+    og.userData.mech = {open, close, actions, get isOpen(){ return st.open; }, toggle:() => st.open ? close() : open()};
+    if(CASE_OPEN[o.title] && peeking && orbit && orbit.key === "item:" + o.title){ st.open = st.unlocked = true; if(o.icon === "drawer"){ moving.position.z = .15; if(lock){ keyG.visible = true; keyG.position.z = .12; keyG.rotation.z = -Math.PI/2; } } else moving.rotation.y = -1.75; setActions(actions());
+      // the desk may have been laid out afresh (a thing taken from it), so the close look finds the drawer again where it now is
+      setTimeout(() => { if(!(orbit && orbit.key === "item:" + o.title)) return; og.updateWorldMatrix(true, false); const fwd = new THREE.Vector3(0, 0, o.icon === "drawer" ? .15*og.scale.z : 0).applyQuaternion(og.getWorldQuaternion(new THREE.Quaternion()));
+        const c0 = og.getWorldPosition(new THREE.Vector3()).setY(og.getWorldPosition(new THREE.Vector3()).y + .1), nc = c0.clone().add(fwd).setY(c0.y - .06), d = nc.clone().sub(orbit.c);
+        orbit.c.copy(nc); if(orbit.home) orbit.home.c.add(d); focusPt = c0; orbitApply(); }, 0); }
+    else delete CASE_OPEN[o.title];
+    onWin("wending-unpeek", () => { if(st.open && !st.busy) close(); });
+  }
   function itemClick(og, o){ const key = "item:" + o.title;
-    return () => { const acts = hooks.actionsFor ? hooks.actionsFor(o) : null;
+    return () => { const acts = og.userData.mech ? og.userData.mech.actions() : hooks.actionsFor ? hooks.actionsFor(o) : null;
+      if(og.userData.mech && orbit && orbit.key === key) return og.userData.mech.toggle();
       if(!(plan && plan.close) && hooks.closer && og.userData.slot != null && acts){ hooks.closer(og.userData.slot); return; }
       if(!acts || (orbit && orbit.key === key) || !(plan && plan.close)) return hooks.useObject(o);
       const c = og.getWorldPosition(new THREE.Vector3()); c.y += .1; const d = cam.pos.clone().sub(c).setY(0); if(d.lengthSq() < 1e-4) d.set(0,0,1); d.setLength(.62);
@@ -1535,6 +1694,7 @@ export function create(container, hooks){
     shown.forEach((o, i) => {
       const og = model(o.icon, spot, R); og.scale.multiplyScalar(1.35); const x = shown.length===1 ? (trayO ? -w/2 + .5 : 0) : -w/2+.2 + i*spacing;
       og.position.set(x, topY+.035, .05 + (i%2)*.12); og.rotation.y = (R()-.5)*.5; og.traverse(m => { if(m.isMesh){ m.castShadow = true; } });
+      if(o.kind === "case") mechCase(og, o);
       og.userData.hit = {kind: o.kind==="key" ? "take" : o.href ? "open" : o.action ? "use" : "look", label: o.title + (o.by ? " · " + o.by : ""), onClick:itemClick(og, o)}; og.userData.slot = slot;
       g.add(og); picks.push(og); glint(g, new THREE.Vector3(x + .12, topY + .32, .05 + (i%2)*.12), o, slot);
     });
@@ -1982,7 +2142,8 @@ export function create(container, hooks){
       const Rr = rng(hashStr("drawer" + i + w)); for(let j = 0; j < 3; j++){ const kind = Math.floor(Rr()*4), m2 = [mat("#ece6d6"), mat("#2a251e"), mat("#6b2f26"), brass][kind];
         const it = kind === 1 ? new THREE.Mesh(new THREE.CylinderGeometry(.004, .004, .15, 6), m2) : kind === 3 ? new THREE.Mesh(new THREE.TorusGeometry(.018, .004, 6, 16), m2) : new THREE.Mesh(new THREE.BoxGeometry(.09 + Rr()*.06, .006, .12), m2);
         if(kind === 1) it.rotation.z = Math.PI/2; if(kind === 3) it.rotation.x = Math.PI/2; it.position.set((Rr() - .5)*(dw - .08), -.03, d/2 - .1 - Rr()*(D2 - .08)); it.rotation.y = (Rr() - .5); dr.add(it); }
-      let open = 0, target = 0; df.userData.hit = {kind:"use", label:"A drawer: open it", onClick:() => { if(!focusKind()){ let o = df.parent; while(o && !(o.userData.hit && o.userData.hit.kind === "closer")) o = o.parent; if(o) return o.userData.hit.onClick(); } target = target ? 0 : D2*.85; df.userData.hit.label = target ? "The drawer: close it" : "A drawer: open it"; hooks.drawer && hooks.drawer(target > 0); }}; picks.push(df);
+      let open = 0, target = 0; const dfOuter = () => { let o = df.parent; while(o && !(o.userData.hit && o.userData.hit.kind === "closer")) o = o.parent; return o ? o.userData.hit : {kind:"closer", label:"Look closer", onClick:() => {}}; };
+      df.userData.hit = {inner:() => !!focusKind(), outer: dfOuter, kind:"use", label:"A drawer: open it", onClick:() => { if(!focusKind()){ let o = df.parent; while(o && !(o.userData.hit && o.userData.hit.kind === "closer")) o = o.parent; if(o) return o.userData.hit.onClick(); } target = target ? 0 : D2*.85; df.userData.hit.label = target ? "The drawer: close it" : "A drawer: open it"; hooks.drawer && hooks.drawer(target > 0); }}; picks.push(df);
       anims.push(() => { if(Math.abs(target - open) > .0005){ open += (target - open)*.18; dr.position.z = open; dirty = 2; } }); }
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => { const L = turnedLeg(h-.2, .035, dark); L.position.set(sx*(w/2-.07), 0, sz*(d/2-.07)); g.add(L);
       const blk = new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.075), dark); blk.position.set(sx*(w/2-.07), h-.14, sz*(d/2-.07)); g.add(blk); });
@@ -2216,12 +2377,13 @@ export function create(container, hooks){
       const rk = balanceRocker(), rkAt = new THREE.Vector3(-3.3, 0, 3.0); rk.group.position.copy(rkAt); rk.group.rotation.y = Math.PI*.8; scene.add(rk.group);
       const fs = nestingStool(); const fsOff = new THREE.Vector3(0, 0, .78).applyAxisAngle(new THREE.Vector3(0,1,0), Math.PI*.8); place(fs, rkAt.x + fsOff.x, rkAt.z + fsOff.z, Math.PI*.8);
       const sit = () => { const yaw = Math.PI*.8, fwd = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), eye = rkAt.clone().addScaledVector(fwd, -.12).setY(1.08), aim = rkAt.clone().addScaledVector(fwd, 1.6).setY(.55);
-        peek(eye, aim); seated = {leave(){ rk.set(0); rk.hit.userData.hit.label = "The balance rocker: sit in it"; }, lean(){ const on = rk.toggle(); goal.pitch = on ? .12 : Math.atan2(aim.y - eye.y, 1.72); goal.pos.y = on ? 1.0 : 1.08; dirty = 3; return on; }}; hooks.furniture && hooks.furniture("rocker"); };
+        peek(eye, aim, {title:"The balance rocker", actions:[{label:"About the rocker", fn:() => hooks.furnitureCard && hooks.furnitureCard("rocker")}]}); seated = {leave(){ rk.set(0); rk.hit.userData.hit.label = "The balance rocker: sit in it"; }, lean(){ const on = rk.toggle(); goal.pitch = on ? .12 : Math.atan2(aim.y - eye.y, 1.72); goal.pos.y = on ? 1.0 : 1.08; dirty = 3; return on; }}; hooks.furniture && hooks.furniture("rocker"); };
       rk.hit.userData.hit = {kind:"look", label:"The balance rocker: sit in it", onClick:() => { if(seated){ const on = seated.lean(); rk.hit.userData.hit.label = on ? "Sit up" : "Lean back"; } else { sit(); rk.hit.userData.hit.label = "Lean back"; } }}; picks.push(rk.hit);
       const Lw = wallAt(faces, 0); if(Lw){ const sc = staircaseCabinet(), t = +(window.__cabT || .76)*Lw.len; if(Lw.free(t, 2)){ const at = Lw.at(t, .24); sc.group.position.set(at.x, 0, at.z); sc.group.rotation.y = Lw.yaw; scene.add(sc.group);
         const toward = Lw.n.clone(), eye = new THREE.Vector3(at.x, 1.45, at.z).addScaledVector(toward, 1.9), aim = new THREE.Vector3(at.x, .85, at.z);
-        sc.hit.userData.hit = {kind:"closer", label:"The staircase cabinet: look closer", onClick:() => { peek(eye, aim); const keep = sc.hit.userData.hit; sc.hit.userData.hit = null; onWin("wending-unpeek", () => { sc.hit.userData.hit = keep; }); if(!sc.seen){ sc.seen = true; hooks.furniture && hooks.furniture("cabinet"); } }}; picks.push(sc.hit);
-        sc.fronts.forEach(f => { f.mesh.userData.hit = {kind:"use", label: f.label, onClick:() => { f.open = !f.open; f.mesh.userData.hit.label = f.open ? f.label.replace("open it", "close it").replace("roll it up", "let it down") : f.label; }}; picks.push(f.mesh); anims.push(() => f.step()); }); } }
+        let scIn = false; const scEnter = {kind:"closer", label:"The staircase cabinet: look closer", onClick:() => { peek(eye, aim, {title:"The staircase cabinet", actions:[{label:"About the cabinet", fn:() => hooks.furnitureCard && hooks.furnitureCard("cabinet")}]}); scIn = true; const keep = sc.hit.userData.hit; sc.hit.userData.hit = null; onWin("wending-unpeek", () => { sc.hit.userData.hit = keep; scIn = false; }); if(!sc.seen){ sc.seen = true; hooks.furniture && hooks.furniture("cabinet"); } }};
+        sc.hit.userData.hit = scEnter; picks.push(sc.hit);
+        sc.fronts.forEach(f => { f.mesh.userData.hit = {inner:() => scIn && peeking, outer:() => scEnter, kind:"use", label: f.label, onClick:() => { f.open = !f.open; f.mesh.userData.hit.label = f.open ? f.label.replace("open it", "close it").replace("roll it up", "let it down") : f.label; }}; picks.push(f.mesh); anims.push(() => f.step()); }); } }
       const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.4), mat("#ffffff",{map: canvasTex(512, 360, (g,w,h) => { g.fillStyle = "#4f3a5a"; g.fillRect(0,0,w,h); g.strokeStyle = "#cdb88a"; g.lineWidth = 10; g.strokeRect(14,14,w-28,h-28); g.lineWidth = 3; for(let i=0;i<7;i++){ g.beginPath(); g.ellipse(w/2,h/2,40+i*26,24+i*17,0,0,TAU); g.stroke(); } })}));
       rug.rotation.x = -Math.PI/2; rug.position.set(1.4,.008,-.9); rug.receiveShadow = true; scene.add(rug);
     }
