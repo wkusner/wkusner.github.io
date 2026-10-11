@@ -321,7 +321,28 @@ html .mbx.win,html.skin-myst .mbx.win{position:fixed} .mbx{position:fixed;inset:
 /* the settings menu: most of the old menu bar lives here now; the hidden buttons still carry their handlers */
 #b-lamp,#b-ink,#b-skin,#b-gfx,#b-q,#b-ann,#b-help{display:none!important}
 .set-sec{margin:14px 0 4px;font:400 13px var(--fellsc,serif);letter-spacing:.14em;text-transform:uppercase}
-.set-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid var(--line,#bbb)} .set-row > span:first-child{width:9em} .set-row .val{flex:1;color:var(--muted,#555)}
+.setv{max-width:680px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:10px 18px;padding:9px 0;border-top:1px solid color-mix(in srgb,var(--line,#bbb) 35%,transparent);flex-wrap:wrap}
+.set-row.dis .set-c{opacity:.45;pointer-events:none}
+.set-l{display:flex;flex-direction:column;min-width:12em;flex:1 1 14em}
+.set-n{font-size:16px} .set-d{font-size:13px;color:var(--muted,#555);line-height:1.35}
+.set-c{display:flex;align-items:center;gap:10px;flex:0 1 auto}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--ink,#222);border-radius:3px;overflow:hidden}
+.seg button{font:inherit;font-size:14px;padding:6px 11px;background:transparent;color:var(--ink,#222);border:none;border-left:1px solid var(--ink,#222);cursor:pointer}
+.seg button:first-child{border-left:none}
+.seg button:hover{background:color-mix(in srgb,var(--spot,#c84) 14%,transparent)}
+.seg button.on{background:var(--ink,#222);color:var(--paper,#fff)}
+.sw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.sw input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-t{width:40px;height:22px;border-radius:11px;border:1px solid var(--ink,#222);position:relative;background:transparent;transition:background .15s}
+.sw-t::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--ink,#222);transition:transform .15s}
+.sw input:checked + .sw-t{background:var(--spot,#c84)}
+.sw input:checked + .sw-t::after{transform:translateX(18px);background:var(--paper,#fff)}
+.sw input:focus-visible + .sw-t{outline:2px solid var(--spot,#c84);outline-offset:2px}
+.sw input:disabled + .sw-t{opacity:.4}
+.sw-l{font-size:13px;color:var(--muted,#555);width:2em}
+.set-sl{width:180px;accent-color:var(--spot,#c84)} .set-o{font-size:13px;color:var(--muted,#555);width:2.5em;text-align:right}
+.seg button:focus-visible{outline:2px solid var(--spot,#c84);outline-offset:-3px}
 .primercard,html.skin-myst .primercard.win{position:absolute} .primercard{left:50%;bottom:16px;transform:translateX(-50%);width:min(520px,92%);z-index:6;display:none} .primercard.open{display:block}
 .primercard .wb{padding:6px 16px 12px;font-size:15px;line-height:1.45}
 
@@ -409,17 +430,17 @@ html.skin-myst .primerdock{background:linear-gradient(#efe3c6,#e6d7b4);color:#2b
 <div class="overlay" id="ov"><div class="sheet win"><div class="tb"><button class="box" type="button" id="ovx" aria-label="Close"></button><span class="t" id="ovt"></span></div><div class="wb" id="ovb"></div></div></div>
 <div class="toast" id="toast"></div>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap">
-<script src="data.js?v=20261011a"></script>
-<script src="sky.js?v=20261011a"></script>
-<script src="systems.js?v=20261011a"></script>
-<script src="numerals.js?v=20261011a"></script>
-<script src="reckoning.js?v=20261011a"></script>
-<script src="musicbox-dsp.js?v=20261011a"></script>
-<script src="musicbox-gen.js?v=20261011a"></script>
-<script src="musicbox-manual.js?v=20261011a"></script>
-<script src="musicbox.js?v=20261011a"></script>
-<script src="materials.js?v=20261011a"></script>
-<script src="furniture.js?v=20261011a"></script>
-<script src="palace.js?v=20261011a"></script>
+<script src="data.js?v=20261011b"></script>
+<script src="sky.js?v=20261011b"></script>
+<script src="systems.js?v=20261011b"></script>
+<script src="numerals.js?v=20261011b"></script>
+<script src="reckoning.js?v=20261011b"></script>
+<script src="musicbox-dsp.js?v=20261011b"></script>
+<script src="musicbox-gen.js?v=20261011b"></script>
+<script src="musicbox-manual.js?v=20261011b"></script>
+<script src="musicbox.js?v=20261011b"></script>
+<script src="materials.js?v=20261011b"></script>
+<script src="furniture.js?v=20261011b"></script>
+<script src="palace.js?v=20261011b"></script>
 </body>
 </html>

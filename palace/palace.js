@@ -917,7 +917,7 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js?v=20261011a").then(m => {
+  import("./palace3d.js?v=20261011b").then(m => {
     VIEW3D = m.create($("stage"), {
       turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, calm: () => S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
@@ -2903,31 +2903,56 @@ $("b-map").onclick = () => mapView();
 $("b-primer").onclick = () => S.inv.includes("primer") ? primerView() : toast("You haven't the Primer yet. It is on the desk in the Entry.");
 /* ---------- settings: the ways of seeing, light, sound, reading, and walking, gathered in one place ---------- */
 function settingsView(){
-  const row = (label, val, id, act) => `<div class="set-row"><span>${label}</span><span class="val">${val}</span><button class="btn" type="button" data-set="${id}">${act}</button></div>`;
-  const has3d = !!VIEW3D && S.gfx !== "2d";
-  overlay("Settings", `<div class="text" style="max-width:640px">
+  // one row per setting: a name and a line of explanation on the left, the control on the right.
+  // Choices among a few are segmented buttons, on/off is a switch, amounts are sliders, and things with their own panel get a button.
+  const has3d = !!VIEW3D && S.gfx !== "2d", reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const calm = S.calm != null ? !!S.calm : reduce;
+  const row = (label, note, ctl, dis) => `<div class="set-row${dis ? " dis" : ""}"><div class="set-l"><span class="set-n">${label}</span>${note ? `<span class="set-d">${note}</span>` : ""}</div><div class="set-c">${ctl}</div></div>`;
+  const seg = (id, cur, opts) => `<div class="seg" role="radiogroup" aria-label="${id}">${opts.map(([v, l]) => `<button type="button" role="radio" aria-checked="${v === cur}" class="${v === cur ? "on" : ""}" data-seg="${id}" data-v="${v}">${l}</button>`).join("")}</div>`;
+  const sw = (id, on, label, dis) => `<label class="sw"><input type="checkbox" role="switch" data-sw="${id}" ${on ? "checked" : ""} ${dis ? "disabled" : ""} aria-label="${label}"><span class="sw-t" aria-hidden="true"></span><span class="sw-l">${on ? "on" : "off"}</span></label>`;
+  const sld = (id, v, label) => `<input class="set-sl" type="range" min="0" max="1" step=".05" value="${v}" data-sl="${id}" aria-label="${label}"><output class="set-o" data-o="${id}">${Math.round(v*100)}</output>`;
+  const btn = (id, l) => `<button class="btn" type="button" data-set="${id}">${l}</button>`;
+  const hasPrimer = S.inv.includes("primer");
+  overlay("Settings", `<div class="setv">
     <h4 class="set-sec">Seeing</h4>
-    ${row("View", ({"2d":"woodcut (flat pictures)", photo:"photographic", "3d":"engraved"})[S.gfx||"3d"] || "engraved", "gfx", "Change")}
-    ${has3d ? row("Quality", defaultQuality(), "q", "Change") : ""}
-    ${row("Skin", (S.skin||"myst")==="myst" ? "Myst (journals)" : "HyperCard (stacks)", "skin", "Change")}
-    ${row("Ink", S.ink==="1bit" ? "black only" : "two colours", "ink", "Change")}
-    ${row("Corner map", S.noMini ? "hidden" : "shown, top right, once you carry a map", "mini", S.noMini ? "Show" : "Hide")}
-    ${has3d ? row("Motion", (S.calm != null ? S.calm : window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "calm: close looks don't zoom" : "close looks zoom in and out", "calm", "Change") : ""}
-    ${has3d ? row("Eyes", S.fixedEyes ? "fixed exposure" : "adjust to the light at each place", "eyes", S.fixedEyes ? "Adjust" : "Fix") : ""}
-    <h4 class="set-sec">Light</h4>${row("Light", "your lantern, the house lamps, the shutters", "lamp", "Open")}
-    <h4 class="set-sec">Sound</h4>${row("Sound", S.snd && S.snd.on ? "on" : "off", "snd", "Levels")}
-    <h4 class="set-sec">Reading</h4>${row("Annotations", S.annot ? "shown beside each room" : "hidden", "ann", S.annot ? "Hide" : "Show")}${row("Primer", !S.inv.includes("primer") ? "not yet found (it is on the porter's desk)" : S.primerDock ? "kept open below the picture" : "closed; its line shows in the corner", "pdock", S.primerDock ? "Close" : "Keep open")}
-    <h4 class="set-sec">Walking</h4>${row("How to walk", "keys, clicks, and the standing places", "help", "Read")}
-    <p class="note">The menu bar keeps the map, the Primer, the finding aid (once you carry them), and the full view. Things you carry are in the bag under the picture.</p></div>`);
-  const click = id => { const b = $("b-" + id); if(b) b.onclick(); };
+    ${row("View", "How the rooms are drawn.", seg("gfx", S.gfx || "3d", [["3d", "Engraved"], ["photo", "Photographic"], ["2d", "Woodcut"]]))}
+    ${has3d ? row("Quality", "Finer costs more of your computer. Changing it reloads the page.", seg("q", defaultQuality(), [["draft", "Draft"], ["normal", "Normal"], ["fine", "Fine"], ["ultra", "Ultra"], ["max", "Max"]])) : ""}
+    ${row("Skin", "The frame around the picture.", seg("skin", S.skin || "myst", [["myst", "Myst journals"], ["hypercard", "HyperCard stack"]]))}
+    ${row("Ink", "A second colour for each wing, or black only.", seg("ink", S.ink === "1bit" ? "1bit" : "two", [["two", "Two colours"], ["1bit", "Black only"]]))}
+    ${row("Corner map", "A small map at the top right, once you carry a map or the Primer.", sw("mini", !S.noMini, "Corner map"))}
+    ${has3d ? row("Calm motion", "Close looks change without zooming in and out.", sw("calm", calm, "Calm motion")) : ""}
+    ${has3d ? row("Eyes that adjust", "Exposure adapts to the light at each standing place.", sw("eyes", !S.fixedEyes, "Eyes that adjust")) : ""}
+    <h4 class="set-sec">Light</h4>
+    ${row("Lantern and lamps", "Your lantern, the house lamps, and the shutters.", btn("lamp", "Open"))}
+    <h4 class="set-sec">Sound</h4>
+    ${row("Sound", "The house's sounds and music.", sw("snd", !!S.snd.on, "Sound"))}
+    ${row("Volume", "Everything together.", sld("master", S.snd.master, "Volume"), !S.snd.on)}
+    ${row("Music", "Music alone.", sld("music", S.snd.music, "Music volume"), !S.snd.on)}
+    ${row("More", "Weather, footsteps, the clock, and what plays.", btn("snd", "Levels…"))}
+    <h4 class="set-sec">Reading</h4>
+    ${row("Annotations", "Notes beside each room.", sw("ann", !!S.annot, "Annotations"))}
+    ${row("Primer below the picture", hasPrimer ? "Keep the Primer open under the picture, or just its line in the corner." : "The Primer is on the porter's desk, in the Entry.", sw("pdock", hasPrimer && !!S.primerDock, "Primer below the picture", !hasPrimer), !hasPrimer)}
+    <h4 class="set-sec">Walking</h4>
+    ${row("How to walk", "Keys, clicks, and the standing places.", btn("help", "Read"))}
+    <p class="note">The menu bar keeps the map, the Primer, and the finding aid once you carry them, and the full view. Things you carry are in the bag under the picture.</p></div>`);
+  const redraw = () => setTimeout(settingsView, 0);
+  document.querySelectorAll("[data-seg]").forEach(b => b.onclick = () => { const id = b.dataset.seg, v = b.dataset.v;
+    if(id === "gfx"){ if((S.gfx || "3d") === v) return; S.gfx = v; save(); if(v !== "2d" && !VIEW3D) start3d(); render(); toast({"3d":"Engraved.", photo:"Photographic: the light as it is.", "2d":"Woodcuts."}[v]); return redraw(); }
+    if(id === "q"){ if(defaultQuality() === v) return; S.quality = v; save(); toast(`Quality: ${v}. Redrawing…`); return setTimeout(() => location.reload(), 400); }
+    if(id === "skin"){ S.skin = v; save(); applySkin(); return redraw(); }
+    if(id === "ink"){ S.ink = v; save(); render(); return redraw(); } });
+  document.querySelectorAll("[data-sw]").forEach(c => c.onchange = () => { const id = c.dataset.sw, on = c.checked;
+    if(id === "mini"){ S.noMini = !on; save(); render(); }
+    else if(id === "calm"){ S.calm = on; save(); }
+    else if(id === "eyes"){ S.fixedEyes = !on; save(); render(); }
+    else if(id === "snd"){ S.snd.on = on; save(); sound.levels(); }
+    else if(id === "ann"){ S.annot = on; save(); annotations(effective(cur)); }
+    else if(id === "pdock"){ S.primerDock = on; save(); render(); }
+    redraw(); });
+  document.querySelectorAll("[data-sl]").forEach(r => r.oninput = () => { S.snd[r.dataset.sl] = +r.value; const o = document.querySelector(`[data-o="${r.dataset.sl}"]`); if(o) o.value = Math.round(r.value*100); sound.levels(); });
+  document.querySelectorAll("[data-sl]").forEach(r => r.onchange = () => save());
   document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const id = b.dataset.set;
-    if(id === "lamp"){ closeOv(); return lightView(); } if(id === "help"){ return helpView(); } if(id === "full"){ closeOv(); return fullView(); }
-    if(id === "snd"){ return musicView({levels:true}); } if(id === "mbox"){ closeOv(); return window.MUSICBOX ? MUSICBOX.open() : musicView({levels:true}); }
-    if(id === "pdock"){ if(!S.inv.includes("primer")) return toast("The Primer is on the porter's desk, in the Entry."); S.primerDock = !S.primerDock; save(); render(); return settingsView(); }
-    if(id === "calm"){ const now = S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); S.calm = !now; save(); return settingsView(); }
-    if(id === "mini"){ S.noMini = !S.noMini; save(); render(); return settingsView(); }
-    if(id === "eyes"){ S.fixedEyes = !S.fixedEyes; save(); render(); return settingsView(); }
-    click(id); setTimeout(settingsView, 50); });
+    if(id === "lamp"){ closeOv(); return lightView(); } if(id === "help") return helpView(); if(id === "snd") return musicView({levels:true}); });
 }
 $("b-set").onclick = settingsView;
 $("b-cat").onclick = () => catalogueView();
