@@ -17,6 +17,7 @@ shorttitle:
 - [The Sector](/sector/): Galileo's compass of proportion: the lines of lines, planes, and solids, the dividers, and the proportional compass.
 - [Napier's Bones](/napier/): the bones, the Genaille–Lucas rulers that do their own carrying, and Napier's binary chessboard.
 - [The Slide Rule](/slide-rule/): a plain Mannheim rule with its scales, and Gunter's line with a pair of dividers.
+- [The Vernier](/vernier/): read a tenth of a division by coincidence, on a caliper, the arc of a sextant, and a micrometer screw.
 - [Slide Rule Cabinet](/slide-rules/): straight, circular, complex, finite-field, and relativistic slide rules to drag and read.
 - [Stereonet Slide Rule](/stereonet/): the SO(3) slide rule, a Wulff net with a turning overlay and a frame-matching challenge.
 - [Hamilton's Turns](/turns/): compose rotations by laying arcs head to tail on a sphere.

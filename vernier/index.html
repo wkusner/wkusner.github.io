@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Vernier</title>
+<meta name="description" content="A folio of the Wending House: the vernier caliper, the vernier on a divided arc, and the micrometer screw with its vernier, each to slide and read by the coincidence of two lines.">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ECDFC0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Kalam:wght@400;700&display=swap">
+<link rel="stylesheet" href="/folio/folio.css?v=2">
+<script src="/folio/folio.js?v=2"></script>
+<script src="/ga.js" async></script>
+<style>
+/* page-only additions; colours come from the kit's variables */
+.ctl{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:15px;color:var(--ink2)}
+.ctl .lbl{font:15px var(--fellsc);letter-spacing:.04em;color:var(--ink2)}
+.reckon{overflow-wrap:anywhere}
+.reckon .big{font-size:28px}
+.reckon .warn{color:var(--rubric)}
+svg .tray{cursor:pointer}
+svg .tray:hover .trayl,svg .tray:focus-visible .trayl{fill:var(--rubric)}
+svg .tray:focus{outline:none}
+svg .tray:focus-visible{filter:drop-shadow(0 0 2px var(--rubric))}
+</style>
+</head>
+<body>
+<main class="leaf">
+  <div class="runhead" data-folio="vernier"></div>
+  <h1>The <span class="rub">Vernier</span></h1>
+  <p class="subtitle">A tenth of a division, read by coincidence: the caliper, the arc, and the screw.</p>
+  <p class="incipit">A scale cut in millimetres tells you the millimetre and leaves you to guess the tenth. Lay a second, shorter scale beside it, with ten divisions in the space of nine, and the guess becomes a question the eye answers exactly: which line meets a line? Line 7 meeting means seven tenths. This is the vernier, and the same trick reads arcs to the minute and screws to the thousandth of a millimetre.</p>
+
+  <nav class="platetabs" role="tablist" aria-label="Plates">
+    <button type="button" role="tab" data-plate="caliper"><span class="no">I.</span>The Caliper</button>
+    <button type="button" role="tab" data-plate="arc"><span class="no">II.</span>The Arc</button>
+    <button type="button" role="tab" data-plate="screw"><span class="no">III.</span>The Screw and the Retrograde Vernier</button>
+  </nav>
+
+  <!-- PLATE I -->
+  <section class="plate" id="caliper" role="tabpanel">
+    <div class="drawing">
+      <svg id="svCal" class="fig" viewBox="0 0 760 516" aria-label="A steel vernier caliper with a millimetre beam, a sliding jaw carrying the vernier, inside and outside jaws, a depth rod, and two reading glasses below"></svg>
+      <p class="caption"><b>Plate I.</b> The vernier caliper. Below it, two reading glasses: one at the vernier's zero, one where a vernier line meets a main line.</p>
+      <div class="ctl"><span class="lbl">Vernier</span>
+        <button type="button" class="q on" data-vn="10" aria-pressed="true">10 in 9 mm</button>
+        <button type="button" class="q" data-vn="20" aria-pressed="false">20 in 39 mm</button>
+        <button type="button" class="q" data-vn="50" aria-pressed="false">50 in 49 mm</button></div>
+      <div class="ctl"><span class="lbl">Lay in</span>
+        <button type="button" class="q" data-obj="cyl">the cylinder</button>
+        <button type="button" class="q" data-obj="coin">the coin</button>
+        <button type="button" class="q" data-obj="ball">the ball</button>
+        <button type="button" class="q" id="cOut">Take it out</button>
+        <button type="button" class="q" id="cClose">Close the jaws</button></div>
+      <div class="ctl"><label class="lbl" for="cZe">Zero error</label>
+        <select class="q" id="cZe"><option value="0">none</option><option value="0.3">+0.3 mm</option><option value="-0.2">−0.2 mm</option></select>
+        <label class="chk"><input type="checkbox" id="cHide"> Hide the reading, to practise</label></div>
+      <p class="keyhint">Drag the sliding jaw, or turn the thumb wheel for fine steps. With the keyboard, focus the jaw and use the arrow keys: one least count a press, a whole millimetre with Shift.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdCal" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="cyl">Lay the brass cylinder in the jaws and read it with the 0.1 mm vernier: 21.3. Then change to the 50-division vernier and read it again: 21.34.</li>
+        <li data-try="s124">Take the cylinder out, choose the 10-division vernier, and set the jaws to exactly 12.4 mm: the zero just past 12, and line 4 meeting a main line.</li>
+        <li data-try="lc20">Find the least count of the 20-division vernier. Close the jaws, then open them until its first line meets a main line. The jaws are then 2 − 1.95 = 0.05 mm apart.</li>
+        <li data-try="ze">Set a zero error of +0.3 mm and close the jaws: they read 0.3, not 0. Lay in the steel ball and read 13.0; subtract the error: 13.0 − 0.3 = 12.7 mm.</li>
+        <li data-try="whole">With the 10-division vernier, set a whole number of millimetres, such as 27.0. Lines 0 and 10 both meet main lines, nine millimetres apart.</li>
+      </ol>
+      <p class="gloss" data-g="beam"><span class="sig">a.</span>The <em>beam</em> carries the main scale in millimetres, figured every centimetre. The fixed jaws are part of it.</p>
+      <p class="gloss" data-g="vern"><span class="sig">b.</span>The <em>slider</em> carries the vernier on a bevelled edge just under the main scale, so the two sets of lines almost touch. Its zero stands as far from the moving jaw as the main zero stands from the fixed jaw, so where the zero falls on the main scale is the opening of the jaws.</p>
+      <p class="gloss" data-g="jaws"><span class="sig">c.</span>The <em>outside jaws</em> grip an object. The <em>inside jaws</em>, above, open in a bore and read its width. The <em>depth rod</em> runs out of the end of the beam as the jaws open and reads the depth of a hole. All three read the same scale.</p>
+      <p class="gloss" data-g="wheel"><span class="sig">d.</span>The <em>thumb wheel</em> moves the slider in small steps. The <em>locking screw</em> on top holds it, so a setting can be carried to the light and read there.</p>
+      <p class="gloss" data-g="glass"><span class="sig">e.</span>The <em>reading glasses</em>. The figures in faded italic are the glass's own aids, the count of millimetres above and of vernier lines below; they are not engraved on the instrument.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE II -->
+  <section class="plate" id="arc" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svArc" class="fig" viewBox="0 0 760 566" aria-label="A brass semicircle divided in half degrees and figured both ways, with an index arm carrying a double vernier, and two reading glasses below"></svg>
+      <p class="caption"><b>Plate II.</b> A divided arc and its index arm, with a vernier on each side of the zero.</p>
+      <div class="ctl"><span class="lbl">Limb</span>
+        <button type="button" class="q on" data-limb="m1" aria-pressed="true">½°, vernier to 1′</button>
+        <button type="button" class="q" data-limb="s20" aria-pressed="false">20′, vernier to 20″</button></div>
+      <div class="ctl"><span class="lbl">Read</span>
+        <button type="button" class="q on" data-dir="out" aria-pressed="true">the black figures</button>
+        <button type="button" class="q" data-dir="in" aria-pressed="false">the red figures</button>
+        <label class="chk"><input type="checkbox" id="aHide"> Hide the reading</label></div>
+      <p class="keyhint">Drag the index arm. With the keyboard, focus it and use the arrow keys: one least count a press, one limb division with Shift.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdArc" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="a3724">Set 37° 24′ on the black figures: the zero just past 37°, and line 24 of the counter-clockwise half meeting a limb line.</li>
+        <li data-try="a5247">Set 52° 47′. The zero passes the half-degree line, 52° 30′, so the vernier has only 17′ to add: line 17.</li>
+        <li data-try="ainner">Set 37° 24′ again and read the red figures, which run the other way. Use the clockwise half of the vernier, the half that runs with them: 142° 36′. The two readings add to 180°.</li>
+        <li data-try="a20s">Change to the 20′ limb and set 32° 24′ 40″. The zero passes 32° 20′, and each vernier line is 20″, so the vernier must add 4′ 40″: line 14.</li>
+      </ol>
+      <p class="gloss" data-g="limb"><span class="sig">a.</span>The <em>limb</em> is a brass arc cut in half degrees and figured every ten degrees twice: in black, counter-clockwise from the right, and in red, clockwise from the left.</p>
+      <p class="gloss" data-g="arm"><span class="sig">b.</span>The <em>index arm</em> turns on the centre and carries a <em>double vernier</em>: thirty divisions each way from its zero, each half filling 29 half-degrees. Each line is 1′ short of a limb division.</p>
+      <p class="gloss"><span class="sig">c.</span>Read with the half that runs the <em>same way as the figures</em>. The other half is not wrong but answers another question: its coincidence tells how far the zero is short of the next limb line, the complement of what you want.</p>
+      <p class="gloss" data-g="glass"><span class="sig">d.</span>The <em>reading glasses</em> show the arc turned to face you, the limb above and the vernier below. Faded italic figures are the glass's aids: whole degrees above, and the count of vernier lines below.</p>
+    </aside>
+  </section>
+
+  <!-- PLATE III -->
+  <section class="plate" id="screw" role="tabpanel" hidden>
+    <div class="drawing">
+      <svg id="svMic" class="fig" viewBox="0 0 760 704" aria-label="A micrometer screw gauge with sleeve, thimble, vernier and ratchet, a reading glass showing the thimble's edge opened flat, a tray of objects, and a straight scale with a forward and a backward vernier"></svg>
+      <p class="caption"><b>Plate III.</b> The micrometer, with a vernier on its sleeve; below, a straight scale with a vernier running each way.</p>
+      <div class="ctl"><span class="lbl">Close on</span>
+        <button type="button" class="q" data-mobj="wire">the wire</button>
+        <button type="button" class="q" data-mobj="ball">the ball</button>
+        <button type="button" class="q" data-mobj="hair">a hair</button>
+        <button type="button" class="q" id="mRatch">Turn the ratchet</button>
+        <button type="button" class="q" id="mOpen">Open it</button>
+        <label class="chk"><input type="checkbox" id="mHide"> Hide the reading</label></div>
+      <p class="keyhint">Drag the thimble up or down to turn it, or sideways to spin it fast. Keys on the thimble: ↑ ↓ one thousandth, ← → one hundredth, Shift for fifty times as much. Drag the slider of the straight scale, or use its arrow keys: 0.1 a press.</p>
+    </div>
+    <aside class="margin">
+      <div class="reckon" id="rdMic" aria-live="polite"></div>
+      <ol class="try">
+        <li data-try="mwire">Close the micrometer on the wire with the ratchet and read it: 1.5 on the sleeve, 12 on the thimble, line 8 of the vernier. 1.5 + 0.12 + 0.008 = 1.628 mm.</li>
+        <li data-try="m7385">Open it and set 7.385 mm: 7 on the sleeve with no half-millimetre line showing, 38 on the thimble, and line 5 of the vernier.</li>
+        <li data-try="m7885">Now set 7.885 mm. The thimble and vernier read as before; only the half-millimetre line, now showing, tells the two apart.</li>
+        <li data-try="r127">On the straight scale, set the index to 12.7. Line 7 of the forward vernier meets on the right; line 7 of the backward vernier meets on the left, counted the other way.</li>
+        <li data-try="rlc">Find the least count of the backward vernier: put the index just past a whole number, so that its line 1 meets a main line. Its divisions are 1.1, so line 1 stands 0.1 past a main line when the zero does.</li>
+      </ol>
+      <p class="gloss" data-g="sleeve"><span class="sig">a.</span>The <em>sleeve</em> is fixed to the frame. Along its datum line it carries whole millimetres above and half millimetres below.</p>
+      <p class="gloss" data-g="thimble"><span class="sig">b.</span>The <em>thimble</em> turns with the screw, whose pitch is 0.5 mm. Its edge is cut in 50 parts, so each is 0.01 mm, read against the datum line.</p>
+      <p class="gloss" data-g="mvern"><span class="sig">c.</span>The <em>vernier</em> is ten long lines on the sleeve spanning nine divisions of the thimble. The line that runs straight on into a thimble line gives the thousandths.</p>
+      <p class="gloss" data-g="ratchet"><span class="sig">d.</span>The <em>ratchet</em> slips once the spindle presses with a set force, so every reading is taken at the same pressure.</p>
+      <p class="gloss" data-g="glass"><span class="sig">e.</span>The <em>reading glass</em> shows the thimble's edge opened out flat: going up the glass is going round the screw.</p>
+      <p class="gloss" data-g="retro"><span class="sig">f.</span>The <em>straight scale</em> has two verniers on one slider. The forward one puts 10 divisions in 9 and is read to the right; the backward, or <em>retrograde</em>, one puts 10 in 11 and is read to the left. Both read to 0.1 division.</p>
+    </aside>
+  </section>
+
+  <div class="fleuron" aria-hidden="true">❦ ❦ ❦</div>
+  <section class="commentary">
+    <h2><span class="no">¶</span>Commentary</h2>
+    <p><b>The principle.</b> Let n vernier divisions fill n − 1 main divisions. Then each vernier division is short of a main division by 1/n of one. If the vernier's zero stands k/n of a division past a main line, its first line is (k − 1)/n past the next main line, its second (k − 2)/n, and so on, until line k lands exactly on a main line. So the number of the line that meets is the number of nths. The least count, the smallest step the vernier reads, is one main division divided by n.</p>
+    <p><b>Spread and backward verniers.</b> Nothing requires the vernier divisions to be nearly equal to the main ones. Twenty divisions in 39 mm makes each 1.95 mm, short of two main divisions by 0.05 mm; the lines are farther apart and easier to see, and the least count is the same as twenty in 19. A vernier can also be longer than it should be: n divisions in n + 1 makes each vernier division 1/n too long, and then the lines must be counted backward, from the zero against the direction of the main scale. That is the retrograde vernier of Plate III.</p>
+    <p><b>Why coincidence.</b> The eye is poor at judging what fraction of a gap a line has crossed, but it is very good at seeing whether two lines are in line. People can see a break in a straight line far smaller than the finest detail they can resolve, a few seconds of arc against about a minute; this is called vernier acuity, after the instrument. The vernier turns a judgement of fraction into a judgement of alignment. The pattern helps too: the lines on either side of the match are out of step by equal amounts in opposite directions, so the eye can find the middle of the pattern even when no single pair looks perfect.</p>
+    <p><b>Nunes and Vernier.</b> Pedro Nunes, the Portuguese cosmographer, proposed in <i>De crepusculis</i> (Lisbon, 1542) to draw many concentric arcs inside a quadrant, each divided into one fewer equal parts than the last, so that the plumb line would fall nearly on a division of one of them. The idea was sound but the instrument was hard to divide, and it gave the vernier its other name, the nonius. Pierre Vernier, of Ornans in the Franche-Comté, published the sliding scale in <i>La construction, l'usage, et les propriétés du quadrant nouveau de mathématiques</i> (Brussels, 1631): one short movable arc against the main one. It is the device on every plate here.</p>
+    <p><b>The caliper.</b> Sliding calipers are old, but a vernier on one made it a precision tool. In 1851 Joseph R. Brown, of Providence, Rhode Island, made a vernier caliper that read to a thousandth of an inch, and his small shop became Brown &amp; Sharpe. The metric caliper of Plate I, with its 0.1, 0.05, and 0.02 mm verniers, is that instrument's descendant.</p>
+    <p><b>The screw.</b> A screw turns a long rotation into a short advance: one turn, one pitch. William Gascoigne, a Yorkshire astronomer, used a fine screw in the eyepiece of a telescope around 1640 to measure the sizes of the planets' discs. Jean Laurent Palmer patented a handheld micrometer caliper in Paris in 1848, and the French still call a micrometer a <i>palmer</i>. The thimble divided into fifty is itself a scale wrapped round a cylinder, and a vernier on the sleeve divides it again, as on Plate III.</p>
+    <p><b>Zero error and parallax.</b> Worn or dirty jaws may not read zero when closed. If the closed reading is +0.3 mm, every reading is 0.3 too large, and you subtract it; if the vernier's zero stands behind the main zero, the error is negative, and subtracting it adds. Check the zero before you measure. Parallax is the other enemy: if the eye is not square to the scales, a line on the vernier seems to meet the wrong line on the beam. That is why the vernier is cut on a bevel, so its lines lie almost in the plane of the main scale.</p>
+    <p><b>On the planimeter.</b> The measuring wheel of a planimeter has its drum divided into a hundred parts, and a fixed vernier of ten beside the drum reads the thousandth of a turn. You can watch it count on <a href="/planimeters/">the Planimeter Bench</a>.</p>
+    <p><b>Further.</b> Maurice Daumas, <i>Scientific Instruments of the Seventeenth and Eighteenth Centuries and Their Makers</i> (1972), for Nunes, Vernier, and the dividing of arcs; Joseph Wickham Roe, <i>English and American Tool Builders</i> (1916), for Brown &amp; Sharpe and the shop instruments of the nineteenth century.</p>
+  </section>
+  <div class="colophon"><span>Drawn for the Wending House, 2026. Drag anything that looks like brass.</span><span>A vernier at work: <a href="/planimeters/">the Planimeter Bench</a>.</span></div>
+</main>
+
+<script>
+(function(){
+const {E, T, fmt, line} = Folio, $ = id => document.getElementById(id);
+Folio.defs();
+const DEG = Math.PI / 180, clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const ease = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+const f2 = x => (+x).toFixed(2);
+const near = (a, b, e) => Math.abs(a - b) < (e || 1e-6);
+
+/* ================= THE VERNIER RULE =================
+   Main lines at the integers. The vernier's zero at v; its line k (0…n) at v + dir·k·s.
+   The line that meets is the one nearest a main line; the reading is that main line less k·s, a multiple of 1/n. */
+function match(v, n, s, dir){
+  dir = dir || 1; let b = null;
+  for(let k = 0; k <= n; k++){ const x = v + dir * k * s, m = Math.round(x), d = Math.abs(x - m); if(!b || d < b.d - 1e-9) b = {k, m, d}; }
+  b.R = Math.round((b.m - dir * b.k * s) * n) / n; return b;
+}
+
+/* a little animation engine for each plate */
+function Tween(get, set, draw){
+  let id = 0;
+  const tw = {stop(){ id++; },
+    to(tg, dur){ return new Promise(res => { const my = ++id, a = get(), t0 = performance.now(); dur = dur || 650;
+      const tick = now => { if(my !== id) return res(false); const k = ease(Math.min(1, (now - t0) / dur)), o = {};
+        for(const key in tg) o[key] = a[key] + (tg[key] - a[key]) * k; set(o); draw(); if(k < 1) requestAnimationFrame(tick); else res(true); };
+      requestAnimationFrame(tick); }); },
+    async seq(steps){ for(const s of steps){ if(s.call){ s.call(); continue; } if(s.wait){ const my = id; await new Promise(r => setTimeout(r, s.wait)); if(my !== id) return; continue; } if(!(await tw.to(s.to, s.dur))) return; } }};
+  return tw;
+}
+
+function screw(g, x, y, r, a){ E("circle", {cx:x, cy:y, r, class:"fvel"}, g); E("circle", {cx:x, cy:y, r, class:"ink", "stroke-width":.8, fill:"url(#hdot)"}, g);
+  const c = Math.cos(a), s = Math.sin(a); E("path", {d:`M${f2(x - c*r*.8)},${f2(y - s*r*.8)}L${f2(x + c*r*.8)},${f2(y + s*r*.8)}`, class:"ink", "stroke-width":1.1}, g); }
+
+/* a reading glass: a clipped window with a brass rim. draw(gi) fills the window. */
+let glassN = 0;
+function glass(g, o, draw){
+  const id = "vg" + (++glassN), {x, y, w, h} = o, b = 7;
+  const cp = E("clipPath", {id}, E("defs", {}, g)); E("rect", {x, y, width:w, height:h}, cp);
+  const gi = E("g", {"clip-path":`url(#${id})`}, g);
+  E("rect", {x, y, width:w, height:h, class:"fvel"}, gi);
+  draw(gi);
+  const rim = E("g", {}, g), d = `M${x - b},${y - b}H${x + w + b}V${y + h + b}H${x - b}ZM${x},${y}V${y + h}H${x + w}V${y}Z`;
+  E("path", {d, class:"fgold", "fill-rule":"evenodd", opacity:.8}, rim);
+  E("path", {d, fill:"url(#h45w)", "fill-rule":"evenodd", opacity:.5}, rim);
+  E("rect", {x:x - b, y:y - b, width:w + 2*b, height:h + 2*b, class:"ink", "stroke-width":1.3}, rim);
+  E("rect", {x, y, width:w, height:h, class:"ink", "stroke-width":1}, rim);
+  E("rect", {x:x - b - 3, y:y - b - 3, width:w + 2*b + 6, height:h + 2*b + 6, class:"ink2", "stroke-width":.5}, rim);
+  [[x - b/2 + .5, y - b/2 + .5], [x + w + b/2 - .5, y - b/2 + .5], [x - b/2 + .5, y + h + b/2 - .5], [x + w + b/2 - .5, y + h + b/2 - .5]].forEach((p, i) => screw(rim, p[0], p[1], 2.4, .3 + i * .7));
+  if(o.cap) T(o.cap, {x:x + w / 2, y:y + h + b + 17, "font-size":13, "text-anchor":"middle", "font-style":"italic", class:"fadedt"}, g);
+  return gi;
+}
+
+/* two strips in a glass: the main scale above the meeting line, the vernier plate below it.
+   o.main / o.vern: [{x, len, lab, lab2, aid, hi}]; o.plate: [x0, x1] of the vernier plate. */
+function strips(gi, o){
+  const {x, y, w, h} = o, mid = y + h / 2;
+  if(o.topTint) E("rect", {x, y, width:w, height:h / 2, class:o.topTint, opacity:.28}, gi);
+  E("rect", {x, y:mid, width:w, height:h / 2, fill:"url(#hx)", opacity:.4}, gi);
+  const p0 = clamp(o.plate[0], x - 10, x + w + 10), p1 = clamp(o.plate[1], x - 10, x + w + 10);
+  if(p1 > p0){ E("rect", {x:p0, y:mid, width:p1 - p0, height:h / 2, class:"fvel"}, gi);
+    if(o.botTint) E("rect", {x:p0, y:mid, width:p1 - p0, height:h / 2, class:o.botTint, opacity:.28}, gi);
+    E("path", {d:`M${f2(p0)},${mid}V${y + h}M${f2(p1)},${mid}V${y + h}`, class:"ink", "stroke-width":1.2}, gi); }
+  E("path", {d:`M${x},${mid}H${x + w}`, class:"ink2", "stroke-width":.5}, gi);
+  o.main.forEach(t => { if(t.x < x - 30 || t.x > x + w + 30) return;
+    E("path", {d:`M${f2(t.x)},${mid}V${f2(mid - t.len)}`, class:t.hi ? "rub" : "ink", "stroke-width":t.hi ? 2.2 : 1.15, "data-hi":t.hi ? "m" : null}, gi);
+    if(t.lab) T(t.lab, {x:f2(t.x), y:f2(mid - t.len - 5), "font-size":15, "text-anchor":"middle"}, gi);
+    if(t.lab2) T(t.lab2, {x:f2(t.x), y:f2(mid - t.len - 21), "font-size":12, "text-anchor":"middle", "font-style":"italic", class:"rubt"}, gi);
+    if(t.aid && !t.lab) T(t.aid, {x:f2(t.x), y:y + 13, "font-size":10.5, "text-anchor":"middle", "font-style":"italic", class:"fadedt"}, gi); });
+  o.vern.forEach(t => { if(t.x < x - 30 || t.x > x + w + 30) return;
+    E("path", {d:`M${f2(t.x)},${mid}V${f2(mid + t.len)}`, class:t.hi ? "rub" : t.zero ? "ink" : "ink", "stroke-width":t.hi ? 2.2 : t.zero ? 1.6 : 1.15, "data-hi":t.hi ? "v" : null}, gi);
+    if(t.lab) T(t.lab, {x:f2(t.x), y:f2(mid + t.len + 13), "font-size":13, "text-anchor":"middle", class:t.hi ? "rubt" : null}, gi);
+    if(t.aid) T(t.aid, {x:f2(t.x), y:y + h - 5, "font-size":10, "text-anchor":"middle", "font-style":"italic", class:t.hi ? "rubt" : "fadedt"}, gi); });
+}
+
+/* ================= PLATE I: THE CALIPER ================= */
+const sv1 = $("svCal"), K = 6.5, X0 = 56, OFF = 6, XS = X0 + OFF * K, BY0 = 96, BY1 = 140, BX0 = 24, BX1 = XS + 94 * K, SB = 178, JT = 336;
+const VS = {
+  10:{n:10, g:1, dp:1, lab:k => k % 5 ? null : String(k), eng:"0.1 mm", M:8,
+      why:"Ten vernier divisions fill 9 mm, so each is 0.9 mm, 0.1 mm short of a main division.", rule:"1 mm ÷ 10 = 0.1 mm"},
+  20:{n:20, g:2, dp:2, lab:k => k % 2 ? null : String(k / 2), eng:"0.05 mm", M:8,
+      why:"Twenty divisions fill 39 mm, so each is 1.95 mm, 0.05 mm short of two main divisions.", rule:"1 mm ÷ 20 = 0.05 mm"},
+  50:{n:50, g:1, dp:2, lab:k => k % 5 ? null : String(k / 5), eng:"0.02 mm", M:14,
+      why:"Fifty divisions fill 49 mm, so each is 0.98 mm, 0.02 mm short of a main division.", rule:"1 mm ÷ 50 = 0.02 mm"}};
+const OBJ = {cyl:{d:21.34, name:"the brass cylinder"}, coin:{d:24.26, name:"the coin"}, ball:{d:12.70, name:"the steel ball"}};
+const C = {vn:10, open:21.34, obj:"cyl", ze:0, hide:false};
+const sOf = V => V.g - 1 / V.n, LvOf = V => V.n * sOf(V), slLen = V => OFF * K + LvOf(V) * K + 54;
+const maxOpen = V => Math.floor((BX1 - 6 - slLen(V) - X0) / K);
+const minOpen = () => C.obj ? OBJ[C.obj].d : 0;
+const clampOpen = o => clamp(o, minOpen(), maxOpen(VS[C.vn]));
+function cRead(){ const V = VS[C.vn], v = C.open + C.ze, b = match(v, V.n, sOf(V)); return {V, v, b, W:b.m - b.k * V.g, R:b.R, lc:1 / V.n}; }
+
+const g1Rod = E("g", {"data-g":"jaws"}, sv1), g1Obj = E("g", {}, sv1), g1Fix = E("g", {"data-g":"jaws"}, sv1), g1Beam = E("g", {"data-g":"beam"}, sv1);
+const g1Hi = E("g", {}, sv1), gSl = E("g", {class:"grab"}, sv1), gTw = E("g", {class:"nsgrab", "data-g":"wheel"}, sv1), g1L = E("g", {"data-g":"glass"}, sv1);
+// the fixed jaws: the outside jaw below the beam, the inside jaw above it
+{ const g = g1Fix;
+  const lower = `M${BX0},${BY1}L${X0},${BY1}L${X0},${SB}L${X0 - 5},${SB + 4}L${X0},${SB + 8}L${X0},${JT}L${X0 - 4},${JT}C${X0 - 22},${JT - 40} ${BX0 + 6},${270} ${BX0 + 2},${210}Z`;
+  const upper = `M${X0 - 34},${BY0}C${X0 - 30},82 ${X0 - 14},72 ${X0},62L${X0},38L${X0 + 5},35L${X0 + 12},62C${X0 + 12},80 ${X0 + 4},90 ${X0 + 2},${BY0}Z`;
+  [lower, upper].forEach(d => { E("path", {d, class:"fvel"}, g); E("path", {d, fill:"url(#h135w)", opacity:.55}, g); E("path", {d, class:"ink", "stroke-width":1.2}, g); });
+  E("path", {d:`M${X0 - 2},${SB + 14}V${JT - 6}`, class:"ink2", "stroke-width":.5}, g); }
+// the beam and its millimetres
+{ const g = g1Beam;
+  E("rect", {x:BX0, y:BY0, width:BX1 - BX0, height:BY1 - BY0, class:"fvel"}, g);
+  E("rect", {x:BX0, y:BY0, width:BX1 - BX0, height:BY1 - BY0, fill:"url(#hhw)", opacity:.3}, g);
+  E("rect", {x:BX0, y:BY0, width:BX1 - BX0, height:BY1 - BY0, class:"ink", "stroke-width":1.2}, g);
+  E("path", {d:`M${BX0 + 2},${BY0 + 3}H${BX1 - 2}`, class:"ink2", "stroke-width":.5}, g);
+  E("path", {d:`M${BX1 - 6},${BY0}V${BY1}`, class:"ink2", "stroke-width":.6}, g);
+  let p = ["", "", ""];
+  for(let mm = 0; mm <= 90; mm++){ const x = XS + mm * K, lv = mm % 10 === 0 ? 0 : mm % 5 === 0 ? 1 : 2;
+    p[lv] += `M${f2(x)},${BY1}v${[-14, -10, -6.5][lv]}`;
+    if(lv === 0) T(String(mm / 10), {x:f2(x), y:BY1 - 17, "font-size":12.5, "text-anchor":"middle"}, g); }
+  p.forEach((d, i) => E("path", {d, class:"ink", "stroke-width":[.95, .8, .65][i]}, g));
+  T("mm", {x:XS + 92 * K, y:BY1 - 4, "font-size":9, "text-anchor":"middle", "font-style":"italic", class:"fadedt"}, g);
+  T("HARDENED · 0–90 MM", {x:XS + 72 * K, y:BY0 + 13, "font-size":8.5, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"3"}, g); }
+
+function drawObj(){
+  g1Obj.replaceChildren(); if(!C.obj) return;
+  const d = OBJ[C.obj].d * K, x0 = X0, cx = X0 + d / 2, g = E("g", {}, g1Obj);
+  if(C.obj === "cyl"){ const y0 = 202, y1 = 300;
+    E("rect", {x:x0, y:y0, width:d, height:y1 - y0, class:"fgold", opacity:.55}, g);
+    for(let i = 1; i < 18; i++){ const x = cx - d / 2 * Math.cos(Math.PI * i / 18), sh = Math.abs(Math.cos(Math.PI * i / 18));
+      E("path", {d:`M${f2(x)},${y0 + 6}V${y1}`, class:"ink2", "stroke-width":.35 + .4 * sh, opacity:.25 + .6 * sh}, g); }
+    E("ellipse", {cx, cy:y0, rx:d / 2, ry:6, class:"fgold", opacity:.9}, g);
+    E("ellipse", {cx, cy:y0, rx:d / 2, ry:6, class:"ink", "stroke-width":.9}, g);
+    E("ellipse", {cx, cy:y0, rx:d / 2 - 9, ry:3.6, class:"ink2", "stroke-width":.5}, g);
+    E("path", {d:`M${x0},${y0}V${y1}A${d / 2},6 0 0 0 ${x0 + d},${y1}V${y0}`, class:"ink", "stroke-width":1.1}, g);
+  } else if(C.obj === "coin"){ const cy = 252, r = d / 2;
+    E("circle", {cx, cy, r, class:"fgold", opacity:.5}, g);
+    let p = ""; for(let i = 0; i < 120; i++){ const a = i * Math.PI / 60; p += `M${f2(cx + r * Math.cos(a))},${f2(cy + r * Math.sin(a))}L${f2(cx + (r - 3) * Math.cos(a))},${f2(cy + (r - 3) * Math.sin(a))}`; }
+    E("path", {d:p, class:"ink2", "stroke-width":.45}, g);
+    E("circle", {cx, cy, r:r - 7, class:"ink2", "stroke-width":.7}, g);
+    E("circle", {cx, cy, r:r - 7, fill:"url(#h45w)", opacity:.35}, g);
+    T("1966", {x:cx, y:cy + r * .55, "font-size":10, "text-anchor":"middle", class:"fadedt"}, g);
+    E("circle", {cx, cy, r, class:"ink", "stroke-width":1.1}, g);
+  } else { const cy = 252, r = d / 2, id = "ballcp";
+    E("circle", {cx, cy, r, class:"fvel"}, g);
+    E("path", {d:`M${f2(cx - r * .2)},${f2(cy - r)}A${r},${r} 0 0 1 ${f2(cx - r * .2)},${f2(cy + r)}A${r * .78},${r} 0 0 0 ${f2(cx - r * .2)},${f2(cy - r)}Z`, fill:"url(#h45)", opacity:.75}, g);
+    E("ellipse", {cx:cx - r * .35, cy:cy - r * .38, rx:r * .18, ry:r * .1, class:"ink2", "stroke-width":.5, transform:`rotate(-35 ${f2(cx - r * .35)} ${f2(cy - r * .38)})`}, g);
+    E("circle", {cx, cy, r, class:"ink", "stroke-width":1.1}, g); }
+}
+function drawRod(){ g1Rod.replaceChildren(); const x1 = BX1 + C.open * K;
+  E("rect", {x:BX1 - 20, y:112, width:x1 - BX1 + 20, height:5, class:"fvel"}, g1Rod);
+  E("rect", {x:BX1 - 20, y:112, width:x1 - BX1 + 20, height:5, fill:"url(#hhw)", opacity:.6}, g1Rod);
+  E("path", {d:`M${BX1 - 20},112H${f2(x1)}V117H${BX1 - 20}`, class:"ink", "stroke-width":.9}, g1Rod); }
+
+function drawSlider(st){
+  gSl.replaceChildren(); gTw.replaceChildren(); g1Hi.replaceChildren();
+  const V = st.V, Xm = X0 + C.open * K, L = slLen(V), xr = Xm + L, xv0 = Xm + OFF * K + C.ze * K, s = sOf(V);
+  const gj = E("g", {"data-g":"jaws"}, gSl), gb = E("g", {"data-g":"vern"}, gSl);
+  // the moving inside jaw, leaning left over the fixed one
+  const up = `M${f2(Xm + 34)},88C${f2(Xm + 30)},74 ${f2(Xm + 14)},70 ${f2(Xm)},62L${f2(Xm)},38L${f2(Xm - 5)},35L${f2(Xm - 12)},62C${f2(Xm - 12)},78 ${f2(Xm - 4)},84 ${f2(Xm - 2)},88Z`;
+  // the moving outside jaw
+  const lo = `M${f2(Xm)},${SB}L${f2(Xm + 58)},${SB}C${f2(Xm + 56)},240 ${f2(Xm + 30)},300 ${f2(Xm + 4)},${JT}L${f2(Xm)},${JT}L${f2(Xm)},${SB + 8}L${f2(Xm + 5)},${SB + 4}Z`;
+  [up, lo].forEach(d => { E("path", {d, class:"fvel"}, gj); E("path", {d, fill:"url(#h45w)", opacity:.55}, gj); E("path", {d, class:"ink", "stroke-width":1.2}, gj); });
+  E("path", {d:`M${f2(Xm + 2)},${SB + 14}V${JT - 6}`, class:"ink2", "stroke-width":.5}, gj);
+  // the slider: a frame round the beam with a window over the scale
+  const body = `M${f2(Xm - 2)},86H${f2(xr)}V${SB}H${f2(Xm)}V88H${f2(Xm - 2)}ZM${f2(Xm + 30)},${BY0}V${BY1}H${f2(xr - 16)}V${BY0}Z`;
+  E("path", {d:body, class:"fvel", "fill-rule":"evenodd"}, gb);
+  E("path", {d:body, fill:"url(#hhw)", "fill-rule":"evenodd", opacity:.25}, gb);
+  E("path", {d:`M${f2(Xm)},${BY1 + .5}h30M${f2(xr - 16)},${BY1 + .5}h16`, class:"ink2", "stroke-width":.5}, gb);
+  [[Xm + 1, 30], [xr - 16, 15]].forEach(([x, w]) => E("rect", {x:f2(x), y:BY0, width:w - 1, height:BY1 - BY0, fill:"url(#h135w)", opacity:.6}, gb));
+  E("path", {d:body, class:"ink", "stroke-width":1.2, "fill-rule":"evenodd", fill:"none"}, gb);
+  E("path", {d:`M${f2(Xm + 30)},${BY1 + 3}H${f2(xr - 16)}`, class:"ink2", "stroke-width":.5}, gb);
+  E("path", {d:`M${f2(Xm)},${SB - 4}H${f2(xr)}`, class:"ink2", "stroke-width":.5}, gb);
+  // the vernier
+  let pv = ["", ""];
+  for(let k = 0; k <= V.n; k++){ const x = xv0 + k * s * K, lab = V.lab(k), lv = lab != null ? 0 : 1;
+    if(k === st.b.k && !C.hide) continue;
+    pv[lv] += `M${f2(x)},${BY1}v${k === 0 ? 13 : lv ? 6.5 : 10}`; }
+  pv.forEach((d, i) => E("path", {d, class:"ink", "stroke-width":[.9, .65][i]}, gb));
+  for(let k = 0; k <= V.n; k++){ const lab = V.lab(k); if(lab == null) continue;
+    T(lab, {x:f2(xv0 + k * s * K), y:BY1 + 21, "font-size":9.5, "text-anchor":"middle", class:k === st.b.k && !C.hide ? "rubt" : null}, gb); }
+  T(V.eng, {x:f2(xv0 + LvOf(V) * K + 22), y:BY1 + 12, "font-size":8, "text-anchor":"middle", class:"sc fadedt"}, gb);
+  // the locking screw
+  const lx = xr - 40;
+  E("rect", {x:lx - 3, y:79, width:6, height:8, class:"fvel"}, gb); E("rect", {x:lx - 3, y:79, width:6, height:8, class:"ink", "stroke-width":.8}, gb);
+  E("rect", {x:lx - 9, y:69, width:18, height:11, rx:2, class:"fvel"}, gb); E("rect", {x:lx - 9, y:69, width:18, height:11, rx:2, fill:"url(#hv)", class:"ink", "stroke-width":1}, gb);
+  E("rect", {x:f2(Xm - 12), y:30, width:L + 12, height:SB - 30, fill:"transparent"}, gSl);
+  E("rect", {x:f2(Xm - 2), y:SB, width:62, height:JT - SB, fill:"transparent"}, gSl);
+  // the thumb wheel, on a bracket under the slider
+  const tx = xr - 30, ty = SB + 18, tr = 11, ph = C.open * 2.2;
+  E("rect", {x:tx - 14, y:SB, width:28, height:7, class:"fvel"}, gTw); E("rect", {x:tx - 14, y:SB, width:28, height:7, fill:"url(#h45)", class:"ink", "stroke-width":.9}, gTw);
+  E("circle", {cx:tx, cy:ty, r:tr, class:"fvel"}, gTw);
+  let kn = ""; for(let i = 0; i < 28; i++){ const a = ph + i * Math.PI / 14; kn += `M${f2(tx + tr * Math.cos(a))},${f2(ty + tr * Math.sin(a))}L${f2(tx + (tr - 3) * Math.cos(a))},${f2(ty + (tr - 3) * Math.sin(a))}`; }
+  E("path", {d:kn, class:"ink2", "stroke-width":.6}, gTw);
+  E("circle", {cx:tx, cy:ty, r:tr, class:"ink", "stroke-width":1.1}, gTw); E("circle", {cx:tx, cy:ty, r:3, class:"fink2"}, gTw);
+  E("circle", {cx:tx, cy:ty, r:tr + 5, fill:"transparent"}, gTw);
+  // the coinciding pair, in red
+  if(!C.hide){ const xm = XS + st.b.m * K, xv = xv0 + st.b.k * s * K;
+    E("path", {d:`M${f2(xm)},${BY1}v-15`, class:"rub", "stroke-width":1.5, "data-hi":"m", "data-x":f2(xm)}, g1Hi);
+    E("path", {d:`M${f2(xv)},${BY1}v${st.b.k === 0 ? 13 : V.lab(st.b.k) != null ? 10 : 7}`, class:"rub", "stroke-width":1.5, "data-hi":"v", "data-x":f2(xv)}, gb); }
+}
+
+function drawGlass1(st){
+  g1L.replaceChildren();
+  const V = st.V, s = sOf(V), M = V.M, v = st.v, ppm = K * M;
+  const plateMM = [C.open - OFF, C.open - OFF + slLen(V) / K];
+  const one = (x, c, cap) => glass(g1L, {x, y:364, w:310, h:110, cap}, gi => {
+    const cx = x + 155, X = mm => cx + (mm - c) * ppm, main = [], vern = [];
+    const lo = Math.floor(c - 160 / ppm) - 1, hi = Math.ceil(c + 160 / ppm) + 1;
+    for(let mm = Math.max(0, lo); mm <= Math.min(90, hi); mm++){ const lv = mm % 10 === 0 ? 0 : mm % 5 === 0 ? 1 : 2;
+      main.push({x:X(mm), len:[34, 26, 18][lv], lab:lv === 0 ? String(mm / 10) : null, aid:String(mm), hi:!C.hide && mm === st.b.m}); }
+    for(let k = 0; k <= V.n; k++){ const lab = V.lab(k);
+      vern.push({x:X(v + k * s), len:k === 0 ? 30 : lab != null ? 24 : 15, lab, zero:k === 0, aid:lab === String(k) ? null : String(k), hi:!C.hide && k === st.b.k}); }
+    strips(gi, {x, y:364, w:310, h:110, main, vern, plate:[X(plateMM[0]), X(plateMM[1])], botTint:null});
+  });
+  const words = {8:"eight", 14:"fourteen"}[M];
+  one(40, v, `at the vernier's zero, ${words} times`);
+  one(410, v + st.b.k * s, C.hide ? `where the lines meet, ${words} times` : `where line ${st.b.k} meets, ${words} times`);
+}
+
+const nf = (x, d) => fmt(x, d);
+function lineName(V, k){
+  const lab = V.lab(k);
+  if(V.g === 1 && V.n === 10) return `line ${k}`;
+  if(lab != null) return `line ${k}, figured ${lab},`;
+  const per = V.n === 20 ? 2 : 5, a = Math.floor(k / per);
+  return `line ${k}, between the figures ${a} and ${a + 1},`;
+}
+function reckon1(st){
+  const V = st.V, {b, W, R, lc} = st, dp = V.dp; let s = "";
+  if(C.hide){
+    s += `Find where the vernier's zero falls on the main scale, then find the vernier line that meets a main line.<span class="big">?</span>`;
+    s += `<span class="dim">${V.why} Least count = ${V.rule}.</span><hr><span class="dim">Untick “hide” to check yourself.</span>`;
+    $("rdCal").innerHTML = s; return; }
+  const where = W >= 0 ? `The vernier's zero has passed <span class="nw">${W} mm</span> on the main scale.` : `The vernier's zero sits behind the main zero, between <span class="nw">−1</span> and 0.`;
+  s += `${where} <span class="nw">${lineName(V, b.k).replace(/^l/, "L")}</span> meets a main line, at ${b.m} mm.`;
+  s += `<span class="big">${nf(R, dp)} mm</span>`;
+  s += `<span class="nw">${nf(W, 0)} + ${b.k} × ${nf(lc, dp)}</span> <span class="nw">= ${nf(R, dp)} mm</span>`;
+  s += `<hr><span class="dim">${V.why} Least count = ${V.rule}.</span>`;
+  if(C.ze){ const corr = R - C.ze;
+    s += `<hr>Zero error ${C.ze > 0 ? "+" : "−"}${nf(Math.abs(C.ze), 1)} mm: the jaws read ${nf(C.ze, 1)} when closed.<br><span class="nw">${nf(R, dp)} − (${nf(C.ze, 1)})</span> <span class="nw">= <b>${nf(corr, dp)} mm</b></span>`; }
+  const what = C.obj && near(C.open, OBJ[C.obj].d, 1e-6) ? `${OBJ[C.obj].name[0].toUpperCase() + OBJ[C.obj].name.slice(1)} is in truth ${nf(OBJ[C.obj].d, 2)} mm across.` : `The jaws are in truth ${nf(C.open, 3)} mm apart.`;
+  s += `<hr><span class="dim">${what} The vernier reads to the nearest ${nf(lc, dp)}.</span>`;
+  $("rdCal").innerHTML = s;
+}
+function draw1(){ C.open = clampOpen(C.open); const st = cRead(); drawObj(); drawRod(); drawSlider(st); drawGlass1(st); reckon1(st); Folio.tryCheck(); }
+const tw1 = Tween(() => ({open:C.open}), o => { C.open = o.open; }, draw1);
+let o0 = 0;
+Folio.drag(gSl, sv1, (p, e, p0) => { C.open = clampOpen(o0 + (p.x - p0.x) / K); draw1(); }, () => { tw1.stop(); o0 = C.open; });
+Folio.drag(gTw, sv1, (p, e, p0) => { C.open = clampOpen(o0 + (p.x - p0.x) * .02 + (p.y - p0.y) * .01); draw1(); }, () => { tw1.stop(); o0 = C.open; });
+const stepOpen = (dir, big) => { tw1.stop(); const lc = 1 / VS[C.vn].n, v = C.open + C.ze;
+  C.open = clampOpen(Math.round((Math.round(v / lc) * lc + dir * (big ? 1 : lc) - C.ze) * 1e6) / 1e6); draw1(); };
+Folio.keys(gSl, (dx, dy, big) => stepOpen(dx || -dy, big), "The sliding jaw. Arrow keys open or close it by one least count; Shift by a millimetre.");
+Folio.keys(gTw, (dx, dy, big) => stepOpen(dx || -dy, big), "The thumb wheel. Arrow keys move the jaw by one least count.");
+function setVn(n){ C.vn = n; document.querySelectorAll("[data-vn]").forEach(b => { const on = +b.dataset.vn === n; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); draw1(); }
+document.querySelectorAll("[data-vn]").forEach(b => b.onclick = () => { tw1.stop(); setVn(+b.dataset.vn); });
+function layIn(k){ tw1.stop(); const d = OBJ[k].d, mx = maxOpen(VS[C.vn]);
+  const steps = []; if(C.obj !== k){ steps.push({to:{open:Math.min(mx, Math.max(C.open, d + 6))}, dur:450}); steps.push({call:() => { C.obj = k; draw1(); }}); }
+  steps.push({to:{open:d}, dur:600}); return tw1.seq(steps); }
+document.querySelectorAll("[data-obj]").forEach(b => b.onclick = () => layIn(b.dataset.obj));
+$("cOut").onclick = () => { tw1.stop(); if(!C.obj) return; const d = OBJ[C.obj].d; tw1.seq([{to:{open:Math.min(maxOpen(VS[C.vn]), d + 6)}, dur:400}, {call:() => { C.obj = null; draw1(); }}]); };
+$("cClose").onclick = () => { tw1.stop(); tw1.to({open:minOpen()}, 600); };
+$("cZe").onchange = e => { C.ze = +e.target.value; draw1(); };
+$("cHide").onchange = e => { C.hide = e.target.checked; draw1(); };
+const setZe = z => { C.ze = z; $("cZe").value = String(z); };
+const rOk = (x) => near(cRead().R, x, 1e-6);
+Folio.tries({
+  cyl:  {setup(){ C.ze = 0; setZe(0); tw1.seq([{call:() => setVn(10)}, {call:() => layIn("cyl")}, {wait:1300}, {call:() => setVn(50)}]); }, check(){ return C.obj === "cyl" && near(C.open, OBJ.cyl.d) && C.vn === 50; }},
+  s124: {setup(){ setZe(0); tw1.seq([{call:() => setVn(10)}, {to:{open:Math.max(C.open, 30)}, dur:350}, {call:() => { C.obj = null; }}, {to:{open:12.4}, dur:700}]); }, check(){ return !C.obj && C.vn === 10 && C.ze === 0 && rOk(12.4); }},
+  lc20: {setup(){ setZe(0); tw1.seq([{call:() => setVn(20)}, {to:{open:Math.max(C.open, 30)}, dur:300}, {call:() => { C.obj = null; }}, {to:{open:0}, dur:600}, {wait:250}, {to:{open:.05}, dur:500}]); }, check(){ return C.vn === 20 && C.ze === 0 && rOk(.05); }},
+  ze:   {setup(){ tw1.seq([{to:{open:Math.max(C.open, 30)}, dur:300}, {call:() => { C.obj = null; setZe(.3); draw1(); }}, {to:{open:0}, dur:600}, {wait:500}, {call:() => layIn("ball")}]); }, check(){ return C.ze === .3 && C.obj === "ball" && near(C.open, OBJ.ball.d); }},
+  whole:{setup(){ setZe(0); tw1.seq([{call:() => setVn(10)}, {to:{open:Math.max(C.open, 30)}, dur:300}, {call:() => { C.obj = null; }}, {to:{open:27}, dur:600}]); }, check(){ const r = cRead(); return C.vn === 10 && r.R >= 1 && near(r.R, Math.round(r.R)); }}
+});
+draw1();
+
+/* ================= PLATE II: THE ARC ================= */
+const sv2 = $("svArc"), CX = 380, CY = 352, AR = 288;
+const LIMB = {
+  m1: {d:.5, n:30, lab:k => k % 5 ? null : String(k), M:24, words:"twenty-four", unit:1, eng:["LIMB IN HALF DEGREES", "VERNIER 30 IN 29, TO ONE MINUTE"], mlab:k => k % 10 ? null : String(k),
+       why:"The limb is cut in ½° = 30′. Thirty vernier divisions fill 29 of them, so each is 1′ short of a limb division.", rule:"30′ ÷ 30 = 1′"},
+  s20:{d:1 / 3, n:60, lab:k => k % 6 ? null : String(k / 3), M:60, words:"sixty", unit:1 / 3, eng:["LIMB IN TWENTY MINUTES", "VERNIER 60 IN 59, TO 20 SECONDS"], mlab:k => k % 15 ? null : String(k / 3),
+       why:"The limb is cut in 20′. Sixty vernier divisions fill 59 of them, so each is 20″ short of a limb division.", rule:"20′ ÷ 60 = 20″"}};
+const A = {mode:"m1", th:37.4, dir:"out", hide:false};
+const extOf = L => L.n * (L.n - 1) / L.n * L.d;           // the angle each half of the vernier covers
+const thLim = () => { const e = extOf(LIMB[A.mode]) + 2.2; return [e, 180 - e]; };
+function aRead(dir){ const L = LIMB[A.mode], val = dir === "out" ? A.th : 180 - A.th, sV = (L.n - 1) / L.n, b = match(val / L.d, L.n, sV);
+  return {L, b, deg:b.R * L.d, W:(b.m - b.k) * L.d, val, sV}; }
+const P = (a, r) => [CX + r * Math.cos(a * DEG), CY - r * Math.sin(a * DEG)];
+function dms(deg, sec){ let t = Math.round(deg * 3600); const neg = t < 0; t = Math.abs(t);
+  const D = Math.floor(t / 3600), Mi = Math.floor(t % 3600 / 60), S = t % 60; return (neg ? "−" : "") + `${D}° ${Mi}′` + (sec ? ` ${S}″` : ""); }
+
+const g2Body = E("g", {"data-g":"limb"}, sv2), g2Grad = E("g", {"data-g":"limb"}, sv2), g2Eng = E("g", {}, sv2), g2Hi = E("g", {}, sv2), gArm = E("g", {class:"grab", "data-g":"arm"}, sv2), g2Hub = E("g", {}, sv2), g2L = E("g", {"data-g":"glass"}, sv2);
+// the frame: the limb, the base, the spokes
+{ const g = g2Body, Ro = AR + 52, a0 = P(0, Ro), a1 = P(180, Ro);
+  const ann = `M${f2(CX + Ro)},${CY}A${Ro},${Ro} 0 0 0 ${f2(CX - Ro)},${CY}L${f2(CX - AR)},${CY}A${AR},${AR} 0 0 1 ${f2(CX + AR)},${CY}Z`;
+  [30, 90, 150].forEach(a => { const p = P(a, 24), q = P(a, AR - 2), n = [Math.sin(a * DEG) * 8, Math.cos(a * DEG) * 8];
+    const d = `M${f2(p[0] - n[0])},${f2(p[1] - n[1])}L${f2(q[0] - n[0])},${f2(q[1] - n[1])}L${f2(q[0] + n[0])},${f2(q[1] + n[1])}L${f2(p[0] + n[0])},${f2(p[1] + n[1])}Z`;
+    E("path", {d, class:"fvel"}, g); E("path", {d, fill:"url(#h135w)", opacity:.8}, g); E("path", {d, class:"ink", "stroke-width":1}, g); });
+  const rb = `M${f2(CX + 150)},${CY}A150,150 0 0 0 ${f2(CX - 150)},${CY}L${f2(CX - 140)},${CY}A140,140 0 0 1 ${f2(CX + 140)},${CY}Z`;
+  E("path", {d:rb, class:"fvel"}, g); E("path", {d:rb, fill:"url(#hx)", opacity:.5}, g); E("path", {d:rb, class:"ink", "stroke-width":1}, g);
+  E("path", {d:ann, class:"fvel"}, g); E("path", {d:ann, class:"fgold", opacity:.3}, g);
+  const band = `M${f2(CX + Ro)},${CY}A${Ro},${Ro} 0 0 0 ${f2(CX - Ro)},${CY}L${f2(CX - Ro + 6)},${CY}A${Ro - 6},${Ro - 6} 0 0 1 ${f2(CX + Ro - 6)},${CY}Z`;
+  E("path", {d:band, fill:"url(#h45)", opacity:.7}, g);
+  E("path", {d:ann, class:"ink", "stroke-width":1.3}, g);
+  E("path", {d:`M${f2(CX + Ro - 6)},${CY}A${Ro - 6},${Ro - 6} 0 0 0 ${f2(CX - Ro + 6)},${CY}`, class:"ink2", "stroke-width":.6}, g);
+  const base = `M${f2(CX - Ro - 4)},${CY}H${f2(CX + Ro + 4)}V${CY + 22}H${f2(CX - Ro - 4)}Z`;
+  E("path", {d:base, class:"fvel"}, g); E("path", {d:base, fill:"url(#h135w)", opacity:.7}, g); E("path", {d:base, class:"ink", "stroke-width":1.2}, g);
+  E("path", {d:`M${f2(CX - Ro)},${CY + 26}H${f2(CX + Ro)}`, class:"ink2", "stroke-width":.6}, g);
+  [CX - Ro + 12, CX + Ro - 12].forEach((x, i) => screw(g, x, CY + 11, 4, .5 + i)); }
+function drawGrad(){
+  g2Grad.replaceChildren(); g2Eng.replaceChildren();
+  const L = LIMB[A.mode], g = g2Grad, N = Math.round(180 / L.d), p = ["", "", "", ""];
+  for(let i = 0; i <= N; i++){ const a = i * L.d, lv = near(a % 10, 0, 1e-6) || near(a % 10, 10, 1e-6) ? 0 : near(a % 5, 0, 1e-6) || near(a % 5, 5, 1e-6) ? 1 : near(a % 1, 0, 1e-6) || near(a % 1, 1, 1e-6) ? 2 : 3;
+    const q0 = P(a, AR), q1 = P(a, AR + [16, 12, 9, 5.5][lv]); p[lv] += `M${f2(q0[0])},${f2(q0[1])}L${f2(q1[0])},${f2(q1[1])}`; }
+  p.forEach((d, i) => E("path", {d, class:"ink", "stroke-width":[.9, .75, .6, .45][i]}, g));
+  for(let a = 0; a <= 180; a += 10){ const q = P(a, AR + 27), r = P(a, AR + 41);
+    T(String(a), {x:f2(q[0]), y:f2(q[1]), "font-size":11.5, "text-anchor":"middle", "dominant-baseline":"middle", transform:`rotate(${90 - a} ${f2(q[0])} ${f2(q[1])})`}, g);
+    T(String(180 - a), {x:f2(r[0]), y:f2(r[1]), "font-size":9.5, "text-anchor":"middle", "dominant-baseline":"middle", "font-style":"italic", class:"rubt", transform:`rotate(${90 - a} ${f2(r[0])} ${f2(r[1])})`}, g); }
+  L.eng.forEach((t, i) => { const x = i ? CX + 34 : CX - 34; E("rect", {x:i ? x : x - 236, y:CY + 4, width:236, height:14, class:"fvel"}, g2Eng); E("rect", {x:i ? x : x - 236, y:CY + 4, width:236, height:14, class:"ink2", "stroke-width":.6}, g2Eng);
+    T(t, {x:i ? x + 118 : x - 118, y:CY + 14.5, "font-size":8.5, "text-anchor":"middle", class:"sc", "letter-spacing":"2"}, g2Eng); });
+}
+function drawArm(){
+  gArm.replaceChildren(); g2Hi.replaceChildren(); g2Hub.replaceChildren();
+  const L = LIMB[A.mode], th = A.th, sV = (L.n - 1) / L.n * L.d, ex = extOf(L) + 1.6, r0 = AR - 27, r1 = AR - .5;
+  const act = aRead(A.dir), sg = A.dir === "out" ? 1 : -1;
+  // the arm itself
+  const u = [Math.cos(th * DEG), -Math.sin(th * DEG)], n = [-u[1], u[0]], a = 13, b = 8, R0 = 10, R1 = r0 + 2;
+  const arm = `M${f2(CX + u[0]*R0 + n[0]*a)},${f2(CY + u[1]*R0 + n[1]*a)}L${f2(CX + u[0]*R1 + n[0]*b)},${f2(CY + u[1]*R1 + n[1]*b)}L${f2(CX + u[0]*R1 - n[0]*b)},${f2(CY + u[1]*R1 - n[1]*b)}L${f2(CX + u[0]*R0 - n[0]*a)},${f2(CY + u[1]*R0 - n[1]*a)}Z`;
+  E("path", {d:arm, class:"fvel"}, gArm); E("path", {d:arm, class:"fgold", opacity:.45}, gArm); E("path", {d:arm, fill:"url(#h45)", opacity:.55}, gArm); E("path", {d:arm, class:"ink", "stroke-width":1.1}, gArm);
+  E("path", {d:`M${f2(CX + u[0]*30)},${f2(CY + u[1]*30)}L${f2(CX + u[0]*(R1 - 4))},${f2(CY + u[1]*(R1 - 4))}`, class:"ink2", "stroke-width":.6}, gArm);
+  // the vernier plate, silvered
+  const pa = P(th - ex, r1), pb = P(th + ex, r1), pc = P(th + ex, r0), pd = P(th - ex, r0);
+  const plate = `M${f2(pa[0])},${f2(pa[1])}A${r1},${r1} 0 0 0 ${f2(pb[0])},${f2(pb[1])}L${f2(pc[0])},${f2(pc[1])}A${r0},${r0} 0 0 1 ${f2(pd[0])},${f2(pd[1])}Z`;
+  E("path", {d:plate, class:"fvel"}, gArm);
+  const qa = P(th - ex, r0 + 5), qb = P(th + ex, r0 + 5);
+  E("path", {d:`M${f2(pd[0])},${f2(pd[1])}A${r0},${r0} 0 0 0 ${f2(pc[0])},${f2(pc[1])}L${f2(qb[0])},${f2(qb[1])}A${r0 + 5},${r0 + 5} 0 0 1 ${f2(qa[0])},${f2(qa[1])}Z`, fill:"url(#h135)", opacity:.8}, gArm);
+  E("path", {d:plate, class:"ink", "stroke-width":1.1}, gArm);
+  const gv = E("g", {"data-g":"arm"}, gArm), pv = ["", "", ""];
+  [1, -1].forEach(dir => { for(let k = 0; k <= L.n; k++){ if(k === 0 && dir < 0) continue; const ang = th + dir * k * sV, lab = L.mlab(k), lv = k === 0 ? 0 : lab != null ? 1 : 2;
+    if(!A.hide && dir === sg && k === act.b.k) continue;
+    const q0 = P(ang, r1), q1 = P(ang, r1 - [13, 9, 5.5][lv]); pv[lv] += `M${f2(q0[0])},${f2(q0[1])}L${f2(q1[0])},${f2(q1[1])}`;
+    if(lab != null && k){ const q = P(ang, r1 - 15.5); T(lab, {x:f2(q[0]), y:f2(q[1]), "font-size":7, "text-anchor":"middle", "dominant-baseline":"middle", transform:`rotate(${f2(90 - ang)} ${f2(q[0])} ${f2(q[1])})`}, gv); } } });
+  pv.forEach((d, i) => E("path", {d, class:i ? "ink" : "rub", "stroke-width":[1.2, .65, .5][i]}, gv));
+  { const q = P(th, r1 - 18); T("0", {x:f2(q[0]), y:f2(q[1]), "font-size":8, "text-anchor":"middle", "dominant-baseline":"middle", class:"rubt", transform:`rotate(${f2(90 - th)} ${f2(q[0])} ${f2(q[1])})`}, gv); }
+  // the thumb piece
+  const kc = P(th, AR - 74);
+  E("circle", {cx:f2(kc[0]), cy:f2(kc[1]), r:10, class:"fvel"}, gArm); E("circle", {cx:f2(kc[0]), cy:f2(kc[1]), r:10, fill:"url(#hx)", class:"ink", "stroke-width":1}, gArm);
+  E("circle", {cx:f2(kc[0]), cy:f2(kc[1]), r:4, class:"fgold"}, gArm); E("circle", {cx:f2(kc[0]), cy:f2(kc[1]), r:4, class:"ink", "stroke-width":.8}, gArm);
+  // a wide invisible handle over the arm and plate
+  E("path", {d:`M${f2(CX + u[0]*20 + n[0]*20)},${f2(CY + u[1]*20 + n[1]*20)}L${f2(CX + u[0]*AR + n[0]*24)},${f2(CY + u[1]*AR + n[1]*24)}L${f2(CX + u[0]*AR - n[0]*24)},${f2(CY + u[1]*AR - n[1]*24)}L${f2(CX + u[0]*20 - n[0]*20)},${f2(CY + u[1]*20 - n[1]*20)}Z`, fill:"transparent"}, gArm);
+  E("path", {d:plate, fill:"transparent", "stroke-width":10, stroke:"transparent"}, gArm);
+  // the coinciding pair
+  if(!A.hide){ const angV = th + sg * act.b.k * sV, angM = A.dir === "out" ? act.b.m * L.d : 180 - act.b.m * L.d;
+    const v0 = P(angV, r1), v1 = P(angV, r1 - (L.lab(act.b.k) != null || act.b.k === 0 ? 10 : 7)), m0 = P(angM, AR), m1 = P(angM, AR + 12);
+    E("path", {d:`M${f2(v0[0])},${f2(v0[1])}L${f2(v1[0])},${f2(v1[1])}`, class:"rub", "stroke-width":1.4, "data-hi":"v", "data-a":angV.toFixed(9)}, gArm);
+    E("path", {d:`M${f2(m0[0])},${f2(m0[1])}L${f2(m1[0])},${f2(m1[1])}`, class:"rub", "stroke-width":1.4, "data-hi":"m", "data-a":angM.toFixed(9)}, g2Hi); }
+  // the centre
+  E("circle", {cx:CX, cy:CY, r:18, class:"fgold"}, g2Hub); E("circle", {cx:CX, cy:CY, r:18, fill:"url(#h45w)", class:"ink", "stroke-width":1.1}, g2Hub); screw(g2Hub, CX, CY, 6, th * DEG);
+}
+function drawGlass2(){
+  g2L.replaceChildren();
+  const L = LIMB[A.mode], th = A.th, sV = (L.n - 1) / L.n * L.d, M = L.M, ppd = AR * DEG * M, act = aRead(A.dir), sg = A.dir === "out" ? 1 : -1, ex = extOf(L) + 1.6;
+  const one = (x, c, cap) => glass(g2L, {x, y:404, w:310, h:120, cap}, gi => {
+    const cx = x + 155, X = a => cx - (a - c) * ppd, main = [], vern = [];
+    const lo = Math.floor((c - 170 / ppd) / L.d) - 1, hi = Math.ceil((c + 170 / ppd) / L.d) + 1;
+    for(let i = Math.max(0, lo); i <= Math.min(Math.round(180 / L.d), hi); i++){ const a = i * L.d, isI = q => near(a / q, Math.round(a / q), 1e-6);
+      const lv = isI(10) ? 0 : isI(5) ? 1 : isI(1) ? 2 : 3, red = 180 - a;
+      main.push({x:X(a), len:[24, 19, 14, 10][lv], lab:lv === 0 ? String(Math.round(a)) : null, lab2:lv === 0 ? String(Math.round(red)) : null,
+        aid:lv <= 2 ? String(Math.round(A.dir === "out" ? a : red)) + "°" : null, hi:!A.hide && i === (A.dir === "out" ? act.b.m : Math.round(180 / L.d) - act.b.m)}); }
+    [1, -1].forEach(dir => { for(let k = 0; k <= L.n; k++){ if(k === 0 && dir < 0) continue; const lab = L.lab(k);
+      vern.push({x:X(th + dir * k * sV), len:k === 0 ? 30 : lab != null ? 24 : 15, lab, zero:k === 0, aid:dir === sg && lab !== String(k) ? String(k) : null, hi:!A.hide && dir === sg && k === act.b.k}); } });
+    strips(gi, {x, y:404, w:310, h:120, main, vern, plate:[X(th + ex), X(th - ex)], topTint:"fgold"});
+  });
+  one(40, th, `at the zero, ${L.words} times`);
+  one(410, th + sg * act.b.k * sV, A.hide ? `where the lines meet, ${L.words} times` : `where line ${act.b.k} meets, ${L.words} times`);
+}
+function reckon2(){
+  const L = LIMB[A.mode], sec = A.mode === "s20", r = aRead(A.dir), o = aRead(A.dir === "out" ? "in" : "out");
+  const fig = A.dir === "out" ? "black figures, which rise counter-clockwise" : "red figures, which rise clockwise";
+  const half = A.dir === "out" ? "counter-clockwise" : "clockwise", ohalf = A.dir === "out" ? "clockwise" : "counter-clockwise";
+  const step = sec ? "20″" : "1′";
+  let s = `Reading the ${fig}, with the ${half} half of the vernier.`;
+  if(A.hide){ s += `<span class="big">?</span><span class="dim">${L.why} Least count = ${L.rule}.</span><hr><span class="dim">Untick “hide” to check yourself.</span>`; $("rdArc").innerHTML = s; return; }
+  s += ` The zero has passed the limb line at <span class="nw">${dms(r.W, sec)}</span>; line ${r.b.k} meets a limb line.`;
+  s += `<span class="big">${dms(r.deg, sec)}</span>`;
+  s += `<span class="nw">${dms(r.W, sec)} + ${r.b.k} × ${step}</span> <span class="nw">= ${dms(r.deg, sec)}</span>`;
+  s += `<hr><span class="dim">${L.why} Least count = ${L.rule}.</span>`;
+  s += `<hr>The ${A.dir === "out" ? "red" : "black"} figures, with the ${ohalf} half, read <span class="nw">${dms(o.deg, sec)}</span>; <span class="nw">${dms(r.deg, sec)} + ${dms(o.deg, sec)} = 180°</span>.`;
+  s += `<br><span class="dim">The arm stands in truth at ${dms(r.val, true).replace(/ 0″$/, " 0″")} on these figures.</span>`;
+  $("rdArc").innerHTML = s;
+}
+function draw2(){ const [lo, hi] = thLim(); A.th = clamp(A.th, lo, hi); drawArm(); drawGlass2(); reckon2(); Folio.tryCheck(); }
+const tw2 = Tween(() => ({th:A.th}), o => { A.th = o.th; }, draw2);
+const angOf = p => Math.atan2(CY - p.y, p.x - CX) / DEG;
+let t0 = 0;
+Folio.drag(gArm, sv2, (p, e, p0) => { let d = angOf(p) - angOf(p0); if(d > 180) d -= 360; if(d < -180) d += 360; const [lo, hi] = thLim(); A.th = clamp(t0 + d, lo, hi); draw2(); }, () => { tw2.stop(); t0 = A.th; });
+Folio.keys(gArm, (dx, dy, big) => { tw2.stop(); const L = LIMB[A.mode], lc = L.d / L.n, st = big ? L.d : lc, dir = dx ? -dx : -dy;
+  const [lo, hi] = thLim(); A.th = clamp(Math.round((Math.round(A.th / lc) * lc + dir * st) * 1e7) / 1e7, lo, hi); draw2(); }, "The index arm. Arrow keys turn it by one least count; Shift by one limb division.");
+function setLimb(m){ A.mode = m; document.querySelectorAll("[data-limb]").forEach(b => { const on = b.dataset.limb === m; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); drawGrad(); draw2(); }
+function setDir(d){ A.dir = d; document.querySelectorAll("[data-dir]").forEach(b => { const on = b.dataset.dir === d; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); draw2(); }
+document.querySelectorAll("[data-limb]").forEach(b => b.onclick = () => { tw2.stop(); setLimb(b.dataset.limb); });
+document.querySelectorAll("[data-dir]").forEach(b => b.onclick = () => setDir(b.dataset.dir));
+$("aHide").onchange = e => { A.hide = e.target.checked; draw2(); };
+const aIs = (dir, deg) => near(aRead(dir).deg * 3600, deg * 3600, 1e-3);
+Folio.tries({
+  a3724: {setup(){ setLimb("m1"); setDir("out"); tw2.to({th:37 + 24 / 60}, 800); }, check(){ return A.mode === "m1" && aIs("out", 37 + 24 / 60); }},
+  a5247: {setup(){ setLimb("m1"); setDir("out"); tw2.to({th:52 + 47 / 60}, 800); }, check(){ return A.mode === "m1" && aIs("out", 52 + 47 / 60); }},
+  ainner:{setup(){ setLimb("m1"); tw2.seq([{call:() => setDir("out")}, {to:{th:37 + 24 / 60}, dur:700}, {wait:400}, {call:() => setDir("in")}]); }, check(){ return A.mode === "m1" && A.dir === "in" && aIs("in", 142 + 36 / 60); }},
+  a20s:  {setup(){ setDir("out"); setLimb("s20"); tw2.to({th:32 + 24 / 60 + 40 / 3600}, 800); }, check(){ return A.mode === "s20" && A.dir === "out" && aIs("out", 32 + 24 / 60 + 40 / 3600); }}
+});
+drawGrad(); draw2();
+
+/* ================= PLATE III: THE MICROMETER AND THE STRAIGHT SCALE ================= */
+const sv3 = $("svMic"), AY = 150, AX = 110, K3 = 8, HX0 = 316, HX1 = 342, SZ = 352, RS = 36, RT = 48, BETA = -40, DL = 7.2, A0 = 6;
+const MOBJ = {wire:{d:1.628, name:"the 14-gauge copper wire"}, ball:{d:3.175, name:"the ⅛-inch steel ball"}, hair:{d:.072, name:"the hair"}};
+const Mi = {p:1.628, obj:"wire", hide:false};
+const Rt = {v:12.7};
+const yP = (phi, r) => AY - r * Math.sin((phi + BETA) * DEG);
+function mRead(){ const u = Mi.p / .01, b = match(u + A0, 10, .9), th = Math.round((b.R - A0) * 10), W = b.m - A0 - b.k;
+  const half = Math.floor(W / 50); return {u, b, th, mm:th / 1000, W, sleeve:half * .5, thim:W - 50 * half, j:b.k, U:b.m}; }
+function rRead(){ const f = match(Rt.v, 10, .9, 1), bk = match(Rt.v, 10, 1.1, -1); return {f, bk}; }
+const mMin = () => Mi.obj ? MOBJ[Mi.obj].d : 0, mClamp = p => clamp(p, mMin(), 25);
+
+const g3Sp = E("g", {}, sv3), g3Obj = E("g", {}, sv3), g3Fr = E("g", {}, sv3), g3Sl = E("g", {"data-g":"sleeve"}, sv3), gTh = E("g", {class:"grab", "data-g":"thimble"}, sv3);
+const g3L = E("g", {"data-g":"glass"}, sv3), g3Tray = E("g", {}, sv3), g3Rule = E("g", {"data-g":"retro"}, sv3), gRs = E("g", {class:"grab", "data-g":"retro"}, sv3);
+// the frame, its anvil, and the hub that holds the sleeve
+{ const g = g3Fr;
+  const fr = `M40,108H86V186C86,252 130,282 200,282C270,282 316,252 316,196V108H342V196C342,278 280,330 200,330C112,330 40,276 40,190Z`;
+  E("path", {d:fr, class:"fvel"}, g); E("path", {d:fr, fill:"url(#h45)", opacity:.6}, g); E("path", {d:fr, class:"ink", "stroke-width":1.3}, g);
+  const pad = `M66,214C80,268 130,304 200,304C270,304 312,272 326,226L318,222C304,262 266,292 200,292C136,292 90,260 76,210Z`;
+  E("path", {d:pad, class:"fvel"}, g); E("path", {d:pad, fill:"url(#hdot)", opacity:.35}, g); E("path", {d:pad, class:"ink2", "stroke-width":.8}, g);
+  T("0–25 MM · 0.001 MM", {x:200, y:301, "font-size":8, "text-anchor":"middle", class:"sc", "letter-spacing":"2"}, g);
+  E("rect", {x:86, y:AY - 9, width:AX - 86, height:18, class:"fvel"}, g); E("rect", {x:86, y:AY - 9, width:AX - 86, height:18, fill:"url(#hhw)", class:"ink", "stroke-width":1}, g);
+  E("rect", {x:HX0 - 4, y:AY - 14, width:4, height:28, class:"ink2", "stroke-width":.6}, g);
+  // the lock lever on the hub
+  E("path", {d:`M329,108V98M329,98L352,88`, class:"ink", "stroke-width":3.2}, g); E("path", {d:`M329,108V98M329,98L352,88`, class:"fvel", style:"stroke:var(--vellum2)", "stroke-width":1.4}, g);
+  E("circle", {cx:352, cy:88, r:4.5, class:"fvel"}, g); E("circle", {cx:352, cy:88, r:4.5, fill:"url(#hx)", class:"ink", "stroke-width":.9}, g);
+}
+function drawSpindle(){ g3Sp.replaceChildren(); g3Obj.replaceChildren();
+  const xf = AX + Mi.p * K3, g = g3Sp;
+  E("rect", {x:f2(xf), y:AY - 9, width:f2(HX0 + 4 - xf), height:18, class:"fvel"}, g);
+  [-5, -1, 4].forEach((dy, i) => E("path", {d:`M${f2(xf + 2)},${AY + dy}H${HX0}`, class:"faded", "stroke-width":.5, opacity:.7 - i * .15}, g));
+  E("path", {d:`M${HX0 + 4},${AY - 9}H${f2(xf)}V${AY + 9}H${HX0 + 4}`, class:"ink", "stroke-width":1}, g);
+  if(!Mi.obj) return; const d = MOBJ[Mi.obj].d * K3, go = g3Obj, cx = AX + d / 2;
+  if(Mi.obj === "wire"){ const wp = `M${f2(cx + 5)},86C${f2(cx + 1)},110 ${f2(cx)},124 ${f2(cx)},${AY}C${f2(cx)},172 ${f2(cx + 1)},190 ${f2(cx + 5)},212`;
+    E("path", {d:wp, style:"fill:none;stroke:var(--ink)", "stroke-width":d + 1.4, "stroke-linecap":"round"}, go);
+    E("path", {d:wp, style:"fill:none;stroke:var(--gold)", "stroke-width":d - .4, "stroke-linecap":"round"}, go);
+    E("path", {d:wp, class:"ink2", "stroke-width":.5, transform:`translate(${f2(-d / 4)},0)`, opacity:.7}, go); }
+  else if(Mi.obj === "ball"){ E("circle", {cx:f2(cx), cy:AY, r:f2(d / 2), class:"fvel"}, go); E("path", {d:`M${f2(cx)},${f2(AY - d / 2)}A${f2(d / 2)},${f2(d / 2)} 0 0 1 ${f2(cx)},${f2(AY + d / 2)}A${f2(d * .38)},${f2(d / 2)} 0 0 0 ${f2(cx)},${f2(AY - d / 2)}Z`, fill:"url(#h45)", opacity:.8}, go);
+    E("circle", {cx:f2(cx), cy:AY, r:f2(d / 2), class:"ink", "stroke-width":.9}, go); }
+  else { E("path", {d:`M${f2(cx + 3)},52C${f2(cx - 6)},90 ${f2(cx + 4)},120 ${f2(cx)},${AY}C${f2(cx - 3)},180 ${f2(cx + 9)},210 ${f2(cx - 4)},250`, class:"ink", "stroke-width":.8}, go); }
+}
+function drawHead(st){
+  g3Sl.replaceChildren(); gTh.replaceChildren();
+  const TE = SZ + Mi.p * K3, g = g3Sl, yd = yP(0, RS);
+  // the sleeve
+  E("rect", {x:HX1, y:AY - RS, width:f2(TE + 4 - HX1), height:2 * RS, class:"fvel"}, g);
+  [64, 72, 80, 85].forEach((a, i) => [1, -1].forEach(sg => { const y = AY - sg * RS * Math.sin(a * DEG); E("path", {d:`M${HX1},${f2(y)}H${f2(TE)}`, class:"faded", "stroke-width":.45, opacity:.3 + i * .15}, g); }));
+  E("path", {d:`M${HX1},${AY - RS}H${f2(TE)}M${HX1},${AY + RS}H${f2(TE)}`, class:"ink", "stroke-width":1.1}, g);
+  E("path", {d:`M${HX1 + 2},${f2(yd)}H${f2(TE)}`, class:"ink", "stroke-width":.8}, g);
+  let pm = "", ph = "";
+  for(let m = 0; m <= 25; m++){ const x = SZ + m * K3, xh = x + K3 / 2;
+    if(x < TE - .3) pm += `M${f2(x)},${f2(yd)}V${f2(yP(10, RS))}`;
+    if(m < 25 && xh < TE - .3) ph += `M${f2(xh)},${f2(yd)}V${f2(yP(-10, RS))}`;
+    if(m % 5 === 0 && x < TE - 3) T(String(m), {x:f2(x), y:f2(yP(21, RS)), "font-size":8, "text-anchor":"middle"}, g); }
+  E("path", {d:pm, class:"ink", "stroke-width":.7}, g); E("path", {d:ph, class:"ink", "stroke-width":.6}, g);
+  const gv = E("g", {"data-g":"mvern"}, g);
+  let pvv = "";
+  for(let j = 0; j <= 10; j++){ const y = yP((A0 + .9 * j) * DL, RS); if(!(j === st.j && !Mi.hide)) pvv += `M${HX1 + 14},${f2(y)}H${f2(TE)}`;
+    if(j % 2 === 0) T(String(j), {x:HX1 + 7, y:f2(y + 2.2), "font-size":6.5, "text-anchor":"middle"}, gv); }
+  E("path", {d:pvv, class:"ink", "stroke-width":.45}, gv);
+  if(!Mi.hide){ const y = yP((A0 + .9 * st.j) * DL, RS); E("path", {d:`M${HX1 + 14},${f2(y)}H${f2(TE)}`, class:"rub", "stroke-width":.9}, gv); }
+  // the thimble
+  const gt = gTh, x9 = TE + 9, xe = TE + 104;
+  const th = `M${f2(TE)},${AY - RS + .5}L${f2(x9)},${AY - RT}H${f2(xe)}V${AY + RT}H${f2(x9)}L${f2(TE)},${AY + RS - .5}Z`;
+  E("path", {d:th, class:"fvel"}, gt);
+  [58, 68, 76, 82, 86].forEach((a, i) => [1, -1].forEach(sg => { const y = AY - sg * RT * Math.sin(a * DEG); E("path", {d:`M${f2(x9)},${f2(y)}H${f2(TE + 60)}`, class:"faded", "stroke-width":.45, opacity:.3 + i * .12}, gt); }));
+  E("rect", {x:f2(TE + 60), y:AY - RT, width:44, height:2 * RT, fill:"url(#hx)", opacity:.8}, gt);
+  E("path", {d:`M${f2(TE + 60)},${AY - RT}V${AY + RT}`, class:"ink2", "stroke-width":.7}, gt);
+  E("path", {d:th, class:"ink", "stroke-width":1.2}, gt);
+  E("path", {d:`M${f2(x9)},${AY - RT}V${AY + RT}`, class:"ink2", "stroke-width":.6}, gt);
+  let pt = ["", ""];
+  const lo = Math.ceil(st.u - 45 / DL - 1), hi = Math.floor(st.u + 125 / DL + 1);
+  for(let U = lo; U <= hi; U++){ const phi = (U - st.u) * DL, ps = phi + BETA; if(ps < -86 || ps > 86) continue;
+    const five = ((U % 5) + 5) % 5 === 0, y0 = yP(phi, RS), y1 = yP(phi, RT), L = five ? 17 : 10;
+    if(!Mi.hide && U === st.U) continue;
+    pt[five ? 0 : 1] += `M${f2(TE)},${f2(y0)}L${f2(x9)},${f2(y1)}H${f2(x9 + L)}`;
+    if(five && Math.abs(ps) < 66){ const c = Math.cos(ps * DEG); T(String(((U % 50) + 50) % 50), {x:0, y:0, "font-size":8.5, "text-anchor":"middle", transform:`translate(${f2(x9 + 28)},${f2(y1 + 3 * c)}) scale(1,${c.toFixed(3)})`}, gt); } }
+  E("path", {d:pt[0], class:"ink", "stroke-width":.7}, gt); E("path", {d:pt[1], class:"ink", "stroke-width":.5}, gt);
+  if(!Mi.hide){ const phi = (st.U - st.u) * DL, five = ((st.U % 5) + 5) % 5 === 0; E("path", {d:`M${f2(TE)},${f2(yP(phi, RS))}L${f2(x9)},${f2(yP(phi, RT))}H${f2(x9 + (five ? 17 : 10))}`, class:"rub", "stroke-width":.9}, gt); }
+  // the ratchet
+  const gr = E("g", {"data-g":"ratchet"}, gt), r0 = xe, r1 = xe + 36;
+  E("path", {d:`M${f2(xe)},${AY - 19}H${f2(r0 + 6)}V${AY + 19}H${f2(xe)}Z`, class:"fvel"}, gr); E("path", {d:`M${f2(xe)},${AY - 19}H${f2(r0 + 6)}V${AY + 19}H${f2(xe)}Z`, class:"ink", "stroke-width":.9}, gr);
+  E("rect", {x:f2(r0 + 6), y:AY - 17, width:30, height:34, rx:3, class:"fvel"}, gr); E("rect", {x:f2(r0 + 6), y:AY - 17, width:30, height:34, rx:3, fill:"url(#hv)", opacity:.9}, gr);
+  E("rect", {x:f2(r0 + 6), y:AY - 17, width:30, height:34, rx:3, class:"ink", "stroke-width":1.1}, gr);
+  E("rect", {x:f2(r1), y:AY - 9, width:6, height:18, rx:2, class:"fvel"}, gr); E("rect", {x:f2(r1), y:AY - 9, width:6, height:18, rx:2, class:"ink", "stroke-width":.9}, gr);
+  E("rect", {x:f2(TE - 4), y:AY - RT - 6, width:150, height:2 * RT + 12, fill:"transparent"}, gt);
+}
+// the reading glass: the thimble's edge opened flat. Up the glass is round the screw.
+const GX = 400, GY = 222, GW = 320, GH = 300, GTE = GX + 176, PHI0 = -16, PHI1 = 108, KD = (GH - 20) / (PHI1 - PHI0), KX = 4 * K3;
+const gyP = phi => GY + GH - 10 - (phi - PHI0) * KD;
+function drawGlass3(st){
+  g3L.replaceChildren();
+  glass(g3L, {x:GX, y:GY, w:GW, h:GH, cap:"the thimble's edge opened flat, four times"}, gi => {
+    const yd = gyP(0);
+    E("rect", {x:GX, y:GY, width:GTE - GX, height:GH, class:"fvel"}, gi);
+    E("path", {d:`M${GX},${f2(yd)}H${GTE}`, class:"ink", "stroke-width":1.3}, gi);
+    for(let m2 = 0; m2 <= 50; m2++){ const x = GTE + (m2 * .5 - Mi.p) * KX; if(x > GTE - .3 || x < GX - 5) continue;
+      const whole = m2 % 2 === 0; E("path", {d:`M${f2(x)},${f2(yd)}V${f2(gyP(whole ? 9 : -9))}`, class:"ink", "stroke-width":1.2}, gi);
+      if(whole && (m2 / 2) % 5 === 0) T(String(m2 / 2), {x:f2(x), y:f2(gyP(13)), "font-size":14, "text-anchor":"middle"}, gi);
+      if(whole) T(String(m2 / 2), {x:f2(x), y:f2(gyP(-15) + 4), "font-size":10, "text-anchor":"middle", "font-style":"italic", class:"fadedt"}, gi); }
+    for(let j = 0; j <= 10; j++){ const y = gyP((A0 + .9 * j) * DL), hiJ = !Mi.hide && j === st.j;
+      E("path", {d:`M${GX + 22},${f2(y)}H${GTE}`, class:hiJ ? "rub" : "ink", "stroke-width":hiJ ? 2 : 1.05, "data-hi":hiJ ? "v" : null}, gi);
+      if(j % 2 === 0) T(String(j), {x:GX + 11, y:f2(y + 4), "font-size":11.5, "text-anchor":"middle", class:hiJ ? "rubt" : null}, gi);
+      else T(String(j), {x:GX + 11, y:f2(y + 3.5), "font-size":9, "text-anchor":"middle", "font-style":"italic", class:hiJ ? "rubt" : "fadedt"}, gi); }
+    // the thimble
+    E("rect", {x:GTE, y:GY, width:GX + GW - GTE, height:GH, class:"fvel"}, gi);
+    E("rect", {x:GTE + 100, y:GY, width:GX + GW - GTE - 100, height:GH, fill:"url(#hx)", opacity:.6}, gi);
+    E("path", {d:`M${GTE},${GY}V${GY + GH}`, class:"ink", "stroke-width":1.6}, gi);
+    const lo = Math.ceil(st.u + PHI0 / DL - 1), hi = Math.floor(st.u + PHI1 / DL + 1);
+    for(let U = lo; U <= hi; U++){ const y = gyP((U - st.u) * DL), five = ((U % 5) + 5) % 5 === 0, hiU = !Mi.hide && U === st.U, isW = !Mi.hide && U === st.W;
+      E("path", {d:`M${GTE},${f2(y)}h${five ? 40 : 24}`, class:hiU ? "rub" : isW ? "lap" : "ink", "stroke-width":hiU || isW ? 2 : 1.05, "data-hi":hiU ? "t" : null}, gi);
+      if(five) T(String(((U % 50) + 50) % 50), {x:GTE + 58, y:f2(y + 4.5), "font-size":13, "text-anchor":"middle", class:hiU ? "rubt" : null}, gi); }
+    if(!Mi.hide) T("datum", {x:GX + 26, y:f2(yd + 13), "font-size":10, "font-style":"italic", class:"fadedt"}, gi);
+  });
+}
+// the tray of things to measure
+const TRAY = [["wire", 98, "wire, 14 gauge"], ["ball", 205, "ball, ⅛ inch"], ["hair", 306, "a hair"]];
+{ const g = g3Tray, x0 = 44, x1 = 366, y0 = 384, y1 = 500;
+  T("THINGS TO MEASURE · CLICK ONE", {x:(x0 + x1) / 2, y:y0 - 10, "font-size":9.5, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"2"}, g);
+  E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, rx:4, class:"fvel"}, g); E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, rx:4, fill:"url(#h135w)", opacity:.7}, g);
+  E("rect", {x:x0 + 8, y:y0 + 8, width:x1 - x0 - 16, height:y1 - y0 - 16, rx:2, class:"fvel"}, g); E("rect", {x:x0 + 8, y:y0 + 8, width:x1 - x0 - 16, height:y1 - y0 - 16, rx:2, fill:"url(#hdot)", opacity:.45}, g);
+  E("rect", {x:x0, y:y0, width:x1 - x0, height:y1 - y0, rx:4, class:"ink", "stroke-width":1.2}, g); E("rect", {x:x0 + 8, y:y0 + 8, width:x1 - x0 - 16, height:y1 - y0 - 16, rx:2, class:"ink2", "stroke-width":.7}, g);
+  TRAY.forEach(([k, cx, lab]) => { const gi = E("g", {class:"tray", role:"button", tabindex:"0", "aria-label":"Close the micrometer on " + MOBJ[k].name}, g), cy = 432;
+    E("rect", {x:cx - 46, y:y0 + 10, width:92, height:y1 - y0 - 20, fill:"transparent"}, gi);
+    if(k === "wire"){ let d = ""; for(let i = 0; i <= 120; i++){ const a = i / 120 * 5.2 * Math.PI, r = 6 + i * .19; d += `${i ? "L" : "M"}${f2(cx + r * Math.cos(a))},${f2(cy + r * .62 * Math.sin(a))}`; }
+      E("path", {d, class:"fgold", style:"fill:none;stroke:var(--gold)", "stroke-width":2.6}, gi); E("path", {d, class:"ink2", "stroke-width":.5}, gi);
+      E("path", {d:`M${cx + 29},${cy + 2}C${cx + 34},${cy + 14} ${cx + 30},${cy + 22} ${cx + 38},${cy + 28}`, class:"fgold", style:"fill:none;stroke:var(--gold)", "stroke-width":2.6}, gi); }
+    else if(k === "ball"){ E("circle", {cx, cy, r:13, class:"fvel"}, gi); E("path", {d:`M${cx},${cy - 13}A13,13 0 0 1 ${cx},${cy + 13}A10,13 0 0 0 ${cx},${cy - 13}Z`, fill:"url(#h45)", opacity:.8}, gi); E("circle", {cx, cy, r:13, class:"ink", "stroke-width":1}, gi); }
+    else E("path", {d:`M${cx - 30},${cy + 10}C${cx - 14},${cy - 18} ${cx - 2},${cy + 20} ${cx + 12},${cy - 6}C${cx + 22},${cy - 22} ${cx + 30},${cy + 6} ${cx + 36},${cy - 10}`, class:"ink", "stroke-width":.8}, gi);
+    T(lab, {x:cx, y:y1 - 18, "font-size":12, "text-anchor":"middle", "font-style":"italic", class:"trayl"}, gi);
+    const go = () => closeOn(k); gi.addEventListener("click", go); gi.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } }); }); }
+// the straight scale with a vernier each way
+const RX0 = 60, PD = 15, RY = 636;
+const rx = v => RX0 + v * PD;
+{ const g = g3Rule;
+  T("A STRAIGHT SCALE, AND A SLIDER WITH A VERNIER EACH WAY", {x:380, y:572, "font-size":9.5, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"2"}, g);
+  E("rect", {x:34, y:RY - 46, width:690, height:46, class:"fvel"}, g); E("rect", {x:34, y:RY - 46, width:690, height:46, fill:"url(#hhw)", opacity:.3}, g); E("rect", {x:34, y:RY - 46, width:690, height:46, class:"ink", "stroke-width":1.2}, g);
+  let p = ["", "", ""];
+  for(let i = 0; i <= 42; i++){ const lv = i % 10 === 0 ? 0 : i % 5 === 0 ? 1 : 2; p[lv] += `M${rx(i)},${RY}v${[-17, -13, -9][lv]}`;
+    if(i % 5 === 0) T(String(i), {x:rx(i), y:RY - 21, "font-size":lv ? 10.5 : 12.5, "text-anchor":"middle"}, g); }
+  p.forEach((d, i) => E("path", {d, class:"ink", "stroke-width":[1, .85, .7][i]}, g)); }
+function drawRetro(rr){
+  gRs.replaceChildren(); const g = gRs, v = Rt.v, x0 = rx(v - 11) - 18, x1 = rx(v + 9) + 18, y0 = RY, y1 = RY + 44;
+  E("rect", {x:f2(x0), y:y0, width:f2(x1 - x0), height:y1 - y0, rx:2, class:"fvel"}, g);
+  E("rect", {x:f2(x0), y:y0, width:f2(x1 - x0), height:y1 - y0, rx:2, class:"fgold", opacity:.35}, g);
+  E("rect", {x:f2(x0), y:y0, width:f2(x1 - x0), height:y1 - y0, rx:2, class:"ink", "stroke-width":1.1}, g);
+  E("path", {d:`M${f2(x0)},${y0 + 3}H${f2(x1)}`, class:"ink2", "stroke-width":.5}, g);
+  let pp = ["", ""]; const hi = [];
+  for(let k = 0; k <= 10; k++){ [[1, .9, rr.f], [-1, 1.1, rr.bk]].forEach(([dir, s, b]) => { if(k === 0 && dir < 0) return; const x = rx(v + dir * k * s), big = k % 5 === 0;
+    if(k === b.k && k > 0){ hi.push([x, big]); return; } if(k === 0 && b.k === 0){ hi.push([x, true]); return; }
+    pp[big ? 0 : 1] += `M${f2(x)},${y0}v${k === 0 ? 16 : big ? 12 : 8}`;
+    if(big && k) T(String(k), {x:f2(x), y:y0 + 24, "font-size":10, "text-anchor":"middle"}, g); }); }
+  E("path", {d:pp[0], class:"ink", "stroke-width":.9}, g); E("path", {d:pp[1], class:"ink", "stroke-width":.7}, g);
+  hi.forEach(([x, big]) => E("path", {d:`M${f2(x)},${y0}v${big ? 14 : 10}`, class:"rub", "stroke-width":1.6, "data-hi":"r"}, g));
+  [[rr.f, 1], [rr.bk, -1]].forEach(([b, dir]) => { if(b.k % 5 === 0 && b.k) T(String(b.k), {x:f2(rx(v + dir * b.k * (dir > 0 ? .9 : 1.1))), y:y0 + 24, "font-size":10, "text-anchor":"middle", class:"rubt"}, g); });
+  [rr.f.m, rr.bk.m].forEach(m => E("path", {d:`M${rx(m)},${RY}v-17`, class:"rub", "stroke-width":1.6, "data-hi":"rm"}, g));
+  T("0", {x:f2(rx(v)), y:y0 + 26, "font-size":10, "text-anchor":"middle", class:"rubt"}, g);
+  T("← BACKWARD · 10 IN 11", {x:f2(rx(v - 5.5)), y:y1 - 6, "font-size":7.5, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"1"}, g);
+  T("FORWARD · 10 IN 9 →", {x:f2(rx(v + 4.5)), y:y1 - 6, "font-size":7.5, "text-anchor":"middle", class:"sc fadedt", "letter-spacing":"1"}, g);
+  E("rect", {x:f2(x0), y:y0 - 4, width:f2(x1 - x0), height:y1 - y0 + 8, fill:"transparent"}, g);
+}
+function reckon3(st, rr){
+  let s = "";
+  if(Mi.hide) s += `Read the sleeve, then the thimble line at the datum, then the vernier line that runs on into a thimble line.<span class="big">?</span><span class="dim">Untick “hide” to check yourself.</span>`;
+  else {
+    const half = st.sleeve % 1 !== 0;
+    s += `Sleeve: <span class="nw">${fmt(st.sleeve, 1)} mm</span>${half ? ", the half-millimetre line showing" : ""}. Thimble: <span class="nw">${st.thim} at the datum</span>. Vernier: <span class="nw">line ${st.j}</span> meets a thimble line.`;
+    s += `<span class="big">${fmt(st.mm, 3)} mm</span>`;
+    s += `<span class="nw">${fmt(st.sleeve, 1)} + ${fmt(st.thim / 100, 2)} + ${fmt(st.j / 1000, 3)}</span> <span class="nw">= ${fmt(st.mm, 3)} mm</span>`;
+    s += `<hr><span class="dim">One turn is the pitch, 0.5 mm, in 50 divisions: 0.01 mm each. Ten vernier lines span nine of them: 0.01 ÷ 10 = 0.001 mm.</span>`;
+    const what = Mi.obj && near(Mi.p, MOBJ[Mi.obj].d) ? `${MOBJ[Mi.obj].name[0].toUpperCase() + MOBJ[Mi.obj].name.slice(1)} is ${fmt(MOBJ[Mi.obj].d, 3)} mm thick.` : `The spindle stands in truth ${fmt(Mi.p, 4)} mm from the anvil.`;
+    s += `<br><span class="dim">${what}</span>`;
+  }
+  const f = rr.f, bk = rr.bk;
+  s += `<hr><b>The straight scale.</b> Forward, line ${f.k} meets ${f.m}: <span class="nw">${f.m - f.k} + ${f.k} × 0.1 = ${fmt(f.R, 1)}</span>. Backward, line ${bk.k} meets ${bk.m}, counted to the left: <span class="nw">${bk.m + bk.k} + ${bk.k} × 0.1 = ${fmt(bk.R, 1)}</span>.`;
+  s += `<br><span class="dim">10 in 9 makes each division 0.9, short by 0.1; 10 in 11 makes each 1.1, long by 0.1. Short verniers read forward, long ones backward.</span>`;
+  $("rdMic").innerHTML = s;
+}
+function draw3(){ Mi.p = mClamp(Mi.p); const st = mRead(), rr = rRead(); drawSpindle(); drawHead(st); drawGlass3(st); drawRetro(rr); reckon3(st, rr); Folio.tryCheck(); }
+const tw3 = Tween(() => ({p:Mi.p, v:Rt.v}), o => { Mi.p = o.p; Rt.v = o.v; }, draw3);
+let p30 = 0, v30 = 0;
+Folio.drag(gTh, sv3, (p, e, p0) => { Mi.p = mClamp(p30 + (p.x - p0.x) / K3 + (p.y - p0.y) * .5 / (2 * Math.PI * RT)); draw3(); }, () => { tw3.stop(); p30 = Mi.p; });
+Folio.keys(gTh, (dx, dy, big) => { tw3.stop(); const st = dx ? .01 : .001, dir = dx || -dy, k = big ? 50 : 1;
+  Mi.p = mClamp(Math.round((Math.round(Mi.p / .001) * .001 + dir * st * k) * 1e6) / 1e6); draw3(); }, "The thimble. Up and down arrows turn it by one thousandth of a millimetre, left and right by one hundredth; Shift for fifty times as much.");
+Folio.drag(gRs, sv3, (p, e, p0) => { Rt.v = clamp(v30 + (p.x - p0.x) / PD, 12, 29); draw3(); }, () => { tw3.stop(); v30 = Rt.v; });
+Folio.keys(gRs, (dx, dy, big) => { tw3.stop(); const st = big ? 1 : .1; Rt.v = clamp(Math.round((Math.round(Rt.v / .1) * .1 + (dx || -dy) * st) * 1e6) / 1e6, 12, 29); draw3(); }, "The slider of the straight scale. Arrow keys move it by 0.1 division; Shift by one.");
+function closeOn(k){ tw3.stop(); const d = MOBJ[k].d, steps = [];
+  if(Mi.obj !== k){ steps.push({to:{p:Math.max(Mi.p, d + 2.5), v:Rt.v}, dur:500}); steps.push({call:() => { Mi.obj = k; draw3(); }}); }
+  steps.push({to:{p:d + .04, v:Rt.v}, dur:600}, {to:{p:d, v:Rt.v}, dur:350}); return tw3.seq(steps); }
+document.querySelectorAll("[data-mobj]").forEach(b => b.onclick = () => closeOn(b.dataset.mobj));
+$("mRatch").onclick = () => { tw3.stop(); tw3.seq([{to:{p:mMin() + .04, v:Rt.v}, dur:600}, {to:{p:mMin(), v:Rt.v}, dur:300}]); };
+$("mOpen").onclick = () => { tw3.stop(); tw3.seq([{to:{p:Math.max(Mi.p, (Mi.obj ? MOBJ[Mi.obj].d : 0) + 3), v:Rt.v}, dur:500}, {call:() => { Mi.obj = null; draw3(); }}]); };
+$("mHide").onchange = e => { Mi.hide = e.target.checked; draw3(); };
+const mIs = x => mRead().th === Math.round(x * 1000);
+Folio.tries({
+  mwire: {setup(){ closeOn("wire"); }, check(){ return Mi.obj === "wire" && near(Mi.p, MOBJ.wire.d); }},
+  m7385: {setup(){ tw3.seq([{to:{p:Math.max(Mi.p, 5), v:Rt.v}, dur:300}, {call:() => { Mi.obj = null; }}, {to:{p:7.385, v:Rt.v}, dur:900}]); }, check(){ return !Mi.obj && mIs(7.385); }},
+  m7885: {setup(){ tw3.seq([{to:{p:Math.max(Mi.p, 5), v:Rt.v}, dur:300}, {call:() => { Mi.obj = null; }}, {to:{p:7.885, v:Rt.v}, dur:900}]); }, check(){ return !Mi.obj && mIs(7.885); }},
+  r127:  {setup(){ tw3.to({p:Mi.p, v:12.7}, 800); }, check(){ const r = rRead(); return near(r.f.R, 12.7) && near(r.bk.R, 12.7); }},
+  rlc:   {setup(){ tw3.to({p:Mi.p, v:Math.floor(Rt.v) + .1}, 800); }, check(){ const r = rRead(); return r.bk.k === 1 && near(r.bk.R - Math.floor(r.bk.R + 1e-9), .1); }}
+});
+draw3();
+
+window.__vernier = {C, A, Mi, Rt, cRead, aRead, mRead, rRead, draw1, draw2, draw3, match, VS, LIMB, K, XS, X0, OFF, sOf, maxOpen};
+Folio.plates(); Folio.glosses();
+})();
+</script>
+</body>
+</html>

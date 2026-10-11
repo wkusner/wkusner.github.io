@@ -78,6 +78,7 @@ const FOLIOS = [
   {slug:"sector",      title:"The Sector",            sub:"Galileo's compass of proportion"},
   {slug:"napier",      title:"Napier's Bones",        sub:"and the rods that followed them"},
   {slug:"slide-rule",  title:"The Slide Rule",        sub:"logarithms you can slide"},
+  {slug:"vernier",     title:"The Vernier",           sub:"a tenth of a division, read by coincidence"},
   {slug:"planimeters", title:"The Planimeter Bench",  sub:"area by tracing"},
   {slug:"cross-ratio", title:"The Cross-Ratio Ruler", sub:"distance read off a picture"},
   {slug:"so3-rule",    title:"The Rule of Turns",     sub:"a slide rule for rotations"}

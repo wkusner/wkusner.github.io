@@ -46,6 +46,9 @@ const V = {
     Folio.T(String([4,2,5,7,0][r]),{x:x+13,y:18,"text-anchor":"middle","font-size":10},g); } },
   "slide-rule": g => { E("rect",{x:8,y:22,width:184,height:46,class:"fvel",style:"stroke:var(--ink)"},g); E("rect",{x:40,y:36,width:152,height:18,fill:"url(#h45w)",style:"stroke:var(--ink)",class:"ink"},g);
     for(let k=1;k<=10;k++){ const x=8+184*Math.log10(k); E("line",{x1:x,y1:68,x2:x,y2:60,class:"ink","stroke-width":.8},g); } E("rect",{x:96,y:14,width:22,height:62,class:"flwash",style:"stroke:var(--ink2)"},g); E("line",{x1:107,y1:14,x2:107,y2:76,class:"rub","stroke-width":1.2},g); },
+  "vernier": g => { E("rect",{x:8,y:30,width:184,height:16,class:"fvel",style:"stroke:var(--ink)"},g); for(let k=0;k<=36;k++){ const x=12+k*5; E("line",{x1:x,y1:46,x2:x,y2:46-(k%10?5:10),class:"ink","stroke-width":.7},g); }
+    E("rect",{x:62,y:46,width:60,height:16,fill:"url(#h45w)",style:"stroke:var(--ink)",class:"ink"},g); for(let k=0;k<=10;k++){ const x=66+k*4.5; E("line",{x1:x,y1:46,x2:x,y2:46+(k%5?5:9),class:k===4?"rub":"ink","stroke-width":k===4?1.4:.7},g); }
+    E("path",{d:"M8,30 L8,12 L22,12 L22,30 M62,30 L62,12 L48,12 L48,30",class:"ink","stroke-width":1.2},g); },
   "planimeters": g => { E("path",{d:"M120,30 C160,20 175,55 150,70 C125,85 95,70 100,52 C104,40 108,33 120,30 Z",class:"fwash",style:"stroke:var(--rubric)"},g);
     E("path",{d:"M30,78 L80,30 L150,58",class:"ink","stroke-width":4,"stroke-linecap":"round"},g); E("circle",{cx:30,cy:78,r:6,fill:"url(#hx)",style:"stroke:var(--ink)",class:"ink"},g); E("circle",{cx:118,cy:44,r:6,class:"fgold",style:"stroke:var(--ink)"},g); },
   "cross-ratio": g => { E("path",{d:"M10,24 L190,24",class:"rub","stroke-dasharray":"4 3"},g); E("path",{d:"M40,84 L100,24 L160,84",class:"ink","stroke-width":1.1},g);
