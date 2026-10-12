@@ -138,7 +138,13 @@ const POST_FS = `
 precision highp float;
 uniform sampler2D tColor; uniform sampler2D tDepth; uniform sampler2D tPT; uniform float ptMix, ptGain;
 uniform sampler2D tRlo;
-vec4 TCOL(vec2 u){ vec4 r = texture2D(tColor,u); if(ptMix <= 0.) return r; vec3 lo = texture2D(tRlo,u).rgb, pl = texture2D(tPT,u).rgb*ptGain; vec3 k = pow(clamp((pl + .002)/(lo + .002), vec3(.12), vec3(5.)), vec3(.75)); return vec4(mix(r.rgb, r.rgb*k, ptMix), r.a); }
+uniform sampler2D tBake; uniform float bakeMix, bakeAsp, viewAsp, bakePow, bakeMax;
+vec4 TCOL(vec2 u){ vec4 r = texture2D(tColor,u);
+  // a plate: the light of this very view, traced at length beforehand, laid over the quick picture as a ratio (so what moves or is taken away still shows)
+  if(bakeMix > 0.){ vec2 ub = vec2(.5 + (u.x - .5)*viewAsp/bakeAsp, u.y); float inb = smoothstep(0., .04, ub.x)*smoothstep(1., .96, ub.x), sky = step(.9999, texture2D(tDepth, u).x);
+    vec3 e = texture2D(tBake, clamp(ub, 0., 1.)).rgb; vec3 k = min(pow(clamp(exp2((e - .5)*6.), vec3(.12), vec3(6.)), vec3(bakePow)), vec3(bakeMax));
+    return vec4(r.rgb*mix(vec3(1.), k, bakeMix*inb*(1. - sky)), r.a); }
+  if(ptMix <= 0.) return r; vec3 lo = texture2D(tRlo,u).rgb, pl = texture2D(tPT,u).rgb*ptGain; vec3 k = pow(clamp((pl + .002)/(lo + .002), vec3(.12), vec3(5.)), vec3(.75)); return vec4(mix(r.rgb, r.rgb*k, ptMix), r.a); }
 uniform vec2 res; uniform float dpr, night, time, cnear, cfar, spacing, aoK, exposure, stageK, focusZ, focusR;
 uniform mat4 projInv; uniform mat4 proj; uniform vec3 paper, ink, paperN, inkN; uniform vec3 upV;
 varying vec2 vUv;
@@ -149,8 +155,8 @@ float linz(vec2 uv){ return -viewPos(uv).z; }
 float lineSet(vec2 px, vec2 dir, float s, float w, float wob){
   float t = dot(px, vec2(-dir.y, dir.x))/s + wob;
   float id = floor(t + .5), along = dot(px, dir)/s;
-  w *= mix(.72, 1.22, hash(vec2(id, 3.7))) * (.9 + .2*noise(vec2(along*.08, id*1.7)));
-  t += .1*(hash(vec2(id, 9.1)) - .5);
+  w *= mix(.88, 1.1, hash(vec2(id, 3.7))) * (.95 + .1*noise(vec2(along*.06, id*1.7)));
+  t += .04*(hash(vec2(id, 9.1)) - .5);
   float v = abs(fract(t) - .5);
   float aa = 0.9/s;
   return 1. - smoothstep(w*.5 - aa, w*.5 + aa, v);
@@ -164,17 +170,25 @@ void main(){
   // so the engraver darkens, and hatches, where a real room is dim
   float ao = 1.;
   if(aoK > 0. && dep < .9999){
-    float rad = .55, occ = 0., ang = hash(floor(px/2.))*6.2831;
-    for(int i=0;i<12;i++){ float fi = float(i), r = (fi+.5)/12., a = ang + fi*2.39996;
+    // the same spiral of samples at every pixel: smooth shading, where a random turn per pixel left a grain the hatching then broke into blotches
+    float rad = .55, occ = 0., ang = .7;
+    for(int i=0;i<16;i++){ float fi = float(i), r = (fi+.5)/16., a = ang + fi*2.39996;
       vec2 off = vec2(cos(a), sin(a)) * r * rad * proj[0][0] / max(-P.z, .1) * .5;
       vec3 Q = viewPos(vUv + off*vec2(1., res.x/res.y)), v = Q - P; float d = length(v);
       occ += max(dot(N, v/max(d,1e-4)) - .1, 0.) * (1. - smoothstep(rad*.6, rad*2., d)); }
-    ao = clamp(1. - aoK*occ/12.*2.6, .25, 1.);
+    ao = clamp(1. - aoK*occ/16.*2.6, .25, 1.);
   }
   vec3 col = pow(max(TCOL( vUv).rgb*exposure*ao, 0.), vec3(1./2.2));
   float lum0 = dot(col, vec3(.299,.587,.114));
-  float lum = smoothstep(.04, .80, lum0);
-  lum = clamp(.52 + (lum - .52)*1.35, 0., 1.);
+  // the engraver reads the tone of a passage, not every grain in it: the tone is taken from a softened copy of the picture
+  vec2 eb = vec2(3.*dpr)/res; float lb = 0.;
+  lb += dot(pow(max(TCOL(vUv + vec2(eb.x, eb.y)).rgb*exposure*ao, 0.), vec3(1./2.2)), vec3(.299,.587,.114));
+  lb += dot(pow(max(TCOL(vUv + vec2(-eb.x, eb.y)).rgb*exposure*ao, 0.), vec3(1./2.2)), vec3(.299,.587,.114));
+  lb += dot(pow(max(TCOL(vUv + vec2(eb.x, -eb.y)).rgb*exposure*ao, 0.), vec3(1./2.2)), vec3(.299,.587,.114));
+  lb += dot(pow(max(TCOL(vUv - eb).rgb*exposure*ao, 0.), vec3(1./2.2)), vec3(.299,.587,.114));
+  float lumS = mix(lb*.25, lum0, .18);
+  float lum = smoothstep(.05, .64, lumS);
+  lum = clamp(.5 + (lum - .5)*1.25 + .04, 0., 1.);
   lum = mix(lum, lum*lum*(3. - 2.*lum), .55);   // the engraver's chiaroscuro: more contrast, lights kept open, darks pushed down
   if(night > .5) lum = 1. - lum;
   // ---- the engraver's lines ----
@@ -183,7 +197,8 @@ void main(){
   // the picture and the one that runs away from you. Each is projected to the picture, so lines converge in perspective.
   vec3 U = normalize(upV);
   float flat_ = abs(dot(N, U));
-  vec3 T = flat_ < .8 ? cross(N, U) : cross(N, cross(vec3(0., 0., -1.), N));
+  // on a floor or ceiling the first set runs across the picture (steady, no moire where receding lines fan out); the receding set is the second
+  vec3 T = flat_ < .8 ? cross(N, U) : cross(N, vec3(0., 0., 1.));
   if(length(T) < 1e-3) T = vec3(1., 0., 0.); T = normalize(T);
   vec3 B = normalize(cross(N, T));
   vec2 dirT, dirB;
@@ -195,45 +210,46 @@ void main(){
   // farther things are cut finer and lighter, as engravers do for air between you and them
   float far = smoothstep(3.5, 16., -P.z);
   float sp = s*mix(1., .8, far);
-  float wob = .16*(noise(px*.011) - .5) + .04*sin(px.y*.05 + px.x*.017);
+  float wob = .07*(noise(px*.008) - .5);
   float dark = (1. - lum)*mix(1., .78, far);
   // the burin's line swells as the tone deepens and thins to a point as it leaves the shadow
-  float swell = .85 + .3*noise(px*.045 + 7.);
+  float swell = .94 + .12*noise(px*.03 + 7.);
   // first set: along the surface's main direction
-  float ink1 = lineSet(px, dirT, sp, clamp((dark - .30)*1.35*swell, 0., .92), wob);
+  float ink1 = lineSet(px, dirT, sp, clamp((dark - .40)*1.5*swell, 0., .9), wob);
   // second set: across the form, for the half-shadows
-  float ink2 = dark > .55 ? lineSet(px, dirB, sp*1.06, clamp((dark - .55)*1.9*swell, 0., .85), wob*1.3) : 0.;
+  float ink2 = dark > .6 ? lineSet(px, dirB, sp*1.06, clamp((dark - .6)*1.9*swell, 0., .85), wob) : 0.;
   // third set, on the diagonal: the deep shadows
-  float ink3 = dark > .80 ? lineSet(px, normalize(dirT + dirB), sp*.94, clamp((dark - .80)*3.4, 0., .85), wob) : 0.;
+  float ink3 = dark > .84 ? lineSet(px, normalize(dirT + dirB), sp*.94, clamp((dark - .84)*3.4, 0., .8), wob) : 0.;
   // dots in the lozenges between crossed lines (the engraver's flick-work), in the middle darks
   vec2 cell = vec2(dot(px, vec2(-dirT.y, dirT.x)), dot(px, vec2(-dirB.y, dirB.x)))/sp;
-  float lozenge = (dark > .62 && dark < .9) ? (1. - smoothstep(.10, .17, length(fract(cell) - .5)))*smoothstep(.62, .72, dark) : 0.;
+  float lozenge = (dark > .66 && dark < .88) ? (1. - smoothstep(.08, .14, length(fract(cell) - .5)))*smoothstep(.66, .74, dark)*.7 : 0.;
   // stipple, for the lightest tones on rounded things, where a line would be too heavy
   float curved = clamp(length(fwidth(N))*28., 0., 1.);
-  float stip = (dark > .12 && dark < .42) ? step(hash(floor(px/1.6)), (dark - .12)*.55*curved) : 0.;
+  float stip = (dark > .2 && dark < .42 && curved > .5) ? step(hash(floor(px/1.6)), (dark - .2)*.35*curved) : 0.;
   float hatch = max(max(ink1, ink2), max(max(ink3, lozenge*.9), stip*.85));
+  // the deepest shadows are cut to a solid black rather than a thicket of crossings
+  hatch = max(hatch, smoothstep(.86, .97, dark));
   if(dep >= .9999) hatch = 0.;
   // ink outlines: a heavy line where one thing stands in front of another, a fine one where the surface folds or changes tone
   vec2 e = vec2(1.2*dpr)/res;
   float zc = linz(vUv), zx = linz(vUv+vec2(e.x,0.)), zX = linz(vUv-vec2(e.x,0.)), zy = linz(vUv+vec2(0.,e.y)), zY = linz(vUv-vec2(0.,e.y));
   float dz = (abs(zx - zX) + abs(zy - zY)) / max(zc, .5);
   float edge = smoothstep(.035, .09, dz)*mix(1., .7, far);
-  float l1 = pow(dot(TCOL( vUv+vec2(e.x,0.)).rgb, vec3(.333)),.4545), l2 = pow(dot(TCOL( vUv-vec2(e.x,0.)).rgb, vec3(.333)),.4545);
-  float l3 = pow(dot(TCOL( vUv+vec2(0.,e.y)).rgb, vec3(.333)),.4545), l4 = pow(dot(TCOL( vUv-vec2(0.,e.y)).rgb, vec3(.333)),.4545);
-  float crease = smoothstep(.30, .55, abs(l1-l2) + abs(l3-l4))*.65;
+  float bend = (abs(zx + zX - 2.*zc) + abs(zy + zY - 2.*zc)) / max(zc, .5);
+  float crease = smoothstep(.006, .02, bend)*(1. - edge)*.6*mix(1., .6, far);
   // the outline itself is broken here and there, as a hand-cut line is
-  float brk = .78 + .22*smoothstep(.25, .6, noise(px*.06 + 31.));
+  float brk = .88 + .12*smoothstep(.3, .6, noise(px*.04 + 31.));
   float inkAmt = clamp(max(hatch, max(edge*.95, crease)*brk), 0., 1.);
   vec3 pap = mix(paper, paperN, night), ik = mix(ink, inkN, night);
   // a little of each material's own color survives, muted
   vec3 sat = mix(vec3(lum0), col, .72);
   vec3 hue = clamp(sat / max(lum0, .18), 0., 2.2);
-  vec3 tint = mix(pap, pap*hue, .42*(1.-night*.45));
+  vec3 tint = mix(pap, pap*hue, .3*(1.-night*.45));
   vec3 c = mix(tint, ik, inkAmt);
   // the paper: a fine fibre and a faint plate tone where the wiping left a film of ink, heavier toward the darks
   float fib = .55*noise(px*vec2(.9, .22)) + .45*noise(px*.35 + 13.);
-  c *= .968 + .045*fib;
-  float film = .05*(noise(px*.004 + 3.) - .3)*(.4 + dark);
+  c *= .982 + .025*fib;
+  float film = .03*(noise(px*.004 + 3.) - .3)*(.3 + dark);
   c = mix(c, ik, clamp(film*(1. - inkAmt), 0., .08));
   float vig = smoothstep(1.25, .45, length(vUv - .5)*1.4);
   c = mix(c*.88, c, vig);
@@ -253,7 +269,13 @@ const PHOTO_FS = `
 precision highp float;
 uniform sampler2D tColor; uniform sampler2D tDepth; uniform sampler2D tPT; uniform float ptMix, ptGain;
 uniform sampler2D tRlo;
-vec4 TCOL(vec2 u){ vec4 r = texture2D(tColor,u); if(ptMix <= 0.) return r; vec3 lo = texture2D(tRlo,u).rgb, pl = texture2D(tPT,u).rgb*ptGain; vec3 k = pow(clamp((pl + .002)/(lo + .002), vec3(.12), vec3(5.)), vec3(.75)); return vec4(mix(r.rgb, r.rgb*k, ptMix), r.a); }
+uniform sampler2D tBake; uniform float bakeMix, bakeAsp, viewAsp, bakePow, bakeMax;
+vec4 TCOL(vec2 u){ vec4 r = texture2D(tColor,u);
+  // a plate: the light of this very view, traced at length beforehand, laid over the quick picture as a ratio (so what moves or is taken away still shows)
+  if(bakeMix > 0.){ vec2 ub = vec2(.5 + (u.x - .5)*viewAsp/bakeAsp, u.y); float inb = smoothstep(0., .04, ub.x)*smoothstep(1., .96, ub.x), sky = step(.9999, texture2D(tDepth, u).x);
+    vec3 e = texture2D(tBake, clamp(ub, 0., 1.)).rgb; vec3 k = min(pow(clamp(exp2((e - .5)*6.), vec3(.12), vec3(6.)), vec3(bakePow)), vec3(bakeMax));
+    return vec4(r.rgb*mix(vec3(1.), k, bakeMix*inb*(1. - sky)), r.a); }
+  if(ptMix <= 0.) return r; vec3 lo = texture2D(tRlo,u).rgb, pl = texture2D(tPT,u).rgb*ptGain; vec3 k = pow(clamp((pl + .002)/(lo + .002), vec3(.12), vec3(5.)), vec3(.75)); return vec4(mix(r.rgb, r.rgb*k, ptMix), r.a); }
 uniform vec2 res; uniform float time, aoK, night, exposure, stageK, focusZ, focusR; uniform mat4 projInv; uniform mat4 proj;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
@@ -300,7 +322,7 @@ export function create(container, hooks){
   camera.rotation.order = "YXZ";
   let rt = null;
   const post = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:POST_FS, uniforms:{
-    tColor:{value:null}, tDepth:{value:null}, tPT:{value:null}, tRlo:{value:null}, ptMix:{value:0}, ptGain:{value:1}, res:{value:new THREE.Vector2()}, dpr:{value:dpr}, night:{value:0}, time:{value:0},
+    tColor:{value:null}, tDepth:{value:null}, tPT:{value:null}, tRlo:{value:null}, ptMix:{value:0}, ptGain:{value:1}, tBake:{value:null}, bakeMix:{value:0}, bakeAsp:{value:2}, viewAsp:{value:16/9}, bakePow:{value:.9}, bakeMax:{value:6}, res:{value:new THREE.Vector2()}, dpr:{value:dpr}, night:{value:0}, time:{value:0},
     cnear:{value:camera.near}, cfar:{value:camera.far}, spacing:{value:Q.hatch}, projInv:{value:new THREE.Matrix4()},
     aoK:{value: Q.ss > 1 ? .85 : 0}, exposure:{value:1}, proj:{value:new THREE.Matrix4()}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6},
     paper:{value:new THREE.Color("#EEE4CF")}, ink:{value:new THREE.Color("#2a1f17")}, paperN:{value:new THREE.Color("#14110d")}, inkN:{value:new THREE.Color("#e9ddc4")}, upV:{value:new THREE.Vector3(0,1,0)} }});
@@ -309,7 +331,7 @@ export function create(container, hooks){
   const tri = new THREE.BufferGeometry(); tri.setAttribute("position", new THREE.Float32BufferAttribute([-1,-1,0, 3,-1,0, -1,3,0],3)); tri.setAttribute("uv", new THREE.Float32BufferAttribute([0,0, 2,0, 0,2],2));
   const postMesh = new THREE.Mesh(tri, post); postScene.add(postMesh);
   // the photographic view: no engraving, a tone curve, light reflected from the room, and soft shadow in every corner
-  const photo = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:PHOTO_FS, uniforms:{tColor:{value:null}, tDepth:{value:null}, tPT:{value:null}, tRlo:{value:null}, ptMix:{value:0}, ptGain:{value:1}, res:{value:new THREE.Vector2()}, time:{value:0}, aoK:{value:1}, night:{value:0}, exposure:{value:1.0}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6}, projInv:{value:new THREE.Matrix4()}, proj:{value:new THREE.Matrix4()}}});
+  const photo = new THREE.ShaderMaterial({vertexShader:POST_VS, fragmentShader:PHOTO_FS, uniforms:{tColor:{value:null}, tDepth:{value:null}, tPT:{value:null}, tRlo:{value:null}, ptMix:{value:0}, ptGain:{value:1}, tBake:{value:null}, bakeMix:{value:0}, bakeAsp:{value:2}, viewAsp:{value:16/9}, bakePow:{value:.9}, bakeMax:{value:6}, res:{value:new THREE.Vector2()}, time:{value:0}, aoK:{value:1}, night:{value:0}, exposure:{value:1.0}, stageK:{value:0}, focusZ:{value:1}, focusR:{value:.6}, projInv:{value:new THREE.Matrix4()}, proj:{value:new THREE.Matrix4()}}});
   photo.extensions = {derivatives:true};
   const isPhoto = () => !!(hooks.style && hooks.style() === "photo");
   let envTex = null;
@@ -328,7 +350,7 @@ export function create(container, hooks){
   const cam = {yaw:0, pitch:0, pos:new THREE.Vector3(0,EYE,2)}, goal = {yaw:0, pitch:0, pos:new THREE.Vector3(0,EYE,2)};
   let W = 0, H = 0;
   function resize(){
-    const full = document.fullscreenElement === container, w = container.clientWidth || 800, h = full ? (container.clientHeight || Math.round(w*9/16)) : Math.round(w*9/16);
+    const full = document.fullscreenElement === container, w = container.clientWidth || 800, h = window.__aspect ? Math.round(w/window.__aspect) : full ? (container.clientHeight || Math.round(w*9/16)) : Math.round(w*9/16);
     if(w===W && h===H) return; W=w; H=h;
     renderer.setSize(w*dpr, h*dpr, false); canvas.style.width = w+"px"; canvas.style.height = h+"px";
     camera.aspect = w/h; camera.updateProjectionMatrix();
@@ -448,16 +470,18 @@ export function create(container, hooks){
   function setActions(list){ actList = list || []; actBar.innerHTML = ""; actList.forEach(a => { const b = document.createElement("button"); b.type = "button"; b.textContent = a.label; b.addEventListener("click", e => { e.stopPropagation(); a.fn(); }); actBar.appendChild(b); }); }
   /* ---- moving: a few steps toward a door before the next room, and a dissolve between rooms ---- */
   let walking = false;
-  function approach(to, then){ if(walking) return; walking = true; const dest = cam.pos.clone().lerp(new THREE.Vector3(to.x, (to.y||0) + EYE, to.z), .5); goal.pos.copy(dest); look.yaw = 0; look.pitch = 0;
+  function approach(to, then){ if(walking) return; if(moveMode() === "dissolve") return then(); walking = true; const dest = cam.pos.clone().lerp(new THREE.Vector3(to.x, (to.y||0) + EYE, to.z), .5); goal.pos.copy(dest); look.yaw = 0; look.pitch = 0;
     const dyaw = Math.atan2(-(to.x - cam.pos.x), -(to.z - cam.pos.z)); let dd = dyaw - goal.yaw; while(dd > Math.PI) dd -= TAU; while(dd < -Math.PI) dd += TAU; if(Math.abs(dd) < .6) goal.yaw += dd*.6;
     dirty = 3; setTimeout(() => { walking = false; then(); }, 300); }
   const veil = document.createElement("canvas"); veil.className = "veil3d"; container.appendChild(veil);
-  function dissolve(){ try { veil.width = Math.max(1, Math.round(canvas.width/2)); veil.height = Math.max(1, Math.round(canvas.height/2)); veil.getContext("2d").drawImage(canvas, 0, 0, veil.width, veil.height);
-      veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = "opacity .5s ease"; veil.style.opacity = "0"; })); } catch(e) {} }
+  function moveMode(){ return hooks.moves ? hooks.moves() : "dissolve"; }
+  let lastTransit = -1e9;
+  function dissolve(dur){ try { veil.width = Math.max(1, Math.round(canvas.width/2)); veil.height = Math.max(1, Math.round(canvas.height/2)); veil.getContext("2d").drawImage(canvas, 0, 0, veil.width, veil.height);
+      veil.style.transition = "none"; veil.style.opacity = "1"; requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.transition = `opacity ${dur || .5}s ease`; veil.style.opacity = "0"; })); } catch(e) {} }
   const flash = document.createElement("div"); flash.className = "flash3d"; container.appendChild(flash);
   // a transition between levels, as HyperCard's visual effects did it: a zoom-open from where you clicked going in, a zoom-close coming out
   const iris = document.createElement("div"); iris.className = "iris3d"; container.appendChild(iris);
-  function transit(inward, at){ const mode = hooks.transitions ? hooks.transitions() : "zoom"; if(mode === "cut"){ cam.pos.copy(goal.pos); cam.yaw = goal.yaw + look.yaw; cam.pitch = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch)); dirty = 3; return; }
+  function transit(inward, at){ lastTransit = performance.now(); const mode = hooks.transitions ? hooks.transitions() : "zoom"; if(mode === "cut"){ cam.pos.copy(goal.pos); cam.yaw = goal.yaw + look.yaw; cam.pitch = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch)); dirty = 3; return; }
     const r = container.getBoundingClientRect(), x = at ? at[0] - r.left : r.width/2, y = at ? at[1] - r.top : r.height/2;
     iris.style.setProperty("--x", x + "px"); iris.style.setProperty("--y", y + "px"); iris.classList.remove("in", "out"); void iris.offsetWidth; iris.classList.add(inward ? "in" : "out"); }
   canvas.addEventListener("pointerdown", e => { stage.at = [e.clientX, e.clientY]; }, true);
@@ -541,6 +565,81 @@ export function create(container, hooks){
     [post, photo].forEach(m => { m.uniforms.tRlo.value = refine.loR.texture; m.uniforms.tPT.value = refine.loP.texture; m.uniforms.ptMix.value = refine.mix; m.uniforms.ptGain.value = refine.gain; });
     return s < 400 || refine.mix < 1; }
 
+  /* ---- plates: Myst's way of drawing a room. A few standing places (in the Entry, to begin) have their light traced at length beforehand,
+     thousands of samples where the live refinement manages dozens, and kept as a picture of how much brighter or darker each point is than the
+     quick drawing makes it. Standing exactly there, the plate is laid over the drawing; the engraver then cuts from that light. Things that move,
+     or are taken away, are still drawn live, so the plate never shows a thing that is not there. ---- */
+  const plates = {list:[], tex:{}, on:null, mix:0};
+  fetch("plates/plates.json?v=" + (hooks.version || "")).then(r => r.ok ? r.json() : []).then(l => { plates.list = Array.isArray(l) ? l : []; dirty = 3; }).catch(() => {});
+  function plateFor(){ if(!plan || !plates.list.length || focusKind() || skyOn) return null; const yaw = cam.yaw;
+    return plates.list.find(q => String(q.room) === String(plan.room.id) && (q.band === "night") === (plan.band === "night") && Math.hypot(q.pos[0] - cam.pos.x, q.pos[1] - cam.pos.y, q.pos[2] - cam.pos.z) < .03
+      && Math.abs(Math.atan2(Math.sin(q.yaw - yaw), Math.cos(q.yaw - yaw))) < .012 && Math.abs(q.pitch - cam.pitch) < .012 && Math.abs(q.fov - camera.fov) < .2) || null; }
+  function plateStep(t, moving){
+    const want = moving || (drag && drag.moved) || window.__platesOff ? null : plateFor();
+    if(want && !plates.tex[want.src]){ plates.tex[want.src] = "loading"; new THREE.TextureLoader().load("plates/" + want.src, tx => { tx.minFilter = tx.magFilter = THREE.LinearFilter; tx.generateMipmaps = false; tx.colorSpace = THREE.NoColorSpace; plates.tex[want.src] = tx; dirty = 3; }, undefined, () => { plates.tex[want.src] = "fail"; }); }
+    const tx = want && plates.tex[want.src]; const ready = tx && tx.isTexture;
+    if(ready){ if(plates.on !== want){ plates.on = want; plates.mix = 0; plates.t0 = t; } plates.mix = Math.min(1, (t - plates.t0)/380); }
+    else if(plates.mix > 0){ plates.mix = 0; plates.on = null; }
+    // the engraving takes a plate's light gently (its own tone curve already deepens the darks), and at night, when bright passages are cut as white lines, more gently still
+    const nightP = plan && plan.band === "night"; post.uniforms.bakePow.value = nightP ? .45 : .6; post.uniforms.bakeMax.value = nightP ? 1.25 : 1.5;
+    [post, photo].forEach(m => { m.uniforms.bakeMix.value = plates.mix; if(ready){ m.uniforms.tBake.value = tx; m.uniforms.bakeAsp.value = want.aspect; } m.uniforms.viewAsp.value = camera.aspect; });
+    return ready ? plates.mix < 1 : false; }
+  // ?debug: trace this view at length and hand back its plate (for the bake script)
+  if(/[?&]debug/.test(location.search)) window.__bake = async (want = 400, scale = 3) => {
+    while(!(refine.pt && refine.ready && refine.pt.samples >= want)){ await new Promise(r => setTimeout(r, 400)); if(refine.fail) throw new Error("no path tracer"); }
+    const bw = Math.round(W*dpr/scale), bh = Math.round(H*dpr/scale), o = {type:THREE.HalfFloatType, depthBuffer:false, minFilter:THREE.LinearFilter, magFilter:THREE.LinearFilter};
+    const a = new THREE.WebGLRenderTarget(bw, bh, o), b = new THREE.WebGLRenderTarget(bw, bh, o), out = new THREE.WebGLRenderTarget(bw, bh, {depthBuffer:false});
+    blurMat.uniforms.step.value.set(.6/bw, .6/bh); blurMesh.material = blurMat;
+    blurMat.uniforms.tex.value = rt.texture; renderer.setRenderTarget(a); renderer.render(blurScene, postCam);
+    blurMat.uniforms.tex.value = refine.pt.target.texture; renderer.setRenderTarget(b); renderer.render(blurScene, postCam);
+    const enc = new THREE.ShaderMaterial({vertexShader:POST_VS, uniforms:{ta:{value:a.texture}, tb:{value:b.texture}, gain:{value:refine.gain}}, fragmentShader:`precision highp float; uniform sampler2D ta, tb; uniform float gain; varying vec2 vUv;
+      void main(){ vec3 lo = texture2D(ta, vUv).rgb, pl = texture2D(tb, vUv).rgb*gain; vec3 k = clamp((pl + .002)/(lo + .002), vec3(1./8.), vec3(8.)); gl_FragColor = vec4(log2(k)/6. + .5, 1.); }`});
+    blurMesh.material = enc; renderer.setRenderTarget(out); renderer.render(blurScene, postCam); blurMesh.material = blurMat;
+    const px = new Uint8Array(bw*bh*4); renderer.readRenderTargetPixels(out, 0, 0, bw, bh, px); renderer.setRenderTarget(null);
+    const c = document.createElement("canvas"); c.width = bw; c.height = bh; const g = c.getContext("2d"), im = g.createImageData(bw, bh);
+    for(let y = 0; y < bh; y++) im.data.set(px.subarray((bh - 1 - y)*bw*4, (bh - y)*bw*4), y*bw*4);
+    g.putImageData(im, 0, 0); [a, b, out].forEach(r => r.dispose()); enc.dispose(); dirty = 3;
+    return {url:c.toDataURL("image/png"), room:plan.room.id, node:plan.node, ahead:plan.ahead, photo:isPhoto(), pos:cam.pos.toArray().map(v => +v.toFixed(4)), yaw:+cam.yaw.toFixed(4), pitch:+cam.pitch.toFixed(4), fov:camera.fov, aspect:+camera.aspect.toFixed(4), samples:refine.pt.samples, gain:refine.gain}; };
+
+  // ?debug: the room as plain geometry and lights, for tracing at length elsewhere (tools/bake-plates.py), and the quick picture's own light on white
+  if(/[?&]debug/.test(location.search)){
+    const b64 = a => { const u = new Uint8Array(a.buffer, a.byteOffset, a.byteLength); let s = ""; for(let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return btoa(s); };
+    const avgMap = m => { const im = m && m.image; if(!im || !(im.width > 0)) return null; try { const c = document.createElement("canvas"); c.width = c.height = 4; const g = c.getContext("2d"); g.drawImage(im, 0, 0, 4, 4); const d = g.getImageData(0, 0, 4, 4).data; let r = 0, gg = 0, b = 0; for(let i = 0; i < 64; i += 4){ r += d[i]; gg += d[i+1]; b += d[i+2]; } return new THREE.Color().setRGB(r/4080, gg/4080, b/4080, THREE.SRGBColorSpace); } catch(e){ return null; } };
+    // what each mesh is to the tracer: a solid (with its average color), a light-giver (lamp glass, a flame, the sky in a window), or nothing (glass, glints)
+    const bakeKind = o => { if(!o.isMesh || o.isSprite) return null; const m = Array.isArray(o.material) ? o.material[0] : o.material; if(!m || m.isShaderMaterial || m.isRawShaderMaterial) return null;
+      if((m.transparent && m.opacity < .85) || m.transmission > 0 || m.colorWrite === false) return null;
+      const tc = avgMap(m.map), base = (m.color || new THREE.Color(1, 1, 1)).clone(); if(tc) base.multiply(tc);
+      if(o.layers.mask === 2) return o.userData.sky ? {kind:"emit", c:base, sky:true} : {kind:"flat", c:base};   // the sky in a window gives light; lettering does not
+      if(m.isMeshBasicMaterial) return {kind:"flat", c:base};   // printed things (the rose, a dial): a plain surface to the tracer, but no light of its own
+      const em = m.emissive ? m.emissive.clone().multiplyScalar(m.emissiveIntensity ?? 1) : null; if(em){ const t = avgMap(m.emissiveMap); if(t) em.multiply(t); }
+      if(em && (em.r + em.g + em.b) > .06) return {kind:"emit", c:em};
+      return {kind:"solid", c:base, metal: m.metalness || 0, rough: m.roughness ?? 1}; };
+    window.__bakeDump = () => { scene.updateMatrixWorld(true); const meshes = [], lights = []; let sky = new THREE.Color(0, 0, 0), gnd = new THREE.Color(0, 0, 0);
+      scene.traverseVisible(o => {
+        if(o.isHemisphereLight){ sky.add(o.color.clone().multiplyScalar(o.intensity)); gnd.add(o.groundColor.clone().multiplyScalar(o.intensity)); return; }
+        if(o.isAmbientLight){ const c = o.color.clone().multiplyScalar(o.intensity); sky.add(c); gnd.add(c); return; }
+        if(o.isLight){ const p = o.getWorldPosition(new THREE.Vector3()), L = {type: o.isDirectionalLight ? "sun" : o.isSpotLight ? "spot" : o.isPointLight ? "point" : "other", pos:p.toArray(), color:o.color.toArray(), intensity:o.intensity, shadow:!!o.castShadow, distance:o.distance || 0, decay:o.decay ?? 2};
+          if(o.target){ const t = o.target.getWorldPosition(new THREE.Vector3()); L.dir = t.sub(p).normalize().toArray(); } if(o.isSpotLight){ L.angle = o.angle; L.penumbra = o.penumbra; } lights.push(L); return; }
+        const k = bakeKind(o); if(!k) return; const g = o.geometry; if(!g || !g.attributes.position) return;
+        const pos = g.attributes.position, n = pos.count, idx = g.index ? g.index.array : null, inst = o.isInstancedMesh ? o.count : 1, v = new THREE.Vector3(), M = new THREE.Matrix4(), IM = new THREE.Matrix4();
+        const P = new Float32Array(n*3*inst), I = new Uint32Array((idx ? idx.length : n)*inst);
+        for(let c = 0; c < inst; c++){ M.copy(o.matrixWorld); if(o.isInstancedMesh){ o.getMatrixAt(c, IM); M.multiply(IM); }
+          for(let i = 0; i < n; i++){ v.fromBufferAttribute(pos, i).applyMatrix4(M); P.set([v.x, v.y, v.z], (c*n + i)*3); }
+          if(idx) for(let i = 0; i < idx.length; i++) I[c*idx.length + i] = idx[i] + c*n; else for(let i = 0; i < n; i++) I[c*n + i] = c*n + i; }
+        meshes.push({name:o.name || o.type, kind:k.kind, sky:!!k.sky, color:k.c.toArray(), metal:k.metal || 0, rough:k.rough ?? 1, P:b64(P), I:b64(I)}); });
+      return {meshes, lights, sky:sky.toArray(), gnd:gnd.toArray(), room:plan.room.id, band:plan.band}; };
+    // the quick picture's light: every solid white, every light-giver black (it has no light of its own to correct), at the size of the plate
+    window.__bakeWhite = (scale = 2) => { const bw = Math.round(W*dpr/scale), bh = Math.round(H*dpr/scale), swap = [], white = new THREE.MeshStandardMaterial({color:"#ffffff", roughness:1, metalness:0});
+      scene.traverse(o => { if(!o.isMesh && !o.isSprite && !o.isPoints && !o.isLine) return; const k = bakeKind(o); swap.push([o, o.material, o.visible]);
+        if(!k) o.visible = false; else o.material = k.kind === "solid" ? white : new THREE.MeshBasicMaterial({color:0x000000, side:THREE.DoubleSide}); });
+      const envWas = scene.environment, bgWas = scene.background; scene.background = null;
+      const t = new THREE.WebGLRenderTarget(bw, bh, {type:THREE.FloatType, depthBuffer:true}); camera.layers.set(0); const ccWas = renderer.getClearColor(new THREE.Color()), caWas = renderer.getClearAlpha(); renderer.setRenderTarget(t); renderer.setClearColor(0x000000, 1); renderer.clear(); renderer.render(scene, camera);
+      const px = new Float32Array(bw*bh*4); renderer.readRenderTargetPixels(t, 0, 0, bw, bh, px); renderer.setRenderTarget(null); renderer.setClearColor(ccWas, caWas); t.dispose();
+      swap.forEach(([o, m, vis]) => { if(o.material !== m && o.material !== white) o.material.dispose(); o.material = m; o.visible = vis; }); white.dispose(); scene.environment = envWas; scene.background = bgWas; dirty = 3;
+      const rgb = new Float32Array(bw*bh*3); for(let i = 0; i < bw*bh; i++){ rgb[i*3] = px[i*4]; rgb[i*3+1] = px[i*4+1]; rgb[i*3+2] = px[i*4+2]; }
+      return {w:bw, h:bh, rgb:b64(rgb), cam:camera.matrixWorld.toArray(), fov:camera.fov, aspect:camera.aspect, pos:cam.pos.toArray().map(v => +v.toFixed(4)), yaw:+cam.yaw.toFixed(4), pitch:+cam.pitch.toFixed(4), room:plan.room.id, node:plan.node, ahead:plan.ahead, band:plan.band, photo:isPhoto()}; };
+  }
+
   /* ---- mechanisms: short tweens for things that move (a drawer on its runners, a key turning, a glass door on its hinges), each with
      its own easing, so they have weight: a drawer runs out and settles, a door swings and comes to rest, a locked drawer only rattles ---- */
   const tweens = [];
@@ -554,9 +653,13 @@ export function create(container, hooks){
   let last = performance.now(), dirty = 3, lastAnimDraw = 0;
   function frame(t){
     const dt = Math.min(.05, (t-last)/1000); last = t;
+    // Myst's way of moving: from one standing place to the next is a cut, softened by a quick dissolve, not a glide
+    const mm = moveMode();
+    if(mm === "dissolve" && !orbit && !peeking && !seated && focusKind() === stage.fk && t - lastTransit > 700 && !(drag && drag.moved) && cam.pos.distanceTo(goal.pos) > .3){
+      dissolve(.32); cam.pos.copy(goal.pos); cam.yaw = goal.yaw + look.yaw; cam.pitch = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch)); dirty = 3; }
     // ease the camera toward its goal: a turn takes about half a second
     let dy = goal.yaw + look.yaw - cam.yaw; while(dy > Math.PI) dy -= TAU; while(dy < -Math.PI) dy += TAU;
-    const k = drag && drag.moved ? 1 - Math.pow(1e-9, dt) : 1 - Math.pow(.00012, dt), gp = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch));
+    const k = drag && drag.moved ? 1 - Math.pow(1e-9, dt) : 1 - Math.pow(mm === "glide" ? .00012 : 2e-6, dt), gp = Math.max(-1.35, Math.min(1.52, goal.pitch + look.pitch));
     const moving = Math.abs(dy) > 1e-3 || Math.abs(gp-cam.pitch) > 1e-3 || cam.pos.distanceTo(goal.pos) > 1e-3;
     cam.yaw += dy*k; cam.pitch += (gp-cam.pitch)*k; cam.pos.lerp(goal.pos, k);
     camera.position.copy(cam.pos); camera.rotation.set(cam.pitch, cam.yaw, 0);
@@ -580,7 +683,8 @@ export function create(container, hooks){
     // a still room with only flickers and glints in it is drawn about 20 times a second, not 60; moving or changing, every frame
     const animDue = anims.length && t - lastAnimDraw > 48;
     const mech = runTweens(t); if(mech) dirty = Math.max(dirty, 1);
-    if(refineStep(t, moving || mech)) dirty = Math.max(dirty, 1);
+    if(plateStep(t, moving || mech)) dirty = Math.max(dirty, 1);
+    if(!plates.mix && refineStep(t, moving || mech)) dirty = Math.max(dirty, 1);
     if(moving || animDue || dirty>0){ lastAnimDraw = t;
       dirty = Math.max(0, dirty-1);
       if(RAW){ camera.layers.enableAll(); renderer.setRenderTarget(null); renderer.render(scene, camera); requestAnimationFrame(frame); return; }
@@ -953,7 +1057,10 @@ export function create(container, hooks){
     let best = -1, bs = Math.cos(40*DEG); G.adj[lv][here].forEach(j => { const d = G.nodes[lv][j].clone().sub(G.nodes[lv][here]).setY(0), L = d.length(); const c = d.dot(f)/L - L*.004; if(c > bs){ bs = c; best = j; } });
     if(best < 0){ hooks.toast && hooks.toast(dir > 0 ? "No way on that way." : "No way back that way."); return; } walkPos = G.nodes[lv][best].clone(); endPeek(); walkRoute([walkPos.clone()]); }
   function walkRoute(path){ walking = true; let i = 0, stepT = 0;
-    const fn = (t, dt) => { const target = path[i], d = goal.pos.distanceTo(target), sp = 5*(dt || .016);
+    if(moveMode() === "dissolve"){ const hop = () => { const target = path[i++]; goal.pos.copy(target); dirty = 3; hooks.footstep && hooks.footstep();
+        if(i < path.length) setTimeout(hop, 300); else { walkPos = target.clone(); setTimeout(() => walking = false, 120); } }; hop(); return; }
+    const speed = moveMode() === "quick" ? 9 : 5;
+    const fn = (t, dt) => { const target = path[i], d = goal.pos.distanceTo(target), sp = speed*(dt || .016);
       if(d <= sp){ goal.pos.copy(target); i++; if(i >= path.length){ const k = anims.indexOf(fn); if(k >= 0) anims.splice(k, 1); walkPos = target.clone(); walking = false; return; } }
       else goal.pos.add(target.clone().sub(goal.pos).multiplyScalar(sp/d));
       dirty = 2; if(performance.now() - stepT > 420){ stepT = performance.now(); hooks.footstep && hooks.footstep(); } };
@@ -1532,7 +1639,7 @@ export function create(container, hooks){
       if(wk==="fog"){ g.fillStyle="rgba(230,230,225,.6)"; g.fillRect(0,0,w,h); }
     });
     let back = null; if(!hh.view){ back = new THREE.Mesh(new THREE.PlaneGeometry(hh.w*1.6, hh.h*1.4), new THREE.MeshBasicMaterial({map:tex}));
-    back.position.copy(c).add(out.clone().multiplyScalar(.9)); back.position.y = hh.sill + hh.h/2; back.rotation.y = yaw; back.layers.set(1); scene.add(back); }
+    back.position.copy(c).add(out.clone().multiplyScalar(.9)); back.position.y = hh.sill + hh.h/2; back.rotation.y = yaw; back.layers.set(1); back.userData.sky = true; scene.add(back); }
     // mullions
     const mm = mat("#3a3128");
     const v = new THREE.Mesh(new THREE.BoxGeometry(.06, hh.h, .06), mm); v.position.copy(c).add(out.clone().multiplyScalar(.15)); v.position.y = hh.sill + hh.h/2; v.rotation.y = yaw; scene.add(v);

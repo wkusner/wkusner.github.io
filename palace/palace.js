@@ -917,9 +917,9 @@ function fullView(){ const st = $("stage"); if(document.fullscreenElement){ docu
 function start3d(){
   if(S.gfx==="2d") return;
   try { const t = document.createElement("canvas"); if(!t.getContext("webgl2")) return; } catch(e){ return; }
-  import("./palace3d.js?v=20261012c").then(m => {
+  import("./palace3d.js?v=20261012d").then(m => {
     VIEW3D = m.create($("stage"), {
-      turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, transitions: () => S.trans || "zoom", refine: () => S.refine !== false, calm: () => S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), style: () => S.gfx === "photo" ? "photo" : "engraved",
+      turn, toast, now, quality: defaultQuality, autoExposure: () => !S.fixedEyes, transitions: () => S.trans || "zoom", moves: () => S.moves || "dissolve", refine: () => S.refine !== false, calm: () => S.calm != null ? !!S.calm : !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches), style: () => S.gfx === "photo" ? "photo" : "engraved",
       look: p => setView(S.face, p>0 ? "up" : p<0 ? "down" : null),
       closer: slot => { const f = (slot + 3) % 4; if(String(S.node) === String(slot) && f === S.face) setView(S.face, "ahead"); else { S.node = slot; setView(f, null); } },
       goNode: k => goNode(k), info: o => primerNote(o), noted: o => !!(S.notes && S.notes[noteKey(o)]),
@@ -2396,6 +2396,7 @@ function helpView(){
   overlay("How to walk the house", `<div class="text">${P.help || ""}
   <p><b>Standing places.</b> Each room has a middle and a standing place in front of each wall that has something on it. You stand at one place at a time and turn on the spot, as in Myst. Hover over the floor to see where a click will take you, and click to glide there. ↑ or W walks toward what you face: from the middle to the wall ahead, then up to the desk or through the door. ↓ or S goes back to the middle, or turns you round if you are already there.</p>
   <p><b>Looking closer.</b> The house works in levels, like the cards of a stack: the room, a desk or stand, and a thing on it. Click something with the magnifying cursor to go one level in; the view zooms to it and only it answers your clicks. The trail at the top names where you are. You leave one level at a time, on purpose: the strip at the bottom (“Back to the desk”), Escape, S, or a right click. Clicking empty space does nothing. Drag to turn an instrument in your hand and scroll to bring it nearer; a desk stays framed. In the court, “Look at the sky” takes you up into the dome. Settings can make the transitions a plain cut.</p>
+  <p><b>Moving, and the plates.</b> As in Myst, going from one standing place to the next is a cut with a quick dissolve (Settings can make it a glide). In the Entry, the standing places have plates: their light was traced at length beforehand, with soft shadows and light bounced off the walls, and when you stand exactly there the drawing takes its light from the plate. Drag to look about and the plate lifts; let go and turn back square and it returns.</p>
   <p><b>Things to carry.</b> The porter's desk has a folded map, the Primer, and a ring of keys; the keys open the drawer in the desk and the case of instruments. Some things grow: the map takes its missing sheets, and the astrolabe its storm glass. What you carry is in the bag under the picture.</p>
   <p><b>The Primer.</b> A small glint of light hangs over things that have something to tell, when you stand near them. Touch it and the Primer writes the note down. Each thing you carry comes with its page. Keep the Primer open below the picture, or open it from the menu bar.</p>
   <p><b>Looking around.</b> Drag anywhere in the picture to look around, up, and down; let go past half a quarter turn and you'll face that way. The edges of the picture turn you. Keys: ← → or A D turn, Shift with ↑ ↓ (or Page Up, Page Down) looks up and down, F is the full view, C holds up the compass, L steps through the lantern, and / searches the house.</p>
@@ -2937,6 +2938,7 @@ function settingsView(){
     ${row("Corner map", "A small map at the top right, once you carry a map or the Primer.", sw("mini", !S.noMini, "Corner map"))}
     ${has3d ? row("Calm motion", "Close looks change without zooming in and out.", sw("calm", calm, "Calm motion")) : ""}
     ${has3d ? row("Refined stills", "When you stop, the view is redrawn with light that bounces, soft shadows, and true reflections, like a rendered still. Needs a capable graphics card.", sw("refine", S.refine !== false, "Refined stills")) : ""}
+    ${has3d ? row("Moving", "Between standing places and rooms: a quick dissolve from one view to the next, as in Myst, or a glide.", seg("moves", S.moves || "dissolve", [["dissolve", "Dissolve"], ["quick", "Quick glide"], ["glide", "Glide"]])) : ""}
     ${has3d ? row("Transitions", "Going in to a desk, a thing, or the sky, and coming back out.", seg("trans", S.trans || "zoom", [["zoom", "Zoom"], ["cut", "Cut"]])) : ""}
     ${has3d ? row("Eyes that adjust", "Exposure adapts to the light at each standing place.", sw("eyes", !S.fixedEyes, "Eyes that adjust")) : ""}
     <h4 class="set-sec">Light</h4>
@@ -2958,7 +2960,8 @@ function settingsView(){
     if(id === "q"){ if(defaultQuality() === v) return; S.quality = v; save(); toast(`Quality: ${v}. Redrawing…`); return setTimeout(() => location.reload(), 400); }
     if(id === "skin"){ S.skin = v; save(); applySkin(); return redraw(); }
     if(id === "ink"){ S.ink = v; save(); render(); return redraw(); }
-    if(id === "trans"){ S.trans = v; save(); return redraw(); } });
+    if(id === "trans"){ S.trans = v; save(); return redraw(); }
+    if(id === "moves"){ S.moves = v; save(); return redraw(); } });
   document.querySelectorAll("[data-sw]").forEach(c => c.onchange = () => { const id = c.dataset.sw, on = c.checked;
     if(id === "mini"){ S.noMini = !on; save(); render(); }
     else if(id === "calm"){ S.calm = on; save(); }

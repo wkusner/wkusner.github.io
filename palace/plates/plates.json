@@ -1,0 +1,242 @@
+[
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   0.55
+  ],
+  "yaw": 0,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-0.webp"
+ },
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   0.55,
+   1.62,
+   0
+  ],
+  "yaw": 1.5708,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-1.webp"
+ },
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   -0.55
+  ],
+  "yaw": -3.1416,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-2.webp"
+ },
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   -0.55,
+   1.62,
+   0
+  ],
+  "yaw": -1.5708,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-3.webp"
+ },
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   -3.4
+  ],
+  "yaw": 0,
+  "pitch": -0.3,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-4.webp"
+ },
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   -3.4,
+   1.62,
+   0
+  ],
+  "yaw": 1.5708,
+  "pitch": -0.3,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-5.webp"
+ },
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   3.4
+  ],
+  "yaw": -3.1416,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-6.webp"
+ },
+ {
+  "room": 0,
+  "band": "day",
+  "photo": false,
+  "pos": [
+   3.4,
+   1.62,
+   0
+  ],
+  "yaw": -1.5708,
+  "pitch": -0.3,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-day-7.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   0.55
+  ],
+  "yaw": 0,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-0.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   0.55,
+   1.62,
+   0
+  ],
+  "yaw": 1.5708,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-1.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   -0.55
+  ],
+  "yaw": -3.1416,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-2.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   -0.55,
+   1.62,
+   0
+  ],
+  "yaw": -1.5708,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-3.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   -3.4
+  ],
+  "yaw": 0,
+  "pitch": -0.3,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-4.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   -3.4,
+   1.62,
+   0
+  ],
+  "yaw": 1.5708,
+  "pitch": -0.3,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-5.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   0,
+   1.62,
+   3.4
+  ],
+  "yaw": -3.1416,
+  "pitch": 0,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-6.webp"
+ },
+ {
+  "room": 0,
+  "band": "night",
+  "photo": false,
+  "pos": [
+   3.4,
+   1.62,
+   0
+  ],
+  "yaw": -1.5708,
+  "pitch": -0.3,
+  "fov": 62,
+  "aspect": 2,
+  "src": "0-night-7.webp"
+ }
+]
