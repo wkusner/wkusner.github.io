@@ -347,9 +347,12 @@ export function create(container, hooks){
   // a close look (the sky, a peek at the dial or the cabinet, a desk) answers only to clicks on what is in it; a click anywhere else steps back
   function focusKind(){ if(skyOn) return "sky"; if(peeking) return "peek"; if(plan && plan.close) return "close"; return null; }
   function allowedHit(h){ const f = focusKind(); if(!f) return true; if(f === "sky") return h.distance > 20;
+    if(f === "peek" && peekTight) return h.point.distanceTo(focusPt) < peekTight;
+    // at a desk, only the desk and what is on it or in it answers: nothing else in the room, however near
+    if(f === "close"){ const st = stations[plan.ahead]; if(st && st.group){ for(let q = h.object; q; q = q.parent) if(q === st.group) return true; return false; } }
     const c = f === "peek" ? focusPt : (stations[plan.ahead] && stations[plan.ahead].top); return !c || h.point.distanceTo(c) < (f === "peek" && orbit ? .75 : 2.4); }
   // every way out of a close look ends it the same way: the orbit, the buttons, the seat, and the things that opened for it
-  function endPeek(){ const was = peeking || !!seated || !!orbit; peeking = false; focusPt = null; orbit = null; setActions(null); look.yaw = 0; look.pitch = 0;
+  function endPeek(){ const was = peeking || !!seated || !!orbit; peeking = false; peekTight = 0; focusPt = null; orbit = null; setActions(null); look.yaw = 0; look.pitch = 0;
     if(seated){ const s = seated; seated = null; s.leave(); } if(was) window.dispatchEvent(new CustomEvent("wending-unpeek")); }
   function exitFocus(){ const f = focusKind(); if(f === "sky"){ skyMode(false); hooks.skyClosed && hooks.skyClosed(); } else if(f === "peek"){ endPeek(); show(plan); } else if(f === "close") hooks.stepBack(); }
   function zoneAt(x, y){
@@ -372,7 +375,7 @@ export function create(container, hooks){
     const hits = ray.intersectObjects(picks, true);
     // things in the picture win over the turning edges, except for walking, which the edges win
     const shown = ob => { for(let q = ob; q; q = q.parent) if(q.visible === false) return false; return true; };
-    for(const h of hits){ if(!shown(h.object)) continue; let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; if(z && o.userData.hit.kind === "walk") return z; lastHit = h.point.clone(); const hh = o.userData.hit; if(hh.inner && !hh.inner()) return hh.outer(); return hh; } }
+    for(const h of hits){ if(!shown(h.object)) continue; let o = h.object; while(o && !o.userData.hit) o = o.parent; if(o && o.userData.hit){ if(!allowedHit(h)) continue; if(z && o.userData.hit.kind === "walk") return z; lastHit = h.point.clone(); const hh = o.userData.hit; if(hh.station != null && plan && plan.close && String(plan.ahead) === String(hh.station)) continue; if(hh.inner && !hh.inner()) return hh.outer(); return hh; } }
     if(z) return z;
     return null;
   }
@@ -381,7 +384,7 @@ export function create(container, hooks){
   canvas.style.touchAction = "none";
   const touches = new Map(); let pinch0 = 0;
   canvas.addEventListener("pointerdown", e => { if(e.pointerType === "touch"){ touches.set(e.pointerId, [e.clientX, e.clientY]); if(touches.size === 2){ const [p1, p2] = [...touches.values()]; pinch0 = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]); drag = null; return; } }
-    if(e.button && e.button !== 0) return; drag = {x:e.clientX, y:e.clientY, moved:false, id:e.pointerId}; });
+    if(e.button && e.button !== 0) return; drag = {x:e.clientX, y:e.clientY, moved:false, id:e.pointerId, onHit: !!pickAt(e.clientX, e.clientY)}; });
   canvas.addEventListener("pointermove", e => { if(!touches.has(e.pointerId)) return; touches.set(e.pointerId, [e.clientX, e.clientY]);
     if(touches.size === 2 && pinch0 && orbit && peeking){ const [p1, p2] = [...touches.values()], d = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]); orbit.r = Math.max(orbit.rmin, Math.min(orbit.rmax, orbit.r*pinch0/Math.max(20, d))); pinch0 = d; orbitApply(); swallowClick = true; setTimeout(() => swallowClick = false, 80); } });
   const untouch = e => { touches.delete(e.pointerId); if(touches.size < 2) pinch0 = 0; }; canvas.addEventListener("pointerup", untouch); canvas.addEventListener("pointercancel", untouch);
@@ -395,7 +398,11 @@ export function create(container, hooks){
   window.addEventListener("pointerup", endDrag);
   canvas.addEventListener("pointermove", e => {
     if(drag && (e.buttons & 1 || e.pointerType === "touch")){ const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-      if(!drag.moved && Math.hypot(dx, dy) < 6) return;
+      // at a desk, in a drawer, or before a cabinet the view is fixed: a press is always a click, however the hand wobbles
+      if(focusKind() && focusKind() !== "sky" && !(orbit && peeking)) return;
+      // turning a thing in the hand takes a deliberate pull, more so when the press began on something that answers
+      const need = orbit && peeking ? (drag.onHit ? 26 : 14) : 6;
+      if(!drag.moved && Math.hypot(dx, dy) < need) return;
       if(!drag.moved){ drag.moved = true; try { canvas.setPointerCapture(drag.id); } catch(err){} tip.classList.remove("on"); canvas.dataset.cursor = "drag"; }
       const per = camera.fov*DEG / Math.max(1, canvas.getBoundingClientRect().height);
       if(focusKind() && focusKind() !== "sky" && !(orbit && peeking)){ drag.x = e.clientX; drag.y = e.clientY; return; }
@@ -427,7 +434,8 @@ export function create(container, hooks){
     if(aimRing.parent !== scene) scene.add(aimRing); if(pt){ aimRing.visible = true; aimRing.position.set(pt.x, (pt.y || 0) + .02, pt.z); } else aimRing.visible = false; dirty = 2; }
   function step(dir){ if(focusKind()){ exitFocus(); return; } if(plan && plan.HG){ if(!walking) hallStep(dir); return; } const yaw = goal.yaw + look.yaw, f = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)); walkTo(goal.pos.clone().addScaledVector(f, 2.4*dir)); }
   // step up to something without leaving where you are: the shelves, a picture; any other move steps back
-  function peek(eye, aim, opt){ if(seated || orbit) endPeek(); peeking = true; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3;
+  let peekTight = 0;
+  function peek(eye, aim, opt){ if(seated || orbit) endPeek(); peeking = true; peekTight = (opt && opt.tight) || 0; focusPt = aim.clone(); goal.pos.copy(eye); goal.yaw = Math.atan2(-(aim.x - eye.x), -(aim.z - eye.z)); goal.pitch = Math.atan2(aim.y - eye.y, Math.hypot(aim.x - eye.x, aim.z - eye.z)); look.yaw = 0; look.pitch = 0; dirty = 3;
     orbit = null; setActions(opt && opt.actions); stage.title = (opt && opt.title) || "";
     if(opt && opt.orbit){ const d = eye.clone().sub(aim), r = d.length(); orbit = {c: aim.clone(), r, r0: r, az: Math.atan2(d.x, d.z), az0: Math.atan2(d.x, d.z), el: Math.asin(Math.max(-.99, Math.min(.99, d.y/r))), span: opt.span == null ? 1.2 : opt.span, rmin: opt.rmin || r*.45, rmax: opt.rmax || r*1.8, key: opt.key || null}; orbitApply(); } }
   /* ---- orbiting: in a close look at a thing, dragging walks you round it and the wheel brings you nearer ---- */
@@ -1717,16 +1725,16 @@ export function create(container, hooks){
     const c = f.a.clone().add(u.clone().multiplyScalar(free)).add(n.clone().multiplyScalar(1.15));
     const bookish = objs.filter(o => o.bookish).length > objs.length/2;
     const trayO = objs.find(o => o.action === "return"), onTray = trayO ? objs.filter(o => o.kind === "key") : [];
-    const shown = objs.filter(o => o !== trayO && !onTray.includes(o)).slice(0, 9), w = Math.min(len*.7, Math.max(trayO ? 2.2 : 1.6, (shown.length + (trayO ? 1.4 : 0))*.62+.5)), topY = bookish ? .95 : .82;
+    const inDrawer = objs.filter(o => o.raw && o.raw.drawer != null), shown = objs.filter(o => o !== trayO && !onTray.includes(o) && !inDrawer.includes(o)).slice(0, 9), w = Math.min(len*.7, Math.max(trayO ? 2.2 : 1.6, (shown.length + (trayO ? 1.4 : 0))*.62+.5)), topY = bookish ? .95 : .82;
     const g = new THREE.Group(); g.position.copy(c); g.rotation.y = yaw;
     const wood = mat("#8c7458"), darkWood = mat("#4a3b2e");
     const top = new THREE.Mesh(new THREE.BoxGeometry(w, .07, .95), mat("#a58c6c")); top.position.y = topY; top.castShadow = top.receiveShadow = true; g.add(top);
     if(bookish){ const body = new THREE.Mesh(new THREE.BoxGeometry(w-.04, topY-.03, .9), darkWood); body.position.y = (topY-.03)/2; g.add(body);
       for(let k=0;k<2;k++){ const shelf = new THREE.Mesh(new THREE.BoxGeometry(w-.1,.03,.85), wood); shelf.position.set(0, .12+k*.38, .02); g.add(shelf);
         const bb=bookBatch(); let x=-w/2+.08; while(x<w/2-.1){ const bw=.03+R()*.04, bh=.24+R()*.08; bb.add(x+bw/2, .14+k*.38+bh/2, .25, bw, bh, .6, ["#7d6b55","#4a4339","#9a8b70","#"+spot.getHexString()][Math.floor(R()*4)]); x+=bw+.005; } const bm=bb.mesh(); if(bm) g.add(bm); } }
-    else { top.visible = false; g.add(table(w, .95, topY + .035)); }   // a joined table: turned legs, moulded top, drawers with brass knobs
+    else { top.visible = false; g.add(table(w, .95, topY + .035, {drawerThings: inDrawer, slot})); }   // a joined table: turned legs, moulded top, drawers with brass knobs
     // the station itself is clickable: look closer
-    g.userData.hit = {kind:"closer", label: (bookish ? "A low bookcase" : "A desk") + ` with ${objs.length} thing${objs.length>1?"s":""}: look closer`, onClick:()=>hooks.closer(slot)};
+    g.userData.hit = {kind:"closer", station: slot, label: (bookish ? "A low bookcase" : "A desk") + ` with ${objs.length} thing${objs.length>1?"s":""}: look closer`, onClick:()=>hooks.closer(slot)};
     picks.push(g);
     // the things, each its own small model with its own card
     if(trayO){ // the return tray sits at the front of the desk, and the things you may take lie on it
@@ -1747,7 +1755,7 @@ export function create(container, hooks){
     scene.add(g);
     // a close-up viewpoint over this station
     const view = c.clone().add(n.clone().multiplyScalar(.82 + w*.22)).setY(1.42 + w*.08), topW = c.clone().add(n.clone().multiplyScalar(-.05)).setY(topY);
-    stations[slot] = {view, top:topW, title: bookish ? "The bookcase" : objs.some(o => o.kind === "letter") ? "The porter's desk" : "The desk"};
+    stations[slot] = {view, top:topW, group:g, title: bookish ? "The bookcase" : objs.some(o => o.kind === "letter") ? "The porter's desk" : "The desk"};
   }
 
 
@@ -2185,12 +2193,27 @@ export function create(container, hooks){
       const k = knob(brass); k.position.set(0, 0, d/2-.04); dr.add(k);
       // the drawer box behind the front, and a few things kept in it
       const inner = mat("#b49a78"), D2 = d*.55; [[0, -.04, d/2 - .06 - D2/2, dw - .02, .008, D2], [-dw/2 + .01, -.005, d/2 - .06 - D2/2, .008, .07, D2], [dw/2 - .01, -.005, d/2 - .06 - D2/2, .008, .07, D2], [0, -.005, d/2 - .065 - D2, dw - .02, .07, .008]].forEach(([bx, by, bz, bw, bh, bd]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), inner); b.position.set(bx, by, bz); dr.add(b); });
-      const Rr = rng(hashStr("drawer" + i + w)); for(let j = 0; j < 3; j++){ const kind = Math.floor(Rr()*4), m2 = [mat("#ece6d6"), mat("#2a251e"), mat("#6b2f26"), brass][kind];
+      // what each drawer keeps: things the house's data puts in it, a card of the room's marginal notes in the first, and the odds and ends of a desk
+      const Rr = rng(hashStr("drawer" + i + w)), things = [], ODDS = [["A sheet of paper, ruled", "Ruled paper, blank but for a sum worked in the corner."], ["A pencil", "A pencil, sharpened with a knife, not a sharpener."], ["A stick of sealing wax", "Red sealing wax, half used, and a burnt end."], ["A brass ring", "A small brass ring. Nobody remembers what it was for."]];
+      const mine = (opts.drawerThings || []).filter(o => +o.raw.drawer === i || (o.raw.drawer === true && i === 0));
+      mine.forEach((o, j) => { const m = model(o.icon, new THREE.Color("#a0503a"), Rr); m.scale.setScalar(.5); m.position.set((j - (mine.length - 1)/2)*Math.min(.14, (dw - .06)/Math.max(1, mine.length)), -.035, d/2 - .06 - D2*.45); m.userData.hit = {kind: o.kind === "key" ? "take" : "look", label: o.title, onClick: itemClick(m, o)}; things.push(m); dr.add(m); });
+      const notes = i === 0 && plan && plan.room && plan.room.marginalia; if(notes && notes.length){ const card = new THREE.Mesh(new THREE.BoxGeometry(.1, .003, .07), mat("#efe6cf")); card.position.set(-(dw/2) + .08, -.034, d/2 - .1); card.rotation.y = .2; card.userData.hit = {kind:"look", label:"A card of notes", onClick:() => hooks.toast && hooks.toast(notes[Math.floor(Math.random()*notes.length)])}; things.push(card); dr.add(card); }
+      for(let j = 0; j < 3 - mine.length; j++){ const kind = Math.floor(Rr()*4), m2 = [mat("#ece6d6"), mat("#2a251e"), mat("#6b2f26"), brass][kind];
         const it = kind === 1 ? new THREE.Mesh(new THREE.CylinderGeometry(.004, .004, .15, 6), m2) : kind === 3 ? new THREE.Mesh(new THREE.TorusGeometry(.018, .004, 6, 16), m2) : new THREE.Mesh(new THREE.BoxGeometry(.09 + Rr()*.06, .006, .12), m2);
-        if(kind === 1) it.rotation.z = Math.PI/2; if(kind === 3) it.rotation.x = Math.PI/2; it.position.set((Rr() - .5)*(dw - .08), -.03, d/2 - .1 - Rr()*(D2 - .08)); it.rotation.y = (Rr() - .5); dr.add(it); }
-      let open = 0, target = 0; const dfOuter = () => { let o = df.parent; while(o && !(o.userData.hit && o.userData.hit.kind === "closer")) o = o.parent; return o ? o.userData.hit : {kind:"closer", label:"Look closer", onClick:() => {}}; };
-      df.userData.hit = {inner:() => !!focusKind(), outer: dfOuter, kind:"use", label:"A drawer: open it", onClick:() => { if(!focusKind()){ let o = df.parent; while(o && !(o.userData.hit && o.userData.hit.kind === "closer")) o = o.parent; if(o) return o.userData.hit.onClick(); } target = target ? 0 : D2*.85; df.userData.hit.label = target ? "The drawer: close it" : "A drawer: open it"; hooks.drawer && hooks.drawer(target > 0); }}; picks.push(df);
-      anims.push(() => { if(Math.abs(target - open) > .0005){ open += (target - open)*.18; dr.position.z = open; dirty = 2; } }); }
+        if(kind === 1) it.rotation.z = Math.PI/2; if(kind === 3) it.rotation.x = Math.PI/2; it.position.set((Rr() - .5)*(dw - .08), -.03, d/2 - .1 - Rr()*(D2 - .08)); it.rotation.y = (Rr() - .5);
+        const [nm, tx] = ODDS[kind]; it.userData.hit = {kind:"look", label: nm, onClick:() => hooks.toast && hooks.toast(tx)}; things.push(it); dr.add(it); }
+      // a drawer is a level of its own: from the desk, a click on it brings you down to look into it, and it runs out on its runners;
+      // only what is in it answers then; stepping back closes it
+      const name = nd === 1 ? "The drawer" : nd === 2 ? (i ? "The right-hand drawer" : "The left-hand drawer") : ["The left-hand drawer", "The middle drawer", "The right-hand drawer"][Math.min(2, Math.round(i*2/(nd - 1)))];
+      let isIn = false, dOpen = 0;
+      const slideTo = (to, ease, dur) => { const from = dOpen; hooks.sfx && hooks.sfx("slide", to > from); return tween(dur, e => { dOpen = from + (to - from)*e; dr.position.z = dOpen; }, ease); };
+      const outer = () => { let o = df.parent; while(o && !(o.userData.hit && o.userData.hit.kind === "closer")) o = o.parent; return o ? o.userData.hit : {kind:"closer", label:"Look closer", onClick:() => {}}; };
+      const enter = () => { df.updateWorldMatrix(true, false); const q = dr.getWorldQuaternion(new THREE.Quaternion()), fw = new THREE.Vector3(0, 0, 1).applyQuaternion(q), wp = df.getWorldPosition(new THREE.Vector3());
+        const aim = wp.clone().addScaledVector(fw, -.02).setY(wp.y - .03), eye = wp.clone().addScaledVector(fw, .62).setY(wp.y + .5);
+        peek(eye, aim, {title: name, tight: .45, actions:[{label:"Close it", fn:() => exitFocus()}]}); isIn = true; hooks.drawer && hooks.drawer(true);
+        slideTo(D2*.8, "settle", 650); onWin("wending-unpeek", () => { if(!isIn) return; isIn = false; slideTo(0, "inOut", 450); }); };
+      df.userData.hit = {inner:() => focusKind() === "close" || (isIn && peeking), outer, kind:"closer", get label(){ return isIn ? name + ": step back to close it" : name + ": open it"; }, onClick:() => { if(isIn) return exitFocus(); enter(); }}; picks.push(df);
+      things.forEach(t => { const h0 = t.userData.hit; t.userData.hit = Object.assign({}, h0, {inner:() => isIn && peeking, outer:() => df.userData.hit}); picks.push(t); }); }
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => { const L = turnedLeg(h-.2, .035, dark); L.position.set(sx*(w/2-.07), 0, sz*(d/2-.07)); g.add(L);
       const blk = new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.075), dark); blk.position.set(sx*(w/2-.07), h-.14, sz*(d/2-.07)); g.add(blk); });
     const st = new THREE.Mesh(new THREE.BoxGeometry(w-.14, .03, .03), dark); st.position.y = .16; g.add(st);
