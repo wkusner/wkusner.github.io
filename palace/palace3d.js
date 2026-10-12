@@ -1596,12 +1596,19 @@ export function create(container, hooks){
 
   /* ---- boards on the walls: notices, links, office hours, the almanac ---- */
   // where the mounted boards on a face go, so shelves can leave room for them
-  function boardSpots(f, len, n){ const bw = Math.min(2.6, len*.36), cands = [len*.5, len*.3, len*.7, len*.2, len*.8].filter(c => !f.holes.some(h => Math.abs(h.at-c) < h.w/2 + bw/2 + .15));
-    return Array.from({length:n}, (_,i) => ({at: cands[i] ?? (len*(i+1)/(n+1)), w: bw})); }
+  // boards on one wall: as wide as there is room for, kept clear of the doors, the windows, and each other
+  function boardSpots(f, len, n){ let bw = Math.min(2.6, len*.36, (len - .4)/n - .3);
+    for(let tries = 0; tries < 6; tries++, bw *= .88){
+      const clear = c => c - bw/2 > .2 && c + bw/2 < len - .2 && !f.holes.some(h => Math.abs(h.at - c) < h.w/2 + bw/2 + .15);
+      const cands = []; for(let k = 0; k <= 60; k++){ const c = len*k/60; if(clear(c)) cands.push(c); }
+      const even = Array.from({length:n}, (_, i) => len*(i + 1)/(n + 1));
+      if(even.every(clear) && even.every((c, i) => i === 0 || c - even[i - 1] >= bw + .2)) return even.map(at => ({at, w:bw}));
+      const chosen = []; cands.sort((a, b) => Math.abs(a - len/2) - Math.abs(b - len/2)).forEach(c => { if(chosen.length < n && chosen.every(x => Math.abs(x - c) >= bw + .2)) chosen.push(c); });
+      if(chosen.length === n) return chosen.sort((a, b) => a - b).map(at => ({at, w:bw})); }
+    return Array.from({length:n}, (_, i) => ({at: len*(i + 1)/(n + 1), w: bw})); }
   function buildBoard(sl, o, i, n, p, spot){
     const f = sl.face, u = f.b.clone().sub(f.a).normalize(), len = f.a.distanceTo(f.b), yaw = Math.atan2(-u.z, u.x);
-    const bw = Math.min(2.6, len*.36), bh = 1.7;
-    const at = boardSpots(f, len, n)[i].at;
+    const spot0 = boardSpots(f, len, n)[i], bw = spot0.w, bh = Math.min(1.7, bw*.66), at = spot0.at;
     const c = f.a.clone().add(u.clone().multiplyScalar(at)).add(f.n.clone().multiplyScalar(.06));
     const bd = o.board || {title:o.title, lines:[]}, cork = o.raw && o.raw.action==="notices";
     const tex = canvasTex(1024, 680, (g,w,h) => {
