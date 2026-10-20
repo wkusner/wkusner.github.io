@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#AD2119">
+<meta name="msapplication-config" content="/browserconfig.xml">
+<meta name="theme-color" content="#F9F4E5">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#ECEBE3; --panel:#F8F7F2; --ink:#232A22; --muted:#5E6658; --line:#CBCDBF;
+  --water:#2F6FB8; --leaf:#3E7D3A; --warn:#B8432B; --brass:#A77E22; --soft:#E1E3D6;
+  --accent:#3E7D3A; --accent-ink:#FFFFFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121712; --panel:#1A211A; --ink:#E3E8DF; --muted:#9AA694; --line:#2F3A2E;
+    --water:#7FB1F0; --leaf:#7CC56F; --warn:#FF7A5E; --brass:#D4A845; --soft:#243024;
+    --accent:#7CC56F; --accent-ink:#0F160F;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121712; --panel:#1A211A; --ink:#E3E8DF; --muted:#9AA694; --line:#2F3A2E;
+  --water:#7FB1F0; --leaf:#7CC56F; --warn:#FF7A5E; --brass:#D4A845; --soft:#243024;
+  --accent:#7CC56F; --accent-ink:#0F160F;
+}
+html,body{background:var(--bg);}
+body{margin:0;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 40px;}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,48px);letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1;}
+h1 span{color:var(--brass);}
+.tag{color:var(--muted);max-width:62ch;margin:0;text-wrap:balance;}
+.inst{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
+@media (max-width:900px){.inst{grid-template-columns:1fr;}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0;}
+svg.fig{width:100%;height:auto;display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none;border:1px solid var(--line);border-radius:8px;background:#8DAE63;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--muted);}
+button{font:500 14px/1 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer;}
+button:hover{border-color:var(--muted);}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+button kbd{font:400 11px var(--mono);opacity:.6;margin-left:6px;}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+select{font:14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 8px;}
+.small{font-size:12px;color:var(--muted);}
+.big{font-family:var(--display);font-size:30px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.5em;}
+.status.good{color:var(--leaf);} .status.warn{color:var(--warn);}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px;}
+.kv dt{color:var(--muted);} .kv dd{margin:0;font-family:var(--mono);font-size:13px;}
+.meter{height:7px;border-radius:4px;background:var(--soft);overflow:hidden;align-self:center;}
+.meter i{display:block;height:100%;border-radius:4px;transition:width .4s;}
+.seeds{display:grid;grid-template-columns:1fr;gap:6px;}
+.seeds button{display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;line-height:1.25;padding:8px 10px;}
+.seeds button b{font-weight:600;} .seeds button span{font-size:12px;opacity:.75;} .seeds button em{font-style:normal;font-family:var(--mono);font-size:12.5px;grid-row:span 2;align-self:center;}
+.log{max-height:220px;overflow:auto;font-size:13px;display:flex;flex-direction:column;gap:3px;}
+.log div{display:grid;grid-template-columns:7.5ch 1fr;gap:8px;}
+.log time{font-family:var(--mono);font-size:11.5px;color:var(--muted);padding-top:1px;}
+.log .warn,.log .dead{color:var(--warn);} .log .ripe{color:var(--leaf);}
+.away{border-color:var(--brass);}
+.away[hidden]{display:none;}
+.note{columns:2 320px;column-gap:28px;}
+.note p{margin:0 0 10px;break-inside:avoid;}
+.note h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 8px;column-span:all;color:var(--ink);text-transform:none;}
+
+/* scene */
+.plot{cursor:pointer;outline:none;}
+.plot:focus-visible .ring{stroke:#FFF7C8;opacity:1;}
+.ring{fill:none;stroke:#F6E7A6;stroke-width:3;stroke-dasharray:7 5;opacity:0;pointer-events:none;}
+.plot.sel .ring{opacity:1;}
+.sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4.5s ease-in-out infinite alternate;}
+svg.windy .sway{animation-duration:1.6s;}
+@keyframes sway{from{transform:rotate(-1.6deg)}to{transform:rotate(1.6deg)}}
+svg.windy .sway{animation-name:swayw;}
+@keyframes swayw{from{transform:rotate(-3.2deg)}to{transform:rotate(2.4deg)}}
+.drop{stroke:#CFE3F5;stroke-width:1.4;stroke-linecap:round;opacity:.7;animation:fall .8s linear infinite;}
+@keyframes fall{from{transform:translateY(-80px)}to{transform:translateY(640px)}}
+.cloud{animation:drift 90s linear infinite;}
+@keyframes drift{from{transform:translateX(-220px)}to{transform:translateX(900px)}}
+.float{font:700 15px var(--sans);paint-order:stroke;stroke:#1C2418;stroke-width:3px;pointer-events:none;animation:rise 1.3s ease-out forwards;}
+@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-34px);opacity:0}}
+.bedlabel{font:600 10px var(--mono);fill:#E8C9A0;opacity:.85;pointer-events:none;}
+@media (prefers-reduced-motion: reduce){.sway,.cloud,.drop,.float{animation:none!important;}}
+</style>
+<script src="/ga.js" async></script>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>The <span>Garden</span></h1>
+    <p class="tag">Twelve raised beds that live in your browser and keep growing while you are away. Water them, pull the weeds, pick off the snails, and harvest what ripens. The sky follows your own clock. Leave it too long and things wilt.</p>
+  </header>
+
+  <div class="inst">
+    <div class="stage">
+      <svg id="scene" class="fig" viewBox="0 0 800 600" role="group" aria-label="The garden: twelve beds in four columns, A to D, and three rows">
+        <defs>
+          <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
+            <stop id="sk0" offset="0" stop-color="#9CCBEA"/>
+            <stop id="sk1" offset="1" stop-color="#DCEEF6"/>
+          </linearGradient>
+        </defs>
+        <rect width="800" height="175" fill="url(#skyg)"/>
+        <g id="stars"></g>
+        <circle id="sun" r="20" fill="#FFD866"/>
+        <g id="moon"><circle r="14" fill="#F2EFD9"/><circle cx="6" cy="-4" r="13" id="moonbite"/></g>
+        <g id="clouds"></g>
+        <path d="M0 150 Q120 118 250 140 T520 132 T800 138 V180 H0Z" fill="#7C9E58"/>
+        <rect y="168" width="800" height="432" fill="#8DAE63"/>
+        <g id="fence"></g>
+        <g id="plots"></g>
+        <g id="rain" style="display:none"></g>
+        <rect id="veil" width="800" height="600" fill="#0A1030" opacity="0" pointer-events="none"/>
+        <g id="fx"></g>
+      </svg>
+      <div class="row" id="tools" role="toolbar" aria-label="Tools"></div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </div>
+
+    <aside style="display:flex;flex-direction:column;gap:14px">
+      <div class="card away" id="away" hidden><h2>While you were away</h2><div id="awaytext" class="small" style="color:var(--ink);font-size:13.5px"></div></div>
+      <div class="card"><h2>Bed <span id="bedname"></span></h2><div id="info"></div></div>
+      <div class="card"><h2>Purse</h2>
+        <div class="row" style="justify-content:space-between">
+          <div><div class="big" id="coins">0</div><div class="small">coins</div></div>
+          <div><div class="big" id="fert">0</div><div class="small">bags of compost</div></div>
+          <button type="button" id="buyfert">Buy compost · 4</button>
+        </div>
+        <div class="small" id="tally"></div>
+      </div>
+      <div class="card"><h2>Seed packets</h2><div class="seeds" id="seeds"></div></div>
+      <div class="card"><h2>Sky &amp; pace</h2>
+        <div id="sky" class="small" style="color:var(--ink);font-family:var(--mono)"></div>
+        <div class="row">
+          <label class="small" for="pace">pace</label>
+          <select id="pace"><option value="1">real time</option><option value="10">10× faster</option><option value="60">60× faster</option></select>
+          <button type="button" id="reset" style="margin-left:auto">Start over</button>
+        </div>
+      </div>
+      <div class="card"><h2>Journal</h2><div class="log" id="log"></div></div>
+    </aside>
+  </div>
+
+  <section class="card note">
+    <h2>How to keep it alive</h2>
+    <p><b>Water.</b> Soil dries out over several hours, faster in the day than at night, and the dark soil in a bed is its water. When it goes pale the plant stops growing; when it is bone dry the plant starts to suffer. Rain waters everything for you. Lettuce and pumpkins are thirsty; radishes hardly mind.</p>
+    <p><b>Health.</b> The green bar under each bed is health. Dry soil, weeds, and snails all wear it down; a well-watered bed with nothing bothering it recovers. Drooping, yellowing leaves mean trouble. At zero the plant dies and has to be dug up, which at least gives you a bag of compost.</p>
+    <p><b>Weeds and snails.</b> Weeds turn up in any bed, planted or not, and slow growth. Snails find plants once they are leafy, and they come more often to beds that are weedy or weak. Pull one weed or pick off one snail per click.</p>
+    <p><b>Compost.</b> Feeding a plant makes it grow 40% faster for about eighteen hours. You get compost by digging up spent or dead plants, or you can buy it.</p>
+    <p><b>Harvest.</b> A ripe plant gets a gold star. Healthier plants sell for more, and radishes, lettuce, sunflowers and pumpkins left in the ground more than ten hours past ripe go over and sell for half. A tomato keeps fruiting every two hours for as long as you keep it going.</p>
+    <p><b>Tend.</b> The Tend tool does whatever a bed most needs: harvest, then snails, then weeds, then planting your chosen seed in an empty bed, then water. Keys 1–8 pick tools, the arrow keys move between beds, and Enter uses the tool. The garden is saved in this browser only; the faster paces also make it live faster while you are gone.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const KEY="wk-garden-v1", NS="http://www.w3.org/2000/svg";
+const W=173,H=110,COLS=4,X0=30,Y0=200,GX=16,GY=26;
+const SP={
+  radish:   {name:"Radish",   cost:1, hours:0.75,value:3, thirst:0.8,night:0.6,blurb:"quick and forgiving"},
+  lettuce:  {name:"Lettuce",  cost:2, hours:2,   value:7, thirst:1.3,night:0.6,blurb:"likes wet feet"},
+  tomato:   {name:"Tomato",   cost:5, hours:6,   value:3, thirst:1.0,night:0.5,repeat:2,blurb:"fruits every 2 h once grown"},
+  sunflower:{name:"Sunflower",cost:6, hours:12,  value:18,thirst:0.9,night:0.2,blurb:"tall; grows mostly by day"},
+  pumpkin:  {name:"Pumpkin",  cost:12,hours:24,  value:48,thirst:1.4,night:0.6,blurb:"slow, thirsty, worth it"},
+};
+const TOOLS=[["hand","Tend"],["water","Water"],["plant","Plant"],["weed","Weed"],["snail","Snails"],["feed","Feed"],["harvest","Harvest"],["dig","Dig up"]];
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const f=x=>(Math.round(x*10)/10);
+function hexv(c){return [1,3,5].map(i=>parseInt(c.slice(i,i+2),16));}
+function mix(a,b,t){t=clamp(t,0,1);const A=hexv(a),B=hexv(b);return "#"+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,"0")).join("");}
+const bedName=i=>"ABCD"[i%COLS]+(1+Math.floor(i/COLS));
+const lc=s=>s.toLowerCase();
+
+/* ---------- state ---------- */
+function soil(){return {sp:null,g:0,water:55,health:100,fed:0,ripe:0,fruit:0,ft:0,dead:false,weeds:0,pests:0};}
+function plant(sp,p){return Object.assign(soil(),{sp,water:Math.max(p?p.water:60,40),born:Date.now()});}
+function fresh(){
+  const now=Date.now();
+  const s={v:1,created:now,last:now,coins:12,fert:2,pace:1,seed:"radish",tool:"hand",sel:5,weather:"clear",plots:[],log:[],stats:{harv:0,earned:0,lost:0}};
+  for(let i=0;i<12;i++) s.plots.push(soil());
+  s.plots[5]=Object.assign(plant("radish"),{g:0.4,water:58});
+  s.plots[6]=Object.assign(plant("tomato"),{g:0.18,water:22,weeds:1});
+  s.plots[1].weeds=1; s.plots[10].weeds=2;
+  s.log.push({t:now,m:"You took over a small garden. A radish and a tomato are already in.",k:""});
+  return s;
+}
+function load(){
+  try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.v===1&&Array.isArray(s.plots)&&s.plots.length===12) return s; }catch(e){}
+  return fresh();
+}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+let S=load();
+
+/* ---------- simulation ---------- */
+function hourOf(t){const d=new Date(t);return d.getHours()+d.getMinutes()/60;}
+const isDay=t=>{const h=hourOf(t);return h>=6.5&&h<19.5;};
+let awayList=null;
+function ev(t,m,k){ S.log.push({t,m,k:k||""}); if(S.log.length>80) S.log.splice(0,S.log.length-80); if(awayList) awayList.push({m,k}); else if(k==="warn"||k==="dead"||k==="ripe"||k==="snail") say(m,k==="ripe"?"good":"warn"); }
+
+function step(dm,t){
+  const h=dm/60, day=isDay(t);
+  if(Math.random()<dm/110){
+    const r=Math.random(), nw=r<.55?"clear":r<.83?"cloudy":"rain";
+    if(nw!==S.weather){ if(nw==="rain") ev(t,"It started to rain.","rain"); else if(S.weather==="rain") ev(t,"The rain stopped.","rain"); S.weather=nw; }
+  }
+  const rain=S.weather==="rain";
+  S.plots.forEach((p,i)=>{
+    const sp=p.sp&&SP[p.sp], L=bedName(i), live=sp&&!p.dead, nm=sp?lc(sp.name):"";
+    if(rain) p.water=Math.min(100,p.water+35*h);
+    else p.water=Math.max(0,p.water-12*(live?sp.thirst:0.7)*h*(day?1:0.6));
+    if(p.weeds<3&&Math.random()<h*(sp?0.04:0.07)){ p.weeds++; if(p.weeds===2&&live) ev(t,`Weeds are crowding the ${nm} in ${L}.`,"weed"); }
+    if(!live) return;
+    p.fed=Math.max(0,p.fed-h*100/18);
+    if(p.g>0.25&&p.pests<3&&Math.random()<h*(0.02+(p.health<50?0.03:0)+0.01*p.weeds)){ p.pests++; if(p.pests===1) ev(t,`A snail found the ${nm} in ${L}.`,"snail"); }
+    let neg=0; if(p.water<15) neg+=10; if(p.water<=0) neg+=8; neg+=3*p.weeds+6*p.pests;
+    const before=p.health;
+    if(neg>0) p.health-=neg*h; else if(p.water>=20) p.health+=8*h;
+    p.health=clamp(p.health,0,100);
+    if(before>=40&&p.health<40) ev(t,`The ${nm} in ${L} is wilting.`,"warn");
+    if(p.health<=0){ p.dead=true; p.pests=0; S.stats.lost++; ev(t,`The ${nm} in ${L} died.`,"dead"); return; }
+    if(p.g<1){
+      if(p.water>=12&&p.health>20){
+        const rate=(1/sp.hours)*(day?1:sp.night)*(p.fed>0?1.4:1)*(0.4+0.6*p.health/100)*(1-0.15*p.weeds);
+        p.g=Math.min(1,p.g+rate*h);
+        if(p.g>=1){ if(sp.repeat) p.fruit=2; ev(t,`The ${nm} in ${L} is ready to harvest.`,"ripe"); }
+      }
+    } else {
+      p.ripe+=h;
+      if(sp.repeat&&p.water>=12&&p.health>40&&p.fruit<6){ p.ft+=h; if(p.ft>=sp.repeat){ p.ft-=sp.repeat; p.fruit++; } }
+    }
+  });
+}
+function advance(now){
+  const ms=now-S.last; if(ms<=0){ S.last=now; return 0; }
+  const msPerMin=60000/S.pace; let sim=ms/msPerMin; const total=sim; sim=Math.min(sim,14*1440);
+  let t=S.last;
+  while(sim>1e-9){ const dm=Math.min(1,sim); t+=dm*msPerMin; step(dm,t); sim-=dm; }
+  S.last=now; rescue(now);
+  return total;
+}
+function rescue(t){
+  const alive=S.plots.some(p=>p.sp&&!p.dead);
+  if(!alive&&S.coins<1){ S.coins+=2; ev(t,"A neighbor left two coins on the fence post.",""); }
+}
+function catchUp(){
+  awayList=[];
+  const mins=advance(Date.now()), list=awayList; awayList=null;
+  if(mins>=20){
+    const real=mins/S.pace;
+    let txt=`Gone ${dur(real/60)}${S.pace>1?` (${dur(mins/60)} of garden time)`:""}. `;
+    const c=k=>list.filter(e=>e.k===k).length;
+    const parts=[];
+    if(c("rain")) parts.push(`it rained ${Math.ceil(c("rain")/2)} time${c("rain")>2?"s":""}`);
+    if(c("ripe")) parts.push(`${c("ripe")} plant${c("ripe")>1?"s":""} ripened`);
+    if(c("weed")) parts.push(`weeds spread in ${c("weed")} bed${c("weed")>1?"s":""}`);
+    if(c("snail")) parts.push(`snails arrived in ${c("snail")} bed${c("snail")>1?"s":""}`);
+    if(c("warn")) parts.push(`${c("warn")} plant${c("warn")>1?"s":""} began to wilt`);
+    if(c("dead")) parts.push(`${c("dead")} died`);
+    txt+=parts.length?parts.join(", ")+".":"Nothing much happened.";
+    if(mins>14*1440) txt+=" (It ran wild for two weeks and then stopped counting.)";
+    $("awaytext").textContent=txt.charAt(0).toUpperCase()+txt.slice(1); $("away").hidden=false;
+  }
+}
+function dur(hrs){ if(hrs<1) return Math.max(1,Math.round(hrs*60))+" min"; if(hrs<48){const hh=Math.floor(hrs),mm=Math.round((hrs-hh)*60);return hh+" h"+(mm?" "+mm+" min":"");} return (hrs/24).toFixed(1)+" days"; }
+
+/* ---------- actions ---------- */
+function valueOf(p){
+  const sp=SP[p.sp], q=0.5+0.5*p.health/100;
+  if(sp.repeat) return Math.max(1,Math.round(sp.value*p.fruit*q));
+  return Math.max(1,Math.round(sp.value*q*(p.ripe>10?0.5:1)));
+}
+const ripeNow=p=>p.sp&&!p.dead&&p.g>=1&&(!SP[p.sp].repeat||p.fruit>0);
+function act(i,tool){
+  const p=S.plots[i], sp=p.sp&&SP[p.sp], L=bedName(i), live=sp&&!p.dead, nm=sp?lc(sp.name):"";
+  if(tool==="hand"){
+    if(p.dead) tool="dig"; else if(ripeNow(p)) tool="harvest"; else if(p.pests) tool="snail"; else if(p.weeds) tool="weed";
+    else if(!sp) tool="plant"; else if(p.water<55) tool="water";
+    else { const msg=p.g>=1?`The ${nm} is still fruiting.`:`The ${nm} in ${L} is fine for now.`; say(msg,""); return; }
+  }
+  const now=Date.now();
+  switch(tool){
+    case "water":
+      if(p.water>=92){ say(`${L} is already soaked.`,""); return; }
+      p.water=Math.min(100,p.water+45); fx(i,"water","#9FD0FF"); say(`Watered ${L}.`,"good"); break;
+    case "weed":
+      if(!p.weeds){ say(`No weeds in ${L}.`,""); return; }
+      p.weeds--; fx(i,"pulled","#E9F2C8"); say(`Pulled a weed from ${L}.`,"good"); break;
+    case "snail":
+      if(!p.pests){ say(`No snails in ${L}.`,""); return; }
+      p.pests--; fx(i,"snail off","#F1D7B4"); say(`Moved a snail off the ${nm} and over the fence.`,"good"); break;
+    case "feed":
+      if(!live){ say(`Nothing alive to feed in ${L}.`,""); return; }
+      if(S.fert<1){ say("You're out of compost. Dig up spent plants or buy a bag.","warn"); return; }
+      S.fert--; p.fed=100; fx(i,"fed","#E8C98A"); say(`Fed the ${nm} in ${L}. It will grow faster for a while.`,"good"); break;
+    case "harvest":
+      if(!ripeNow(p)){ say(live?`The ${nm} isn't ready yet.`:`Nothing to harvest in ${L}.`,""); return; }
+      { const v=valueOf(p); S.coins+=v; S.stats.harv++; S.stats.earned+=v; fx(i,"+"+v,"#FFE07A");
+        if(sp.repeat){ say(`Picked ${p.fruit} tomato${p.fruit>1?"es":""} for ${v} coins.`,"good"); p.fruit=0; p.ft=0; }
+        else { say(`Harvested the ${nm} for ${v} coins.`,"good"); ev(now,`Harvested the ${nm} in ${L} for ${v}.`,"ripe-log"); const w=p.weeds,wa=p.water; S.plots[i]=Object.assign(soil(),{weeds:w,water:wa}); } }
+      break;
+    case "plant":
+      if(sp){ say(`${L} already has a ${nm} in it.`,""); return; }
+      if(p.weeds){ say(`Pull the weeds in ${L} first.`,"warn"); return; }
+      { const s=SP[S.seed]; if(S.coins<s.cost){ say(`A ${lc(s.name)} packet costs ${s.cost}; you have ${S.coins}.`,"warn"); return; }
+        S.coins-=s.cost; S.plots[i]=plant(S.seed,p); fx(i,"planted","#E9F2C8"); say(`Planted ${lc(s.name)} in ${L}.`,"good"); ev(now,`Planted ${lc(s.name)} in ${L}.`,""); }
+      break;
+    case "dig":
+      if(!sp){ say(`${L} is empty.`,""); return; }
+      if(live&&p.g<1&&!confirm(`Dig up the growing ${nm} in ${L}?`)) return;
+      { const w=p.weeds,wa=p.water; const gain=(p.dead||p.g>=1)?1:0; S.fert+=gain; S.plots[i]=Object.assign(soil(),{weeds:w,water:wa});
+        fx(i,gain?"+1 compost":"dug","#E8C98A"); say(`Dug up the ${nm}${gain?" and composted it":""}.`,""); }
+      break;
+  }
+  rescue(now); save(); renderAll();
+}
+
+/* ---------- drawing ---------- */
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function leaf(x,y,len,ang,wd,c){return `<path transform="translate(${f(x)} ${f(y)}) rotate(${f(ang)})" d="M0 0Q${f(len*.45)} ${f(-wd)} ${f(len)} 0Q${f(len*.45)} ${f(wd)} 0 0Z" fill="${c}"/>`;}
+function wiltOf(p){ return p.dead?1:clamp(Math.max((18-p.water)/18,(60-p.health)/60),0,1); }
+function drawPlant(p){
+  const g=p.g, w=wiltOf(p);
+  let c=mix("#4F8F3A","#B19A4A",w), cd=mix("#386F2A","#8E7838",w);
+  if(p.dead){ c="#8C7B62"; cd="#6E5F4A"; }
+  if(g<0.07) return `<ellipse cx="0" cy="0" rx="13" ry="4.5" fill="#4A3020" opacity=".55"/><circle cx="0" cy="-2" r="2.2" fill="#D9C08A"/>`+(g>0.03?leaf(0,-2,6,-130,2.2,c)+leaf(0,-2,6,-50,2.2,c):"");
+  let s="";
+  switch(p.sp){
+    case "radish":{
+      const n=g<.3?2:g<.6?4:6, len=8+28*g;
+      for(let k=0;k<n;k++){ let a=-90+(k/(n-1)-.5)*130; a+=Math.sign(a+90)*w*42; s+=leaf(0,-1,len*(k%2?.9:1),a,3+3*g,k%2?cd:c); }
+      if(g>=.7){ const r=3+7*(g-.7)/.3, rc=p.dead?"#7A5A50":mix("#C8304A","#8E5A4A",w); s+=`<ellipse cx="0" cy="${f(-r*.45)}" rx="${f(r)}" ry="${f(r)}" fill="${rc}"/><path d="M${f(-r*.4)} ${f(-r*.9)}q${f(r*.3)} -2 ${f(r*.6)} 0" stroke="#F3B6C2" stroke-width="1.2" fill="none" opacity=".7"/>`; }
+      break;}
+    case "lettuce":{
+      const R=5+21*g, sy=1-.4*w, light=p.dead?"#9C8B70":mix("#9FCF6A","#C2B060",w);
+      s+=`<g transform="scale(1 ${f(sy)})">`;
+      [[-.55,-.55],[0,-.75],[.55,-.55]].forEach(([x,y])=>s+=`<ellipse cx="${f(x*R)}" cy="${f(y*R)}" rx="${f(R*.55)}" ry="${f(R*.5)}" fill="${cd}"/>`);
+      [[-.32,-.35],[.32,-.35]].forEach(([x,y])=>s+=`<ellipse cx="${f(x*R)}" cy="${f(y*R)}" rx="${f(R*.5)}" ry="${f(R*.42)}" fill="${c}"/>`);
+      s+=`<ellipse cx="0" cy="${f(-R*.42)}" rx="${f(R*.3)}" ry="${f(R*.32)}" fill="${light}"/>`;
+      s+=`<path d="M0 0L0 ${f(-R*.6)}M0 ${f(-R*.25)}L${f(-R*.3)} ${f(-R*.55)}M0 ${f(-R*.25)}L${f(R*.3)} ${f(-R*.55)}" stroke="${cd}" stroke-width="1" opacity=".5" fill="none"/></g>`;
+      break;}
+    case "tomato":{
+      const h=12+80*g, ex=2+w*20, ey=-h*(1-.28*w);
+      if(g>.3) s+=`<line x1="7" y1="2" x2="7" y2="${f(-h-6)}" stroke="#A0814F" stroke-width="2.4" stroke-linecap="round"/>`;
+      s+=`<path d="M0 0Q-5 ${f(ey/2)} ${f(ex)} ${f(ey)}" stroke="${cd}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+      const at=u=>[ex*u*u-2.5*2*u*(1-u),ey*u];
+      [.22,.4,.58,.74,.88].forEach((u,k)=>{ if(u>0.15+g*0.9) return; const [x,y]=at(u), side=k%2?1:-1; let a=side>0?-25:-155; a+=side*w*50; s+=leaf(x,y,10+11*g,a,4+2*g,k%2?c:cd)+leaf(x,y,6+6*g,a+side*-35,2.8,c); });
+      if(g>=.55&&g<1) [.7,.86].forEach(u=>{const [x,y]=at(u);s+=`<circle cx="${f(x+4)}" cy="${f(y)}" r="2.6" fill="#F1D04A"/>`;});
+      if(g>=1&&!p.dead){
+        const spots=[[.5,9],[.62,-9],[.72,10],[.8,-8],[.9,8],[.42,-10]];
+        const n=Math.max(p.fruit,0), green=n===0?2:0;
+        spots.slice(0,Math.max(n,green)).forEach(([u,dx],k)=>{const [x,y]=at(u);const col=k<n?mix("#D9402B","#9A5A3A",w):"#7FA544";s+=`<circle cx="${f(x+dx*.6)}" cy="${f(y+5)}" r="${k<n?5.2:3.2}" fill="${col}"/><path d="M${f(x+dx*.6-2)} ${f(y+.5)}l2 1.5 2-1.5" stroke="#3E6B2A" stroke-width="1.2" fill="none"/>`;});
+      }
+      break;}
+    case "sunflower":{
+      const h=12+112*g, ex=w*26, ey=-h*(1-.18*w);
+      s+=`<path d="M0 0Q-3 ${f(ey/2)} ${f(ex)} ${f(ey)}" stroke="${cd}" stroke-width="${f(2+2*g)}" fill="none" stroke-linecap="round"/>`;
+      [[.25,-1],[.42,1],[.6,-1],[.75,1]].forEach(([u,side])=>{ if(u>0.1+g) return; const x=ex*u*u, y=ey*u; let a=side>0?-30:-150; a+=side*w*55; s+=leaf(x,y,13+15*g,a,6+3*g,side>0?c:cd); });
+      const tilt=w*55+10*g;
+      if(g>=.3){
+        s+=`<g transform="translate(${f(ex)} ${f(ey)}) rotate(${f(tilt)})">`;
+        if(g<.6) s+=`<circle r="${f(3+5*(g-.3)/.3)}" fill="${cd}"/>`;
+        else if(g<1) { s+=`<circle r="8" fill="${cd}"/>`; for(let k=0;k<10;k++) s+=`<ellipse transform="rotate(${k*36}) translate(8 0)" rx="2.6" ry="1.4" fill="#E8C33A"/>`; }
+        else { const pc=p.dead?"#8E7A58":mix("#F2C230","#A5843E",w); for(let k=0;k<16;k++) s+=`<ellipse transform="rotate(${k*22.5}) translate(13 0)" rx="7" ry="2.8" fill="${pc}"/>`; s+=`<circle r="9.5" fill="#5A3A1E"/><circle r="6" fill="#6E4A26"/>`; }
+        s+=`</g>`;
+      }
+      break;}
+    case "pumpkin":{
+      const R=10+46*g, Lf=8+38*g;
+      s+=`<path d="M0 0C${f(R*.3)} -10 ${f(R*.65)} 6 ${f(R)} -2M0 0C${f(-Lf*.3)} -8 ${f(-Lf*.6)} 4 ${f(-Lf)} -3" stroke="${cd}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+      const lr=5+8*g, lfs=[[R*.85,-6],[-Lf*.9,-6],[R*.45,-9],[-Lf*.45,-8],[0,-10]].slice(0,g<.3?2:g<.6?4:5);
+      if(g>=.6&&!p.dead){ const rx=g<1?5+9*(g-.6)/.4:21, fc=g<1?"#86A846":mix("#E8822A","#A06E3E",w); s+=`<g transform="translate(${f(R*.35)} -1)"><ellipse cx="0" cy="${f(-rx*.7)}" rx="${f(rx)}" ry="${f(rx*.72)}" fill="${fc}"/><ellipse cx="0" cy="${f(-rx*.7)}" rx="${f(rx*.45)}" ry="${f(rx*.72)}" fill="none" stroke="#00000022" stroke-width="1.4"/><rect x="-1.6" y="${f(-rx*1.5)}" width="3.2" height="${f(4+rx*.15)}" rx="1" fill="#6A7A3A"/></g>`; }
+      lfs.forEach(([x,y],k)=>{ const yy=y*(1-.5*w); s+=`<circle cx="${f(x)}" cy="${f(yy)}" r="${f(lr)}" fill="${k%2?cd:c}"/><path d="M${f(x)} ${f(yy+lr*.2)}l0 ${f(-lr*.8)}M${f(x)} ${f(yy)}l${f(-lr*.5)} ${f(-lr*.4)}M${f(x)} ${f(yy)}l${f(lr*.5)} ${f(-lr*.4)}" stroke="#00000030" stroke-width="1" fill="none"/>`; });
+      break;}
+  }
+  return s;
+}
+const WEEDPOS=[[20,H-22],[W-22,H-26],[34,H-54]], SNAILPOS=[[W/2+30,H-24],[W/2-34,H-30],[W/2+14,H-50]];
+function weedSVG(n){
+  let s="";
+  for(let k=0;k<n;k++){ const [x,y]=WEEDPOS[k];
+    for(let j=0;j<5;j++){ const a=(j-2)*24, l=9+(j%2?0:4); s+=`<path transform="translate(${x} ${y}) rotate(${a})" d="M-1.4 0L0 ${-l}L1.4 0Z" fill="#335E25"/>`; }
+    if(k===1) s+=`<circle cx="${x}" cy="${y-14}" r="2.6" fill="#F0C93A"/>`;
+  }
+  return s;
+}
+function snailSVG(n){
+  let s="";
+  for(let k=0;k<n;k++){ const [x,y]=SNAILPOS[k], fl=k%2?-1:1;
+    s+=`<g transform="translate(${x} ${y}) scale(${fl} 1)"><ellipse cx="1" cy="-2" rx="10" ry="2.6" fill="#CDB98F"/><circle cx="9.5" cy="-4" r="2.6" fill="#CDB98F"/><path d="M9.5 -6L12 -11M8 -6L7.5 -11.5" stroke="#8E7A55" stroke-width="1" stroke-linecap="round"/><circle cx="-1" cy="-7.5" r="6.2" fill="#A86A35" stroke="#6E4220" stroke-width="1"/><path d="M-1 -7.5a1.6 1.6 0 1 1 1.6 1.6a3.2 3.2 0 1 1 -3.4 -3.6a4.6 4.6 0 0 1 5.2 4.4" stroke="#6E4220" stroke-width="1" fill="none"/></g>`;
+  }
+  return s;
+}
+function badgeSVG(p){
+  const x=W-14,y=14;
+  if(p.dead) return `<g transform="translate(${x} ${y})"><circle r="9" fill="#5E5448"/><path d="M-4 -4L4 4M4 -4L-4 4" stroke="#EEE" stroke-width="2" stroke-linecap="round"/></g>`;
+  if(ripeNow(p)) return `<g transform="translate(${x} ${y})"><circle r="10" fill="#FFF4C2" opacity=".85"/><path d="M0 -7L2 -2.2 7.2 -2.2 3 1 4.6 6.2 0 3.2 -4.6 6.2 -3 1 -7.2 -2.2 -2 -2.2Z" fill="#E2A21C"/></g>`;
+  if(p.sp&&p.water<18) return `<g transform="translate(${x} ${y})"><circle r="9" fill="#E8F2FB" opacity=".9"/><path d="M0 -6C3 -2 4.5 0 4.5 2.2A4.5 4.5 0 0 1 -4.5 2.2C-4.5 0 -3 -2 0 -6Z" fill="#2F6FB8"/></g>`;
+  return "";
+}
+let nodes=[];
+function buildScene(){
+  const plots=$("plots"); plots.innerHTML="";
+  // fence
+  let fs=""; for(let x=8;x<800;x+=26) fs+=`<rect x="${x}" y="150" width="9" height="40" rx="2" fill="#C9B89A"/>`;
+  $("fence").innerHTML=`<rect x="0" y="160" width="800" height="5" fill="#B8A684"/><rect x="0" y="176" width="800" height="5" fill="#B8A684"/>`+fs;
+  for(let i=0;i<12;i++){
+    const c=i%COLS, r=Math.floor(i/COLS), x=X0+c*(W+GX), y=Y0+r*(H+GY);
+    const g=el("g",{class:"plot",transform:`translate(${x} ${y})`,tabindex:"0",role:"button"},plots);
+    el("rect",{x:-2,y:-2,width:W+4,height:H+4,rx:7,fill:"#6E4A2C"},g);
+    el("rect",{x:0,y:0,width:W,height:H,rx:6,fill:"#8A5A36"},g);
+    const soilR=el("rect",{x:7,y:7,width:W-14,height:H-14,rx:4,fill:"#7A5233"},g);
+    el("rect",{x:0,y:H-7,width:W,height:7,rx:3,fill:"#7A4E2E"},g);
+    const lab=el("text",{x:9,y:H-1.5,class:"bedlabel"},g); lab.textContent=bedName(i);
+    const weeds=el("g",{},g);
+    const base=el("g",{transform:`translate(${W/2} ${H-26}) scale(1.3)`},g);
+    const sway=el("g",{class:"sway",style:`animation-delay:${-(i*0.73)%4.5}s`},base);
+    const pl=el("g",{},sway);
+    const pests=el("g",{},g);
+    el("rect",{x:2,y:H+5,width:W-4,height:4,rx:2,fill:"#00000030"},g);
+    const wb=el("rect",{x:2,y:H+5,width:0,height:4,rx:2,fill:"#5BA3EA"},g);
+    el("rect",{x:2,y:H+11,width:W-4,height:4,rx:2,fill:"#00000030"},g);
+    const hb=el("rect",{x:2,y:H+11,width:0,height:4,rx:2,fill:"#6FCB5A"},g);
+    const badge=el("g",{},g);
+    el("rect",{x:-6,y:-6,width:W+12,height:H+26,rx:9,class:"ring"},g);
+    g.addEventListener("click",()=>{ select(i); act(i,S.tool); });
+    g.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); select(i); act(i,S.tool); } });
+    g.addEventListener("focus",()=>select(i));
+    nodes.push({g,soilR,weeds,pl,pests,wb,hb,badge,key:{}});
+  }
+  // rain drops
+  let rs=""; for(let k=0;k<90;k++){ const x=Math.random()*800, d=-(Math.random()*.8).toFixed(2), l=10+Math.random()*8; rs+=`<line class="drop" x1="${x.toFixed(0)}" y1="0" x2="${(x-3).toFixed(0)}" y2="${l.toFixed(0)}" style="animation-delay:${d}s;animation-duration:${(0.6+Math.random()*.4).toFixed(2)}s"/>`; }
+  $("rain").innerHTML=rs;
+  let st=""; for(let k=0;k<40;k++) st+=`<circle cx="${(Math.random()*800).toFixed(0)}" cy="${(Math.random()*130).toFixed(0)}" r="${(Math.random()*1.2+.4).toFixed(1)}" fill="#FFF"/>`;
+  $("stars").innerHTML=st;
+  let cl=""; [[40,18,1],[60,-30,1.4],[30,-60,1.1],[80,-75,.8]].forEach(([y,d,sc],k)=>{ cl+=`<g class="cloud" style="animation-delay:${d}s;animation-duration:${80+k*25}s"><g transform="translate(0 ${y}) scale(${sc})"><ellipse cx="0" cy="0" rx="34" ry="13"/><ellipse cx="-18" cy="4" rx="20" ry="10"/><ellipse cx="20" cy="3" rx="24" ry="11"/><ellipse cx="4" cy="-9" rx="18" ry="12"/></g></g>`; });
+  $("clouds").innerHTML=cl;
+}
+function plotLabel(i){
+  const p=S.plots[i], sp=p.sp&&SP[p.sp];
+  let s=`Bed ${bedName(i)}: `;
+  if(!sp) s+="empty"; else s+=(p.dead?"dead ":"")+lc(sp.name)+", "+stageName(p);
+  if(p.weeds) s+=`, ${p.weeds} weed${p.weeds>1?"s":""}`; if(p.pests) s+=`, ${p.pests} snail${p.pests>1?"s":""}`;
+  s+=`, water ${Math.round(p.water)}%`; if(sp&&!p.dead) s+=`, health ${Math.round(p.health)}%`;
+  return s;
+}
+function renderPlot(i){
+  const p=S.plots[i], n=nodes[i], K=n.key;
+  n.soilR.setAttribute("fill",mix("#C9A67A","#553823",p.water/100));
+  const w=wiltOf(p);
+  const pk=[p.sp,p.dead,Math.round(p.g*40),Math.round(w*10),p.fruit].join("|");
+  if(K.p!==pk){ K.p=pk; n.pl.innerHTML=p.sp?drawPlant(p):""; }
+  if(K.w!==p.weeds){ K.w=p.weeds; n.weeds.innerHTML=weedSVG(p.weeds); }
+  if(K.s!==p.pests){ K.s=p.pests; n.pests.innerHTML=snailSVG(p.pests); }
+  const b=badgeSVG(p); if(K.b!==b){ K.b=b; n.badge.innerHTML=b; }
+  n.wb.setAttribute("width",f((W-4)*p.water/100));
+  const live=p.sp&&!p.dead;
+  n.hb.setAttribute("width",live?f((W-4)*p.health/100):0);
+  n.hb.setAttribute("fill",mix("#E0503A","#6FCB5A",p.health/100));
+  n.g.classList.toggle("sel",S.sel===i);
+  n.g.setAttribute("aria-label",plotLabel(i));
+}
+function stageName(p){
+  const g=p.g, sp=SP[p.sp];
+  if(p.dead) return "dead";
+  if(g>=1){ if(sp.repeat) return p.fruit?`${p.fruit} ripe tomato${p.fruit>1?"es":""}`:"setting fruit"; return p.ripe>10?"ripe, going over":"ripe"; }
+  return g<.07?"seed":g<.3?"sprout":g<.6?"growing":p.sp==="radish"||p.sp==="lettuce"?"filling out":"flowering";
+}
+function renderSky(){
+  const now=Date.now(), hr=hourOf(now), wx=S.weather;
+  const d=clamp(Math.sin(Math.PI*(hr-6)/13.5),0,1), dusk=clamp(1-Math.abs(d-.18)/.18,0,1)*(hr>5&&hr<21?1:0);
+  let top=mix("#121A3A","#6FB0E0",d), bot=mix(mix("#26335E","#EBA46E",dusk),"#D8ECF6",clamp(d*1.6-.2,0,1));
+  const grey=wx==="rain"?.55:wx==="cloudy"?.3:0;
+  top=mix(top,d>.1?"#8A96A3":"#1C2230",grey); bot=mix(bot,d>.1?"#B7C0C8":"#2A3040",grey);
+  $("sk0").setAttribute("stop-color",top); $("sk1").setAttribute("stop-color",bot);
+  const day=hr>=6&&hr<19.5;
+  const t=day?(hr-6)/13.5:(((hr-19.5)+24)%24)/10.5, x=60+680*t, y=150-118*Math.sin(Math.PI*clamp(t,0,1));
+  const sun=$("sun"), moon=$("moon");
+  sun.style.display=day?"":"none"; moon.style.display=day?"none":"";
+  sun.setAttribute("cx",f(x)); sun.setAttribute("cy",f(y)); sun.setAttribute("fill",mix("#FFB15C","#FFE07A",d));
+  moon.setAttribute("transform",`translate(${f(x)} ${f(y)})`); $("moonbite").setAttribute("fill",top);
+  $("stars").setAttribute("opacity",f(clamp(1-d*3,0,1)*(1-grey*1.4)));
+  const cl=$("clouds"); cl.setAttribute("fill",wx==="rain"?"#8F98A2":d>.1?"#FFFFFF":"#4A5266"); cl.setAttribute("opacity",wx==="clear"?.45:.95);
+  $("rain").style.display=wx==="rain"?"":"none";
+  $("scene").classList.toggle("windy",wx==="rain");
+  $("veil").setAttribute("opacity",f((1-d)*.38+grey*.12));
+  const dd=new Date(now);
+  $("sky").textContent=`${dd.toLocaleDateString(undefined,{weekday:"long"})} ${dd.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})} · ${day?"day":"night"} · ${wx}`;
+}
+function meter(v,col){ return `<div class="meter"><i style="width:${clamp(v,0,100).toFixed(0)}%;background:${col}"></i></div>`; }
+function renderInfo(){
+  const i=S.sel, p=S.plots[i], sp=p.sp&&SP[p.sp];
+  $("bedname").textContent=bedName(i);
+  let h="";
+  if(!sp){ h=`<div class="kv"><dt>planted</dt><dd>nothing yet</dd><dt>water</dt>${meter(p.water,"var(--water)")}<dt>weeds</dt><dd>${p.weeds||"none"}</dd></div><div class="small">${p.weeds?"Pull the weeds, then plant.":"Choose a seed packet and click the bed."}</div>`; }
+  else {
+    const live=!p.dead;
+    h=`<div class="kv"><dt>plant</dt><dd>${sp.name}${p.dead?" (dead)":""}</dd><dt>stage</dt><dd>${stageName(p)}${live&&p.g<1?` · ${Math.floor(p.g*100)}%`:""}</dd>`;
+    h+=`<dt>water</dt>${meter(p.water,"var(--water)")}`;
+    if(live) h+=`<dt>health</dt>${meter(p.health,p.health<40?"var(--warn)":"var(--leaf)")}<dt>compost</dt>${p.fed>0?meter(p.fed,"var(--brass)"):"<dd>not fed</dd>"}`;
+    h+=`<dt>weeds</dt><dd>${p.weeds||"none"}</dd>`; if(live) h+=`<dt>snails</dt><dd>${p.pests||"none"}</dd>`;
+    if(live&&p.g<1){ const day=isDay(Date.now()); const ok=p.water>=12&&p.health>20; const rate=(1/sp.hours)*(day?1:sp.night)*(p.fed>0?1.4:1)*(0.4+0.6*p.health/100)*(1-0.15*p.weeds);
+      h+=`<dt>ripe in</dt><dd>${ok?"about "+dur((1-p.g)/rate/S.pace):"stalled — "+(p.water<12?"too dry":"too weak")}</dd>`; }
+    if(ripeNow(p)) h+=`<dt>worth</dt><dd>${valueOf(p)} coins</dd>`;
+    h+=`</div>`;
+    const tips=[]; if(p.dead) tips.push("Dig it up for compost."); else { if(p.water<18) tips.push("It needs water."); if(p.pests) tips.push("Snails are eating it."); if(p.weeds>1) tips.push("The weeds are taking over."); if(ripeNow(p)) tips.push("Ready to harvest."); }
+    if(tips.length) h+=`<div class="small" style="color:var(--ink)">${tips.join(" ")}</div>`;
+  }
+  $("info").innerHTML=h;
+}
+function renderSide(){
+  $("coins").textContent=S.coins; $("fert").textContent=S.fert;
+  $("buyfert").disabled=S.coins<4;
+  const age=(Date.now()-S.created)/3600000;
+  $("tally").textContent=`${S.stats.harv} harvested · ${S.stats.earned} coins earned · ${S.stats.lost} lost · garden is ${dur(age)} old`;
+  [...$("seeds").children].forEach(b=>{ b.classList.toggle("on",b.dataset.sp===S.seed); b.setAttribute("aria-pressed",b.dataset.sp===S.seed); });
+  [...$("tools").children].forEach(b=>{ b.classList.toggle("on",b.dataset.t===S.tool); b.setAttribute("aria-pressed",b.dataset.t===S.tool); });
+  const L=S.log.slice(-40).reverse();
+  $("log").innerHTML=L.map(e=>{const d=new Date(e.t);return `<div class="${e.k==="ripe-log"?"ripe":e.k}"><time>${d.toLocaleDateString(undefined,{weekday:"short"})} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",hour12:false})}</time><span>${e.m}</span></div>`;}).join("");
+}
+let lastSide="";
+function renderAll(){ for(let i=0;i<12;i++) renderPlot(i); renderSky(); renderInfo(); renderSide(); }
+function fx(i,text,col){
+  const c=i%COLS, r=Math.floor(i/COLS), x=X0+c*(W+GX)+W/2, y=Y0+r*(H+GY)+30;
+  const t=el("text",{x,y,"text-anchor":"middle",class:"float",fill:col},$("fx")); t.textContent=text; setTimeout(()=>t.remove(),1400);
+}
+let sayT=0;
+function say(m,cls){ const s=$("status"); s.textContent=m; s.className="status "+(cls||""); clearTimeout(sayT); sayT=setTimeout(()=>{s.textContent="";},6000); }
+function select(i){ if(S.sel===i) return; S.sel=i; for(let k=0;k<12;k++) nodes[k].g.classList.toggle("sel",k===i); renderInfo(); }
+
+/* ---------- controls ---------- */
+TOOLS.forEach(([t,label],k)=>{ const b=document.createElement("button"); b.type="button"; b.dataset.t=t; b.innerHTML=`${label}<kbd>${k+1}</kbd>`; b.onclick=()=>{ S.tool=t; save(); renderSide(); }; $("tools").appendChild(b); });
+Object.entries(SP).forEach(([k,s])=>{ const b=document.createElement("button"); b.type="button"; b.dataset.sp=k; b.innerHTML=`<b>${s.name}</b><em>${s.cost} ¢</em><span>${s.hours<1?Math.round(s.hours*60)+" min":s.hours+" h"} · ${s.blurb}</span>`; b.onclick=()=>{ S.seed=k; S.tool="plant"; save(); renderSide(); say(`Holding a packet of ${lc(s.name)} seeds. Click an empty, weeded bed.`,""); }; $("seeds").appendChild(b); });
+$("buyfert").onclick=()=>{ if(S.coins<4) return; S.coins-=4; S.fert++; save(); renderSide(); say("Bought a bag of compost.","good"); };
+$("pace").value=String(S.pace);
+$("pace").onchange=()=>{ advance(Date.now()); S.pace=+$("pace").value; save(); renderAll(); say(S.pace===1?"The garden runs on real time.":`The garden now runs ${S.pace}× faster, even while you're away.`,""); };
+$("reset").onclick=()=>{ if(!confirm("Start a new garden? This one will be gone.")) return; S=fresh(); $("pace").value="1"; $("away").hidden=true; save(); nodes.forEach(n=>n.key={}); renderAll(); say("A fresh garden.","good"); };
+document.addEventListener("keydown",e=>{
+  if(e.target.closest&&e.target.closest("select,input,textarea")) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  const n=parseInt(e.key,10); if(n>=1&&n<=TOOLS.length){ S.tool=TOOLS[n-1][0]; save(); renderSide(); return; }
+  const mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:-COLS,ArrowDown:COLS}[e.key];
+  if(mv!==undefined&&(document.activeElement===document.body||document.activeElement.classList.contains("plot"))){ e.preventDefault(); const j=S.sel+mv; if(j>=0&&j<12&&!(Math.abs(mv)===1&&Math.floor(j/COLS)!==Math.floor(S.sel/COLS))){ nodes[j].g.focus(); select(j); } }
+});
+
+buildScene();
+catchUp(); save(); renderAll();
+setInterval(()=>{ advance(Date.now()); save(); for(let i=0;i<12;i++) renderPlot(i); renderSky(); renderInfo(); renderSide(); },1000);
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ catchUp(); save(); renderAll(); } });
+})();
+</script>
+</body>
+</html>

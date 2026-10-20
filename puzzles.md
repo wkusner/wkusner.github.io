@@ -30,3 +30,5 @@ shorttitle:
 - [Planimeter Bench](/planimeters/): measure area by tracing with five drawn instruments (polar, linear, hatchet, radial, and a counting frame) and a running error budget ([first edition](/planimeters/first-edition/)).
 - [Fraction Target](/fraction-target/): make the target from four fraction cards, with every deal solvable (MATH 102 practice).
 - [Lily Pads](/lily-pads/): sticky growth in a pond, where pads grow until they jam and let go only when a contact is pulled apart.
+
+**[The Garden](/garden/)**: twelve raised beds to look after, tamagotchi style. They keep growing in your browser while you're away: water them, pull weeds, pick off snails, and harvest what ripens before it wilts.
