@@ -1,0 +1,140 @@
+%% =====================================================================
+%%  RESUME (2 pages) -- Research engineering / applied mathematics / industry
+%%  Wöden Kusner
+%% =====================================================================
+%%  Build: pdflatex Kusner_Resume_Research-Engineering.tex (twice)
+%%
+%%  Design goals: one column, no tables or text boxes, plain section names,
+%%  real text (not images), standard font, dates on the same line as the
+%%  role -- so applicant-tracking systems parse it cleanly.
+%%  Tailor the SUMMARY and the order of PROJECTS to each posting.
+%% =====================================================================
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.7in]{geometry}
+\usepackage[expansion=false]{microtype}
+\input{glyphtounicode}\pdfgentounicode=1
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Woden Kusner - Resume}, pdfauthor={W\"oden Kusner (Woden Kusner)},
+  pdfkeywords={Woden Kusner, applied mathematics, research engineer, C, Python, Julia,
+  interval arithmetic, certified computation, optimization, computational geometry,
+  computer-assisted proof, AI-assisted research}}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\definecolor{rule}{gray}{0.55}
+\hyphenpenalty=10000 \exhyphenpenalty=10000 \emergencystretch=3em  % no split words: cleaner ATS parsing
+
+% --- helpers -----------------------------------------------------------
+\newcommand{\sect}[1]{\par\vspace{7pt}{\large\bfseries #1}\par\vspace{1pt}%
+  {\color{rule}\hrule height .5pt}\vspace{4pt}}
+\newcommand{\role}[3]{\par\vspace{3pt}\textbf{#1}\ \hfill\mbox{#3}\par   % title, org, dates
+  {\itshape #2}\par}
+\setlist[itemize]{leftmargin=1.1em, itemsep=1pt, topsep=1pt, parsep=0pt, label=$\bullet$}
+
+\begin{document}
+
+%% ---------------- HEADER ----------------
+{\LARGE\bfseries W\"oden Kusner}\par\vspace{2pt}
+Applied mathematician $|$ certified computation, geometry, and optimization\par\vspace{2pt}
+\href{mailto:wkusner@gmail.com}{wkusner@gmail.com} $|$
+\href{https://wkusner.github.io}{wkusner.github.io} $|$
+Appleton, WI $|$ U.S.\ citizen
+
+%% ---------------- SUMMARY ----------------
+\sect{Summary}
+Mathematician (Ph.D., University of Pittsburgh, advisor Thomas C.~Hales) with twelve years of research in
+discrete geometry, optimization, and computer-assisted proof. Builds rigorous numerical software
+(interval arithmetic, branch-and-bound search, independent certificate checking) and turns hard technical
+problems into verified results. Experienced explaining mathematics to non-specialists, mentoring, and
+running a campus-wide quantitative support program.
+
+%% ---------------- SKILLS ----------------
+\sect{Technical Skills}
+\begin{itemize}
+  \item \textbf{Languages and tools:} C, Python, Julia, Mathematica; HTML/CSS/JavaScript; Git/GitHub; \LaTeX.
+  \item \textbf{Methods:} interval arithmetic and certified computation (FLINT/Arb); branch-and-bound search;
+        nonlinear optimization and critical-point analysis; computational geometry; discrepancy and
+        quasi-Monte Carlo point sets; probability and statistics.
+  \item \textbf{Workflow:} AI-assisted research and software development (Claude, Claude Code); reproducible
+        releases with archived DOIs.
+\end{itemize}
+
+%% ---------------- PROJECTS ----------------
+\sect{Selected Projects}
+\begin{itemize}
+  \item \textbf{kisscrit} (2026, open source). C library on FLINT/Arb for certified search of critical
+        configurations of kissing spheres: interval branch-and-bound plus a separate certificate checker.
+        Released v0.1.0 with DOI \href{https://doi.org/10.5281/zenodo.23603268}{10.5281/zenodo.23603268}.
+  \item \textbf{Critical radii of kissing configurations} (in preparation). Algebraicity and balance results
+        for twelve-sphere configurations, certified with kisscrit.
+  \item \textbf{Computer-assisted packing proofs.} Optimality of packings of regular pentagons, with T.~Hales
+        (in revision, \emph{Trans.\ Amer.\ Math.\ Soc.}); local optimality of the double lattice packing,
+        with Y.~Kallus (\emph{Discrete Comput.\ Geom.}, 2016); density bounds for cylinders and polycylinders
+        (\emph{Discrete Comput.\ Geom.}, 2014, 2016).
+  \item \textbf{Chirality measure for curves} (with G.~Dietler, E.~Rawdon, R.~Kusner, P.~Szymczak; in revision).
+        Tensor-valued chirality measure built from hydrodynamic intuition; applies to polygonal curves,
+        polymers, and biomolecules.
+  \item \textbf{Hyperuniform point sets on the sphere} (with J.~Brauchart, P.~Grabner, J.~Ziefle;
+        \emph{Constr.\ Approx.}\ 2019, \emph{Monatsh.\ Math.}\ 2020). Deterministic and random constructions of
+        well-distributed point sets.
+  \item \textbf{Of Instruments} (2026). Interactive browser versions of historical mathematical instruments
+        (slide rules, planimeters, Napier's bones, verniers), written in JavaScript.
+  \item \textbf{Community data infrastructure.} Fox Valley Data Exchange data-lakehouse specification working
+        group (2025); Community Data Hub data team for Imagine Fox Cities (2021--2022).
+\end{itemize}
+
+%% ---------------- EXPERIENCE ----------------
+\sect{Experience}
+\role{Director, Quantitative Resource Center; Adjunct Assistant Professor of Mathematics}{Lawrence University}{2025--present}
+\begin{itemize}
+  \item Run quantitative peer tutoring for the college: recruit, train, and mentor peer tutors; coordinate
+        support with departments; advise on ALEKS math placement.
+  \item Created the Quantitative Learning Assistant program (2025): wrote the position description, hire and
+        schedule assistants, and pair each with a course instructor.
+  \item Provide individualized support for case-managed students and hold open office hours for students,
+        faculty, and staff.
+\end{itemize}
+\role{Instructor of Mathematics}{Lawrence University}{2023--2025}
+\begin{itemize}
+  \item Designed the ALEKS-based course structure and exercise pack for Preparation for Calculus, later used by
+        colleagues teaching the course; supervised directed studies and summer undergraduate research.
+\end{itemize}
+\role{Assistant Professor (non-tenure-track)}{University of Georgia}{2020--2022}
+\begin{itemize}
+  \item Taught Calculus I and II; UGA Teaching Academy Fellow; member of the instructional corps recognized by
+        the 2022 Regents' Teaching Excellence Award.
+\end{itemize}
+\role{Assistant Professor (non-tenure-track) and Postdoctoral Associate}{Vanderbilt University}{2017--2020}
+\begin{itemize}
+  \item Research in the Center for Constructive Approximation; Data Science Institute faculty affiliate.
+  \item Taught probability, statistical inference, and multivariable calculus; supervised teams of teaching
+        assistants and graders; mentored undergraduate research.
+  \item Organized the Computational Analysis Seminar; co-organized the Shanks Workshop on Computations and
+        Linear Programming Bounds for Energy, Packing and Covering (2019).
+\end{itemize}
+\role{FWF Postdoctoral Researcher}{Graz University of Technology, Austria}{2014--2017}
+\begin{itemize}
+  \item Research on point configurations, discrepancy, and packing; taught a course on packings, lattices,
+        and configurations.
+\end{itemize}
+
+%% ---------------- EDUCATION ----------------
+\sect{Education}
+\textbf{Ph.D., Mathematics}, University of Pittsburgh \hfill 2014\par
+Dissertation: \emph{Bounds on packing density via slicing} (advisor Thomas C.~Hales)\par
+\textbf{B.S., Mathematics}, Haverford College \hfill 2007
+
+%% ---------------- RECOGNITION ----------------
+\sect{Publications, Talks, and Professional Activity}
+\begin{itemize}
+  \item 7 peer-reviewed papers (incl.\ 3 in \emph{Discrete \& Computational Geometry}) and 4 papers in revision or preparation;
+        full list at \href{https://wkusner.github.io}{wkusner.github.io}.
+  \item 37 invited and contributed talks, including Oberwolfach, MSRI, ICERM, AIM, BIRS--CMO, and the
+        Isaac Newton Institute.
+  \item Referee for \emph{Annals of Mathematics}, \emph{Discrete \& Computational Geometry}, IMRN,
+        \emph{SIAM J.\ Discrete Math.}, and others; NSF Graduate Research Fellowship reviewer (2022).
+  \item Languages: English (native), German (intermediate), Spanish (elementary).
+\end{itemize}
+
+\end{document}

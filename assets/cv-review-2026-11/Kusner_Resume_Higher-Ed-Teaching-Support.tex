@@ -1,0 +1,131 @@
+%% =====================================================================
+%%  RESUME (2 pages) -- Higher education: teaching-focused faculty,
+%%  learning / quantitative center leadership, academic support
+%%  Wöden Kusner
+%% =====================================================================
+%%  Build: pdflatex Kusner_Resume_Higher-Ed-Teaching-Support.tex (twice)
+%%
+%%  One column, plain headings, real text, dates on the role line, so
+%%  applicant-tracking systems (Workday, Interfolio, PeopleAdmin) parse it.
+%%  Tailor the SUMMARY to each posting; keep the QRC section first.
+%% =====================================================================
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.7in]{geometry}
+\usepackage[expansion=false]{microtype}
+\input{glyphtounicode}\pdfgentounicode=1
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Woden Kusner - Resume}, pdfauthor={W\"oden Kusner (Woden Kusner)},
+  pdfkeywords={Woden Kusner, mathematics, quantitative reasoning, tutoring center, learning assistants,
+  peer tutoring, academic support, student success, ALEKS placement, teaching, mentoring}}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\definecolor{rule}{gray}{0.55}
+\hyphenpenalty=10000 \exhyphenpenalty=10000 \emergencystretch=3em  % no split words: cleaner ATS parsing
+
+% --- helpers -----------------------------------------------------------
+\newcommand{\sect}[1]{\par\vspace{7pt}{\large\bfseries #1}\par\vspace{1pt}%
+  {\color{rule}\hrule height .5pt}\vspace{4pt}}
+\newcommand{\role}[3]{\par\vspace{3pt}\textbf{#1}\ \hfill\mbox{#3}\par   % title, org, dates
+  {\itshape #2}\par}
+\setlist[itemize]{leftmargin=1.1em, itemsep=1pt, topsep=1pt, parsep=0pt, label=$\bullet$}
+
+\begin{document}
+
+%% ---------------- HEADER ----------------
+{\LARGE\bfseries W\"oden Kusner}\par\vspace{2pt}
+Mathematics educator $|$ quantitative support and peer-learning programs\par\vspace{2pt}
+\href{mailto:wkusner@gmail.com}{wkusner@gmail.com} $|$
+\href{https://wkusner.github.io}{wkusner.github.io} $|$
+Appleton, WI
+
+%% ---------------- SUMMARY ----------------
+\sect{Summary}
+Mathematician and teacher (Ph.D., University of Pittsburgh) with teaching experience at five universities since
+2009, now directing the Quantitative Resource Center at Lawrence University. Builds peer-learning programs,
+supports students who find mathematics difficult, and works across departments so that quantitative courses
+and student support fit together. Holds certificates in college teaching and in diversity and inclusion.
+
+%% ---------------- STRENGTHS ----------------
+\sect{Areas of Strength}
+\begin{itemize}
+  \item Peer tutoring and learning-assistant programs: design, hiring, training, mentoring, and scheduling.
+  \item Individualized support for students, including case-managed students; open office hours for
+        students, faculty, and staff.
+  \item Course design for introductory mathematics; ALEKS placement and adaptive-learning courses.
+  \item Teaching probability, statistics, and calculus from preparatory through advanced undergraduate levels.
+  \item Mentoring undergraduate research, directed studies, and graduate-school preparation.
+\end{itemize}
+
+%% ---------------- EXPERIENCE ----------------
+\sect{Experience}
+\role{Director, Quantitative Resource Center; Adjunct Assistant Professor of Mathematics}{Lawrence University}{2025--present}
+\begin{itemize}
+  \item Direct quantitative peer tutoring for the college: recruit, train, and mentor peer tutors and coordinate
+        support with departments.
+  \item Created the Quantitative Learning Assistant program (2025): wrote the position description; hire and
+        schedule specialized tutors, each paired with a course and its instructor.
+  \item Provide individualized support for case-managed students; hold open office hours for students,
+        faculty, and staff; advise on ALEKS math placement.
+  \item Presented on the Quantitative Resource Center and perspectives on mathematics at a Center for Teaching
+        Excellence Lunch and Learn (2025); part of Lawrence's team at a Carleton College workshop on
+        institutional approaches to quantitative skill support (2025).
+  \item Teach introductory mathematics (Foundations in Math, Preparation for Calculus, Calculus) and supervise
+        directed studies.
+\end{itemize}
+\role{Instructor of Mathematics}{Lawrence University}{2023--2025}
+\begin{itemize}
+  \item Coordinated peer tutoring and math support for introductory mathematics.
+  \item Designed the ALEKS-based course structure and exercise pack for Preparation for Calculus, later used by
+        colleagues teaching the course; supervised undergraduate teaching assistants.
+  \item Mentored a summer undergraduate research fellow (discrepancy theory) and ran a graduate-school
+        preparation program (GRE mathematics practice and applications) for three students.
+\end{itemize}
+\role{Assistant Professor (non-tenure-track)}{University of Georgia}{2020--2022}
+\begin{itemize}
+  \item Taught Calculus I and II in a coordinated multi-section program; served on the calculus exam committee.
+  \item UGA Teaching Academy Fellow; co-organized the Math Learning and Teaching Seminar; member of the
+        instructional corps recognized by the 2022 Regents' Teaching Excellence Award.
+\end{itemize}
+\role{Assistant Professor (non-tenure-track) and Postdoctoral Associate}{Vanderbilt University}{2017--2020}
+\begin{itemize}
+  \item Taught probability and statistical inference, mathematical statistics, and multivariable calculus;
+        supervised and mentored teams of undergraduate teaching assistants and graders.
+  \item Mentored undergraduate research (including a Highest Honors thesis) and served on honors and
+        dissertation committees.
+\end{itemize}
+\role{FWF Postdoctoral Researcher and Lecturer}{Graz University of Technology, Austria}{2014--2017}
+\begin{itemize}
+  \item Taught a course on packings, lattices, and configurations; assisted in higher analysis.
+\end{itemize}
+\role{Teaching Fellow and Teaching Assistant}{University of Pittsburgh}{2009--2011}
+\begin{itemize}
+  \item Led recitations for calculus, business calculus, foundations, algebra, and topology courses; taught
+        Business Calculus as instructor of record.
+\end{itemize}
+
+%% ---------------- EDUCATION ----------------
+\sect{Education and Certificates}
+\textbf{Ph.D., Mathematics}, University of Pittsburgh \hfill 2014\par
+\textbf{B.S., Mathematics}, Haverford College \hfill 2007\par\vspace{3pt}
+Certificate in Diversity and Inclusion, University of Georgia \hfill 2021\par
+STEM Teaching Specialization, Vanderbilt University \hfill 2020\par
+Certificate in College Teaching, Vanderbilt University \hfill 2019\par
+Community Engaged Learning faculty cohort, Lawrence University \hfill 2026--2027\par
+REFLECT peer observation of teaching, Lawrence University \hfill 2024
+
+%% ---------------- SERVICE / RESEARCH ----------------
+\sect{Mentoring, Service, and Scholarship}
+\begin{itemize}
+  \item Letters of recommendation for more than 20 students (2018--2025): graduate school, research programs,
+        medical school, transfer and study abroad, employment.
+  \item LS-PAC MODELS mentor (2021--2023); leadership committee, Haverford Multicultural Alumni Action
+        Group (2020--2024).
+  \item Community: Historic Central Neighborhood Association (Appleton), Safe Routes to School subcommittee,
+        Fox Valley Data Exchange working group.
+  \item Research in discrete geometry: 7 peer-reviewed papers, 37 talks; referee for \emph{Annals of
+        Mathematics} and other journals; NSF Graduate Research Fellowship reviewer (2022).
+\end{itemize}
+
+\end{document}
