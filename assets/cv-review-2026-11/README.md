@@ -17,7 +17,7 @@ The CV `.tex` is not here because its comments contain private notes. It is file
 - Publications are now split into peer-reviewed papers and a new "Preprints and Work in Progress" section. Journal names now use one abbreviation style. The cylinder paper now carries its published title, "Upper bounds…".
 - The pentagons paper is now listed as in revision at *Trans. Amer. Math. Soc.*
 - A new Software and Data section lists `capdisc` (GitHub, branch `capdisc`) and kisscrit v0.1.0 with its DOI.
-- Two spherical cap discrepancy papers added under Preprints and Work in Progress (Monthly; Experimental Math.). Discrepancy and computer-assisted proof added to Research Interests. N = 7 is left out until the server run passes.
+- Two spherical cap discrepancy papers added under Preprints and Work in Progress (in preparation; target journals kept only as source comments). Discrepancy and computer-assisted proof added to Research Interests. N = 7 is left out until the server run passes.
 - A new Grants and Support section lists INI support (2023), workshop and conference funding as co-organizer (2018, 2019), and the FWF postdoc. The dollar ranges are removed; exact amounts would be better.
 - Talks are now split into **Talks**, which has 37 titled talks, and **Workshops and Research Programs**, which lists 10 events you attended without speaking.
   - GeoFest, the dissertation and senior-thesis defenses, and the grad seminar talks are now commented out in the source.
