@@ -7,7 +7,7 @@ permalink: /communications/
 
 Mathematical contributions credited to me in other authors' work as personal communications or acknowledgments. Each entry gives the source and the statement or credit line as published.
 
-**Cite as:** W. Kusner, *Personal communication*, PC-YYYY-N, Zenodo, doi:10.5281/zenodo.XXXXXXX
+**Cite as:** W. Kusner, *Personal communication*, PC-YYYY-N, Zenodo, [doi:10.5281/zenodo.24173109](https://doi.org/10.5281/zenodo.24173109)
 
 ---
 
