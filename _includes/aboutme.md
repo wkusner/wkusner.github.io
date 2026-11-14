@@ -1,3 +1,5 @@
+[CV]({{ site.url }}/assets/KusnerCV.pdf) · [Google Scholar](https://scholar.google.com/citations?user=7EhVwNYAAAAJ&hl=en) · [ORCID](https://orcid.org/0000-0003-4973-6580) · [arXiv](https://arxiv.org/a/0000-0003-4973-6580) · [GitHub](https://github.com/wkusner)
+
 For 2023-2027, I am at [Lawrence University][Lawrence]. 
 
 Previously: I was at the [University of Georgia][UGA] through the spring of 2022; at [Vanderbilt University][VANDERBILT] as part of their Center for Constructive Approximation and the Data Science Institute.
@@ -7,7 +9,7 @@ Due to the COVID-19 lockdown, I was a remote visitor at the [Fields Institute][F
 
 I studied at [Haverford College][HAVERFORD] and the [University of Pittsburgh][PITT].
 
-Over the years, my research has been partially supported by some these institutions, the FWF, and the NSF in a variety of forms.
+Over the years, my research has been partially supported by some of these institutions, the FWF, and the NSF in a variety of forms.
 
 After graduate school, I ended up studying and teaching a great deal of probability and statistics.  
 If you want some reasons why a mathematician should do that, I refer you to Mumford's "The Dawning of the Age of Stochasticity".
