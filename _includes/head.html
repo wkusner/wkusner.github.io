@@ -22,4 +22,31 @@
     {% if page.use_math %}
       {% include mathjax_support.html %}
     {% endif %}
+    {% if page.url == "/" or page.url == "/index.html" %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": "https://wkusner.github.io/#person",
+      "name": "Woden Kusner",
+      "alternateName": ["Wöden Kusner", "Woeden Kusner", "W. Kusner"],
+      "jobTitle": "Director of the Quantitative Resource Center and Adjunct Assistant Professor of Mathematics",
+      "worksFor": {"@type": "CollegeOrUniversity", "name": "Lawrence University", "url": "https://www.lawrence.edu"},
+      "alumniOf": [
+        {"@type": "CollegeOrUniversity", "name": "University of Pittsburgh"},
+        {"@type": "CollegeOrUniversity", "name": "Haverford College"}
+      ],
+      "knowsAbout": ["discrete geometry", "sphere packing", "spherical codes", "point configurations on the sphere", "quantitative reasoning"],
+      "url": "https://wkusner.github.io/",
+      "sameAs": [
+        "https://inside.lawrence.edu/people/woden-kusner-director-of-the-quantitative-resource-center-and-adjunct-assistant-professor-of-mathematics",
+        "https://orcid.org/0000-0003-4973-6580",
+        "https://scholar.google.com/citations?user=7EhVwNYAAAAJ",
+        "https://arxiv.org/a/0000-0003-4973-6580",
+        "https://github.com/wkusner"
+      ],
+      "disambiguatingDescription": "Mathematician at Lawrence University (PhD Pittsburgh, 2014). Not Robert (Rob) Kusner of the University of Massachusetts Amherst, a frequent coauthor."
+    }
+    </script>
+    {% endif %}
 </head>
